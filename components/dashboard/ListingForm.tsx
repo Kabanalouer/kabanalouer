@@ -52,8 +52,16 @@ const INITIAL: FormState = {
   photos: [],
 };
 
-export default function ListingForm({ userId }: { userId: string }) {
-  const [form, setForm] = useState<FormState>(INITIAL);
+export default function ListingForm({
+  userId,
+  listingId,
+  initialData,
+}: {
+  userId: string;
+  listingId?: string;
+  initialData?: Partial<FormState>;
+}) {
+  const [form, setForm] = useState<FormState>({ ...INITIAL, ...initialData });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -100,34 +108,49 @@ export default function ListingForm({ userId }: { userId: string }) {
     setSaving(true);
     setSaveError("");
 
-    const { data, error } = await supabase
-      .from("listings")
-      .insert({
-        host_id: userId,
-        title: form.title,
-        description: form.description,
-        region: form.region,
-        address: form.address,
-        capacity: form.capacity,
-        bedrooms: form.bedrooms,
-        bathrooms: form.bathrooms,
-        price_low: form.price_low,
-        price_high: form.price_high,
-        price_peak: form.price_peak,
-        amenities: form.amenities,
-        photos: form.photos,
-        is_published: publish,
-      })
-      .select("id")
-      .single();
+    const payload = {
+      title: form.title,
+      description: form.description,
+      region: form.region,
+      address: form.address,
+      capacity: form.capacity,
+      bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+      price_low: form.price_low,
+      price_high: form.price_high,
+      price_peak: form.price_peak,
+      amenities: form.amenities,
+      photos: form.photos,
+      is_published: publish,
+    };
 
-    if (error) {
-      setSaveError("Erreur lors de l'enregistrement. Réessayez.");
-      setSaving(false);
-      return;
+    if (listingId) {
+      const { error } = await supabase
+        .from("listings")
+        .update(payload)
+        .eq("id", listingId)
+        .eq("host_id", userId);
+
+      if (error) {
+        setSaveError("Erreur lors de la mise à jour. Réessayez.");
+        setSaving(false);
+        return;
+      }
+      router.push("/dashboard/listings");
+    } else {
+      const { data, error } = await supabase
+        .from("listings")
+        .insert({ ...payload, host_id: userId })
+        .select("id")
+        .single();
+
+      if (error) {
+        setSaveError("Erreur lors de l'enregistrement. Réessayez.");
+        setSaving(false);
+        return;
+      }
+      router.push(`/dashboard?created=${data.id}`);
     }
-
-    router.push(`/dashboard?created=${data.id}`);
   };
 
   return (

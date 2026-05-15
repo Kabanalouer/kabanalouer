@@ -1,0 +1,361 @@
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@/lib/supabase/server";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import ContactButton from "@/components/chalets/ContactButton";
+import AvailabilityView from "@/components/chalets/AvailabilityView";
+
+const DEFAULT_PHOTO =
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
+
+const AMENITY_EMOJI: Record<string, string> = {
+  "Bord du lac": "🏊", "Quai / Dock": "⚓", "Spa": "♨️", "Sauna": "🧖",
+  "Piscine": "🏊", "Ski alpin": "⛷️", "Ski de fond": "🎿", "Raquettes": "👣",
+  "Kayak / Canot": "🚣", "Randonnée": "🥾", "Vélos": "🚲", "Foyer": "🔥",
+  "Billard": "🎱", "Cinéma maison": "🎬", "WiFi": "📶", "Lave-vaisselle": "🍽️",
+  "Laveuse / Sécheuse": "👕", "BBQ": "🍖", "Foyer extérieur": "🔥",
+  "Terrasse / Patio": "🪑", "Jeux extérieurs": "🎯",
+  "Animaux acceptés": "🐾", "Accessible PMR": "♿", "Stationnement": "🚗",
+  "Climatisation": "❄️",
+};
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("listings")
+    .select("title, region, description")
+    .eq("id", id)
+    .eq("is_published", true)
+    .single();
+  if (!data) return {};
+  return {
+    title: `${data.title} — Kabanalouer`,
+    description: data.description?.slice(0, 155),
+  };
+}
+
+export default async function ListingPage({ params }: Props) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const [{ data: listing }, { data: { user } }] = await Promise.all([
+    supabase
+      .from("listings")
+      .select("*, host:host_id(id, name, avatar_url, created_at)")
+      .eq("id", id)
+      .eq("is_published", true)
+      .single(),
+    supabase.auth.getUser(),
+  ]);
+
+  if (!listing) notFound();
+
+  const { data: availability } = await supabase
+    .from("availability")
+    .select("date, source")
+    .eq("listing_id", id)
+    .eq("is_blocked", true)
+    .order("date", { ascending: true });
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("id, rating, comment, created_at, author:author_id(name, avatar_url)")
+    .eq("listing_id", id)
+    .order("created_at", { ascending: false });
+
+  const photos: string[] =
+    Array.isArray(listing.photos) && listing.photos.length > 0
+      ? listing.photos
+      : [DEFAULT_PHOTO];
+
+  const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
+  const avgRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 0;
+
+  // AI review summary (server-side, only if 5+ reviews)
+  let aiSummary: string | null = null;
+  if (reviews && reviews.length >= 5 && process.env.ANTHROPIC_API_KEY) {
+    try {
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const msg = await anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 250,
+        system: [{ type: "text", text: "Tu es un assistant qui résume des avis de voyageurs sur des chalets québécois. Style : chaleureux, synthétique, 2-3 phrases max.", cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: `Résume ces ${reviews.length} avis :\n${reviews.map((r) => `"${r.comment}" (${r.rating}/5)`).join("\n")}` }],
+      });
+      aiSummary = msg.content[0].type === "text" ? msg.content[0].text : null;
+    } catch { /* silently fail */ }
+  }
+
+  const host = listing.host as { id: string; name: string; avatar_url: string; created_at: string } | null;
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {/* ── Breadcrumb ── */}
+        <nav className="text-sm text-gray-400 mb-4">
+          <Link href="/chalets" className="hover:text-primary transition-colors">Chalets</Link>
+          <span className="mx-2">›</span>
+          <Link href={`/chalets?region=${listing.region}`} className="hover:text-primary transition-colors">{listing.region}</Link>
+          <span className="mx-2">›</span>
+          <span className="text-gray-600 truncate">{listing.title}</span>
+        </nav>
+
+        {/* ── Photo gallery ── */}
+        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-2xl mb-8">
+          <div className={`relative overflow-hidden ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
+            <Image src={photos[0]} alt={listing.title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
+          </div>
+          {photos.slice(1, 5).map((p, i) => (
+            <div key={i} className="relative overflow-hidden bg-gray-100">
+              <Image src={p} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+            </div>
+          ))}
+        </div>
+
+        {/* ── Two-column layout ── */}
+        <div className="flex gap-10 items-start">
+          {/* ── Left column ── */}
+          <div className="flex-1 min-w-0 space-y-8">
+            {/* Title + meta */}
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                  {listing.title}
+                </h1>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-gray-500 text-sm">
+                <span className="font-semibold text-primary">{listing.region}</span>
+                <span>·</span>
+                <span>{listing.capacity} personnes</span>
+                <span>·</span>
+                <span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
+                <span>·</span>
+                <span>{listing.bathrooms} s.d.b.</span>
+                {avgRating > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {avgRating.toFixed(1)} ({reviews?.length} avis)
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Host */}
+            {host && (
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center shrink-0 overflow-hidden">
+                  {host.avatar_url ? (
+                    <Image src={host.avatar_url} alt={host.name} width={56} height={56} className="object-cover" />
+                  ) : (
+                    <span className="text-primary font-bold text-xl">
+                      {(host.name?.[0] ?? "?").toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Hébergé par {host.name}</p>
+                  <p className="text-sm text-gray-400">
+                    Membre depuis {new Date(host.created_at).getFullYear()}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <hr className="border-gray-100" />
+
+            {/* Description */}
+            {listing.description && (
+              <div>
+                <h2 className="font-semibold text-gray-900 mb-3">À propos de ce chalet</h2>
+                <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                  {listing.description}
+                </p>
+              </div>
+            )}
+
+            {/* Amenities */}
+            {amenities.length > 0 && (
+              <>
+                <hr className="border-gray-100" />
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-4">Équipements</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {amenities.map((a) => (
+                      <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
+                        <span className="text-base">{AMENITY_EMOJI[a] ?? "✓"}</span>
+                        {a}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Availability */}
+            <hr className="border-gray-100" />
+            <div>
+              <h2 className="font-semibold text-gray-900 mb-4">Disponibilités</h2>
+              <AvailabilityView
+                blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
+              />
+            </div>
+
+            {/* Reviews */}
+            <hr className="border-gray-100" />
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <h2 className="font-semibold text-gray-900">
+                  Avis {reviews && reviews.length > 0 && `(${reviews.length})`}
+                </h2>
+                {avgRating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="font-semibold text-sm">{avgRating.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* AI summary */}
+              {aiSummary && (
+                <div className="bg-ai-light rounded-2xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold text-ai bg-white px-2.5 py-1 rounded-full">
+                      ✦ Résumé IA
+                    </span>
+                    <span className="text-xs text-ai/60">Synthèse de {reviews!.length} avis</span>
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{aiSummary}</p>
+                </div>
+              )}
+
+              {reviews && reviews.length > 0 ? (
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {reviews.slice(0, 6).map((review) => {
+                    const author = review.author as unknown as { name: string; avatar_url: string } | null;
+                    return (
+                      <div key={review.id} className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-bold text-gray-500">
+                              {(author?.name?.[0] ?? "?").toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{author?.name ?? "Voyageur"}</p>
+                            <div className="flex gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <svg key={i} className={`w-3 h-3 fill-current ${i < review.rating ? "text-yellow-400" : "text-gray-200"}`} viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm">Aucun avis pour l&apos;instant.</p>
+              )}
+            </div>
+          </div>
+
+          {/* ── Right column — Pricing card ── */}
+          <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
+              {/* Price */}
+              <div className="mb-4">
+                <span className="text-3xl font-bold text-gray-900">
+                  {listing.price_low > 0 ? `${listing.price_low} $` : "Prix sur demande"}
+                </span>
+                {listing.price_low > 0 && (
+                  <span className="text-gray-500 text-sm"> / nuit</span>
+                )}
+              </div>
+
+              {/* Season breakdown */}
+              {(listing.price_low > 0 || listing.price_high > 0 || listing.price_peak > 0) && (
+                <div className="space-y-1.5 text-sm mb-5 bg-gray-50 rounded-xl p-3">
+                  {listing.price_low > 0 && <SeasonRow label="Basse saison" price={listing.price_low} />}
+                  {listing.price_high > 0 && <SeasonRow label="Haute saison" price={listing.price_high} />}
+                  {listing.price_peak > 0 && <SeasonRow label="Fêtes / Vacances" price={listing.price_peak} />}
+                </div>
+              )}
+
+              {/* Capacity */}
+              <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
+                <span>👥 {listing.capacity} personnes</span>
+                <span>·</span>
+                <span>🛏 {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
+              </div>
+
+              {/* CTA */}
+              <ContactButton
+                listingId={listing.id}
+                hostId={host?.id ?? ""}
+                hostName={host?.name ?? "l'hôte"}
+                listingTitle={listing.title}
+                currentUserId={user?.id ?? null}
+              />
+
+              <p className="text-xs text-gray-400 text-center mt-3">
+                Contact direct · Zéro frais de service
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile CTA */}
+        <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-4 z-40">
+          <ContactButton
+            listingId={listing.id}
+            hostId={host?.id ?? ""}
+            hostName={host?.name ?? "l'hôte"}
+            listingTitle={listing.title}
+            currentUserId={user?.id ?? null}
+          />
+        </div>
+      </main>
+
+      <div className="lg:hidden h-24" />
+      <Footer />
+    </div>
+  );
+}
+
+function SeasonRow({ label, price }: { label: string; price: number }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-gray-500">{label}</span>
+      <span className="font-semibold text-gray-900">{price} $</span>
+    </div>
+  );
+}

@@ -24,14 +24,22 @@ const NAV = [
     ),
   },
   {
-    href: "/dashboard/messages",
+    href: "/messages",
     label: "Messages",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     ),
-    disabled: true,
+  },
+  {
+    href: "/dashboard/subscription",
+    label: "Abonnement",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
   },
 ];
 
@@ -70,25 +78,17 @@ export default function DashboardSidebar({
           return (
             <Link
               key={item.href}
-              href={item.disabled ? "#" : item.href}
+              href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                item.disabled
-                  ? "text-gray-300 cursor-not-allowed"
-                  : isActive
+                isActive
                   ? "bg-primary-50 text-primary"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
-              onClick={(e) => item.disabled && e.preventDefault()}
             >
               <span className={isActive ? "text-primary" : "text-gray-400"}>
                 {item.icon}
               </span>
               {item.label}
-              {item.disabled && (
-                <span className="ml-auto text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">
-                  Bientôt
-                </span>
-              )}
             </Link>
           );
         })}

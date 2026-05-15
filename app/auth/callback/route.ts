@@ -28,6 +28,20 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Redirect hosts to their dashboard by default (unless a specific `next` was set)
+      if (next === "/") {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+          if (profile?.role === "host") {
+            return NextResponse.redirect(`${origin}/dashboard/listings`);
+          }
+        }
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

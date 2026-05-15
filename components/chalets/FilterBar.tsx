@@ -35,26 +35,32 @@ export default function FilterBar() {
   const [region, setRegion] = useState(params.get("region") ?? "");
   const [capacity, setCapacity] = useState(params.get("capacity") ?? "");
   const [amenity, setAmenity] = useState(params.get("amenity") ?? "");
+  const [checkin, setCheckin] = useState(params.get("checkin") ?? "");
+  const [checkout, setCheckout] = useState(params.get("checkout") ?? "");
+
+  const today = new Date().toISOString().split("T")[0];
 
   const apply = (overrides: Record<string, string> = {}) => {
     const next = new URLSearchParams();
     const r = overrides.region ?? region;
     const c = overrides.capacity ?? capacity;
     const a = overrides.amenity ?? amenity;
+    const ci = overrides.checkin ?? checkin;
+    const co = overrides.checkout ?? checkout;
     if (r) next.set("region", r);
     if (c) next.set("capacity", c);
     if (a) next.set("amenity", a);
+    if (ci) next.set("checkin", ci);
+    if (co) next.set("checkout", co);
     startTransition(() => router.push(`/chalets?${next.toString()}`));
   };
 
   const reset = () => {
-    setRegion("");
-    setCapacity("");
-    setAmenity("");
+    setRegion(""); setCapacity(""); setAmenity(""); setCheckin(""); setCheckout("");
     startTransition(() => router.push("/chalets"));
   };
 
-  const hasFilters = region || capacity || amenity;
+  const hasFilters = region || capacity || amenity || checkin || checkout;
 
   return (
     <div className="bg-white border-b border-gray-100 sticky top-16 z-40">
@@ -66,16 +72,11 @@ export default function FilterBar() {
             <label className="block text-xs font-medium text-gray-500 mb-1">Région</label>
             <select
               value={region}
-              onChange={(e) => {
-                setRegion(e.target.value);
-                apply({ region: e.target.value });
-              }}
+              onChange={(e) => { setRegion(e.target.value); apply({ region: e.target.value }); }}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Toutes les régions</option>
-              {REGIONS.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
+              {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
 
@@ -84,10 +85,7 @@ export default function FilterBar() {
             <label className="block text-xs font-medium text-gray-500 mb-1">Voyageurs</label>
             <select
               value={capacity}
-              onChange={(e) => {
-                setCapacity(e.target.value);
-                apply({ capacity: e.target.value });
-              }}
+              onChange={(e) => { setCapacity(e.target.value); apply({ capacity: e.target.value }); }}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Peu importe</option>
@@ -99,18 +97,42 @@ export default function FilterBar() {
             </select>
           </div>
 
+          {/* Check-in */}
+          <div className="min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Arrivée</label>
+            <input
+              type="date"
+              value={checkin}
+              min={today}
+              onChange={(e) => {
+                const val = e.target.value;
+                setCheckin(val);
+                if (checkout && val >= checkout) { setCheckout(""); apply({ checkin: val, checkout: "" }); }
+                else apply({ checkin: val });
+              }}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Check-out */}
+          <div className="min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Départ</label>
+            <input
+              type="date"
+              value={checkout}
+              min={checkin || today}
+              onChange={(e) => { setCheckout(e.target.value); apply({ checkout: e.target.value }); }}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
           {hasFilters && (
-            <button
-              onClick={reset}
-              className="text-sm text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap"
-            >
-              Effacer les filtres ×
+            <button onClick={reset} className="text-sm text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap">
+              Effacer ×
             </button>
           )}
 
-          {isPending && (
-            <span className="text-xs text-gray-400 animate-pulse">Recherche…</span>
-          )}
+          {isPending && <span className="text-xs text-gray-400 animate-pulse">Recherche…</span>}
         </div>
 
         {/* Quick amenity tags */}
@@ -118,11 +140,7 @@ export default function FilterBar() {
           {QUICK_AMENITIES.map((a) => (
             <button
               key={a}
-              onClick={() => {
-                const next = amenity === a ? "" : a;
-                setAmenity(next);
-                apply({ amenity: next });
-              }}
+              onClick={() => { const next = amenity === a ? "" : a; setAmenity(next); apply({ amenity: next }); }}
               className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
                 amenity === a
                   ? "bg-primary text-white border-primary"

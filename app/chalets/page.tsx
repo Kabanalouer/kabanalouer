@@ -16,6 +16,8 @@ interface PageProps {
     region?: string;
     capacity?: string;
     amenity?: string;
+    checkin?: string;
+    checkout?: string;
   }>;
 }
 
@@ -23,12 +25,28 @@ async function ListingsGrid({
   region,
   capacity,
   amenity,
+  checkin,
+  checkout,
 }: {
   region?: string;
   capacity?: string;
   amenity?: string;
+  checkin?: string;
+  checkout?: string;
 }) {
   const supabase = await createClient();
+
+  // Find listing IDs that have blocked dates in the requested range
+  let excludedIds: string[] = [];
+  if (checkin && checkout && checkin < checkout) {
+    const { data: blocked } = await supabase
+      .from("availability")
+      .select("listing_id")
+      .gte("date", checkin)
+      .lt("date", checkout)
+      .eq("is_blocked", true);
+    excludedIds = [...new Set((blocked ?? []).map((b) => b.listing_id as string))];
+  }
 
   let query = supabase
     .from("listings")
@@ -40,6 +58,7 @@ async function ListingsGrid({
   if (region) query = query.eq("region", region);
   if (capacity) query = query.gte("capacity", parseInt(capacity));
   if (amenity) query = query.contains("amenities", [amenity]);
+  if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
 
@@ -81,9 +100,14 @@ async function ListingsGrid({
 }
 
 export default async function ChaletsPage({ searchParams }: PageProps) {
-  const { region, capacity, amenity } = await searchParams;
+  const { region, capacity, amenity, checkin, checkout } = await searchParams;
 
-  const activeFilters = [region, capacity && `${capacity}+ pers.`, amenity]
+  const activeFilters = [
+    region,
+    capacity && `${capacity}+ pers.`,
+    amenity,
+    checkin && checkout ? `${checkin} → ${checkout}` : null,
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -118,7 +142,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
               </>
             }
           >
-            <ListingsGrid region={region} capacity={capacity} amenity={amenity} />
+            <ListingsGrid region={region} capacity={capacity} amenity={amenity} checkin={checkin} checkout={checkout} />
           </Suspense>
         </div>
       </div>
