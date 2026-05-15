@@ -85,6 +85,7 @@ export default function Navbar() {
     if (pathname.startsWith("/dashboard") || pathname.startsWith("/messages")) {
       if (voyageurMode) {
         localStorage.removeItem("kbl_voyageur");
+        document.cookie = "kbl_voyageur=; path=/; max-age=0";
         setVoyageurMode(false);
       }
     }
@@ -92,11 +93,13 @@ export default function Navbar() {
 
   const enterVoyageurMode = () => {
     localStorage.setItem("kbl_voyageur", "1");
+    document.cookie = "kbl_voyageur=1; path=/; max-age=86400";
     window.location.href = "/";
   };
 
   const exitVoyageurMode = () => {
     localStorage.removeItem("kbl_voyageur");
+    document.cookie = "kbl_voyageur=; path=/; max-age=0";
     window.location.href = "/dashboard/listings";
   };
 

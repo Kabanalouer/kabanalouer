@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
@@ -89,13 +90,17 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    const { data: profile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    if (profile?.role === "host") {
-      redirect("/dashboard/listings");
+    const cookieStore = await cookies();
+    const isVoyageurMode = cookieStore.get("kbl_voyageur")?.value === "1";
+    if (!isVoyageurMode) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (profile?.role === "host") {
+        redirect("/dashboard/listings");
+      }
     }
   }
 
