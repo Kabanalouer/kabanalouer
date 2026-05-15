@@ -10,7 +10,7 @@ export default async function NewListingPage() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Ajouter un chalet</h1>
         <p className="text-gray-500 mt-1 text-sm">

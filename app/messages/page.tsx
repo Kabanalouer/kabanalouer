@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Navbar from "@/components/Navbar";
 import MessagesClient from "@/components/messages/MessagesClient";
 
 export const metadata = { title: "Messages — Kabanalouer" };
@@ -75,9 +76,12 @@ export default async function MessagesPage() {
   const conversations = Array.from(convMap.values());
 
   return (
-    <MessagesClient
-      currentUserId={user.id}
-      initialConversations={conversations}
-    />
+    <>
+      <Navbar />
+      <MessagesClient
+        currentUserId={user.id}
+        initialConversations={conversations}
+      />
+    </>
   );
 }

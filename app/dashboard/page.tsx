@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   const drafts = (listings?.length ?? 0) - published;
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
