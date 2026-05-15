@@ -38,7 +38,7 @@ function DropdownLink({ href, children }: { href: string; children: React.ReactN
 
 // ── Avatar circle ────────────────────────────────────────────────────────────
 function Avatar({ profile, size = 32 }: { profile: Profile; size?: number }) {
-  const initial = profile.name?.[0]?.toUpperCase() ?? "H";
+  const initial = profile.name?.[0]?.toUpperCase() ?? "?";
   if (profile.avatar_url) {
     return (
       <Image
@@ -180,7 +180,7 @@ export default function Navbar() {
 
   const isHost = profile?.role === "host";
 
-  // ── HOST NAVBAR ─────────────────────────────────────────────────────────
+  // ── HOST NAVBAR ─────────────────────────────────────────────────────────────
   if (isHost && !voyageurMode && user && profile) {
     const tabCls = (pathPrefix: string) => {
       const active = pathname.startsWith(pathPrefix);
@@ -243,10 +243,8 @@ export default function Navbar() {
                 <Avatar profile={profile} size={32} />
               </button>
 
-              {/* Dropdown */}
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-1">
-                  {/* Profile header */}
                   <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
                     <Avatar profile={profile} size={36} />
                     <div className="min-w-0">
@@ -254,7 +252,6 @@ export default function Navbar() {
                       <p className="text-xs text-primary font-medium">Hôte</p>
                     </div>
                   </div>
-
                   <div className="py-1">
                     <DropdownLink href="/dashboard">Mon profil</DropdownLink>
                     <DropdownLink href="/dashboard/subscription">Abonnement</DropdownLink>
@@ -266,7 +263,6 @@ export default function Navbar() {
                       Mode voyageur
                     </button>
                   </div>
-
                   <div className="border-t border-gray-100 py-1">
                     <button
                       onClick={handleSignOut}
@@ -284,7 +280,139 @@ export default function Navbar() {
     );
   }
 
-  // ── PUBLIC / TRAVELER NAVBAR ─────────────────────────────────────────────
+  // ── CONNECTED TRAVELER NAVBAR (traveler role OR host in voyageur mode) ───────
+  if (user && profile) {
+    return (
+      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <CabinIcon className="w-7 h-7 text-primary" />
+            <span className="text-xl font-bold text-primary hidden sm:block">Kabanalouer</span>
+          </Link>
+
+          {/* Center */}
+          <div className="hidden md:flex items-center gap-6 text-sm">
+            <Link href="/chalets" className="text-gray-600 hover:text-primary transition-colors font-medium">
+              Parcourir les chalets
+            </Link>
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+
+            {/* Retourner en mode hôte — hôtes en mode voyageur seulement */}
+            {isHost && voyageurMode && (
+              <button
+                onClick={exitVoyageurMode}
+                className="hidden sm:flex items-center gap-2 border border-primary text-primary rounded-full py-2 px-4 text-sm font-medium hover:bg-primary-50 transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Mode hôte
+              </button>
+            )}
+
+            {/* Avatar + hamburger pill */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex items-center gap-2.5 border border-gray-200 rounded-full py-1 pl-3 pr-1 hover:shadow-md transition-all"
+                aria-label="Menu"
+              >
+                <svg className="w-4 h-4 text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <Avatar profile={profile} size={32} />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-1">
+                  <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                    <Avatar profile={profile} size={36} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{profile.name}</p>
+                      <p className="text-xs text-gray-400 font-medium">Voyageur</p>
+                    </div>
+                  </div>
+                  <div className="py-1">
+                    <DropdownLink href="/dashboard">Mon profil</DropdownLink>
+                    <Link
+                      href="/messages"
+                      className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Messages
+                      {unreadCount > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                      )}
+                    </Link>
+                    {isHost && voyageurMode && (
+                      <button
+                        onClick={exitVoyageurMode}
+                        className="sm:hidden w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-gray-50 transition-colors"
+                      >
+                        Mode hôte
+                      </button>
+                    )}
+                  </div>
+                  <div className="border-t border-gray-100 py-1">
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
+                      Déconnexion
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile hamburger (non-dropdown) */}
+            <button
+              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Menu mobile"
+            >
+              {mobileOpen ? (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 pb-5 px-4 sm:px-6">
+            <Link href="/chalets" className="text-gray-700 font-medium py-1">Parcourir les chalets</Link>
+            <div className="border-t border-gray-100 pt-3 mt-1 flex flex-col gap-2">
+              {isHost && voyageurMode && (
+                <button onClick={exitVoyageurMode} className="text-left text-primary font-medium">
+                  Mode hôte
+                </button>
+              )}
+              <Link href="/dashboard" className="text-gray-700 font-medium">Mon profil</Link>
+              <Link href="/messages" className="text-gray-700 font-medium flex items-center gap-2">
+                Messages
+                {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500" />}
+              </Link>
+              <button onClick={handleSignOut} className="text-left text-gray-500">Déconnexion</button>
+            </div>
+          </div>
+        )}
+      </nav>
+    );
+  }
+
+  // ── PUBLIC NAVBAR (non connecté) ─────────────────────────────────────────────
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -296,7 +424,7 @@ export default function Navbar() {
             <span className="text-xl font-bold text-primary">Kabanalouer</span>
           </Link>
 
-          {/* Desktop center links */}
+          {/* Desktop center */}
           <div className="hidden md:flex items-center gap-6 text-sm">
             <Link href="/chalets" className="text-gray-600 hover:text-primary transition-colors font-medium">
               Parcourir les chalets
@@ -308,39 +436,12 @@ export default function Navbar() {
 
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
-            {isHost && voyageurMode && (
-              <button
-                onClick={exitVoyageurMode}
-                className="flex items-center gap-2 border border-primary text-primary rounded-full py-2 px-4 text-sm font-medium hover:bg-primary-50 transition-all"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                Retourner en mode hôte
-              </button>
-            )}
-            {user ? (
-              <>
-                <Link href="/messages" className="text-gray-700 hover:text-primary font-medium text-sm transition-colors">
-                  Messages
-                </Link>
-                <Link href="/dashboard" className="text-gray-700 hover:text-primary font-medium text-sm transition-colors">
-                  Mon espace
-                </Link>
-                <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                  Déconnexion
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="text-gray-700 hover:text-primary font-medium text-sm transition-colors">
-                  Connexion
-                </Link>
-                <Link href="/signup" className="bg-primary text-white text-sm px-4 py-2.5 rounded-xl hover:bg-primary-dark transition-colors font-semibold">
-                  Inscrire mon chalet
-                </Link>
-              </>
-            )}
+            <Link href="/login" className="text-gray-700 hover:text-primary font-medium text-sm transition-colors">
+              Connexion
+            </Link>
+            <Link href="/signup" className="bg-primary text-white text-sm px-4 py-2.5 rounded-xl hover:bg-primary-dark transition-colors font-semibold">
+              Inscrire mon chalet
+            </Link>
           </div>
 
           {/* Mobile hamburger */}
@@ -367,28 +468,10 @@ export default function Navbar() {
             <Link href="/chalets" className="text-gray-700 font-medium py-1">Parcourir les chalets</Link>
             <Link href="/comment-ca-marche" className="text-gray-700 font-medium py-1">Comment ça marche</Link>
             <div className="border-t border-gray-100 pt-3 mt-1 flex flex-col gap-2">
-              {isHost && voyageurMode && (
-                <button
-                  onClick={exitVoyageurMode}
-                  className="text-left text-primary font-medium"
-                >
-                  Retourner en mode hôte
-                </button>
-              )}
-              {user ? (
-                <>
-                  <Link href="/messages" className="text-gray-700 font-medium">Messages</Link>
-                  <Link href="/dashboard" className="text-gray-700 font-medium">Mon espace</Link>
-                  <button onClick={handleSignOut} className="text-left text-gray-500">Déconnexion</button>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" className="text-gray-700 font-medium">Connexion</Link>
-                  <Link href="/signup" className="bg-primary text-white text-center py-2.5 rounded-xl font-semibold">
-                    Inscrire mon chalet
-                  </Link>
-                </>
-              )}
+              <Link href="/login" className="text-gray-700 font-medium">Connexion</Link>
+              <Link href="/signup" className="bg-primary text-white text-center py-2.5 rounded-xl font-semibold">
+                Inscrire mon chalet
+              </Link>
             </div>
           </div>
         )}
