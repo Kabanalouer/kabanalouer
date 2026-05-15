@@ -1,8 +1,10 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
+import { createClient } from "@/lib/supabase/server";
 
 const MOCK_LISTINGS: Listing[] = [
   {
@@ -82,7 +84,21 @@ const MOCK_LISTINGS: Listing[] = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role === "host") {
+      redirect("/dashboard/listings");
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
