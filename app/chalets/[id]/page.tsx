@@ -105,6 +105,32 @@ export default async function ListingPage({ params }: Props) {
 
   const host = listing.host as { id: string; name: string; avatar_url: string; created_at: string } | null;
 
+  // Subtitle calculations
+  const city = (() => {
+    const addr = listing.address as string | null;
+    if (!addr) return null;
+    const parts = addr.split(",");
+    return parts.length >= 2 ? parts[parts.length - 1].trim() : null;
+  })();
+
+  const bedroomsFromRooms = (rooms ?? []).filter((r) => r.type === "bedroom");
+  const bedroomCount = bedroomsFromRooms.length > 0 ? bedroomsFromRooms.length : listing.bedrooms;
+
+  const totalBeds = bedroomsFromRooms.length > 0
+    ? bedroomsFromRooms.reduce((sum, room) => {
+        const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+        return sum + beds.filter((b) => b.type !== "sofa_bed").reduce((s, b) => s + b.quantity, 0);
+      }, 0)
+    : null;
+
+  const subtitleParts = [
+    city ? `${city}, ${listing.region}` : listing.region,
+    `${listing.capacity} personne${listing.capacity > 1 ? "s" : ""}`,
+    `${bedroomCount} chambre${bedroomCount > 1 ? "s" : ""}`,
+    totalBeds !== null && totalBeds > 0 ? `${totalBeds} lit${totalBeds > 1 ? "s" : ""}` : null,
+    `${listing.bathrooms} salle${listing.bathrooms > 1 ? "s" : ""} de bain`,
+  ].filter(Boolean);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -118,6 +144,16 @@ export default async function ListingPage({ params }: Props) {
           <span className="mx-2">›</span>
           <span className="text-gray-600 truncate">{listing.title}</span>
         </nav>
+
+        {/* ── Title + subtitle ── */}
+        <div className="mb-5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">
+            {listing.title}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {subtitleParts.join(" · ")}
+          </p>
+        </div>
 
         {/* ── Photo gallery ── */}
         <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-2xl mb-8">
@@ -135,37 +171,6 @@ export default async function ListingPage({ params }: Props) {
         <div className="flex gap-10 items-start">
           {/* ── Left column ── */}
           <div className="flex-1 min-w-0 space-y-8">
-            {/* Title + meta */}
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-                  {listing.title}
-                </h1>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-gray-500 text-sm">
-                <span className="font-semibold text-primary">{listing.region}</span>
-                <span>·</span>
-                <span>{listing.capacity} personnes</span>
-                <span>·</span>
-                <span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
-                <span>·</span>
-                <span>{listing.bathrooms} s.d.b.</span>
-                {avgRating > 0 && (
-                  <>
-                    <span>·</span>
-                    <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      {avgRating.toFixed(1)} ({reviews?.length} avis)
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
             {/* Host */}
             {host && (
               <div className="flex items-center gap-4">
