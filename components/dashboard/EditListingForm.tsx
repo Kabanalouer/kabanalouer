@@ -43,7 +43,8 @@ type SectionId =
   | "capacite"
   | "equipements"
   | "calendrier"
-  | "localisation";
+  | "localisation"
+  | "tarifs";
 
 const SECTIONS: Array<{
   id: SectionId;
@@ -58,6 +59,7 @@ const SECTIONS: Array<{
   { id: "equipements",  label: "Équipements",          emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
+  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_low > 0 },
 ];
 
 // Fields saved per section
@@ -68,7 +70,8 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   capacite:     ["capacity", "bedrooms", "bathrooms"],
   equipements:  ["amenities"],
   calendrier:   [],
-  localisation: ["region", "address", "price_low", "price_high", "price_peak"],
+  localisation: ["region", "address"],
+  tarifs:       ["price_low"],
 };
 
 const inputCls =
@@ -440,35 +443,34 @@ export default function EditListingForm({
                     placeholder="123 chemin du Lac, Saint-Donat"
                   />
                 </div>
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-sm font-medium text-gray-700 mb-3">Tarifs ($ / nuit)</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {(
-                      [
-                        { key: "price_low", label: "Basse saison", placeholder: "150" },
-                        { key: "price_high", label: "Haute saison", placeholder: "250" },
-                        { key: "price_peak", label: "Fêtes / Vacances", placeholder: "350" },
-                      ] as const
-                    ).map(({ key, label, placeholder }) => (
-                      <div key={key}>
-                        <Label>{label}</Label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                          <input
-                            type="number" min={0}
-                            value={form[key] || ""}
-                            onChange={(e) => set(key, parseInt(e.target.value) || 0)}
-                            className={`${inputCls} pl-7`}
-                            placeholder={placeholder}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    Ces tarifs sont indicatifs et communiqués directement aux voyageurs.
-                  </p>
+              </div>
+            </SectionShell>
+          )}
+
+          {/* Section: Tarifs */}
+          {activeSection === "tarifs" && (
+            <SectionShell title="Tarifs" emoji="💰">
+              <div className="max-w-xs">
+                <Label>Prix à partir de ($/nuit)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.price_low || ""}
+                    onChange={(e) => set("price_low", parseInt(e.target.value) || 0)}
+                    className={`${inputCls} pl-7`}
+                    placeholder="189"
+                  />
                 </div>
+                <p className="text-sm text-gray-400 mt-3 leading-relaxed">
+                  Ce prix sera affiché sur votre fiche publique. Vous communiquez le prix final directement avec le voyageur.
+                </p>
+                {form.price_low > 0 && (
+                  <div className="mt-4 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+                    Aperçu : <span className="font-semibold text-gray-900">À partir de {form.price_low} $/nuit</span>
+                  </div>
+                )}
               </div>
             </SectionShell>
           )}

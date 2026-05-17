@@ -293,11 +293,14 @@ export default async function ListingPage({ params }: Props) {
             <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
               {/* Price */}
               <div className="mb-4">
-                <span className="text-3xl font-bold text-gray-900">
-                  {listing.price_low > 0 ? `${listing.price_low} $` : "Prix sur demande"}
-                </span>
-                {listing.price_low > 0 && (
-                  <span className="text-gray-500 text-sm"> / nuit</span>
+                {listing.price_low > 0 ? (
+                  <>
+                    <p className="text-xs text-gray-400 mb-0.5">À partir de</p>
+                    <span className="text-3xl font-bold text-gray-900">{listing.price_low} $</span>
+                    <span className="text-gray-500 text-sm"> / nuit</span>
+                  </>
+                ) : (
+                  <span className="text-xl font-bold text-gray-900">Prix sur demande</span>
                 )}
               </div>
 
