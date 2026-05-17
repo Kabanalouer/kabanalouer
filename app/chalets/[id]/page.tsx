@@ -65,6 +65,12 @@ export default async function ListingPage({ params }: Props) {
     .eq("is_blocked", true)
     .order("date", { ascending: true });
 
+  const { data: rooms } = await supabase
+    .from("rooms")
+    .select("*")
+    .eq("listing_id", id)
+    .order("sort_order");
+
   const { data: reviews } = await supabase
     .from("reviews")
     .select("id, rating, comment, created_at, author:author_id(name, avatar_url)")
@@ -191,6 +197,58 @@ export default async function ListingPage({ params }: Props) {
                   {listing.description}
                 </p>
               </div>
+            )}
+
+            {/* Rooms */}
+            {rooms && rooms.length > 0 && (
+              <>
+                <hr className="border-gray-100" />
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-4">Chambres et espaces</h2>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {rooms.map((room) => {
+                      const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+                      const photos = Array.isArray(room.photos) ? room.photos as string[] : [];
+                      const isBedroom = room.type === "bedroom";
+                      const sofaBeds = beds.find((b) => b.type === "sofa_bed");
+                      const BED_FR: Record<string, string> = {
+                        simple: "lit simple", double: "lit double", queen: "lit queen", king: "lit king",
+                      };
+                      return (
+                        <div key={room.id} className="border border-gray-100 rounded-2xl p-4">
+                          {/* Photo strip */}
+                          {photos.length > 0 && (
+                            <div className="flex gap-1.5 mb-3 overflow-hidden rounded-xl">
+                              {photos.slice(0, 3).map((p, i) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img key={i} src={p} alt="" className={`object-cover rounded-lg ${photos.length === 1 ? "w-full h-32" : "flex-1 h-24"}`} />
+                              ))}
+                            </div>
+                          )}
+                          <p className="font-semibold text-gray-900 text-sm mb-1">{room.name}</p>
+                          <p className="text-xs text-gray-400 mb-2">
+                            {isBedroom ? `${room.capacity} pers.` : `Capacité : ${room.capacity} pers.`}
+                          </p>
+                          {isBedroom && beds.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {beds.map((b, i) => (
+                                <span key={i} className="text-xs bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1 text-gray-600">
+                                  🛏 {b.quantity}× {BED_FR[b.type] ?? b.type}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {!isBedroom && sofaBeds && (
+                            <span className="text-xs bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1 text-gray-600">
+                              🛋 {sofaBeds.quantity} divan{sofaBeds.quantity > 1 ? "s" : ""}-lit
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
 
             {/* Amenities */}

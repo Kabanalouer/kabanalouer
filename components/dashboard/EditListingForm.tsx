@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
 import PhotoUpload from "./PhotoUpload";
+import RoomsSection from "./RoomsSection";
 
 const REGIONS = [
   "Charlevoix",
@@ -41,6 +42,7 @@ type SectionId =
   | "titre"
   | "description"
   | "capacite"
+  | "chambres"
   | "equipements"
   | "calendrier"
   | "localisation"
@@ -56,6 +58,7 @@ const SECTIONS: Array<{
   { id: "titre",        label: "Titre",                emoji: "✏️", isComplete: (f) => f.title.trim().length > 0 },
   { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
   { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 },
+  { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
   { id: "equipements",  label: "Équipements",          emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
@@ -69,6 +72,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   description:  ["description"],
   capacite:     ["capacity", "bedrooms", "bathrooms"],
   equipements:  ["amenities"],
+  chambres:     [],
   calendrier:   [],
   localisation: ["region", "address"],
   tarifs:       ["price_low"],
@@ -382,6 +386,13 @@ export default function EditListingForm({
                   />
                 </div>
               </div>
+            </SectionShell>
+          )}
+
+          {/* Section: Chambres */}
+          {activeSection === "chambres" && (
+            <SectionShell title="Chambres" emoji="🛏">
+              <RoomsSection userId={userId} listingId={listingId} />
             </SectionShell>
           )}
 
