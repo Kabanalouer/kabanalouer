@@ -6,21 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
 import PhotoUpload from "./PhotoUpload";
 import RoomsSection from "./RoomsSection";
+import LocationSection from "./LocationSection";
 
-const REGIONS = [
-  "Charlevoix",
-  "Estrie (Cantons-de-l'Est)",
-  "Gaspésie",
-  "Lanaudière",
-  "Laurentides",
-  "Mauricie",
-  "Outaouais",
-  "Québec (ville et région)",
-  "Saguenay–Lac-Saint-Jean",
-  "Abitibi-Témiscamingue",
-  "Côte-Nord",
-  "Centre-du-Québec",
-];
 
 type FormState = {
   title: string;
@@ -74,7 +61,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   equipements:  ["amenities"],
   chambres:     [],
   calendrier:   [],
-  localisation: ["region", "address"],
+  localisation: [],
   tarifs:       ["price_low"],
 };
 
@@ -86,11 +73,17 @@ export default function EditListingForm({
   listingId,
   initialData,
   isPublished: initialPublished,
+  initialCity,
+  initialLat,
+  initialLng,
 }: {
   userId: string;
   listingId: string;
   initialData: Partial<FormState>;
   isPublished: boolean;
+  initialCity: string;
+  initialLat: number | null;
+  initialLng: number | null;
 }) {
   const supabase = createClient();
 
@@ -432,29 +425,16 @@ export default function EditListingForm({
           {/* Section: Localisation */}
           {activeSection === "localisation" && (
             <SectionShell title="Localisation" emoji="📍">
-              <div className="space-y-4">
-                <div>
-                  <Label>Région</Label>
-                  <select
-                    value={form.region}
-                    onChange={(e) => set("region", e.target.value)}
-                    className={inputCls}
-                  >
-                    <option value="">Sélectionnez une région</option>
-                    {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <Label>Adresse (non affichée publiquement)</Label>
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={(e) => set("address", e.target.value)}
-                    className={inputCls}
-                    placeholder="123 chemin du Lac, Saint-Donat"
-                  />
-                </div>
-              </div>
+              <LocationSection
+                listingId={listingId}
+                userId={userId}
+                initialAddress={form.address}
+                initialCity={initialCity}
+                initialRegion={form.region}
+                initialLat={initialLat}
+                initialLng={initialLng}
+                onRegionChange={(r) => set("region", r)}
+              />
             </SectionShell>
           )}
 

@@ -34,6 +34,9 @@ export default async function EditListingPage({ params }: Props) {
         userId={user.id}
         listingId={id}
         isPublished={listing.is_published ?? false}
+        initialCity={listing.city ?? ""}
+        initialLat={listing.latitude ?? null}
+        initialLng={listing.longitude ?? null}
         initialData={{
           title: listing.title ?? "",
           description: listing.description ?? "",

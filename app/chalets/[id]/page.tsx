@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactButton from "@/components/chalets/ContactButton";
 import AvailabilityView from "@/components/chalets/AvailabilityView";
+import ListingMap from "@/components/chalets/ListingMap";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -106,7 +107,7 @@ export default async function ListingPage({ params }: Props) {
   const host = listing.host as { id: string; name: string; avatar_url: string; created_at: string } | null;
 
   // Subtitle calculations
-  const city = (() => {
+  const city = (listing.city as string | null) ?? (() => {
     const addr = listing.address as string | null;
     if (!addr) return null;
     const parts = addr.split(",");
@@ -282,6 +283,17 @@ export default async function ListingPage({ params }: Props) {
                 blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
               />
             </div>
+
+            {/* Map */}
+            {listing.latitude && listing.longitude && (
+              <>
+                <hr className="border-gray-100" />
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-4">Localisation</h2>
+                  <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
+                </div>
+              </>
+            )}
 
             {/* Reviews */}
             <hr className="border-gray-100" />
