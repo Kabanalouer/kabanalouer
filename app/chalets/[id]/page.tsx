@@ -114,15 +114,23 @@ export default async function ListingPage({ params }: Props) {
     return parts.length >= 2 ? parts[parts.length - 1].trim() : null;
   })();
 
-  const bedroomsFromRooms = (rooms ?? []).filter((r) => r.type === "bedroom");
+  const allRooms = rooms ?? [];
+  const bedroomsFromRooms = allRooms.filter((r) => r.type === "bedroom");
   const bedroomCount = bedroomsFromRooms.length > 0 ? bedroomsFromRooms.length : listing.bedrooms;
 
-  const totalBeds = bedroomsFromRooms.length > 0
-    ? bedroomsFromRooms.reduce((sum, room) => {
-        const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
-        return sum + beds.filter((b) => b.type !== "sofa_bed").reduce((s, b) => s + b.quantity, 0);
-      }, 0)
-    : null;
+  const totalBeds = (() => {
+    if (allRooms.length === 0) return null;
+    const bedroomBeds = bedroomsFromRooms.reduce((sum, room) => {
+      const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+      return sum + beds.filter((b) => b.type !== "sofa_bed").reduce((s, b) => s + b.quantity, 0);
+    }, 0);
+    const sofaBeds = allRooms.filter((r) => r.type === "living_room").reduce((sum, room) => {
+      const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+      return sum + beds.filter((b) => b.type === "sofa_bed").reduce((s, b) => s + b.quantity, 0);
+    }, 0);
+    const total = bedroomBeds + sofaBeds;
+    return total > 0 ? total : null;
+  })();
 
   const subtitleParts = [
     city ? `${city}, ${listing.region}` : listing.region,
