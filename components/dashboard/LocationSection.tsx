@@ -178,19 +178,16 @@ function LocationForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Région</label>
-          <select
+          <input
+            type="text"
             value={region}
-            onChange={(e) => {
-              setRegion(e.target.value);
-              onRegionChange(e.target.value);
-            }}
-            className={inputCls}
-          >
-            <option value="">Sélectionnez une région</option>
-            {REGIONS.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
+            readOnly
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-500 cursor-default focus:outline-none"
+            placeholder="Détectée automatiquement"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            La région est détectée automatiquement selon votre adresse.
+          </p>
         </div>
       </div>
 
