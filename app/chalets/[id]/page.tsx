@@ -185,20 +185,20 @@ export default async function ListingPage({ params }: Props) {
             {/* Host */}
             {host && (
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0 overflow-hidden">
                   {host.avatar_url ? (
-                    <Image src={host.avatar_url} alt={host.name} width={56} height={56} className="object-cover" />
+                    <Image src={host.avatar_url} alt={host.name} width={56} height={56} className="object-cover w-full h-full" />
                   ) : (
-                    <span className="text-primary font-bold text-xl">
+                    <span className="text-white font-bold text-xl">
                       {(host.name?.[0] ?? "?").toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Hébergé par {host.name}</p>
-                  <p className="text-sm text-gray-400">
-                    Membre depuis {new Date(host.created_at).getFullYear()}
+                  <p className="font-semibold text-gray-900">
+                    Hôte : {host.name?.split(" ")[0] ?? "l'hôte"}
                   </p>
+                  <p className="text-sm text-gray-400">{hostSince(host.created_at)}</p>
                 </div>
               </div>
             )}
@@ -403,6 +403,16 @@ export default async function ListingPage({ params }: Props) {
       <Footer />
     </div>
   );
+}
+
+function hostSince(createdAt: string): string {
+  const months =
+    (new Date().getFullYear() - new Date(createdAt).getFullYear()) * 12 +
+    (new Date().getMonth() - new Date(createdAt).getMonth());
+  if (months < 1) return "Nouveau";
+  if (months < 12) return `Hôte depuis ${months} mois`;
+  const years = Math.floor(months / 12);
+  return `Hôte depuis ${years} an${years > 1 ? "s" : ""}`;
 }
 
 function SeasonRow({ label, price }: { label: string; price: number }) {
