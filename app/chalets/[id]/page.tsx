@@ -61,6 +61,9 @@ export default async function ListingPage({ params }: Props) {
 
   if (!listing) notFound();
 
+  // Increment view count (fire and forget — don't block page render)
+  void supabase.rpc("increment_listing_views", { p_listing_id: id });
+
   const { data: availability } = await supabase
     .from("availability")
     .select("date, source")

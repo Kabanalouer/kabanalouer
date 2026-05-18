@@ -38,7 +38,7 @@ export async function GET(request: Request) {
             .eq("id", user.id)
             .single();
           if (profile?.role === "host") {
-            return NextResponse.redirect(`${origin}/dashboard/listings`);
+            return NextResponse.redirect(`${origin}/dashboard`);
           }
         }
       }
