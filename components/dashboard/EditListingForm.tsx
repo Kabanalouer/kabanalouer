@@ -270,6 +270,7 @@ export default function EditListingForm({
               <PhotoUpload
                 photos={form.photos}
                 userId={userId}
+                listingId={listingId}
                 onChange={(photos) => set("photos", photos)}
               />
             </SectionShell>
