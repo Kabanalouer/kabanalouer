@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
@@ -63,41 +63,24 @@ export default function ListingForm({
   initialData?: Partial<FormState>;
 }) {
   const [form, setForm] = useState<FormState>({ ...INITIAL, ...initialData });
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [descAtLimit, setDescAtLimit] = useState(false);
+  const descLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  const canGenerateAI = form.region.length > 0 && form.capacity > 0;
-
-  const handleGenerateAI = async () => {
-    setAiLoading(true);
-    setAiError("");
-    try {
-      const res = await fetch("/api/ai/generate-listing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region: form.region,
-          amenities: form.amenities,
-          capacity: form.capacity,
-          bedrooms: form.bedrooms,
-          bathrooms: form.bathrooms,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur inconnue");
-      if (data.title) set("title", data.title);
-      if (data.description) set("description", data.description);
-    } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Erreur de génération");
-    } finally {
-      setAiLoading(false);
+  const handleDescriptionChange = (value: string) => {
+    if (value.length > 2500) {
+      set("description", value.slice(0, 2500));
+      if (descLimitTimer.current) clearTimeout(descLimitTimer.current);
+      setDescAtLimit(true);
+      descLimitTimer.current = setTimeout(() => setDescAtLimit(false), 1500);
+    } else {
+      set("description", value);
     }
   };
 
@@ -207,44 +190,8 @@ export default function ListingForm({
           </div>
         </FormSection>
 
-        {/* Section 2: Description avec IA */}
+        {/* Section 2: Titre & description */}
         <FormSection title="Titre & description" step={2}>
-          {/* AI Button */}
-          <div className="flex items-center gap-3 p-4 bg-ai-light rounded-xl mb-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-ai">
-                ✦ Génération IA
-              </p>
-              <p className="text-xs text-ai/70 mt-0.5">
-                {canGenerateAI
-                  ? "Remplissez la région et les équipements, puis générez votre description."
-                  : "Remplissez d'abord la région et la capacité pour activer l'IA."}
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={!canGenerateAI || aiLoading}
-              onClick={handleGenerateAI}
-              className="shrink-0 bg-ai text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#4239A0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {aiLoading ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Génération…
-                </>
-              ) : (
-                "✦ Générer avec l'IA"
-              )}
-            </button>
-          </div>
-
-          {aiError && (
-            <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2 mb-4">{aiError}</p>
-          )}
-
           <div className="space-y-4">
             <div>
               <Label>Titre *</Label>
@@ -264,16 +211,13 @@ export default function ListingForm({
               <Label>Description</Label>
               <textarea
                 value={form.description}
-                onChange={(e) => set("description", e.target.value)}
+                onChange={(e) => handleDescriptionChange(e.target.value)}
                 className={`${inputCls} resize-none`}
                 rows={6}
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                {form.description.length} caractères
-                {form.description.length > 0 && form.description.length < 150 && (
-                  <span className="text-yellow-500"> · 150 recommandé pour un bon score</span>
-                )}
+              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-gray-400"}`}>
+                {form.description.length}/2500
               </p>
             </div>
           </div>
