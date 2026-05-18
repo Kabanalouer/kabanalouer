@@ -421,10 +421,18 @@ export default function PhotoUpload({
         </div>
       )}
 
+      {/* Drag-and-drop hint — only when 2+ photos */}
+      {photos.length >= 2 && (
+        <p className="text-xs text-gray-400 flex items-start gap-1.5">
+          <span className="shrink-0">💡</span>
+          <span>Glissez-déposez les photos pour modifier leur ordre d&apos;affichage. La première photo sera utilisée comme photo principale.</span>
+        </p>
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-gray-400">
-          {totalCount}/{MAX_PHOTOS} photos · La première photo sera la photo principale
+          {totalCount}/{MAX_PHOTOS} photos
         </p>
         {saving && <span className="text-xs text-gray-400 animate-pulse">Sauvegarde…</span>}
       </div>
