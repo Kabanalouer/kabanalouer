@@ -39,6 +39,8 @@ type FormState = {
   citq_number: string;
   checkin_time: string;
   checkout_time: string;
+  pets_allowed: boolean;
+  smoking_allowed: boolean;
 };
 
 const INITIAL: FormState = {
@@ -57,6 +59,8 @@ const INITIAL: FormState = {
   citq_number: "",
   checkin_time: "16:00",
   checkout_time: "11:00",
+  pets_allowed: false,
+  smoking_allowed: false,
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -130,6 +134,8 @@ export default function ListingForm({
       citq_number: form.citq_number || null,
       checkin_time: form.checkin_time,
       checkout_time: form.checkout_time,
+      pets_allowed: form.pets_allowed,
+      smoking_allowed: form.smoking_allowed,
       is_published: publish,
     };
 
@@ -341,6 +347,16 @@ export default function ListingForm({
                 </select>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Animaux acceptés</Label>
+                <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
+              </div>
+              <div>
+                <Label>Fumeur accepté</Label>
+                <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} />
+              </div>
+            </div>
           </div>
         </FormSection>
 
@@ -403,6 +419,21 @@ function Label({ children }: { children: React.ReactNode }) {
     <label className="block text-sm font-medium text-gray-700 mb-1.5">
       {children}
     </label>
+  );
+}
+
+function ToggleField({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm w-fit">
+      <button type="button" onClick={() => onChange(false)}
+        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        Non
+      </button>
+      <button type="button" onClick={() => onChange(true)}
+        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        Oui
+      </button>
+    </div>
   );
 }
 

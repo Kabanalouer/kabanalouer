@@ -26,6 +26,8 @@ type FormState = {
   citq_number: string;
   checkin_time: string;
   checkout_time: string;
+  pets_allowed: boolean;
+  smoking_allowed: boolean;
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -81,7 +83,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low"],
-  infos:        ["citq_number", "checkin_time", "checkout_time"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed"],
 };
 
 const inputCls =
@@ -122,6 +124,8 @@ export default function EditListingForm({
     citq_number: "",
     checkin_time: "16:00",
     checkout_time: "11:00",
+    pets_allowed: false,
+    smoking_allowed: false,
     ...initialData,
   });
 
@@ -501,6 +505,16 @@ export default function EditListingForm({
                     </select>
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Animaux acceptés</label>
+                    <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Fumeur accepté</label>
+                    <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} />
+                  </div>
+                </div>
               </div>
             </SectionShell>
           )}
@@ -578,5 +592,20 @@ function Spinner() {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
+  );
+}
+
+function ToggleField({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm w-fit">
+      <button type="button" onClick={() => onChange(false)}
+        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        Non
+      </button>
+      <button type="button" onClick={() => onChange(true)}
+        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        Oui
+      </button>
+    </div>
   );
 }

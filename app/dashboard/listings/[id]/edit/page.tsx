@@ -54,6 +54,8 @@ export default async function EditListingPage({ params }: Props) {
           citq_number: (listing.citq_number as string | null) ?? "",
           checkin_time: (listing.checkin_time as string | null) ?? "16:00",
           checkout_time: (listing.checkout_time as string | null) ?? "11:00",
+          pets_allowed: (listing.pets_allowed as boolean | null) ?? false,
+          smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
         }}
       />
     </div>
