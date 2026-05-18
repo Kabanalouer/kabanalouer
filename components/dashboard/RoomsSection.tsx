@@ -301,17 +301,9 @@ function BedroomCard({
 
       {/* Beds */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-500">Lits</span>
-          <button
-            onClick={onAddBed}
-            className="text-xs text-primary font-medium hover:text-primary-dark transition-colors"
-          >
-            + Ajouter un lit
-          </button>
-        </div>
+        <span className="text-sm text-gray-500 block mb-2">Lits</span>
         {room.beds.length === 0 && (
-          <p className="text-xs text-gray-300">Aucun lit configuré.</p>
+          <p className="text-xs text-gray-300 mb-2">Aucun lit configuré.</p>
         )}
         <div className="space-y-2">
           {room.beds.map((bed, i) => (
@@ -342,6 +334,12 @@ function BedroomCard({
             </div>
           ))}
         </div>
+        <button
+          onClick={onAddBed}
+          className="mt-2 text-xs text-primary font-medium hover:text-primary-dark transition-colors"
+        >
+          + Ajouter un lit
+        </button>
       </div>
 
       {/* Photos (collapsible) */}
