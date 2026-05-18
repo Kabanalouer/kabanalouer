@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import ContactButton from "@/components/chalets/ContactButton";
 import AvailabilityView from "@/components/chalets/AvailabilityView";
 import ListingMap from "@/components/chalets/ListingMap";
+import ExpandableText from "@/components/chalets/ExpandableText";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -207,9 +208,7 @@ export default async function ListingPage({ params }: Props) {
             {listing.description && (
               <div>
                 <h2 className="font-semibold text-gray-900 mb-3">À propos de ce chalet</h2>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-                  {listing.description}
-                </p>
+                <ExpandableText text={listing.description} />
               </div>
             )}
 
