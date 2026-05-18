@@ -111,13 +111,13 @@ export default function EditListingForm({
   const [isPublished, setIsPublished] = useState(initialPublished);
   const [togglingPublish, setTogglingPublish] = useState(false);
 
-  // AI generation state (used in description section)
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState("");
-
   // Title limit flash
   const [titleAtLimit, setTitleAtLimit] = useState(false);
   const titleLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Description limit flash
+  const [descAtLimit, setDescAtLimit] = useState(false);
+  const descLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -172,29 +172,14 @@ export default function EditListingForm({
     }
   };
 
-  const handleGenerateAI = async () => {
-    setAiLoading(true);
-    setAiError("");
-    try {
-      const res = await fetch("/api/ai/generate-listing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region: form.region,
-          amenities: form.amenities,
-          capacity: form.capacity,
-          bedrooms: form.bedrooms,
-          bathrooms: form.bathrooms,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur inconnue");
-      if (data.title) set("title", data.title);
-      if (data.description) set("description", data.description);
-    } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Erreur de génération");
-    } finally {
-      setAiLoading(false);
+  const handleDescriptionChange = (value: string) => {
+    if (value.length > 2500) {
+      set("description", value.slice(0, 2500));
+      if (descLimitTimer.current) clearTimeout(descLimitTimer.current);
+      setDescAtLimit(true);
+      descLimitTimer.current = setTimeout(() => setDescAtLimit(false), 1500);
+    } else {
+      set("description", value);
     }
   };
 
@@ -311,37 +296,15 @@ export default function EditListingForm({
           {/* Section: Description */}
           {activeSection === "description" && (
             <SectionShell title="Description" emoji="📝">
-              <div className="flex items-center gap-3 p-4 bg-[#EEEDFE] rounded-xl mb-5">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#534AB7]">✦ Génération IA</p>
-                  <p className="text-xs text-[#534AB7]/70 mt-0.5">
-                    Remplissez d&apos;abord la région et les équipements pour activer l&apos;IA.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={!form.region || aiLoading}
-                  onClick={handleGenerateAI}
-                  className="shrink-0 bg-[#534AB7] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#4239A0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {aiLoading ? (
-                    <><Spinner />Génération…</>
-                  ) : "✦ Générer"}
-                </button>
-              </div>
-              {aiError && <p className="text-sm text-red-500 mb-4">{aiError}</p>}
               <textarea
                 value={form.description}
-                onChange={(e) => set("description", e.target.value)}
+                onChange={(e) => handleDescriptionChange(e.target.value)}
                 className={`${inputCls} resize-none`}
                 rows={8}
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                {form.description.length} caractères
-                {form.description.length > 0 && form.description.length < 150 && (
-                  <span className="text-yellow-500"> · 150+ recommandé</span>
-                )}
+              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-gray-400"}`}>
+                {form.description.length}/2500
               </p>
             </SectionShell>
           )}
