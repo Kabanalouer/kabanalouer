@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import PhotoUpload from "./PhotoUpload";
+import RoomPhotoManager from "./RoomPhotoManager";
 
 type BedType = "simple" | "double" | "queen" | "king";
 
@@ -266,7 +266,6 @@ function BedroomCard({
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
-  const [showPhotos, setShowPhotos] = useState(false);
 
   return (
     <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
@@ -342,24 +341,14 @@ function BedroomCard({
         </button>
       </div>
 
-      {/* Photos (collapsible) */}
+      {/* Photos */}
       <div>
-        <button
-          onClick={() => setShowPhotos(!showPhotos)}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
-        >
-          <span>{showPhotos ? "▾" : "▸"}</span>
-          Photos de la chambre {room.photos.length > 0 && `(${room.photos.length})`}
-        </button>
-        {showPhotos && (
-          <div className="mt-3">
-            <PhotoUpload
-              photos={room.photos}
-              userId={userId}
-              onChange={(photos) => onUpdate({ photos })}
-            />
-          </div>
-        )}
+        <span className="text-sm text-gray-500 block mb-2">Photos de la chambre</span>
+        <RoomPhotoManager
+          photos={room.photos}
+          userId={userId}
+          onChange={(photos) => onUpdate({ photos })}
+        />
       </div>
     </div>
   );
@@ -375,7 +364,6 @@ function LivingRoomCard({
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
 }) {
-  const [showPhotos, setShowPhotos] = useState(false);
 
   return (
     <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
@@ -418,24 +406,14 @@ function LivingRoomCard({
         </div>
       </div>
 
-      {/* Photos (collapsible) */}
+      {/* Photos */}
       <div>
-        <button
-          onClick={() => setShowPhotos(!showPhotos)}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
-        >
-          <span>{showPhotos ? "▾" : "▸"}</span>
-          Photos du salon {room.photos.length > 0 && `(${room.photos.length})`}
-        </button>
-        {showPhotos && (
-          <div className="mt-3">
-            <PhotoUpload
-              photos={room.photos}
-              userId={userId}
-              onChange={(photos) => onUpdate({ photos })}
-            />
-          </div>
-        )}
+        <span className="text-sm text-gray-500 block mb-2">Photos du salon</span>
+        <RoomPhotoManager
+          photos={room.photos}
+          userId={userId}
+          onChange={(photos) => onUpdate({ photos })}
+        />
       </div>
     </div>
   );
