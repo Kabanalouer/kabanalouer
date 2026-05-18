@@ -329,19 +329,14 @@ export default function EditListingForm({
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => set("title", e.target.value)}
+                onChange={(e) => set("title", e.target.value.slice(0, 50))}
                 className={inputCls}
                 placeholder="ex. Chalet rustique au bord du lac, Laurentides"
-                maxLength={50}
               />
 
               {/* Counter + improve button */}
               <div className="flex items-center justify-between mt-1">
-                <span className={`text-xs tabular-nums ${
-                  form.title.length >= 48 ? "text-red-500" :
-                  form.title.length >= 40 ? "text-orange-500" :
-                  "text-gray-400"
-                }`}>
+                <span className="text-xs tabular-nums text-gray-400">
                   {form.title.length}/50
                 </span>
                 {form.title.length > 0 && (
