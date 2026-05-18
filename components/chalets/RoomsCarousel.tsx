@@ -69,7 +69,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             onClick={() => scroll("left")}
             disabled={!canLeft}
             aria-label="Précédent"
-            className="hidden sm:flex absolute -left-4 top-[72px] -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+            className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
           >
             <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -79,7 +79,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             onClick={() => scroll("right")}
             disabled={!canRight}
             aria-label="Suivant"
-            className="hidden sm:flex absolute -right-4 top-[72px] -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+            className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
           >
             <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -92,21 +92,67 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
 }
 
 function RoomCard({ room }: { room: Room }) {
+  const [photoIdx, setPhotoIdx] = useState(0);
   const beds = Array.isArray(room.beds) ? room.beds : [];
   const photos = Array.isArray(room.photos) ? room.photos as string[] : [];
   const isBedroom = room.type === "bedroom";
   const sofaBeds = beds.find((b) => b.type === "sofa_bed");
+  const hasMultiple = photos.length > 1;
 
   return (
     <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white h-full flex flex-col">
-      {photos.length > 0 ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photos[0]} alt={room.name} className="w-full h-36 object-cover" />
-      ) : (
-        <div className="w-full h-36 bg-gray-50 flex items-center justify-center">
-          <span className="text-3xl">{isBedroom ? "🛏" : "🛋"}</span>
-        </div>
-      )}
+      {/* Photo — 16:9 with optional carousel */}
+      <div className="relative w-full aspect-video overflow-hidden bg-gray-50">
+        {photos.length > 0 ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photos[photoIdx]}
+            alt={`${room.name} – photo ${photoIdx + 1}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-3xl">{isBedroom ? "🛏" : "🛋"}</span>
+          </div>
+        )}
+
+        {hasMultiple && (
+          <>
+            <button
+              onClick={() => setPhotoIdx((i) => i - 1)}
+              disabled={photoIdx === 0}
+              aria-label="Photo précédente"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
+            >
+              <svg className="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setPhotoIdx((i) => i + 1)}
+              disabled={photoIdx === photos.length - 1}
+              aria-label="Photo suivante"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
+            >
+              <svg className="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPhotoIdx(i)}
+                  aria-label={`Photo ${i + 1}`}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Info */}
       <div className="p-4 flex flex-col gap-1.5 flex-1">
         <p className="font-semibold text-gray-900 text-sm">{room.name}</p>
         <p className="text-xs text-gray-400">
