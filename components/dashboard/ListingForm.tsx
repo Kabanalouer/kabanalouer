@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
 import PhotoUpload from "./PhotoUpload";
 import QualityScore from "./QualityScore";
+import type { PhotoItem } from "@/lib/photo";
 
 const REGIONS = [
   "Charlevoix",
@@ -34,7 +35,7 @@ type FormState = {
   price_high: number;
   price_peak: number;
   amenities: string[];
-  photos: string[];
+  photos: PhotoItem[];
 };
 
 const INITIAL: FormState = {

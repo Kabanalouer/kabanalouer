@@ -11,6 +11,7 @@ import ListingMap from "@/components/chalets/ListingMap";
 import ExpandableText from "@/components/chalets/ExpandableText";
 import RoomsCarousel from "@/components/chalets/RoomsCarousel";
 import PhotoGallery from "@/components/chalets/PhotoGallery";
+import { normalizePhotos } from "@/lib/photo";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -84,10 +85,8 @@ export default async function ListingPage({ params }: Props) {
     .eq("listing_id", id)
     .order("created_at", { ascending: false });
 
-  const photos: string[] =
-    Array.isArray(listing.photos) && listing.photos.length > 0
-      ? listing.photos
-      : [DEFAULT_PHOTO];
+  const rawPhotos = normalizePhotos(listing.photos);
+  const photos = rawPhotos.length > 0 ? rawPhotos : [{ url: DEFAULT_PHOTO, caption: "" }];
 
   const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
   const avgRating =

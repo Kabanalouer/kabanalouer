@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EditListingForm from "@/components/dashboard/EditListingForm";
+import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = { title: "Modifier le chalet — Kabanalouer" };
 
@@ -49,7 +50,7 @@ export default async function EditListingPage({ params }: Props) {
           price_high: listing.price_high ?? 0,
           price_peak: listing.price_peak ?? 0,
           amenities: Array.isArray(listing.amenities) ? listing.amenities : [],
-          photos: Array.isArray(listing.photos) ? listing.photos : [],
+          photos: normalizePhotos(listing.photos),
         }}
       />
     </div>

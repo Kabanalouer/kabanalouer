@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import { firstPhotoUrl } from "@/lib/photo";
 
 export const metadata = { title: "Tableau de bord — Kabanalouer" };
 
@@ -73,7 +74,7 @@ export default async function DashboardPage() {
         <div className="space-y-3">
           {listings.map((listing) => {
             const rev = reviewMap.get(listing.id);
-            const photo = Array.isArray(listing.photos) ? listing.photos[0] as string | undefined : undefined;
+            const photo = firstPhotoUrl(listing.photos);
             return (
               <div
                 key={listing.id}

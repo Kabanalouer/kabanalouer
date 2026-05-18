@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import type { PhotoItem } from "@/lib/photo";
 
 export default function PhotoUpload({
   photos,
@@ -10,10 +11,10 @@ export default function PhotoUpload({
   listingId,
   onChange,
 }: {
-  photos: string[];
+  photos: PhotoItem[];
   userId: string;
   listingId?: string;
-  onChange: (photos: string[]) => void;
+  onChange: (photos: PhotoItem[]) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -23,9 +24,12 @@ export default function PhotoUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean } | null>(null);
+  // Keep a ref to always access latest photos in async callbacks
+  const photosRef = useRef(photos);
+  useEffect(() => { photosRef.current = photos; }, [photos]);
   const supabase = createClient();
 
-  // Attach passive:false touch listener so we can preventDefault during drag
+  // Attach passive:false touchmove so we can preventDefault during reorder drag
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -44,12 +48,26 @@ export default function PhotoUpload({
     return () => grid.removeEventListener("touchmove", onTouchMove);
   }, []);
 
+  // ── Supabase save ───────────────────────────────────────────────────────────
+
+  const savePhotos = (list?: PhotoItem[]) => {
+    const toSave = list ?? photosRef.current;
+    if (!listingId) return;
+    setSaving(true);
+    supabase
+      .from("listings")
+      .update({ photos: toSave })
+      .eq("id", listingId)
+      .eq("host_id", userId)
+      .then(() => setSaving(false));
+  };
+
   // ── Upload ──────────────────────────────────────────────────────────────────
 
   const uploadFiles = async (files: FileList) => {
     setUploading(true);
     setError("");
-    const newUrls: string[] = [];
+    const newItems: PhotoItem[] = [];
 
     for (const file of Array.from(files)) {
       if (!file.type.startsWith("image/")) continue;
@@ -61,17 +79,17 @@ export default function PhotoUpload({
         .upload(path, file, { cacheControl: "3600", upsert: false });
       if (uploadError) { setError("Erreur lors de l'upload. Vérifiez le bucket Supabase Storage."); continue; }
       const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(data.path);
-      newUrls.push(urlData.publicUrl);
+      newItems.push({ url: urlData.publicUrl, caption: "" });
     }
 
-    onChange([...photos, ...newUrls]);
+    onChange([...photos, ...newItems]);
     setUploading(false);
   };
 
   const removePhoto = async (url: string) => {
     const path = url.split("/listing-photos/")[1];
     if (path) await supabase.storage.from("listing-photos").remove([path]);
-    onChange(photos.filter((p) => p !== url));
+    onChange(photos.filter((p) => p.url !== url));
   };
 
   const handleFileDrop = (e: React.DragEvent) => {
@@ -79,7 +97,14 @@ export default function PhotoUpload({
     if (e.dataTransfer.files.length) void uploadFiles(e.dataTransfer.files);
   };
 
-  // ── Reorder + auto-save ─────────────────────────────────────────────────────
+  // ── Caption ─────────────────────────────────────────────────────────────────
+
+  const updateCaption = (i: number, caption: string) => {
+    const next = photos.map((p, j) => (j === i ? { ...p, caption } : p));
+    onChange(next);
+  };
+
+  // ── Reorder (drag-and-drop) ─────────────────────────────────────────────────
 
   const applyReorder = (from: number, to: number) => {
     if (from === to) return;
@@ -87,17 +112,10 @@ export default function PhotoUpload({
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     onChange(next);
-    if (!listingId) return;
-    setSaving(true);
-    supabase
-      .from("listings")
-      .update({ photos: next })
-      .eq("id", listingId)
-      .eq("host_id", userId)
-      .then(() => setSaving(false));
+    savePhotos(next);
   };
 
-  // Desktop drag
+  // Desktop DnD
   const onDragStart = (i: number) => setDragIdx(i);
   const onDragEnd = () => { setDragIdx(null); setOverIdx(null); };
   const onDragOver = (e: React.DragEvent, i: number) => { e.preventDefault(); setOverIdx(i); };
@@ -108,14 +126,9 @@ export default function PhotoUpload({
   };
 
   // Mobile touch
-  const onTouchStart = (e: React.TouchEvent, i: number) => {
+  const onTouchStartDetect = (e: React.TouchEvent, i: number) => {
     const t = e.touches[0];
     touchState.current = { idx: i, startX: t.clientX, startY: t.clientY, dragging: false };
-  };
-
-  const onTouchStartDetect = (e: React.TouchEvent, i: number) => {
-    onTouchStart(e, i);
-    // Start drag immediately on touch (visual feedback)
     const onMove = (ev: TouchEvent) => {
       if (!touchState.current) return;
       const dx = ev.touches[0].clientX - touchState.current.startX;
@@ -125,7 +138,7 @@ export default function PhotoUpload({
         setDragIdx(i);
       }
     };
-    window.addEventListener("touchmove", onMove, { once: false, passive: true });
+    window.addEventListener("touchmove", onMove, { passive: true });
     window.addEventListener("touchend", () => window.removeEventListener("touchmove", onMove), { once: true });
   };
 
@@ -142,7 +155,7 @@ export default function PhotoUpload({
 
   return (
     <div className="space-y-4">
-      {/* Drop zone (file upload) */}
+      {/* Drop zone */}
       <div
         onDrop={handleFileDrop}
         onDragOver={(e) => e.preventDefault()}
@@ -180,12 +193,12 @@ export default function PhotoUpload({
 
       {error && <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2">{error}</p>}
 
-      {/* Photo grid — draggable */}
+      {/* Photo grid — draggable + captions */}
       {photos.length > 0 && (
-        <div ref={gridRef} className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {photos.map((url, i) => (
+        <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {photos.map((item, i) => (
             <div
-              key={url}
+              key={item.url}
               data-photo-idx={i}
               draggable
               onDragStart={() => onDragStart(i)}
@@ -194,43 +207,65 @@ export default function PhotoUpload({
               onDrop={(e) => onDrop(e, i)}
               onTouchStart={(e) => onTouchStartDetect(e, i)}
               onTouchEnd={onTouchEnd}
-              className={`relative aspect-square group rounded-xl transition-all duration-150 cursor-grab active:cursor-grabbing ${
-                dragIdx === i
-                  ? "opacity-40 scale-95 shadow-2xl z-10"
-                  : overIdx === i && dragIdx !== null
-                  ? "ring-2 ring-primary ring-offset-2 scale-[1.03]"
-                  : "hover:ring-1 hover:ring-gray-300"
-              }`}
+              className="flex flex-col gap-1.5"
             >
-              <Image
-                src={url}
-                alt={`Photo ${i + 1}`}
-                fill
-                className="object-cover rounded-xl pointer-events-none"
-                sizes="150px"
-                draggable={false}
-              />
-              {/* Drag handle icon */}
-              <div className="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-md p-0.5 pointer-events-none">
-                <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-6 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
-                </svg>
-              </div>
-              {i === 0 && (
-                <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">
-                  Principale
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => void removePhoto(url)}
-                className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                aria-label="Supprimer"
+              {/* Thumbnail */}
+              <div
+                className={`relative aspect-square group rounded-xl transition-all duration-150 cursor-grab active:cursor-grabbing ${
+                  dragIdx === i
+                    ? "opacity-40 scale-95 shadow-2xl"
+                    : overIdx === i && dragIdx !== null
+                    ? "ring-2 ring-primary ring-offset-2 scale-[1.03]"
+                    : "hover:ring-1 hover:ring-gray-300"
+                }`}
               >
-                <svg className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                <Image
+                  src={item.url}
+                  alt={`Photo ${i + 1}`}
+                  fill
+                  className="object-cover rounded-xl pointer-events-none"
+                  sizes="200px"
+                  draggable={false}
+                />
+                {/* Drag handle */}
+                <div className="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-md p-0.5 pointer-events-none">
+                  <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-6 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                  </svg>
+                </div>
+                {i === 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">
+                    Principale
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => void removePhoto(item.url)}
+                  className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                  aria-label="Supprimer"
+                >
+                  <svg className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Caption input */}
+              <div>
+                <input
+                  type="text"
+                  value={item.caption}
+                  maxLength={140}
+                  placeholder="Légende (optionnel)"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onChange={(e) => updateCaption(i, e.target.value)}
+                  onBlur={() => savePhotos()}
+                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-300 transition"
+                />
+                <p className={`text-right text-[10px] mt-0.5 tabular-nums ${item.caption.length >= 120 ? "text-red-500" : "text-gray-400"}`}>
+                  {item.caption.length}/140
+                </p>
+              </div>
             </div>
           ))}
         </div>

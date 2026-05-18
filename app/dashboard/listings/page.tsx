@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { firstPhotoUrl } from "@/lib/photo";
 
 export const metadata = { title: "Mes chalets — Kabanalouer" };
 
@@ -52,7 +53,7 @@ export default async function ListingsPage() {
         <div className="space-y-3">
           {listings.map((listing) => {
             const rev = reviewMap.get(listing.id);
-            const photo = Array.isArray(listing.photos) ? listing.photos[0] as string | undefined : undefined;
+            const photo = firstPhotoUrl(listing.photos);
             return (
               <div
                 key={listing.id}

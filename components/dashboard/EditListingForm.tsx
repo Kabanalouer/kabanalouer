@@ -7,6 +7,7 @@ import AmenitiesPicker from "./AmenitiesPicker";
 import PhotoUpload from "./PhotoUpload";
 import RoomsSection from "./RoomsSection";
 import LocationSection from "./LocationSection";
+import type { PhotoItem } from "@/lib/photo";
 
 
 type FormState = {
@@ -21,7 +22,7 @@ type FormState = {
   price_high: number;
   price_peak: number;
   amenities: string[];
-  photos: string[];
+  photos: PhotoItem[];
 };
 
 type SectionId =
@@ -41,7 +42,7 @@ const SECTIONS: Array<{
   emoji: string;
   isComplete: (f: FormState) => boolean;
 }> = [
-  { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => f.photos.length > 0 },
+  { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => (f.photos as PhotoItem[]).length > 0 },
   { id: "titre",        label: "Titre",                emoji: "✏️", isComplete: (f) => f.title.trim().length > 0 },
   { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
   { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 },
@@ -99,7 +100,7 @@ export default function EditListingForm({
     price_high: 0,
     price_peak: 0,
     amenities: [],
-    photos: [],
+    photos: [] as PhotoItem[],
     ...initialData,
   });
 

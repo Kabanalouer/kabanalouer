@@ -2,7 +2,7 @@ type FormData = {
   title: string;
   description: string;
   region: string;
-  photos: string[];
+  photos: { url: string; caption: string }[];
   amenities: string[];
   price_low: number;
   price_high: number;

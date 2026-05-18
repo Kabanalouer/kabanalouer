@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import type { PhotoItem } from "@/lib/photo";
 
 interface Props {
-  photos: string[];
+  photos: PhotoItem[];
   title: string;
 }
 
@@ -39,11 +40,12 @@ export default function PhotoGallery({ photos, title }: Props) {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Scroll active thumbnail into view
   useEffect(() => {
     if (!open) return;
     thumbRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [idx, open]);
+
+  const caption = photos[idx]?.caption ?? "";
 
   return (
     <>
@@ -51,11 +53,11 @@ export default function PhotoGallery({ photos, title }: Props) {
       <div className="relative mb-8">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-2xl">
           <div className={`relative overflow-hidden ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
-            <Image src={photos[0]} alt={title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
+            <Image src={photos[0].url} alt={title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
           </div>
           {photos.slice(1, 5).map((p, i) => (
             <div key={i} className="relative overflow-hidden bg-gray-100">
-              <Image src={p} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+              <Image src={p.url} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
             </div>
           ))}
         </div>
@@ -93,12 +95,12 @@ export default function PhotoGallery({ photos, title }: Props) {
             </button>
           </div>
 
-          {/* Main photo */}
+          {/* Main photo + caption */}
           <div className="flex-1 relative min-h-0">
-            <div className="absolute inset-0 px-14 sm:px-20">
+            <div className="absolute inset-0 px-14 sm:px-20 pb-0">
               <div className="relative w-full h-full">
                 <Image
-                  src={photos[idx]}
+                  src={photos[idx].url}
                   alt={`Photo ${idx + 1} — ${title}`}
                   fill
                   className="object-contain"
@@ -107,6 +109,15 @@ export default function PhotoGallery({ photos, title }: Props) {
                 />
               </div>
             </div>
+
+            {/* Caption overlay */}
+            {caption && (
+              <div className="absolute bottom-0 left-0 right-0 px-14 sm:px-20 pb-3 pointer-events-none">
+                <div className="bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2.5 text-center">
+                  <p className="text-white text-sm leading-relaxed">{caption}</p>
+                </div>
+              </div>
+            )}
 
             {/* Prev arrow */}
             {photos.length > 1 && (
@@ -146,13 +157,11 @@ export default function PhotoGallery({ photos, title }: Props) {
                 ref={(el) => { thumbRefs.current[i] = el; }}
                 onClick={() => setIdx(i)}
                 className={`relative shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden transition-all ${
-                  i === idx
-                    ? "ring-2 ring-white opacity-100"
-                    : "opacity-40 hover:opacity-70"
+                  i === idx ? "ring-2 ring-white opacity-100" : "opacity-40 hover:opacity-70"
                 }`}
                 aria-label={`Aller à la photo ${i + 1}`}
               >
-                <Image src={p} alt="" fill className="object-cover" sizes="80px" />
+                <Image src={p.url} alt="" fill className="object-cover" sizes="80px" />
               </button>
             ))}
           </div>
