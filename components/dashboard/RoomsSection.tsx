@@ -178,18 +178,10 @@ export default function RoomsSection({
 
       {/* ── Chambres ──────────────────────────────────────────────────── */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Chambres</h3>
-          <button
-            onClick={addBedroom}
-            className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-          >
-            <span className="text-base font-bold">+</span> Ajouter une chambre
-          </button>
-        </div>
+        <h3 className="font-semibold text-gray-900 mb-4">Chambres</h3>
 
         {bedrooms.length === 0 && (
-          <p className="text-sm text-gray-400">Aucune chambre ajoutée.</p>
+          <p className="text-sm text-gray-400 mb-4">Aucune chambre ajoutée.</p>
         )}
 
         <div className="space-y-4">
@@ -206,24 +198,23 @@ export default function RoomsSection({
             />
           ))}
         </div>
+
+        <button
+          onClick={addBedroom}
+          className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+        >
+          <span className="text-base font-bold">+</span> Ajouter une chambre
+        </button>
       </div>
 
       <div className="border-t border-gray-100" />
 
       {/* ── Salons ────────────────────────────────────────────────────── */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Salons / espaces de couchage</h3>
-          <button
-            onClick={addLivingRoom}
-            className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-          >
-            <span className="text-base font-bold">+</span> Ajouter un salon
-          </button>
-        </div>
+        <h3 className="font-semibold text-gray-900 mb-4">Salons / espaces de couchage</h3>
 
         {livingRooms.length === 0 && (
-          <p className="text-sm text-gray-400">Aucun salon ajouté.</p>
+          <p className="text-sm text-gray-400 mb-4">Aucun salon ajouté.</p>
         )}
 
         <div className="space-y-4">
@@ -237,6 +228,13 @@ export default function RoomsSection({
             />
           ))}
         </div>
+
+        <button
+          onClick={addLivingRoom}
+          className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+        >
+          <span className="text-base font-bold">+</span> Ajouter un salon
+        </button>
       </div>
 
       {/* ── Save bar ──────────────────────────────────────────────────── */}
