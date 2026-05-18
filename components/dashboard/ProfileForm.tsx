@@ -104,7 +104,12 @@ export default function ProfileForm({
     const { data, error } = await supabase.storage
       .from("avatars")
       .upload(path, file, { cacheControl: "3600", upsert: true });
-    if (error) { setInfoError("Erreur lors de l'upload de la photo."); setAvatarUploading(false); return; }
+    if (error) {
+      console.error("[avatar upload]", error);
+      setInfoError(`Erreur upload : ${error.message}`);
+      setAvatarUploading(false);
+      return;
+    }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(data.path);
     const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
     await supabase.from("users").update({ avatar_url: urlData.publicUrl }).eq("id", userId);
