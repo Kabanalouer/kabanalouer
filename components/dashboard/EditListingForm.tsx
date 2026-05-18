@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
@@ -115,9 +115,9 @@ export default function EditListingForm({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
 
-  // AI title improvement state
-  const [aiTitleLoading, setAiTitleLoading] = useState(false);
-  const [aiTitleSuggestion, setAiTitleSuggestion] = useState<string | null>(null);
+  // Title limit flash
+  const [titleAtLimit, setTitleAtLimit] = useState(false);
+  const titleLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -161,27 +161,14 @@ export default function EditListingForm({
     setTogglingPublish(false);
   };
 
-  const handleImproveTitle = async () => {
-    setAiTitleLoading(true);
-    try {
-      const res = await fetch("/api/ai/improve-title", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: form.title,
-          region: form.region,
-          capacity: form.capacity,
-          amenities: form.amenities,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur inconnue");
-      setAiTitleSuggestion(data.title ?? null);
-    } catch (err) {
-      setAiTitleSuggestion(null);
-      setAiError(err instanceof Error ? err.message : "Erreur de génération");
-    } finally {
-      setAiTitleLoading(false);
+  const handleTitleChange = (value: string) => {
+    if (value.length > 50) {
+      set("title", value.slice(0, 50));
+      if (titleLimitTimer.current) clearTimeout(titleLimitTimer.current);
+      setTitleAtLimit(true);
+      titleLimitTimer.current = setTimeout(() => setTitleAtLimit(false), 1500);
+    } else {
+      set("title", value);
     }
   };
 
@@ -308,92 +295,16 @@ export default function EditListingForm({
           {/* Section: Titre */}
           {activeSection === "titre" && (
             <SectionShell title="Titre" emoji="✏️">
-              <div className="flex items-center gap-3 p-4 bg-[#EEEDFE] rounded-xl mb-5">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#534AB7]">✦ Génération IA</p>
-                  <p className="text-xs text-[#534AB7]/70 mt-0.5">
-                    Remplissez d&apos;abord la région et les équipements pour activer l&apos;IA.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={!form.region || aiLoading}
-                  onClick={handleGenerateAI}
-                  className="shrink-0 bg-[#534AB7] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#4239A0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {aiLoading ? <><Spinner />Génération…</> : "✦ Générer"}
-                </button>
-              </div>
-              {aiError && <p className="text-sm text-red-500 mb-4">{aiError}</p>}
-
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => set("title", e.target.value.slice(0, 50))}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 className={inputCls}
                 placeholder="ex. Chalet rustique au bord du lac, Laurentides"
               />
-
-              {/* Counter + improve button */}
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-xs tabular-nums text-gray-400">
-                  {form.title.length}/50
-                </span>
-                {form.title.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleImproveTitle}
-                    disabled={aiTitleLoading}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-[#534AB7] hover:text-[#4239A0] transition-colors disabled:opacity-50"
-                  >
-                    {aiTitleLoading ? <Spinner /> : <span>✨</span>}
-                    Améliorer avec l&apos;IA
-                  </button>
-                )}
-              </div>
-
-              {/* Suggestion box */}
-              {aiTitleSuggestion !== null && (
-                <div className="mt-3 p-4 bg-[#EEEDFE] rounded-xl border border-[#534AB7]/20 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#534AB7] leading-snug">{aiTitleSuggestion}</p>
-                      <span className={`text-xs tabular-nums mt-0.5 inline-block ${
-                        aiTitleSuggestion.length >= 48 ? "text-red-500" :
-                        aiTitleSuggestion.length >= 40 ? "text-orange-500" :
-                        "text-[#534AB7]/60"
-                      }`}>
-                        {aiTitleSuggestion.length}/50
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setAiTitleSuggestion(null)}
-                      className="text-[#534AB7]/50 hover:text-[#534AB7] transition-colors text-xl leading-none shrink-0 p-0.5"
-                      aria-label="Fermer"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { set("title", aiTitleSuggestion); setAiTitleSuggestion(null); }}
-                      className="bg-[#534AB7] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#4239A0] transition-colors"
-                    >
-                      Utiliser ce titre
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleImproveTitle}
-                      disabled={aiTitleLoading}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-[#534AB7] bg-white px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-[#534AB7]/20 disabled:opacity-50"
-                    >
-                      {aiTitleLoading ? <Spinner /> : "🔄"} Nouvelle suggestion
-                    </button>
-                  </div>
-                </div>
-              )}
+              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-gray-400"}`}>
+                {form.title.length}/50
+              </p>
             </SectionShell>
           )}
 
