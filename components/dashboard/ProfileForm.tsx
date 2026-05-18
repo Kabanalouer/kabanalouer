@@ -1,0 +1,449 @@
+"use client";
+
+import { useState, useRef } from "react";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+
+const inputCls =
+  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+
+function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={saving}
+      className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+    >
+      {saving ? "Enregistrement…" : saved ? "Enregistré ✓" : "Enregistrer"}
+    </button>
+  );
+}
+
+function Toggle({ checked, onChange, label, description }: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  description?: string;
+}) {
+  return (
+    <label className="flex items-start justify-between gap-4 cursor-pointer group">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900">{label}</p>
+        {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={[
+          "relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5",
+          checked ? "bg-primary" : "bg-gray-200",
+        ].join(" ")}
+      >
+        <span
+          className={[
+            "absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform",
+            checked ? "translate-x-5" : "translate-x-0",
+          ].join(" ")}
+        />
+      </button>
+    </label>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
+      <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function ErrorMsg({ msg }: { msg: string }) {
+  return msg ? <p className="text-sm text-red-500">{msg}</p> : null;
+}
+
+export default function ProfileForm({
+  userId,
+  email,
+  initialName,
+  initialAvatarUrl,
+  initialPhone,
+  initialNotifPrefs,
+}: {
+  userId: string;
+  email: string;
+  initialName: string;
+  initialAvatarUrl: string | null;
+  initialPhone: string;
+  initialNotifPrefs: Record<string, boolean>;
+}) {
+  const supabase = createClient();
+
+  // ── Personal info ────────────────────────────────────────────────────────────
+  const nameParts = initialName.trim().split(/\s+/);
+  const [firstName, setFirstName] = useState(nameParts[0] ?? "");
+  const [lastName, setLastName] = useState(nameParts.slice(1).join(" "));
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [infoSaving, setInfoSaving] = useState(false);
+  const [infoSaved, setInfoSaved] = useState(false);
+  const [infoError, setInfoError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadAvatar = async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) { setInfoError("L'image dépasse 5 Mo."); return; }
+    setAvatarUploading(true);
+    setInfoError("");
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${userId}/avatar.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { cacheControl: "3600", upsert: true });
+    if (error) { setInfoError("Erreur lors de l'upload de la photo."); setAvatarUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(data.path);
+    const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+    await supabase.from("users").update({ avatar_url: urlData.publicUrl }).eq("id", userId);
+    setAvatarUrl(newUrl);
+    setAvatarUploading(false);
+  };
+
+  const deleteAvatar = async () => {
+    if (!avatarUrl) return;
+    const cleanUrl = avatarUrl.split("?")[0];
+    const path = cleanUrl.split("/avatars/")[1];
+    if (path) await supabase.storage.from("avatars").remove([path]);
+    await supabase.from("users").update({ avatar_url: null }).eq("id", userId);
+    setAvatarUrl(null);
+  };
+
+  const saveInfo = async () => {
+    setInfoSaving(true);
+    setInfoError("");
+    const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+    const { error } = await supabase.from("users").update({ name }).eq("id", userId);
+    setInfoSaving(false);
+    if (error) setInfoError("Erreur lors de l'enregistrement.");
+    else { setInfoSaved(true); setTimeout(() => setInfoSaved(false), 2500); }
+  };
+
+  // ── Contact ──────────────────────────────────────────────────────────────────
+  const [phone, setPhone] = useState(initialPhone);
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactSaved, setContactSaved] = useState(false);
+  const [contactError, setContactError] = useState("");
+
+  const saveContact = async () => {
+    setContactSaving(true);
+    setContactError("");
+    const { error } = await supabase.from("users").update({ phone: phone.trim() || null }).eq("id", userId);
+    setContactSaving(false);
+    if (error) setContactError("Erreur lors de l'enregistrement.");
+    else { setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); }
+  };
+
+  // ── Security ─────────────────────────────────────────────────────────────────
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSaved, setPwdSaved] = useState(false);
+  const [pwdError, setPwdError] = useState("");
+
+  const changePassword = async () => {
+    setPwdError("");
+    if (!currentPassword) { setPwdError("Entrez votre mot de passe actuel."); return; }
+    if (newPassword.length < 8) { setPwdError("Le nouveau mot de passe doit faire au moins 8 caractères."); return; }
+    if (newPassword !== confirmPassword) { setPwdError("Les mots de passe ne correspondent pas."); return; }
+    setPwdSaving(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (signInError) { setPwdError("Mot de passe actuel incorrect."); setPwdSaving(false); return; }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPwdSaving(false);
+    if (error) setPwdError(error.message);
+    else {
+      setPwdSaved(true);
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      setTimeout(() => setPwdSaved(false), 2500);
+    }
+  };
+
+  // ── Notifications ────────────────────────────────────────────────────────────
+  const [notifMessages, setNotifMessages] = useState(initialNotifPrefs.notif_messages ?? true);
+  const [notifFavorites, setNotifFavorites] = useState(initialNotifPrefs.notif_favorites ?? false);
+  const [notifMonthly, setNotifMonthly] = useState(initialNotifPrefs.notif_monthly_report ?? false);
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [notifSaved, setNotifSaved] = useState(false);
+
+  const saveNotifs = async () => {
+    setNotifSaving(true);
+    await supabase.from("users").update({
+      notifications_prefs: {
+        notif_messages: notifMessages,
+        notif_favorites: notifFavorites,
+        notif_monthly_report: notifMonthly,
+      },
+    }).eq("id", userId);
+    setNotifSaving(false);
+    setNotifSaved(true);
+    setTimeout(() => setNotifSaved(false), 2500);
+  };
+
+  // ── Danger zone ──────────────────────────────────────────────────────────────
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivated, setDeactivated] = useState(false);
+
+  const deactivateAccount = async () => {
+    setDeactivating(true);
+    await supabase.from("listings").update({ is_published: false }).eq("host_id", userId);
+    setDeactivating(false);
+    setShowDeactivateConfirm(false);
+    setDeactivated(true);
+  };
+
+  const initial = (firstName[0] ?? lastName[0] ?? "?").toUpperCase();
+
+  return (
+    <div className="space-y-6">
+
+      {/* ── Informations personnelles ──────────────────────────────────────── */}
+      <Section title="Informations personnelles">
+        {/* Avatar */}
+        <div className="flex items-center gap-5">
+          <div className="relative w-20 h-20 shrink-0">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt="Photo de profil"
+                fill
+                className="rounded-full object-cover"
+                sizes="80px"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-white font-bold text-2xl">{initial}</span>
+              </div>
+            )}
+            {avatarUploading && (
+              <div className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarUploading}
+              className="text-sm font-medium text-primary hover:text-primary-dark transition-colors disabled:opacity-50"
+            >
+              {avatarUrl ? "Changer la photo" : "Ajouter une photo"}
+            </button>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={deleteAvatar}
+                className="text-sm text-gray-400 hover:text-red-500 transition-colors"
+              >
+                Supprimer la photo
+              </button>
+            )}
+            <p className="text-xs text-gray-400">JPG, PNG, WebP · Max 5 Mo</p>
+          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className={inputCls}
+              placeholder="Jean"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className={inputCls}
+              placeholder="Tremblay"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <SaveButton saving={infoSaving} saved={infoSaved} onClick={saveInfo} />
+          <ErrorMsg msg={infoError} />
+        </div>
+      </Section>
+
+      {/* ── Coordonnées ───────────────────────────────────────────────────── */}
+      <Section title="Coordonnées">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-500 cursor-default focus:outline-none"
+          />
+          <p className="text-xs text-gray-400 mt-1">L'adresse email ne peut pas être modifiée ici.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Numéro de téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className={inputCls}
+            placeholder="+1 (418) 555-0100"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <SaveButton saving={contactSaving} saved={contactSaved} onClick={saveContact} />
+          <ErrorMsg msg={contactError} />
+        </div>
+      </Section>
+
+      {/* ── Sécurité ──────────────────────────────────────────────────────── */}
+      <Section title="Sécurité">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe actuel</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className={inputCls}
+            autoComplete="current-password"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className={inputCls}
+            autoComplete="new-password"
+          />
+          <p className="text-xs text-gray-400 mt-1">Minimum 8 caractères.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le nouveau mot de passe</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={inputCls}
+            autoComplete="new-password"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={changePassword}
+            disabled={pwdSaving}
+            className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+          >
+            {pwdSaving ? "Modification…" : pwdSaved ? "Mot de passe modifié ✓" : "Modifier le mot de passe"}
+          </button>
+          <ErrorMsg msg={pwdError} />
+        </div>
+      </Section>
+
+      {/* ── Préférences de notification ────────────────────────────────────── */}
+      <Section title="Préférences de notification">
+        <div className="space-y-5">
+          <Toggle
+            checked={notifMessages}
+            onChange={setNotifMessages}
+            label="Nouveaux messages"
+            description="Recevoir un email quand un voyageur vous envoie un message"
+          />
+          <Toggle
+            checked={notifFavorites}
+            onChange={setNotifFavorites}
+            label="Ajouts en favori"
+            description="Recevoir un email quand un voyageur ajoute votre chalet en favori"
+          />
+          <Toggle
+            checked={notifMonthly}
+            onChange={setNotifMonthly}
+            label="Rapport mensuel"
+            description="Recevoir un résumé mensuel de l'activité de vos annonces"
+          />
+        </div>
+        <div className="pt-2">
+          <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} />
+        </div>
+      </Section>
+
+      {/* ── Zone de danger ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-red-100 p-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Zone de danger</h2>
+        <p className="text-sm text-gray-500 mb-5">
+          Ces actions sont irréversibles. Agissez avec précaution.
+        </p>
+
+        {deactivated ? (
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700 font-medium">
+            Tous vos chalets ont été dépubliés. Contactez-nous pour réactiver votre compte.
+          </div>
+        ) : !showDeactivateConfirm ? (
+          <button
+            type="button"
+            onClick={() => setShowDeactivateConfirm(true)}
+            className="border border-red-300 text-red-600 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 transition-colors"
+          >
+            Désactiver mon compte
+          </button>
+        ) : (
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-semibold text-red-700">Confirmer la désactivation ?</p>
+            <p className="text-sm text-red-600">
+              Tous vos chalets seront dépubliés immédiatement et n&apos;apparaîtront plus dans les résultats de recherche.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={deactivateAccount}
+                disabled={deactivating}
+                className="bg-red-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deactivating ? "En cours…" : "Oui, désactiver"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeactivateConfirm(false)}
+                className="border border-gray-200 text-gray-600 px-5 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

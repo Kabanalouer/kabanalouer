@@ -256,7 +256,7 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard">Mon profil</DropdownLink>
+                    <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
                     <DropdownLink href="/dashboard/subscription">Abonnement</DropdownLink>
                     <DropdownLink href="/dashboard/listings/new">Créer une annonce</DropdownLink>
                     <button
@@ -342,7 +342,7 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard">Mon profil</DropdownLink>
+                    <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
                     <Link
                       href="/messages"
                       className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -402,7 +402,7 @@ export default function Navbar() {
                   Mode hôte
                 </button>
               )}
-              <Link href="/dashboard" className="text-gray-700 font-medium">Mon profil</Link>
+              <Link href="/dashboard/profile" className="text-gray-700 font-medium">Mon profil</Link>
               <Link href="/messages" className="text-gray-700 font-medium flex items-center gap-2">
                 Messages
                 {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500" />}
