@@ -67,7 +67,7 @@ const SECTIONS: Array<{
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_low > 0 },
-  { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: () => true },
+  { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
 ];
 
 // Fields saved per section
@@ -147,6 +147,11 @@ export default function EditListingForm({
     const fields = SECTION_FIELDS[activeSection];
     if (!fields.length) return;
 
+    if (activeSection === "infos" && form.citq_number.length !== 6) {
+      setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
+      return;
+    }
+
     setSaving(true);
     setSaveError("");
 
@@ -173,6 +178,12 @@ export default function EditListingForm({
   const handleTogglePublish = async () => {
     setTogglingPublish(true);
     const next = !isPublished;
+    if (next && form.citq_number.length !== 6) {
+      setActiveSection("infos");
+      setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
+      setTogglingPublish(false);
+      return;
+    }
     const { error } = await supabase
       .from("listings")
       .update({ is_published: next })
@@ -454,17 +465,15 @@ export default function EditListingForm({
             <SectionShell title="Informations générales" emoji="ℹ️">
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Numéro CITQ (optionnel)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Numéro CITQ *</label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={form.citq_number}
-                    onChange={(e) => set("citq_number", e.target.value)}
+                    onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
                     className={inputCls}
                     placeholder="ex. 123456"
                   />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Numéro de classification délivré par la Corporation de l&apos;industrie touristique du Québec (CITQ). Optionnel.
-                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

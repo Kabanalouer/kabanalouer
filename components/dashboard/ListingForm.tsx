@@ -107,6 +107,10 @@ export default function ListingForm({
       setSaveError("La région et le titre sont requis.");
       return;
     }
+    if (form.citq_number.length !== 6) {
+      setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
+      return;
+    }
     setSaving(true);
     setSaveError("");
 
@@ -301,17 +305,15 @@ export default function ListingForm({
         <FormSection title="Informations générales" step={6}>
           <div className="space-y-5">
             <div>
-              <Label>Numéro CITQ (optionnel)</Label>
+              <Label>Numéro CITQ *</Label>
               <input
                 type="text"
+                inputMode="numeric"
                 value={form.citq_number}
-                onChange={(e) => set("citq_number", e.target.value)}
+                onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
                 className={inputCls}
                 placeholder="ex. 123456"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                Numéro de classification délivré par la Corporation de l&apos;industrie touristique du Québec (CITQ). Optionnel.
-              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
