@@ -36,6 +36,9 @@ type FormState = {
   price_peak: number;
   amenities: string[];
   photos: PhotoItem[];
+  citq_number: string;
+  checkin_time: string;
+  checkout_time: string;
 };
 
 const INITIAL: FormState = {
@@ -51,7 +54,22 @@ const INITIAL: FormState = {
   price_peak: 0,
   amenities: [],
   photos: [],
+  citq_number: "",
+  checkin_time: "16:00",
+  checkout_time: "11:00",
 };
+
+function timeSlots(startH: number, endH: number): string[] {
+  const slots: string[] = [];
+  for (let h = startH; h <= endH; h++) {
+    slots.push(`${String(h).padStart(2, "0")}:00`);
+    if (h < endH) slots.push(`${String(h).padStart(2, "0")}:30`);
+  }
+  return slots;
+}
+
+const CHECKIN_SLOTS = timeSlots(8, 23);
+const CHECKOUT_SLOTS = timeSlots(7, 18);
 
 export default function ListingForm({
   userId,
@@ -105,6 +123,9 @@ export default function ListingForm({
       price_peak: form.price_peak,
       amenities: form.amenities,
       photos: form.photos,
+      citq_number: form.citq_number || null,
+      checkin_time: form.checkin_time,
+      checkout_time: form.checkout_time,
       is_published: publish,
     };
 
@@ -274,6 +295,51 @@ export default function ListingForm({
           <p className="text-xs text-gray-400 mt-2">
             Ces tarifs sont indicatifs. Vous les communiquerez directement aux voyageurs.
           </p>
+        </FormSection>
+
+        {/* Section 6: Informations générales */}
+        <FormSection title="Informations générales" step={6}>
+          <div className="space-y-5">
+            <div>
+              <Label>Numéro CITQ (optionnel)</Label>
+              <input
+                type="text"
+                value={form.citq_number}
+                onChange={(e) => set("citq_number", e.target.value)}
+                className={inputCls}
+                placeholder="ex. 123456"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Numéro de classification délivré par la Corporation de l&apos;industrie touristique du Québec (CITQ). Optionnel.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Heure du check-in</Label>
+                <select
+                  value={form.checkin_time}
+                  onChange={(e) => set("checkin_time", e.target.value)}
+                  className={inputCls}
+                >
+                  {CHECKIN_SLOTS.map((t) => (
+                    <option key={t} value={t}>{t.replace(":", "h")}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>Heure du check-out</Label>
+                <select
+                  value={form.checkout_time}
+                  onChange={(e) => set("checkout_time", e.target.value)}
+                  className={inputCls}
+                >
+                  {CHECKOUT_SLOTS.map((t) => (
+                    <option key={t} value={t}>{t.replace(":", "h")}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </FormSection>
 
         {/* Submit */}

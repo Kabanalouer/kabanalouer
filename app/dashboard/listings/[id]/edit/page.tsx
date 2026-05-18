@@ -51,6 +51,9 @@ export default async function EditListingPage({ params }: Props) {
           price_peak: listing.price_peak ?? 0,
           amenities: Array.isArray(listing.amenities) ? listing.amenities : [],
           photos: normalizePhotos(listing.photos),
+          citq_number: (listing.citq_number as string | null) ?? "",
+          checkin_time: (listing.checkin_time as string | null) ?? "16:00",
+          checkout_time: (listing.checkout_time as string | null) ?? "11:00",
         }}
       />
     </div>
