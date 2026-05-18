@@ -10,6 +10,7 @@ import AvailabilityView from "@/components/chalets/AvailabilityView";
 import ListingMap from "@/components/chalets/ListingMap";
 import ExpandableText from "@/components/chalets/ExpandableText";
 import RoomsCarousel from "@/components/chalets/RoomsCarousel";
+import PhotoGallery from "@/components/chalets/PhotoGallery";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -170,16 +171,7 @@ export default async function ListingPage({ params }: Props) {
         </div>
 
         {/* ── Photo gallery ── */}
-        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-2xl mb-8">
-          <div className={`relative overflow-hidden ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
-            <Image src={photos[0]} alt={listing.title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
-          </div>
-          {photos.slice(1, 5).map((p, i) => (
-            <div key={i} className="relative overflow-hidden bg-gray-100">
-              <Image src={p} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
-            </div>
-          ))}
-        </div>
+        <PhotoGallery photos={photos} title={listing.title} />
 
         {/* ── Two-column layout ── */}
         <div className="flex gap-10 items-start">
