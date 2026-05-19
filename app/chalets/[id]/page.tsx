@@ -355,50 +355,6 @@ export default async function ListingPage({ params }: Props) {
               </>
             )}
 
-            {/* Practical info */}
-            <>
-              <hr className="border-gray-100" />
-              <div>
-                <h2 className="font-semibold text-gray-900 mb-4">Informations pratiques</h2>
-                <div className="space-y-2 text-sm text-gray-700">
-                  {listing.checkin_time && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🔑</span>
-                      <span>Arrivée : à partir de {(listing.checkin_time as string).replace(":", "h")}</span>
-                    </div>
-                  )}
-                  {listing.checkout_time && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🧳</span>
-                      <span>Départ : avant {(listing.checkout_time as string).replace(":", "h")}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{listing.checkin_type === "in_person" ? "🤝" : "🔑"}</span>
-                    <span>
-                      {listing.checkin_type === "in_person"
-                        ? "Accueil sur place — Remise des clés en personne à l'arrivée"
-                        : "Arrivée autonome — Accès par code numérique ou boîte à clés"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🐾</span>
-                    <span>{listing.pets_allowed ? "Animaux acceptés" : "Animaux non acceptés"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{listing.smoking_allowed ? "🚬" : "🚭"}</span>
-                    <span>{listing.smoking_allowed ? "Fumeurs acceptés" : "Fumeurs non acceptés"}</span>
-                  </div>
-                  {listing.citq_number && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🏷️</span>
-                      <span>Numéro CITQ : {listing.citq_number as string}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-
             {/* Availability */}
             <hr className="border-gray-100" />
             <div>
@@ -485,6 +441,50 @@ export default async function ListingPage({ params }: Props) {
                 <p className="text-gray-400 text-sm">Nouveau chalet : soyez les premiers à laisser votre avis.</p>
               )}
             </div>
+
+            {/* Practical info */}
+            <>
+              <hr className="border-gray-100" />
+              <div>
+                <h2 className="font-semibold text-gray-900 mb-4">Informations pratiques</h2>
+                <div className="space-y-2 text-sm text-gray-700">
+                  {listing.checkin_time && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🔑</span>
+                      <span>Arrivée : à partir de {(listing.checkin_time as string).replace(":", "h")}</span>
+                    </div>
+                  )}
+                  {listing.checkout_time && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🧳</span>
+                      <span>Départ : avant {(listing.checkout_time as string).replace(":", "h")}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{listing.checkin_type === "in_person" ? "🤝" : "🔑"}</span>
+                    <span>
+                      {listing.checkin_type === "in_person"
+                        ? "Accueil sur place — Remise des clés en personne à l'arrivée"
+                        : "Arrivée autonome — Accès par code numérique ou boîte à clés"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🐾</span>
+                    <span>{listing.pets_allowed ? "Animaux acceptés" : "Animaux non acceptés"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{listing.smoking_allowed ? "🚬" : "🚭"}</span>
+                    <span>{listing.smoking_allowed ? "Fumeurs acceptés" : "Fumeurs non acceptés"}</span>
+                  </div>
+                  {listing.citq_number && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🏷️</span>
+                      <span>Numéro CITQ : {listing.citq_number as string}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           </div>
 
           {/* ── Right column — Pricing card ── */}
