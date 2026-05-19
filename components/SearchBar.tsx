@@ -132,6 +132,7 @@ interface SearchBarProps {
   initialCheckin?: string;
   initialCheckout?: string;
   initialGuests?: string;
+  iconOnly?: boolean;
 }
 
 export default function SearchBar({
@@ -140,6 +141,7 @@ export default function SearchBar({
   initialCheckin,
   initialCheckout,
   initialGuests,
+  iconOnly = false,
 }: SearchBarProps = {}) {
   const router = useRouter();
   const now = new Date();
@@ -523,11 +525,12 @@ export default function SearchBar({
       <button
         onClick={handleSearch}
         aria-label="Rechercher"
-        className="bg-primary text-white p-3.5 rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center shrink-0 ml-4"
+        className={`bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center shrink-0 ml-4 ${iconOnly ? "p-3.5" : "px-5 py-3 gap-2 font-semibold"}`}
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
+        {!iconOnly && <span>Rechercher</span>}
       </button>
     </div>
   );

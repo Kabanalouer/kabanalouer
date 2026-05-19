@@ -142,6 +142,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
           initialCheckin={checkin}
           initialCheckout={checkout}
           initialGuests={initialGuests}
+          iconOnly
         />
       </div>
 
