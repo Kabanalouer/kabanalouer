@@ -264,8 +264,8 @@ export default function SearchBar() {
     <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
-      <div ref={destRef} className="relative flex-1 min-w-[180px]">
-        <div className="flex items-center gap-3 px-4 py-2">
+      <div ref={destRef} className="relative flex-1 min-w-[180px] flex">
+        <div className="flex-1 flex items-center gap-3 px-4 py-2">
           {/* Pin icon */}
           <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
