@@ -150,6 +150,8 @@ export default function SearchBar() {
 
   // ── Guests state ──
   const [guests, setGuests] = useState("");
+  const [guestsOpen, setGuestsOpen] = useState(false);
+  const guestsRef = useRef<HTMLDivElement>(null);
 
   // Fetch cities from DB on mount
   useEffect(() => {
@@ -184,6 +186,16 @@ export default function SearchBar() {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [calendarOpen]);
+
+  // Close guests dropdown on outside click
+  useEffect(() => {
+    if (!guestsOpen) return;
+    const h = (e: MouseEvent) => {
+      if (!guestsRef.current?.contains(e.target as Node)) setGuestsOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [guestsOpen]);
 
   // Autocomplete suggestions based on current query
   const suggestions = useMemo<DestItem[]>(() => {
@@ -446,28 +458,51 @@ export default function SearchBar() {
       <div className="hidden sm:block w-px bg-gray-100 self-stretch" />
 
       {/* ── Field 3: Voyageurs ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-4 py-2 min-w-[150px]">
+      <div ref={guestsRef} className="relative flex items-center gap-3 px-4 py-2 min-w-[150px]">
         <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <select
-          value={guests}
-          onChange={(e) => setGuests(e.target.value)}
-          className={`bg-transparent outline-none text-sm appearance-none cursor-pointer flex-1 ${guests ? "text-gray-700" : "text-gray-400"}`}
+        <button
+          onClick={() => { setGuestsOpen((o) => !o); setDestOpen(false); setCalendarOpen(false); }}
+          className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer ${guests ? "text-gray-700" : "text-gray-400"}`}
         >
-          <option value="">Nombre de voyageurs</option>
-          {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={String(n)}>{n} voyageur{n > 1 ? "s" : ""}</option>
-          ))}
-          <option value="25+">25 voyageurs et +</option>
-        </select>
+          {guests
+            ? guests === "25+" ? "25 voyageurs et +" : `${guests} voyageur${parseInt(guests) > 1 ? "s" : ""}`
+            : "Nombre de voyageurs"}
+        </button>
+
+        {guestsOpen && (
+          <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-[9999] w-[210px] max-h-[220px] overflow-y-auto">
+            <button
+              onMouseDown={(e) => { e.preventDefault(); setGuests(""); setGuestsOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-50 transition-colors"
+            >
+              Nombre de voyageurs
+            </button>
+            {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                onMouseDown={(e) => { e.preventDefault(); setGuests(String(n)); setGuestsOpen(false); }}
+                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors ${guests === String(n) ? "text-primary font-semibold" : "text-gray-800"}`}
+              >
+                {n} voyageur{n > 1 ? "s" : ""}
+              </button>
+            ))}
+            <button
+              onMouseDown={(e) => { e.preventDefault(); setGuests("25+"); setGuestsOpen(false); }}
+              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors ${guests === "25+" ? "text-primary font-semibold" : "text-gray-800"}`}
+            >
+              25 voyageurs et +
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Search button ─────────────────────────────────────────────────── */}
       <button
         onClick={handleSearch}
-        className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 shrink-0 ml-2"
+        className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 shrink-0 ml-4"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
