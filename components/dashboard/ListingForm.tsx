@@ -41,6 +41,7 @@ type FormState = {
   checkout_time: string;
   pets_allowed: boolean;
   smoking_allowed: boolean;
+  checkin_type: "autonomous" | "in_person";
 };
 
 const INITIAL: FormState = {
@@ -61,6 +62,7 @@ const INITIAL: FormState = {
   checkout_time: "11:00",
   pets_allowed: false,
   smoking_allowed: false,
+  checkin_type: "autonomous",
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -136,6 +138,7 @@ export default function ListingForm({
       checkout_time: form.checkout_time,
       pets_allowed: form.pets_allowed,
       smoking_allowed: form.smoking_allowed,
+      checkin_type: form.checkin_type,
       is_published: publish,
     };
 
@@ -347,6 +350,10 @@ export default function ListingForm({
                 </select>
               </div>
             </div>
+            <div>
+              <Label>Type d&apos;arrivée</Label>
+              <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Animaux acceptés</Label>
@@ -419,6 +426,25 @@ function Label({ children }: { children: React.ReactNode }) {
     <label className="block text-sm font-medium text-gray-700 mb-1.5">
       {children}
     </label>
+  );
+}
+
+function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void }) {
+  const options = [
+    { id: "autonomous" as const, emoji: "🔑", title: "Arrivée autonome", desc: "Accès par code numérique ou boîte à clés" },
+    { id: "in_person" as const,  emoji: "🤝", title: "Accueil sur place",  desc: "Remise des clés en personne à l'arrivée" },
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {options.map((o) => (
+        <button key={o.id} type="button" onClick={() => onChange(o.id)}
+          className={`text-left p-4 rounded-xl border-2 transition-colors ${value === o.id ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+          <span className="text-xl block mb-1">{o.emoji}</span>
+          <p className="font-semibold text-sm text-gray-900">{o.title}</p>
+          <p className="text-xs text-gray-500 mt-0.5 leading-snug">{o.desc}</p>
+        </button>
+      ))}
+    </div>
   );
 }
 

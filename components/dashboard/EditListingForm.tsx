@@ -28,6 +28,7 @@ type FormState = {
   checkout_time: string;
   pets_allowed: boolean;
   smoking_allowed: boolean;
+  checkin_type: "autonomous" | "in_person";
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -83,7 +84,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low"],
-  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "checkin_type"],
 };
 
 const inputCls =
@@ -126,6 +127,7 @@ export default function EditListingForm({
     checkout_time: "11:00",
     pets_allowed: false,
     smoking_allowed: false,
+    checkin_type: "autonomous" as const,
     ...initialData,
   });
 
@@ -505,6 +507,10 @@ export default function EditListingForm({
                     </select>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Type d&apos;arrivée</label>
+                  <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Animaux acceptés</label>
@@ -592,6 +598,25 @@ function Spinner() {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
+  );
+}
+
+function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void }) {
+  const options = [
+    { id: "autonomous" as const, emoji: "🔑", title: "Arrivée autonome", desc: "Accès par code numérique ou boîte à clés" },
+    { id: "in_person" as const,  emoji: "🤝", title: "Accueil sur place",  desc: "Remise des clés en personne à l'arrivée" },
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {options.map((o) => (
+        <button key={o.id} type="button" onClick={() => onChange(o.id)}
+          className={`text-left p-4 rounded-xl border-2 transition-colors ${value === o.id ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+          <span className="text-xl block mb-1">{o.emoji}</span>
+          <p className="font-semibold text-sm text-gray-900">{o.title}</p>
+          <p className="text-xs text-gray-500 mt-0.5 leading-snug">{o.desc}</p>
+        </button>
+      ))}
+    </div>
   );
 }
 

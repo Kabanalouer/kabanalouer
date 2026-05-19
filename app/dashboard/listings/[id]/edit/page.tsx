@@ -56,6 +56,7 @@ export default async function EditListingPage({ params }: Props) {
           checkout_time: (listing.checkout_time as string | null) ?? "11:00",
           pets_allowed: (listing.pets_allowed as boolean | null) ?? false,
           smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
+          checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
         }}
       />
     </div>

@@ -264,6 +264,14 @@ export default async function ListingPage({ params }: Props) {
                     </div>
                   )}
                   <div className="flex items-center gap-2">
+                    <span className="text-base">{listing.checkin_type === "in_person" ? "🤝" : "🔑"}</span>
+                    <span>
+                      {listing.checkin_type === "in_person"
+                        ? "Accueil sur place — Remise des clés en personne à l'arrivée"
+                        : "Arrivée autonome — Accès par code numérique ou boîte à clés"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <span className="text-base">🐾</span>
                     <span>{listing.pets_allowed ? "Animaux acceptés" : "Animaux non acceptés"}</span>
                   </div>
