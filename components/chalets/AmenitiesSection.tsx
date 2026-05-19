@@ -6,10 +6,10 @@ import { AMENITIES, AMENITY_EMOJI } from "@/lib/amenities";
 export default function AmenitiesSection({ amenities }: { amenities: string[] }) {
   const [expanded, setExpanded] = useState(false);
 
-  // Sort by canonical list order so top 3 = most important per official ordering
-  const sorted = [...amenities].sort(
-    (a, b) => AMENITIES.indexOf(a as never) - AMENITIES.indexOf(b as never)
-  );
+  // Keep only items in the canonical list, then sort by official order
+  const sorted = amenities
+    .filter((a) => (AMENITIES as readonly string[]).includes(a))
+    .sort((a, b) => AMENITIES.indexOf(a as never) - AMENITIES.indexOf(b as never));
 
   const top3 = sorted.slice(0, 3);
   const hasMore = sorted.length > 3;
