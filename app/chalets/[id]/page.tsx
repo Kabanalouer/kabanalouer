@@ -508,14 +508,6 @@ export default async function ListingPage({ params }: Props) {
                 )}
               </div>
 
-              {/* Season breakdown */}
-              {!listing.price_on_request && (listing.price_low > 0 || listing.price_high > 0 || listing.price_peak > 0) && (
-                <div className="space-y-1.5 text-sm mb-5 bg-gray-50 rounded-xl p-3">
-                  {listing.price_low > 0 && <SeasonRow label="Basse saison" price={listing.price_low} />}
-                  {listing.price_high > 0 && <SeasonRow label="Haute saison" price={listing.price_high} />}
-                  {listing.price_peak > 0 && <SeasonRow label="Fêtes / Vacances" price={listing.price_peak} />}
-                </div>
-              )}
 
               {/* Capacity */}
               <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
@@ -568,11 +560,3 @@ function hostSince(createdAt: string): string {
   return `Hôte depuis ${years} an${years > 1 ? "s" : ""}`;
 }
 
-function SeasonRow({ label, price }: { label: string; price: number }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-semibold text-gray-900">{price} $</span>
-    </div>
-  );
-}
