@@ -277,6 +277,21 @@ export default async function ListingPage({ params }: Props) {
               </div>
             )}
 
+            {/* Amenities — Caractéristiques du chalet */}
+            {amenities.length > 0 && (
+              <div>
+                <h2 className="font-semibold text-gray-900 mb-4">Caractéristiques du chalet</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {amenities.map((a) => (
+                    <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="text-base">{AMENITY_EMOJI[a] ?? "✓"}</span>
+                      {a}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <hr className="border-gray-100" />
 
             {/* Description */}
@@ -303,24 +318,6 @@ export default async function ListingPage({ params }: Props) {
                       photos: Array.isArray(r.photos) ? r.photos as string[] : [],
                     }))}
                   />
-                </div>
-              </>
-            )}
-
-            {/* Amenities */}
-            {amenities.length > 0 && (
-              <>
-                <hr className="border-gray-100" />
-                <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Équipements</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {amenities.map((a) => (
-                      <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
-                        <span className="text-base">{AMENITY_EMOJI[a] ?? "✓"}</span>
-                        {a}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </>
             )}
