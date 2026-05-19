@@ -1,44 +1,18 @@
 "use client";
 
 import { useState } from "react";
-
-const AMENITY_EMOJI: Record<string, string> = {
-  "Bord de l'eau":                              "🌊",
-  "Piscine intérieure":                         "🏊",
-  "Piscine extérieure":                         "🏊",
-  "Ski in / Ski out":                           "⛷️",
-  "Situé sur un resort":                        "🏔️",
-  "Spa":                                        "♨️",
-  "Sauna":                                      "🧖",
-  "Chalet en bois rond":                        "🪵",
-  "Foyer intérieur au bois":                    "🔥",
-  "Foyer extérieur (firepit)":                  "🔥",
-  "BBQ":                                        "🍖",
-  "Table de billard":                           "🎱",
-  "Babyfoot":                                   "⚽",
-  "Table de ping-pong":                         "🏓",
-  "Arcades":                                    "🕹️",
-  "Jeux de société":                            "🎲",
-  "Livres et Revues":                           "📚",
-  "Gym":                                        "💪",
-  "Wifi":                                       "📶",
-  "Espace de travail dédié (télétravail)":      "💻",
-  "Climatisation":                              "❄️",
-  "Télévision avec câble":                      "📺",
-  "Télévision intelligente":                    "📺",
-  "Système audio (musique)":                    "🎵",
-  "Cuisine complète avec vaisselle et chaudrons": "🍳",
-  "Literie et serviettes incluses":             "🛏️",
-  "Buanderie":                                  "👕",
-  "Terrasse":                                   "🪑",
-  "Module de jeux pour enfant":                 "🛝",
-  "Borne de recharge pour véhicule électrique": "⚡",
-};
+import { AMENITIES, AMENITY_EMOJI } from "@/lib/amenities";
 
 export default function AmenitiesSection({ amenities }: { amenities: string[] }) {
   const [expanded, setExpanded] = useState(false);
-  const top3 = amenities.slice(0, 3);
-  const hasMore = amenities.length > 3;
+
+  // Sort by canonical list order so top 3 = most important per official ordering
+  const sorted = [...amenities].sort(
+    (a, b) => AMENITIES.indexOf(a as never) - AMENITIES.indexOf(b as never)
+  );
+
+  const top3 = sorted.slice(0, 3);
+  const hasMore = sorted.length > 3;
 
   return (
     <div>
@@ -57,7 +31,7 @@ export default function AmenitiesSection({ amenities }: { amenities: string[] })
       {/* Full list (expanded) */}
       {hasMore && expanded && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-          {amenities.map((a) => (
+          {sorted.map((a) => (
             <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
               <span className="text-base">{AMENITY_EMOJI[a] ?? "✓"}</span>
               {a}
@@ -74,7 +48,7 @@ export default function AmenitiesSection({ amenities }: { amenities: string[] })
         >
           {expanded
             ? "Réduire ↑"
-            : `Voir toutes les caractéristiques (${amenities.length}) →`}
+            : `Voir toutes les caractéristiques (${sorted.length}) →`}
         </button>
       )}
     </div>
