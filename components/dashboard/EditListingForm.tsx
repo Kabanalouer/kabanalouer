@@ -31,6 +31,7 @@ type FormState = {
   smoking_allowed: boolean;
   checkin_type: "autonomous" | "in_person";
   nearby_activities: string[];
+  price_on_request: boolean;
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -73,7 +74,7 @@ const SECTIONS: Array<{
   { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
-  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_low > 0 },
+  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
 ];
 
@@ -88,7 +89,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   chambres:     [],
   calendrier:   [],
   localisation: [],
-  tarifs:       ["price_low"],
+  tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "checkin_type"],
 };
 
@@ -134,6 +135,7 @@ export default function EditListingForm({
     smoking_allowed: false,
     checkin_type: "autonomous" as const,
     nearby_activities: [],
+    price_on_request: false,
     ...initialData,
   });
 
@@ -458,28 +460,51 @@ export default function EditListingForm({
           {/* Section: Tarifs */}
           {activeSection === "tarifs" && (
             <SectionShell title="Tarifs" emoji="💰">
-              <div className="max-w-xs">
-                <Label>Prix à partir de ($/nuit)</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.price_low || ""}
-                    onChange={(e) => set("price_low", parseInt(e.target.value) || 0)}
-                    className={`${inputCls} pl-7`}
-                    placeholder="189"
-                  />
-                </div>
-                <p className="text-sm text-gray-400 mt-3 leading-relaxed">
-                  Ce prix sera affiché sur votre fiche publique. Vous communiquez le prix final directement avec le voyageur.
-                </p>
-                {form.price_low > 0 && (
-                  <div className="mt-4 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
-                    Aperçu : <span className="font-semibold text-gray-900">À partir de {form.price_low} $/nuit</span>
-                  </div>
-                )}
+              {/* Pricing mode cards */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {[
+                  { value: false, emoji: "💰", title: "À partir de", desc: "Affichez un prix de base sur votre fiche. Les voyageurs voient votre tarif minimum et vous contactent pour confirmer." },
+                  { value: true,  emoji: "✉️", title: "Sur demande",  desc: "Aucun prix affiché sur votre fiche. Les voyageurs vous contactent pour obtenir une soumission personnalisée." },
+                ].map((opt) => (
+                  <button key={String(opt.value)} type="button" onClick={() => set("price_on_request", opt.value)}
+                    className={`text-left p-4 rounded-xl border-2 transition-colors ${form.price_on_request === opt.value ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+                    <span className="text-xl block mb-1">{opt.emoji}</span>
+                    <p className="font-semibold text-sm text-gray-900">{opt.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">{opt.desc}</p>
+                  </button>
+                ))}
               </div>
+
+              {/* Conditional price field */}
+              {!form.price_on_request ? (
+                <div className="max-w-xs">
+                  <Label>Prix à partir de ($/nuit)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.price_low || ""}
+                      onChange={(e) => set("price_low", parseInt(e.target.value) || 0)}
+                      className={`${inputCls} pl-7`}
+                      placeholder="189"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-400 mt-3 leading-relaxed">
+                    Ce prix sera affiché sur votre fiche publique. Vous communiquez le prix final directement avec le voyageur.
+                  </p>
+                  {form.price_low > 0 && (
+                    <div className="mt-4 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+                      Aperçu : <span className="font-semibold text-gray-900">À partir de {form.price_low} $/nuit</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded-xl px-4 py-4 text-sm text-gray-600 leading-relaxed">
+                  Votre fiche affichera :{" "}
+                  <span className="font-semibold text-gray-900">«&nbsp;Prix sur demande — Contactez l&apos;hôte&nbsp;»</span>
+                </div>
+              )}
             </SectionShell>
           )}
 

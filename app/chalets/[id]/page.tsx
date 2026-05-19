@@ -492,7 +492,12 @@ export default async function ListingPage({ params }: Props) {
             <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
               {/* Price */}
               <div className="mb-4">
-                {listing.price_low > 0 ? (
+                {listing.price_on_request ? (
+                  <div>
+                    <span className="text-xl font-bold text-gray-900">Prix sur demande</span>
+                    <p className="text-xs text-gray-400 mt-1">Contactez l&apos;hôte pour obtenir une soumission personnalisée.</p>
+                  </div>
+                ) : listing.price_low > 0 ? (
                   <>
                     <p className="text-xs text-gray-400 mb-0.5">À partir de</p>
                     <span className="text-3xl font-bold text-gray-900">{listing.price_low} $</span>
@@ -504,7 +509,7 @@ export default async function ListingPage({ params }: Props) {
               </div>
 
               {/* Season breakdown */}
-              {(listing.price_low > 0 || listing.price_high > 0 || listing.price_peak > 0) && (
+              {!listing.price_on_request && (listing.price_low > 0 || listing.price_high > 0 || listing.price_peak > 0) && (
                 <div className="space-y-1.5 text-sm mb-5 bg-gray-50 rounded-xl p-3">
                   {listing.price_low > 0 && <SeasonRow label="Basse saison" price={listing.price_low} />}
                   {listing.price_high > 0 && <SeasonRow label="Haute saison" price={listing.price_high} />}
