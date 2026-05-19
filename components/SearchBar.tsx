@@ -469,7 +469,7 @@ export default function SearchBar() {
         >
           {guests
             ? guests === "25+" ? "25 voyageurs et +" : `${guests} voyageur${parseInt(guests) > 1 ? "s" : ""}`
-            : "Nombre de voyageurs"}
+            : "Voyageurs"}
         </button>
 
         {guestsOpen && (
@@ -478,7 +478,7 @@ export default function SearchBar() {
               onMouseDown={(e) => { e.preventDefault(); setGuests(""); setGuestsOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-50 transition-colors"
             >
-              Nombre de voyageurs
+              Voyageurs
             </button>
             {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
               <button
