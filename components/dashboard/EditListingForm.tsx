@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
+import NearbyActivitiesPicker from "./NearbyActivitiesPicker";
 import PhotoUpload from "./PhotoUpload";
 import RoomsSection from "./RoomsSection";
 import LocationSection from "./LocationSection";
@@ -29,6 +30,7 @@ type FormState = {
   pets_allowed: boolean;
   smoking_allowed: boolean;
   checkin_type: "autonomous" | "in_person";
+  nearby_activities: string[];
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -50,6 +52,7 @@ type SectionId =
   | "capacite"
   | "chambres"
   | "equipements"
+  | "proximite"
   | "calendrier"
   | "localisation"
   | "tarifs"
@@ -67,6 +70,7 @@ const SECTIONS: Array<{
   { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 },
   { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
   { id: "equipements",  label: "Équipements",          emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
+  { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_low > 0 },
@@ -80,6 +84,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   description:  ["description"],
   capacite:     ["capacity", "bedrooms", "bathrooms"],
   equipements:  ["amenities"],
+  proximite:    ["nearby_activities"],
   chambres:     [],
   calendrier:   [],
   localisation: [],
@@ -128,6 +133,7 @@ export default function EditListingForm({
     pets_allowed: false,
     smoking_allowed: false,
     checkin_type: "autonomous" as const,
+    nearby_activities: [],
     ...initialData,
   });
 
@@ -395,6 +401,17 @@ export default function EditListingForm({
               <AmenitiesPicker
                 selected={form.amenities}
                 onChange={(amenities) => set("amenities", amenities)}
+              />
+            </SectionShell>
+          )}
+
+          {/* Section: À proximité */}
+          {activeSection === "proximite" && (
+            <SectionShell title="À proximité" emoji="🗺️">
+              <p className="text-sm text-gray-400 mb-5">À moins de 30 minutes du chalet</p>
+              <NearbyActivitiesPicker
+                selected={form.nearby_activities}
+                onChange={(activities) => set("nearby_activities", activities)}
               />
             </SectionShell>
           )}

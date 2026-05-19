@@ -111,6 +111,64 @@ export default async function ListingPage({ params }: Props) {
   const photos = rawPhotos.length > 0 ? rawPhotos : [{ url: DEFAULT_PHOTO, caption: "" }];
 
   const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
+  const nearbyActivities: string[] = Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [];
+
+  const NEARBY_EMOJI: Record<string, string> = {
+    "Glissades d'eau / Parc aquatique":           "💦",
+    "Vélo de montagne":                           "🚵",
+    "Piste cyclable":                             "🚲",
+    "Randonnée pédestre":                         "🥾",
+    "Pêche":                                      "🎣",
+    "Accès à un lac":                             "🏞️",
+    "Accès à un lac avec embarcation à moteur":   "⛵",
+    "Plage":                                      "🏖️",
+    "Parcours arbre-en-arbre":                    "🌲",
+    "Tyrolienne":                                 "🪂",
+    "Paintball":                                  "🎯",
+    "Go Kart":                                    "🏎️",
+    "Cinéparc":                                   "🚗",
+    "Équitation":                                 "🐴",
+    "Golf":                                       "⛳",
+    "Escalade":                                   "🧗",
+    "Croisière / Excursion nautique":             "🚢",
+    "Ski alpin":                                  "⛷️",
+    "Motoneige":                                  "🏔️",
+    "Traîneau à chiens":                          "🐕",
+    "Sentiers de raquettes":                      "👣",
+    "Ski de fond":                                "🎿",
+    "Pêche sur glace":                            "🎣",
+    "Glissade sur tube":                          "🛷",
+    "Patinage / Hockey extérieur":                "⛸️",
+    "Fatbike":                                    "🚵",
+    "Cabane à sucre":                             "🍁",
+    "Magasinage (shopping)":                      "🛍️",
+    "Musée":                                      "🏛️",
+    "Restaurant / Bistro":                        "🍽️",
+    "Microbrasserie":                             "🍺",
+    "Spa nordique":                               "♨️",
+    "Casino":                                     "🎰",
+    "Cinéma":                                     "🎬",
+    "Village touristique":                        "🏘️",
+  };
+
+  const NEARBY_CATEGORIES: Record<string, string[]> = {
+    "Été": [
+      "Glissades d'eau / Parc aquatique", "Vélo de montagne", "Piste cyclable",
+      "Randonnée pédestre", "Pêche", "Accès à un lac",
+      "Accès à un lac avec embarcation à moteur", "Plage", "Parcours arbre-en-arbre",
+      "Tyrolienne", "Paintball", "Go Kart", "Cinéparc", "Équitation",
+      "Golf", "Escalade", "Croisière / Excursion nautique",
+    ],
+    "Hiver": [
+      "Ski alpin", "Motoneige", "Traîneau à chiens", "Sentiers de raquettes",
+      "Ski de fond", "Pêche sur glace", "Glissade sur tube", "Équitation",
+      "Patinage / Hockey extérieur", "Fatbike",
+    ],
+    "4 saisons": [
+      "Cabane à sucre", "Magasinage (shopping)", "Musée", "Restaurant / Bistro",
+      "Microbrasserie", "Spa nordique", "Casino", "Cinéma", "Village touristique",
+    ],
+  };
   const avgRating =
     reviews && reviews.length > 0
       ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
@@ -262,6 +320,36 @@ export default async function ListingPage({ params }: Props) {
                         {a}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Nearby activities */}
+            {nearbyActivities.length > 0 && (
+              <>
+                <hr className="border-gray-100" />
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-1">À proximité</h2>
+                  <p className="text-sm text-gray-400 mb-4">À moins de 30 minutes du chalet</p>
+                  <div className="space-y-5">
+                    {Object.entries(NEARBY_CATEGORIES).map(([cat, items]) => {
+                      const catItems = items.filter((i) => nearbyActivities.includes(i));
+                      if (catItems.length === 0) return null;
+                      return (
+                        <div key={cat}>
+                          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{cat}</h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {catItems.map((a) => (
+                              <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
+                                <span className="text-base">{NEARBY_EMOJI[a] ?? "✓"}</span>
+                                {a}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </>

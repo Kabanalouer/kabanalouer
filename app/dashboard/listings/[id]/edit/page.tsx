@@ -57,6 +57,7 @@ export default async function EditListingPage({ params }: Props) {
           pets_allowed: (listing.pets_allowed as boolean | null) ?? false,
           smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
           checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
+          nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
         }}
       />
     </div>
