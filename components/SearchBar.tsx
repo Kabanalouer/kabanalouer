@@ -126,22 +126,42 @@ function CalendarMonth({
 
 // ── SearchBar ────────────────────────────────────────────────────────────────
 
-export default function SearchBar() {
+interface SearchBarProps {
+  initialRegion?: string;
+  initialCity?: string;
+  initialCheckin?: string;
+  initialCheckout?: string;
+  initialGuests?: string;
+}
+
+export default function SearchBar({
+  initialRegion,
+  initialCity,
+  initialCheckin,
+  initialCheckout,
+  initialGuests,
+}: SearchBarProps = {}) {
   const router = useRouter();
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
+  const initDest: DestItem | null = initialRegion
+    ? { label: initialRegion, type: "region", value: initialRegion }
+    : initialCity
+    ? { label: initialCity, type: "city", value: initialCity }
+    : null;
+
   // ── Destination state ──
-  const [destQuery, setDestQuery] = useState("");
-  const [destSelected, setDestSelected] = useState<DestItem | null>(null);
+  const [destQuery, setDestQuery] = useState(initDest?.label ?? "");
+  const [destSelected, setDestSelected] = useState<DestItem | null>(initDest);
   const [destOpen, setDestOpen] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<DestItem[]>([]);
   const destRef = useRef<HTMLDivElement>(null);
 
   // ── Calendar state ──
-  const [checkin, setCheckin] = useState("");
-  const [checkout, setCheckout] = useState("");
+  const [checkin, setCheckin] = useState(initialCheckin ?? "");
+  const [checkout, setCheckout] = useState(initialCheckout ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
@@ -149,7 +169,7 @@ export default function SearchBar() {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // ── Guests state ──
-  const [guests, setGuests] = useState("");
+  const [guests, setGuests] = useState(initialGuests ?? "");
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
 
@@ -502,12 +522,12 @@ export default function SearchBar() {
       {/* ── Search button ─────────────────────────────────────────────────── */}
       <button
         onClick={handleSearch}
-        className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 shrink-0 ml-4"
+        aria-label="Rechercher"
+        className="bg-primary text-white p-3.5 rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center shrink-0 ml-4"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        Rechercher
       </button>
     </div>
   );

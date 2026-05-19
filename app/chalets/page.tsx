@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FilterBar from "@/components/chalets/FilterBar";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
+import SearchBar from "@/components/SearchBar";
 import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = {
@@ -125,9 +126,24 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     .filter(Boolean)
     .join(" · ");
 
+  const initialGuests = capacity
+    ? parseInt(capacity) >= 25 ? "25+" : capacity
+    : undefined;
+
   return (
     <div className="flex flex-col lg:h-screen">
       <Navbar />
+
+      {/* Search bar pre-filled with current filters */}
+      <div className="bg-white border-b border-gray-100 px-4 py-3 flex justify-center">
+        <SearchBar
+          initialRegion={region}
+          initialCity={city}
+          initialCheckin={checkin}
+          initialCheckout={checkout}
+          initialGuests={initialGuests}
+        />
+      </div>
 
       <Suspense fallback={null}>
         <FilterBar />
