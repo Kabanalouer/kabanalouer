@@ -11,43 +11,11 @@ import ListingMap from "@/components/chalets/ListingMap";
 import ExpandableText from "@/components/chalets/ExpandableText";
 import RoomsCarousel from "@/components/chalets/RoomsCarousel";
 import PhotoGallery from "@/components/chalets/PhotoGallery";
+import AmenitiesSection from "@/components/chalets/AmenitiesSection";
 import { normalizePhotos } from "@/lib/photo";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
-
-const AMENITY_EMOJI: Record<string, string> = {
-  "Bord de l'eau":                              "🌊",
-  "Piscine intérieure":                         "🏊",
-  "Piscine extérieure":                         "🏊",
-  "Ski in / Ski out":                           "⛷️",
-  "Situé sur un resort":                        "🏔️",
-  "Spa":                                        "♨️",
-  "Sauna":                                      "🧖",
-  "Chalet en bois rond":                        "🪵",
-  "Foyer intérieur au bois":                    "🔥",
-  "Foyer extérieur (firepit)":                  "🔥",
-  "BBQ":                                        "🍖",
-  "Table de billard":                           "🎱",
-  "Babyfoot":                                   "⚽",
-  "Table de ping-pong":                         "🏓",
-  "Arcades":                                    "🕹️",
-  "Jeux de société":                            "🎲",
-  "Livres et Revues":                           "📚",
-  "Gym":                                        "💪",
-  "Wifi":                                       "📶",
-  "Espace de travail dédié (télétravail)":      "💻",
-  "Climatisation":                              "❄️",
-  "Télévision avec câble":                      "📺",
-  "Télévision intelligente":                    "📺",
-  "Système audio (musique)":                    "🎵",
-  "Cuisine complète avec vaisselle et chaudrons": "🍳",
-  "Literie et serviettes incluses":             "🛏️",
-  "Buanderie":                                  "👕",
-  "Terrasse":                                   "🪑",
-  "Module de jeux pour enfant":                 "🛝",
-  "Borne de recharge pour véhicule électrique": "⚡",
-};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -278,19 +246,7 @@ export default async function ListingPage({ params }: Props) {
             )}
 
             {/* Amenities — Caractéristiques du chalet */}
-            {amenities.length > 0 && (
-              <div>
-                <h2 className="font-semibold text-gray-900 mb-4">Caractéristiques du chalet</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {amenities.map((a) => (
-                    <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
-                      <span className="text-base">{AMENITY_EMOJI[a] ?? "✓"}</span>
-                      {a}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {amenities.length > 0 && <AmenitiesSection amenities={amenities} />}
 
             <hr className="border-gray-100" />
 
