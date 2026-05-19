@@ -278,12 +278,32 @@ export default async function ListingPage({ params }: Props) {
               </>
             )}
 
+            {/* Availability */}
+            <hr className="border-gray-100" />
+            <div>
+              <h2 className="font-semibold text-gray-900 mb-4">Disponibilités</h2>
+              <AvailabilityView
+                blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
+              />
+            </div>
+
+            {/* Map */}
+            {listing.latitude && listing.longitude && (
+              <>
+                <hr className="border-gray-100" />
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-4">Localisation</h2>
+                  <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
+                </div>
+              </>
+            )}
+
             {/* Nearby activities */}
             {nearbyActivities.length > 0 && (
               <>
                 <hr className="border-gray-100" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-1">À proximité</h2>
+                  <h2 className="font-semibold text-gray-900 mb-1">Quoi faire à proximité ?</h2>
                   <p className="text-sm text-gray-400 mb-4">À moins de 30 minutes du chalet</p>
                   <div className="space-y-5">
                     {Object.entries(NEARBY_CATEGORIES).map(([cat, items]) => {
@@ -304,26 +324,6 @@ export default async function ListingPage({ params }: Props) {
                       );
                     })}
                   </div>
-                </div>
-              </>
-            )}
-
-            {/* Availability */}
-            <hr className="border-gray-100" />
-            <div>
-              <h2 className="font-semibold text-gray-900 mb-4">Disponibilités</h2>
-              <AvailabilityView
-                blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
-              />
-            </div>
-
-            {/* Map */}
-            {listing.latitude && listing.longitude && (
-              <>
-                <hr className="border-gray-100" />
-                <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Localisation</h2>
-                  <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
                 </div>
               </>
             )}
