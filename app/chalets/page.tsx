@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FilterBar from "@/components/chalets/FilterBar";
-import ListingCard, { type Listing } from "@/components/ListingCard";
+import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
+import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = {
   title: "Chalets à louer au Québec — Kabanalouer",
@@ -14,6 +15,7 @@ export const metadata = {
 interface PageProps {
   searchParams: Promise<{
     region?: string;
+    city?: string;
     capacity?: string;
     amenity?: string;
     checkin?: string;
@@ -21,22 +23,13 @@ interface PageProps {
   }>;
 }
 
-async function ListingsGrid({
-  region,
-  capacity,
-  amenity,
-  checkin,
-  checkout,
-}: {
-  region?: string;
-  capacity?: string;
-  amenity?: string;
-  checkin?: string;
-  checkout?: string;
-}) {
-  const supabase = await createClient();
+export default async function ChaletsPage({ searchParams }: PageProps) {
+  const { region, city, capacity, amenity, checkin, checkout } = await searchParams;
 
-  // Find listing IDs that have blocked dates in the requested range
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Availability exclusion
   let excludedIds: string[] = [];
   if (checkin && checkout && checkin < checkout) {
     const { data: blocked } = await supabase
@@ -50,60 +43,81 @@ async function ListingsGrid({
 
   let query = supabase
     .from("listings")
-    .select("id, title, region, capacity, bedrooms, price_low, photos, amenities, created_at")
+    .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(48);
 
   if (region) query = query.eq("region", region);
+  if (city) query = query.eq("city", city);
   if (capacity) query = query.gte("capacity", parseInt(capacity));
   if (amenity) query = query.contains("amenities", [amenity]);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
 
-  if (!rows || rows.length === 0) {
-    return (
-      <div className="col-span-3 py-24 text-center">
-        <p className="text-5xl mb-4">🏕️</p>
-        <h3 className="font-semibold text-gray-900 mb-2">Aucun chalet trouvé</h3>
-        <p className="text-gray-500 text-sm">
-          Essayez avec d&apos;autres filtres ou revenez bientôt — de nouveaux chalets s&apos;ajoutent chaque semaine.
-        </p>
-      </div>
-    );
+  let listings: ListingForMap[] = [];
+
+  if (rows && rows.length > 0) {
+    const listingIds = rows.map((r) => r.id as string);
+
+    // Rooms for bed counts + favorites in parallel
+    const [{ data: allRooms }, { data: favs }] = await Promise.all([
+      supabase.from("rooms").select("listing_id, type, beds").in("listing_id", listingIds),
+      user
+        ? supabase.from("favorites").select("listing_id").eq("user_id", user.id).in("listing_id", listingIds)
+        : Promise.resolve({ data: [] as { listing_id: string }[] }),
+    ]);
+
+    const roomsByListing: Record<string, { type: string; beds: unknown }[]> = {};
+    for (const room of allRooms ?? []) {
+      const lid = room.listing_id as string;
+      if (!roomsByListing[lid]) roomsByListing[lid] = [];
+      roomsByListing[lid].push(room as { type: string; beds: unknown });
+    }
+
+    const bedsByListing: Record<string, number | null> = {};
+    for (const id of listingIds) {
+      const rooms = roomsByListing[id];
+      if (!rooms || rooms.length === 0) { bedsByListing[id] = null; continue; }
+      const bedroomBeds = rooms
+        .filter((r) => r.type === "bedroom")
+        .reduce((sum, room) => {
+          const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+          return sum + beds.filter((b) => b.type !== "sofa_bed").reduce((s, b) => s + b.quantity, 0);
+        }, 0);
+      const sofaBeds = rooms
+        .filter((r) => r.type === "living_room")
+        .reduce((sum, room) => {
+          const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
+          return sum + beds.filter((b) => b.type === "sofa_bed").reduce((s, b) => s + b.quantity, 0);
+        }, 0);
+      bedsByListing[id] = bedroomBeds + sofaBeds || null;
+    }
+
+    const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
+
+    listings = rows.map((row) => ({
+      id: row.id as string,
+      title: row.title as string,
+      region: row.region as string,
+      city: (row.city as string | null) ?? null,
+      price: row.price_low as number,
+      priceOnRequest: !!(row.price_on_request),
+      capacity: row.capacity as number,
+      bedrooms: row.bedrooms as number,
+      beds: bedsByListing[row.id as string] ?? null,
+      photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
+      isFavorite: favSet.has(row.id as string),
+      tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+      lat: (row.latitude as number | null) ?? null,
+      lng: (row.longitude as number | null) ?? null,
+    }));
   }
-
-  const listings: Listing[] = rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    region: row.region,
-    price: row.price_low,
-    rating: 0,
-    reviewCount: 0,
-    capacity: row.capacity,
-    bedrooms: row.bedrooms,
-    photo:
-      Array.isArray(row.photos) && row.photos.length > 0
-        ? row.photos[0]
-        : "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
-    tags: Array.isArray(row.amenities) ? row.amenities.slice(0, 3) : [],
-  }));
-
-  return (
-    <>
-      {listings.map((listing) => (
-        <ListingCard key={listing.id} listing={listing} />
-      ))}
-    </>
-  );
-}
-
-export default async function ChaletsPage({ searchParams }: PageProps) {
-  const { region, capacity, amenity, checkin, checkout } = await searchParams;
 
   const activeFilters = [
     region,
+    city,
     capacity && `${capacity}+ pers.`,
     amenity,
     checkin && checkout ? `${checkin} → ${checkout}` : null,
@@ -112,42 +126,27 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     .join(" · ");
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col lg:h-screen">
       <Navbar />
 
       <Suspense fallback={null}>
         <FilterBar />
       </Suspense>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Chalets au Québec</h1>
-            {activeFilters && (
-              <p className="text-sm text-gray-500 mt-0.5">{activeFilters}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Suspense
-            fallback={
-              <>
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-100 rounded-2xl aspect-[4/3] animate-pulse"
-                  />
-                ))}
-              </>
-            }
-          >
-            <ListingsGrid region={region} capacity={capacity} amenity={amenity} checkin={checkin} checkout={checkout} />
-          </Suspense>
-        </div>
+      {/* flex-1 fills remaining height; overflow-hidden on desktop clips the split layout */}
+      <div className="flex-1 lg:overflow-hidden">
+        <ChaletsMapLayout
+          initialListings={listings}
+          currentUserId={user?.id ?? null}
+          filters={{ region, city, capacity, amenity, checkin, checkout }}
+          activeFilters={activeFilters || undefined}
+        />
       </div>
 
-      <Footer />
+      {/* Footer only on mobile (map fills the screen on desktop) */}
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </div>
   );
 }

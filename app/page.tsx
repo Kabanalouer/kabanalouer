@@ -13,11 +13,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Chalet rustique au bord du lac Tremblant",
     region: "Laurentides",
     price: 275,
-    rating: 4.8,
-    reviewCount: 34,
     capacity: 8,
     bedrooms: 4,
-    photo: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80"],
     tags: ["Bord du lac", "Spa", "Foyer"],
   },
   {
@@ -25,11 +23,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Villa de luxe avec vue sur le fleuve Saint-Laurent",
     region: "Charlevoix",
     price: 520,
-    rating: 4.9,
-    reviewCount: 18,
     capacity: 12,
     bedrooms: 6,
-    photo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80"],
     tags: ["Vue panoramique", "Piscine", "Ski"],
   },
   {
@@ -37,11 +33,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Micro-chalet moderne dans les bois",
     region: "Estrie",
     price: 185,
-    rating: 4.7,
-    reviewCount: 42,
     capacity: 4,
     bedrooms: 2,
-    photo: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80"],
     isNew: true,
     tags: ["Nature", "Tranquillité", "Randonnée"],
   },
@@ -50,11 +44,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Grand chalet familial près des pistes de ski",
     region: "Lanaudière",
     price: 350,
-    rating: 4.6,
-    reviewCount: 27,
     capacity: 16,
     bedrooms: 8,
-    photo: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80"],
     tags: ["Ski alpin", "Piscine intérieure", "Billard"],
   },
   {
@@ -62,11 +54,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Chalet au bord de la rivière Batiscan",
     region: "Mauricie",
     price: 225,
-    rating: 4.8,
-    reviewCount: 15,
     capacity: 6,
     bedrooms: 3,
-    photo: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"],
     isNew: true,
     tags: ["Rivière", "Kayak", "Foyer extérieur"],
   },
@@ -75,11 +65,9 @@ const MOCK_LISTINGS: Listing[] = [
     title: "Chalet nordique avec sauna et spa privatif",
     region: "Saguenay–Lac-Saint-Jean",
     price: 310,
-    rating: 4.9,
-    reviewCount: 9,
     capacity: 8,
     bedrooms: 4,
-    photo: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80",
+    photos: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80"],
     isNew: true,
     tags: ["Sauna", "Spa", "Raquettes"],
   },
@@ -109,15 +97,17 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative h-[580px] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80')",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-black/65" />
+      <section className="relative h-[580px] z-10">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80')",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-black/65" />
+        </div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <span>✦</span>
@@ -163,7 +153,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {MOCK_LISTINGS.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
           ))}
         </div>
         <div className="mt-8 flex justify-center md:hidden">

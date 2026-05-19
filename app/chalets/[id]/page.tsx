@@ -12,6 +12,9 @@ import ExpandableText from "@/components/chalets/ExpandableText";
 import RoomsCarousel from "@/components/chalets/RoomsCarousel";
 import PhotoGallery from "@/components/chalets/PhotoGallery";
 import AmenitiesSection from "@/components/chalets/AmenitiesSection";
+import HostCard from "@/components/chalets/HostCard";
+import FavoriteButton from "@/components/chalets/FavoriteButton";
+import ShareButton from "@/components/chalets/ShareButton";
 import { normalizePhotos } from "@/lib/photo";
 
 const DEFAULT_PHOTO =
@@ -159,6 +162,48 @@ export default async function ListingPage({ params }: Props) {
 
   const host = listing.host as { id: string; name: string; avatar_url: string; created_at: string } | null;
 
+  // Host stats (for HostCard)
+  let hostReviewCount = 0;
+  let hostAvgRating = 0;
+  let hostResponseRate: number | null = null;
+  let hostAvgResponseMs: number | null = null;
+
+  if (host) {
+    const { data: hostListings } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("host_id", host.id);
+
+    const hostListingIds = (hostListings ?? []).map((l: { id: string }) => l.id);
+
+    const [hostReviewsResult, hostMessagesResult] = await Promise.all([
+      hostListingIds.length > 0
+        ? supabase.from("reviews").select("rating").in("listing_id", hostListingIds)
+        : Promise.resolve({ data: [] as { rating: number }[] }),
+      supabase
+        .from("messages")
+        .select("sender_id, receiver_id, created_at")
+        .or(`receiver_id.eq.${host.id},sender_id.eq.${host.id}`)
+        .order("created_at"),
+    ]);
+
+    hostReviewCount = (hostReviewsResult.data ?? []).length;
+    hostAvgRating =
+      hostReviewCount > 0
+        ? (hostReviewsResult.data ?? []).reduce((s: number, r: { rating: number }) => s + r.rating, 0) / hostReviewCount
+        : 0;
+
+    const stats = calcHostResponseStats(hostMessagesResult.data ?? [], host.id);
+    hostResponseRate = stats.responseRate;
+    hostAvgResponseMs = stats.avgResponseMs;
+  }
+
+  // Favorite status for current user
+  const { data: favData } = user
+    ? await supabase.from("favorites").select("id").eq("user_id", user.id).eq("listing_id", id).maybeSingle()
+    : { data: null };
+  const isFavorited = !!favData;
+
   // Subtitle calculations
   const city = (listing.city as string | null) ?? (() => {
     const addr = listing.address as string | null;
@@ -185,6 +230,8 @@ export default async function ListingPage({ params }: Props) {
     return total > 0 ? total : null;
   })();
 
+  const isOwner = !!(user && host && user.id === host.id);
+
   const subtitleParts = [
     city ? `${city}, ${listing.region}` : listing.region,
     `${listing.capacity} personne${listing.capacity > 1 ? "s" : ""}`,
@@ -208,13 +255,24 @@ export default async function ListingPage({ params }: Props) {
         </nav>
 
         {/* ── Title + subtitle ── */}
-        <div className="mb-5">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">
-            {listing.title}
-          </h1>
-          <p className="text-sm text-gray-500">
-            {subtitleParts.join(" · ")}
-          </p>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">
+              {listing.title}
+            </h1>
+            <p className="text-sm text-gray-500">
+              {subtitleParts.join(" · ")}
+            </p>
+          </div>
+          <div className="shrink-0 mt-1 flex items-center gap-2">
+            <ShareButton />
+            <FavoriteButton
+              listingId={listing.id}
+              initialIsFavorite={isFavorited}
+              currentUserId={user?.id ?? null}
+              className="border border-gray-200"
+            />
+          </div>
         </div>
 
         {/* ── Photo gallery ── */}
@@ -224,27 +282,6 @@ export default async function ListingPage({ params }: Props) {
         <div className="flex gap-10 items-start">
           {/* ── Left column ── */}
           <div className="flex-1 min-w-0 space-y-8">
-            {/* Host */}
-            {host && (
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0 overflow-hidden">
-                  {host.avatar_url ? (
-                    <Image src={host.avatar_url} alt={host.name} width={56} height={56} className="object-cover w-full h-full" />
-                  ) : (
-                    <span className="text-white font-bold text-xl">
-                      {(host.name?.[0] ?? "?").toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    Hôte : {host.name?.split(" ")[0] ?? "l'hôte"}
-                  </p>
-                  <p className="text-sm text-gray-400">{hostSince(host.created_at)}</p>
-                </div>
-              </div>
-            )}
-
             {/* Amenities — Caractéristiques du chalet */}
             {amenities.length > 0 && <AmenitiesSection amenities={amenities} />}
 
@@ -253,7 +290,7 @@ export default async function ListingPage({ params }: Props) {
             {/* Description */}
             {listing.description && (
               <div>
-                <h2 className="font-semibold text-gray-900 mb-3">À propos de ce chalet</h2>
+                <h2 className="font-semibold text-gray-900 mb-3">Description du chalet</h2>
                 <ExpandableText text={listing.description} />
               </div>
             )}
@@ -263,7 +300,7 @@ export default async function ListingPage({ params }: Props) {
               <>
                 <hr className="border-gray-100" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Chambres et espaces</h2>
+                  <h2 className="font-semibold text-gray-900 mb-4">Où vous dormirez</h2>
                   <RoomsCarousel
                     rooms={rooms.map((r) => ({
                       id: r.id,
@@ -292,7 +329,7 @@ export default async function ListingPage({ params }: Props) {
               <>
                 <hr className="border-gray-100" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Localisation</h2>
+                  <h2 className="font-semibold text-gray-900 mb-4">Où se situe le chalet ?</h2>
                   <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
                 </div>
               </>
@@ -333,7 +370,7 @@ export default async function ListingPage({ params }: Props) {
             <div>
               <div className="flex items-center gap-3 mb-5">
                 <h2 className="font-semibold text-gray-900">
-                  Avis {reviews && reviews.length > 0 && `(${reviews.length})`}
+                  Avis des voyageurs {reviews && reviews.length > 0 && `(${reviews.length})`}
                 </h2>
                 {avgRating > 0 && (
                   <div className="flex items-center gap-1">
@@ -438,6 +475,24 @@ export default async function ListingPage({ params }: Props) {
                 </div>
               </div>
             </>
+
+            {/* Host section */}
+            {host && (
+              <>
+                <hr className="border-gray-100" />
+                <HostCard
+                  host={host}
+                  reviewCount={hostReviewCount}
+                  avgRating={hostAvgRating}
+                  responseRate={hostResponseRate}
+                  avgResponseMs={hostAvgResponseMs}
+                  listingId={listing.id}
+                  listingTitle={listing.title}
+                  currentUserId={user?.id ?? null}
+                  isOwner={isOwner}
+                />
+              </>
+            )}
           </div>
 
           {/* ── Right column — Pricing card ── */}
@@ -470,31 +525,41 @@ export default async function ListingPage({ params }: Props) {
               </div>
 
               {/* CTA */}
-              <ContactButton
-                listingId={listing.id}
-                hostId={host?.id ?? ""}
-                hostName={host?.name ?? "l'hôte"}
-                listingTitle={listing.title}
-                currentUserId={user?.id ?? null}
-              />
+              {isOwner ? (
+                <button disabled className="w-full py-3 rounded-xl bg-gray-100 text-gray-400 font-medium text-sm cursor-not-allowed">
+                  C&apos;est votre chalet
+                </button>
+              ) : (
+                <ContactButton
+                  listingId={listing.id}
+                  hostId={host?.id ?? ""}
+                  hostName={host?.name ?? "l'hôte"}
+                  listingTitle={listing.title}
+                  currentUserId={user?.id ?? null}
+                />
+              )}
 
-              <p className="text-xs text-gray-400 text-center mt-3">
-                Contact direct · Zéro frais de service
-              </p>
+              {!isOwner && (
+                <p className="text-xs text-gray-400 text-center mt-3">
+                  Contact direct · Zéro frais de service
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Mobile CTA */}
-        <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-4 z-40">
-          <ContactButton
-            listingId={listing.id}
-            hostId={host?.id ?? ""}
-            hostName={host?.name ?? "l'hôte"}
-            listingTitle={listing.title}
-            currentUserId={user?.id ?? null}
-          />
-        </div>
+        {!isOwner && (
+          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-4 z-40">
+            <ContactButton
+              listingId={listing.id}
+              hostId={host?.id ?? ""}
+              hostName={host?.name ?? "l'hôte"}
+              listingTitle={listing.title}
+              currentUserId={user?.id ?? null}
+            />
+          </div>
+        )}
       </main>
 
       <div className="lg:hidden h-24" />
@@ -503,13 +568,31 @@ export default async function ListingPage({ params }: Props) {
   );
 }
 
-function hostSince(createdAt: string): string {
-  const months =
-    (new Date().getFullYear() - new Date(createdAt).getFullYear()) * 12 +
-    (new Date().getMonth() - new Date(createdAt).getMonth());
-  if (months < 1) return "Nouveau";
-  if (months < 12) return `Hôte depuis ${months} mois`;
-  const years = Math.floor(months / 12);
-  return `Hôte depuis ${years} an${years > 1 ? "s" : ""}`;
+function calcHostResponseStats(
+  messages: { sender_id: string; receiver_id: string; created_at: string }[],
+  hostId: string
+) {
+  const convs = new Map<string, { firstMsg: Date; firstReply: Date | null }>();
+  for (const msg of messages) {
+    const incoming = msg.receiver_id === hostId;
+    const partner = incoming ? msg.sender_id : msg.receiver_id;
+    if (!convs.has(partner)) convs.set(partner, { firstMsg: new Date(0), firstReply: null });
+    const c = convs.get(partner)!;
+    if (incoming && c.firstMsg.getTime() === 0) c.firstMsg = new Date(msg.created_at);
+    else if (!incoming && c.firstReply === null && c.firstMsg.getTime() > 0)
+      c.firstReply = new Date(msg.created_at);
+  }
+  let replied = 0, totalMs = 0, replyN = 0;
+  for (const c of convs.values()) {
+    if (c.firstReply) {
+      replied++;
+      const ms = c.firstReply.getTime() - c.firstMsg.getTime();
+      if (ms > 0) { totalMs += ms; replyN++; }
+    }
+  }
+  return {
+    responseRate: convs.size > 0 ? Math.round((replied / convs.size) * 100) : null,
+    avgResponseMs: replyN > 0 ? totalMs / replyN : null,
+  };
 }
 

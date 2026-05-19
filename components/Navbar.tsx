@@ -346,6 +346,7 @@ export default function Navbar() {
                   </div>
                   <div className="py-1">
                     <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
+                    <DropdownLink href="/favoris">Mes favoris</DropdownLink>
                     <Link
                       href="/messages"
                       className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -406,6 +407,7 @@ export default function Navbar() {
                 </button>
               )}
               <Link href="/dashboard/profile" className="text-gray-700 font-medium">Mon profil</Link>
+              <Link href="/favoris" className="text-gray-700 font-medium">Mes favoris</Link>
               <Link href="/messages" className="text-gray-700 font-medium flex items-center gap-2">
                 Messages
                 {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500" />}

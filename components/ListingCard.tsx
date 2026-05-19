@@ -2,71 +2,145 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import FavoriteButton from "@/components/chalets/FavoriteButton";
 
 export interface Listing {
   id: string;
   title: string;
   region: string;
+  city?: string | null;
   price: number;
-  rating: number;
-  reviewCount: number;
+  priceOnRequest?: boolean;
   capacity: number;
   bedrooms: number;
-  photo: string;
+  beds?: number | null;
+  photos: string[];
+  isFavorite?: boolean;
   isNew?: boolean;
   tags: string[];
 }
 
-export default function ListingCard({ listing }: { listing: Listing }) {
+export default function ListingCard({
+  listing,
+  currentUserId,
+}: {
+  listing: Listing;
+  currentUserId?: string | null;
+}) {
+  const photos = listing.photos.length > 0 ? listing.photos : ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80"];
+  const [idx, setIdx] = useState(0);
+
+  const prev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIdx((i) => Math.max(0, i - 1));
+  };
+
+  const next = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIdx((i) => Math.min(photos.length - 1, i + 1));
+  };
+
+  const location = listing.city?.trim() || listing.region;
+
   return (
     <Link href={`/chalets/${listing.id}`}>
       <article className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-200 group cursor-pointer h-full">
-        {/* Photo */}
+
+        {/* Photo carousel */}
         <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-          <Image
-            src={listing.photo}
-            alt={listing.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          {listing.photos.length > 0 ? (
+            <Image
+              src={photos[idx]}
+              alt={`${listing.title} – photo ${idx + 1}`}
+              fill
+              loading="lazy"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+              </svg>
+            </div>
+          )}
+
+          {/* Prev arrow */}
+          {photos.length > 1 && idx > 0 && (
+            <button
+              onClick={prev}
+              aria-label="Photo précédente"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full w-7 h-7 flex items-center justify-center shadow text-gray-700 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next arrow */}
+          {photos.length > 1 && idx < photos.length - 1 && (
+            <button
+              onClick={next}
+              aria-label="Photo suivante"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full w-7 h-7 flex items-center justify-center shadow text-gray-700 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          )}
+
+          {/* Dot indicators */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
+              {photos.map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === idx ? "bg-white" : "bg-white/50"}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Badges */}
           {listing.isNew && (
-            <span className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span className="absolute top-3 left-3 bg-primary text-white text-xs font-semibold px-2.5 py-1 rounded-full z-10">
               Nouveau
             </span>
           )}
-          <button
-            onClick={(e) => { e.preventDefault(); }}
-            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
-            aria-label="Ajouter aux favoris"
-          >
-            <svg className="w-4 h-4 text-gray-400 hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
+
+          {/* Favorite button */}
+          <div className="absolute top-3 right-3 z-10">
+            <FavoriteButton
+              listingId={listing.id}
+              initialIsFavorite={listing.isFavorite ?? false}
+              currentUserId={currentUserId ?? null}
+            />
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-4">
           <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">
-            {listing.region}
+            {location}
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 leading-snug">
+
+          <h3 className="font-semibold text-gray-900 mb-2 text-sm truncate">
             {listing.title}
           </h3>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <svg className="w-4 h-4 text-yellow-400 fill-current shrink-0" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            <span className="text-sm font-semibold text-gray-900">{listing.rating}</span>
-            <span className="text-sm text-gray-400">({listing.reviewCount} avis)</span>
-          </div>
-
-          {/* Capacity */}
+          {/* Capacity + beds */}
           <div className="text-sm text-gray-500 mb-3">
-            {listing.capacity} personnes · {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}
+            {listing.capacity} personne{listing.capacity > 1 ? "s" : ""}
+            {" · "}
+            {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}
+            {listing.beds != null && listing.beds > 0 && (
+              <> · {listing.beds} lit{listing.beds > 1 ? "s" : ""}</>
+            )}
           </div>
 
           {/* Tags */}
@@ -81,8 +155,15 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           {/* Price */}
           <div className="flex items-center justify-between border-t border-gray-100 pt-3">
             <div>
-              <span className="text-lg font-bold text-gray-900">{listing.price}$</span>
-              <span className="text-sm text-gray-400"> / nuit</span>
+              <p className="text-[10px] text-gray-400 leading-none mb-0.5">À partir de</p>
+              {listing.priceOnRequest ? (
+                <span className="text-base font-semibold text-gray-900">Sur demande</span>
+              ) : (
+                <>
+                  <span className="text-lg font-bold text-gray-900">{listing.price} $</span>
+                  <span className="text-sm text-gray-400"> / nuit</span>
+                </>
+              )}
             </div>
             <span className="text-xs text-primary font-medium">Contact direct →</span>
           </div>
