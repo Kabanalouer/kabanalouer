@@ -482,7 +482,7 @@ export default async function ListingPage({ params }: Props) {
                   })}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm">Aucun avis pour l&apos;instant.</p>
+                <p className="text-gray-400 text-sm">Nouveau chalet : soyez les premiers à laisser votre avis.</p>
               )}
             </div>
           </div>
