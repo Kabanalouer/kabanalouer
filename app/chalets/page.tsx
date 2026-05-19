@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FilterBar from "@/components/chalets/FilterBar";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import SearchBar from "@/components/SearchBar";
 import { normalizePhotos } from "@/lib/photo";
@@ -145,10 +144,6 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
           iconOnly
         />
       </div>
-
-      <Suspense fallback={null}>
-        <FilterBar />
-      </Suspense>
 
       {/* flex-1 fills remaining height; overflow-hidden on desktop clips the split layout */}
       <div className="flex-1 lg:overflow-hidden">
