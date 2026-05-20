@@ -44,6 +44,7 @@ export default function Footer() {
               Légal
             </h3>
             <ul className="space-y-2.5 text-sm">
+              <FooterLink href="/a-propos" label="À propos" />
               <FooterLink href="/conditions" label="Conditions d'utilisation" />
               <FooterLink href="/confidentialite" label="Politique de confidentialité" />
               <FooterLink href="/contact" label="Nous contacter" />
