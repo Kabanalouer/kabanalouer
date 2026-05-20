@@ -195,7 +195,7 @@ export default function ContactForm({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-3.5 rounded-xl font-bold text-center hover:bg-primary/90 transition-colors text-sm"
       >
-        Connectez-vous pour contacter l&apos;hôte
+        Contacter l&apos;hôte
       </Link>
     );
   }
@@ -312,7 +312,7 @@ export default function ContactForm({
       {/* Phone */}
       <input
         type="tel"
-        placeholder="Téléphone"
+        placeholder="Téléphone (optionnel)"
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-gray-400"
