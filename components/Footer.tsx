@@ -34,7 +34,7 @@ export default function Footer() {
               <FooterLink href="/signup" label="Inscrire mon chalet" />
               <FooterLink href="/devenir-hote" label="Pourquoi nous choisir ?" />
               <FooterLink href="/tarifs" label="Tarifs & abonnement" />
-              <FooterLink href="/faq" label="FAQ hôtes" />
+              <FooterLink href="/faq-hotes" label="FAQ hôtes" />
             </ul>
           </div>
 
