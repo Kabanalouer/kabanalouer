@@ -133,6 +133,7 @@ interface SearchBarProps {
   initialCheckout?: string;
   initialGuests?: string;
   iconOnly?: boolean;
+  preserveParams?: Record<string, string>;
 }
 
 export default function SearchBar({
@@ -142,6 +143,7 @@ export default function SearchBar({
   initialCheckout,
   initialGuests,
   iconOnly = false,
+  preserveParams,
 }: SearchBarProps = {}) {
   const router = useRouter();
   const now = new Date();
@@ -286,6 +288,11 @@ export default function SearchBar({
     if (checkin) params.set("checkin", checkin);
     if (checkout) params.set("checkout", checkout);
     if (guests) params.set("capacity", guests === "25+" ? "25" : guests);
+    if (preserveParams) {
+      for (const [k, v] of Object.entries(preserveParams)) {
+        if (v) params.set(k, v);
+      }
+    }
     router.push(`/chalets${params.toString() ? `?${params.toString()}` : ""}`);
   };
 

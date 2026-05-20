@@ -20,14 +20,16 @@ interface Props {
     region?: string;
     city?: string;
     capacity?: string;
-    amenity?: string;
     checkin?: string;
     checkout?: string;
+    minBedrooms?: string;
+    minBeds?: string;
+    minBathrooms?: string;
+    amenities?: string;
   };
-  activeFilters?: string;
 }
 
-export default function ChaletsMapLayout({ initialListings, currentUserId, filters, activeFilters }: Props) {
+export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [showMapMobile, setShowMapMobile] = useState(false);
@@ -44,9 +46,12 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ...(filters.region && { region: filters.region }),
         ...(filters.city && { city: filters.city }),
         ...(filters.capacity && { capacity: filters.capacity }),
-        ...(filters.amenity && { amenity: filters.amenity }),
         ...(filters.checkin && { checkin: filters.checkin }),
         ...(filters.checkout && { checkout: filters.checkout }),
+        ...(filters.minBedrooms && { minBedrooms: filters.minBedrooms }),
+        ...(filters.minBeds && { minBeds: filters.minBeds }),
+        ...(filters.minBathrooms && { minBathrooms: filters.minBathrooms }),
+        ...(filters.amenities && { amenities: filters.amenities }),
       });
       const res = await fetch(`/api/listings/geo?${params}`);
       if (res.ok) setListings(await res.json());
@@ -96,9 +101,6 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           <div className="px-5 pt-5 pb-2 flex items-center justify-between">
             <div>
               <h1 className="text-lg font-bold text-gray-900">Chalets au Québec</h1>
-              {activeFilters && (
-                <p className="text-xs text-gray-500 mt-0.5">{activeFilters}</p>
-              )}
             </div>
             {!isLoading && (
               <span className="text-xs text-gray-400">
@@ -124,7 +126,6 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       <div className="lg:hidden">
         <div className="px-4 pt-5 pb-2 flex items-center justify-between">
           <h1 className="text-lg font-bold text-gray-900">Chalets au Québec</h1>
-          {activeFilters && <p className="text-xs text-gray-500">{activeFilters}</p>}
         </div>
         {listGrid("grid-cols-1 sm:grid-cols-2")}
 

@@ -1,9 +1,9 @@
-import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import SearchBar from "@/components/SearchBar";
+import FiltersModal from "@/components/chalets/FiltersModal";
 import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = {
@@ -17,14 +17,20 @@ interface PageProps {
     region?: string;
     city?: string;
     capacity?: string;
-    amenity?: string;
     checkin?: string;
     checkout?: string;
+    minBedrooms?: string;
+    minBeds?: string;
+    minBathrooms?: string;
+    amenities?: string;
   }>;
 }
 
 export default async function ChaletsPage({ searchParams }: PageProps) {
-  const { region, city, capacity, amenity, checkin, checkout } = await searchParams;
+  const {
+    region, city, capacity, checkin, checkout,
+    minBedrooms, minBeds, minBathrooms, amenities,
+  } = await searchParams;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -43,7 +49,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
+    .select("id, title, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(48);
@@ -51,7 +57,12 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (region) query = query.eq("region", region);
   if (city) query = query.eq("city", city);
   if (capacity) query = query.gte("capacity", parseInt(capacity));
-  if (amenity) query = query.contains("amenities", [amenity]);
+  if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
+  if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
+  if (amenities) {
+    const amenityList = amenities.split(",").filter(Boolean);
+    if (amenityList.length > 0) query = query.contains("amenities", amenityList);
+  }
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
@@ -61,7 +72,6 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (rows && rows.length > 0) {
     const listingIds = rows.map((r) => r.id as string);
 
-    // Rooms for bed counts + favorites in parallel
     const [{ data: allRooms }, { data: favs }] = await Promise.all([
       supabase.from("rooms").select("listing_id, type, beds").in("listing_id", listingIds),
       user
@@ -96,52 +106,65 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     }
 
     const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
+    const minBedsNum = minBeds ? parseInt(minBeds) : null;
 
-    listings = rows.map((row) => ({
-      id: row.id as string,
-      title: row.title as string,
-      region: row.region as string,
-      city: (row.city as string | null) ?? null,
-      price: row.price_low as number,
-      priceOnRequest: !!(row.price_on_request),
-      capacity: row.capacity as number,
-      bedrooms: row.bedrooms as number,
-      beds: bedsByListing[row.id as string] ?? null,
-      photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
-      isFavorite: favSet.has(row.id as string),
-      tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
-      lat: (row.latitude as number | null) ?? null,
-      lng: (row.longitude as number | null) ?? null,
-    }));
+    listings = rows
+      .filter((row) => {
+        if (!minBedsNum) return true;
+        const beds = bedsByListing[row.id as string];
+        return beds !== null && beds >= minBedsNum;
+      })
+      .map((row) => ({
+        id: row.id as string,
+        title: row.title as string,
+        region: row.region as string,
+        city: (row.city as string | null) ?? null,
+        price: row.price_low as number,
+        priceOnRequest: !!(row.price_on_request),
+        capacity: row.capacity as number,
+        bedrooms: row.bedrooms as number,
+        beds: bedsByListing[row.id as string] ?? null,
+        photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
+        isFavorite: favSet.has(row.id as string),
+        tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+        lat: (row.latitude as number | null) ?? null,
+        lng: (row.longitude as number | null) ?? null,
+      }));
   }
-
-  const activeFilters = [
-    region,
-    city,
-    capacity && `${capacity}+ pers.`,
-    amenity,
-    checkin && checkout ? `${checkin} → ${checkout}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
   const initialGuests = capacity
     ? parseInt(capacity) >= 25 ? "25+" : capacity
     : undefined;
 
+  const preserveParams: Record<string, string> = {};
+  if (minBedrooms) preserveParams.minBedrooms = minBedrooms;
+  if (minBeds) preserveParams.minBeds = minBeds;
+  if (minBathrooms) preserveParams.minBathrooms = minBathrooms;
+  if (amenities) preserveParams.amenities = amenities;
+
   return (
     <div className="flex flex-col lg:h-screen">
       <Navbar />
 
-      {/* Search bar pre-filled with current filters */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex justify-center">
-        <SearchBar
-          initialRegion={region}
-          initialCity={city}
-          initialCheckin={checkin}
-          initialCheckout={checkout}
-          initialGuests={initialGuests}
-          iconOnly
+      {/* Search bar + Filtres button */}
+      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-center gap-3">
+        <div className="flex-1 max-w-3xl min-w-0">
+          <SearchBar
+            initialRegion={region}
+            initialCity={city}
+            initialCheckin={checkin}
+            initialCheckout={checkout}
+            initialGuests={initialGuests}
+            iconOnly
+            preserveParams={preserveParams}
+          />
+        </div>
+        <FiltersModal
+          currentParams={{ region, city, checkin, checkout, capacity }}
+          initialMinBedrooms={minBedrooms}
+          initialMinBeds={minBeds}
+          initialMinBathrooms={minBathrooms}
+          initialAmenities={amenities}
         />
       </div>
 
@@ -150,8 +173,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         <ChaletsMapLayout
           initialListings={listings}
           currentUserId={user?.id ?? null}
-          filters={{ region, city, capacity, amenity, checkin, checkout }}
-          activeFilters={activeFilters || undefined}
+          filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities }}
         />
       </div>
 

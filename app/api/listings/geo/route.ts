@@ -13,9 +13,13 @@ export async function GET(req: Request) {
   const region = searchParams.get("region") || undefined;
   const city = searchParams.get("city") || undefined;
   const capacity = searchParams.get("capacity") || undefined;
-  const amenity = searchParams.get("amenity") || undefined;
   const checkin = searchParams.get("checkin") || undefined;
   const checkout = searchParams.get("checkout") || undefined;
+  const minBedrooms = searchParams.get("minBedrooms") || undefined;
+  const minBeds = searchParams.get("minBeds") || undefined;
+  const minBathrooms = searchParams.get("minBathrooms") || undefined;
+  const amenitiesParam = searchParams.get("amenities") || undefined;
+  const amenityList = amenitiesParam ? amenitiesParam.split(",").filter(Boolean) : [];
 
   const supabase = await createClient();
 
@@ -33,7 +37,7 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
+    .select("id, title, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -49,7 +53,9 @@ export async function GET(req: Request) {
   if (region) query = query.eq("region", region);
   if (city) query = query.eq("city", city);
   if (capacity) query = query.gte("capacity", parseInt(capacity));
-  if (amenity) query = query.contains("amenities", [amenity]);
+  if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
+  if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
+  if (amenityList.length > 0) query = query.contains("amenities", amenityList);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
@@ -115,5 +121,10 @@ export async function GET(req: Request) {
     };
   });
 
-  return NextResponse.json(listings);
+  const minBedsNum = minBeds ? parseInt(minBeds) : null;
+  const filtered = minBedsNum
+    ? listings.filter((l) => l.beds !== null && l.beds >= minBedsNum)
+    : listings;
+
+  return NextResponse.json(filtered);
 }
