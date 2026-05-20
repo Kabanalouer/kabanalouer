@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PreviewModal from "./PreviewModal";
+import DeleteListingModal from "./DeleteListingModal";
 import { createClient } from "@/lib/supabase/client";
 import AmenitiesPicker from "./AmenitiesPicker";
 import NearbyActivitiesPicker from "./NearbyActivitiesPicker";
-import PhotoUpload from "./PhotoUpload";
+import PhotoUpload, { MIN_PHOTOS } from "./PhotoUpload";
 import RoomsSection from "./RoomsSection";
 import LocationSection from "./LocationSection";
+import AvailabilityCalendar, { type BlockedEntry } from "./AvailabilityCalendar";
+import ICalSync from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
 
 
@@ -57,7 +62,8 @@ type SectionId =
   | "calendrier"
   | "localisation"
   | "tarifs"
-  | "infos";
+  | "infos"
+  | "publier";
 
 const SECTIONS: Array<{
   id: SectionId;
@@ -65,17 +71,18 @@ const SECTIONS: Array<{
   emoji: string;
   isComplete: (f: FormState) => boolean;
 }> = [
-  { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => (f.photos as PhotoItem[]).length > 0 },
+  { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
   { id: "titre",        label: "Titre",                emoji: "✏️", isComplete: (f) => f.title.trim().length > 0 },
   { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
   { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 },
   { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
-  { id: "equipements",  label: "Équipements",          emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
+  { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
   { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
+  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low > 0 },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
-  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
+  { id: "publier",      label: "Publier mon annonce",  emoji: "🚀", isComplete: () => false },
 ];
 
 // Fields saved per section
@@ -91,10 +98,21 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "checkin_type"],
+  publier:      [],
 };
 
 const inputCls =
   "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+
+const FREE_LAUNCH_LIMIT = 50;
+const PUBLISH_FEATURES = [
+  "Annonce visible sur Kabanalouer",
+  "Messagerie avec les voyageurs",
+  "Calendrier de disponibilités",
+  "Synchronisation iCal",
+  "Tableau de bord et statistiques",
+  "Accès illimité pendant 1 an",
+];
 
 export default function EditListingForm({
   userId,
@@ -104,6 +122,13 @@ export default function EditListingForm({
   initialCity,
   initialLat,
   initialLng,
+  subscriptionStatus: initialSubStatus,
+  subscriptionExpiresAt: initialSubExpiresAt,
+  activeSubscriptionCount,
+  initialBlocked,
+  icalUrl,
+  icalLastSync,
+  exportUrl,
 }: {
   userId: string;
   listingId: string;
@@ -112,8 +137,16 @@ export default function EditListingForm({
   initialCity: string;
   initialLat: number | null;
   initialLng: number | null;
+  subscriptionStatus: string | null;
+  subscriptionExpiresAt: string | null;
+  activeSubscriptionCount: number;
+  initialBlocked: BlockedEntry[];
+  icalUrl: string | null;
+  icalLastSync: string | null;
+  exportUrl: string;
 }) {
   const supabase = createClient();
+  const router = useRouter();
 
   const [form, setForm] = useState<FormState>({
     title: "",
@@ -144,7 +177,12 @@ export default function EditListingForm({
   const [justSaved, setJustSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [isPublished, setIsPublished] = useState(initialPublished);
-  const [togglingPublish, setTogglingPublish] = useState(false);
+  const [subStatus, setSubStatus] = useState<string | null>(initialSubStatus);
+  const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   // Title limit flash
   const [titleAtLimit, setTitleAtLimit] = useState(false);
@@ -189,22 +227,47 @@ export default function EditListingForm({
     }
   };
 
-  const handleTogglePublish = async () => {
-    setTogglingPublish(true);
-    const next = !isPublished;
-    if (next && form.citq_number.length !== 6) {
-      setActiveSection("infos");
-      setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
-      setTogglingPublish(false);
+  const handleActivateFree = async () => {
+    setPublishLoading(true);
+    setPublishError("");
+    const res = await fetch("/api/subscriptions/activate-free", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setPublishError(data.error ?? "Une erreur s'est produite.");
+      setPublishLoading(false);
       return;
     }
-    const { error } = await supabase
-      .from("listings")
-      .update({ is_published: next })
-      .eq("id", listingId)
-      .eq("host_id", userId);
-    if (!error) setIsPublished(next);
-    setTogglingPublish(false);
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    setIsPublished(true);
+    setSubStatus("active");
+    setSubExpiresAt(expires.toISOString());
+    setPublishLoading(false);
+  };
+
+  const handleStripeCheckout = async () => {
+    setPublishLoading(true);
+    setPublishError("");
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId }),
+    });
+    if (!res.ok) {
+      setPublishError("Impossible de démarrer le paiement. Réessayez.");
+      setPublishLoading(false);
+      return;
+    }
+    const { url } = await res.json();
+    if (url) window.location.href = url;
+    else {
+      setPublishError("URL de paiement manquante.");
+      setPublishLoading(false);
+    }
   };
 
   const handleTitleChange = (value: string) => {
@@ -232,6 +295,18 @@ export default function EditListingForm({
   const hasSaveButton = SECTION_FIELDS[activeSection].length > 0;
 
   return (
+    <>
+    {previewOpen && (
+      <PreviewModal listingId={listingId} onClose={() => setPreviewOpen(false)} />
+    )}
+    {deleteModalOpen && (
+      <DeleteListingModal
+        listingId={listingId}
+        listingTitle={form.title}
+        onClose={() => setDeleteModalOpen(false)}
+        onDeleted={() => router.push("/dashboard/listings?deleted=1")}
+      />
+    )}
     <div className="flex flex-col lg:flex-row gap-6 items-start">
 
       {/* ── Left nav ────────────────────────────────────────────────────── */}
@@ -252,7 +327,7 @@ export default function EditListingForm({
             >
               <span>{s.emoji}</span>
               <span>{s.label}</span>
-              {s.isComplete(form) && activeSection !== s.id && (
+              {(s.id === "publier" ? isPublished : s.isComplete(form)) && activeSection !== s.id && (
                 <span className="text-green-500 text-xs">✓</span>
               )}
             </button>
@@ -262,7 +337,7 @@ export default function EditListingForm({
         {/* Desktop: vertical list */}
         <div className="hidden lg:flex flex-col gap-1">
           {SECTIONS.map((s) => {
-            const complete = s.isComplete(form);
+            const complete = s.id === "publier" ? isPublished : s.isComplete(form);
             const active = activeSection === s.id;
             return (
               <button
@@ -286,24 +361,43 @@ export default function EditListingForm({
             );
           })}
 
-          {/* Publish toggle */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          {/* Bottom actions */}
+          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
             <button
-              onClick={handleTogglePublish}
-              disabled={togglingPublish}
-              className={[
-                "w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50",
-                isPublished
-                  ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  : "bg-primary text-white hover:bg-primary-dark",
-              ].join(" ")}
+              onClick={() => setPreviewOpen(true)}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-colors flex items-center justify-center"
+              style={{ borderColor: "#0F6E56", color: "#0F6E56", background: "white" }}
             >
-              {togglingPublish ? "…" : isPublished ? "Dépublier" : "Publier →"}
+              Aperçu de mon annonce
             </button>
-            <p className="text-xs text-center text-gray-400 mt-2">
-              {isPublished ? "Visible publiquement" : "Brouillon"}
-            </p>
+            {isPublished && (
+              <button
+                onClick={() => setDeleteModalOpen(true)}
+                className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors py-1"
+              >
+                Supprimer mon annonce
+              </button>
+            )}
           </div>
+        </div>
+
+        {/* Mobile bottom actions */}
+        <div className="flex lg:hidden flex-col gap-2 mt-3">
+          <button
+            onClick={() => setPreviewOpen(true)}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold border-2 bg-white transition-colors flex items-center justify-center"
+            style={{ borderColor: "#0F6E56", color: "#0F6E56" }}
+          >
+            Aperçu de mon annonce
+          </button>
+          {isPublished && (
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors py-1 text-center"
+            >
+              Supprimer mon annonce
+            </button>
+          )}
         </div>
       </aside>
 
@@ -346,7 +440,7 @@ export default function EditListingForm({
                 value={form.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
                 className={`${inputCls} resize-none`}
-                rows={8}
+                rows={32}
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
               />
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-gray-400"}`}>
@@ -399,7 +493,7 @@ export default function EditListingForm({
 
           {/* Section: Équipements */}
           {activeSection === "equipements" && (
-            <SectionShell title="Équipements" emoji="✨">
+            <SectionShell title="Caractéristiques" emoji="✨">
               <AmenitiesPicker
                 selected={form.amenities}
                 onChange={(amenities) => set("amenities", amenities)}
@@ -421,22 +515,14 @@ export default function EditListingForm({
           {/* Section: Calendrier */}
           {activeSection === "calendrier" && (
             <SectionShell title="Calendrier" emoji="📅">
-              <div className="text-center py-8">
-                <div className="text-4xl mb-4">📅</div>
-                <p className="text-gray-600 font-medium mb-2">Gérez vos disponibilités</p>
-                <p className="text-sm text-gray-400 mb-6 max-w-sm mx-auto">
-                  Bloquez des dates, synchronisez votre calendrier iCal et exportez vos disponibilités.
-                </p>
-                <Link
-                  href={`/dashboard/listings/${listingId}/availability`}
-                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors text-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Gérer les disponibilités
-                </Link>
+              <div className="space-y-8">
+                <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} />
+                <ICalSync
+                  listingId={listingId}
+                  initialUrl={icalUrl}
+                  initialLastSync={icalLastSync}
+                  exportUrl={exportUrl}
+                />
               </div>
             </SectionShell>
           )}
@@ -567,6 +653,175 @@ export default function EditListingForm({
             </SectionShell>
           )}
 
+          {/* Section: Publier */}
+          {activeSection === "publier" && (() => {
+            const slotsLeft = Math.max(0, FREE_LAUNCH_LIMIT - activeSubscriptionCount);
+            const isFree = slotsLeft > 0;
+            const hasPhotos = (form.photos as PhotoItem[]).length >= MIN_PHOTOS;
+            const hasCitq = form.citq_number.length === 6;
+            const canPublish = hasPhotos && hasCitq;
+            const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
+            const daysUntilExpiry = expiryDate
+              ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              : null;
+            const oneYearFromNow = new Date();
+            oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+            if (isPublished && subStatus === "active") {
+              return (
+                <SectionShell title="Publier mon annonce" emoji="🚀">
+                  <div className="space-y-5 max-w-md">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1 text-xs font-semibold">
+                        ✓ Annonce en ligne
+                      </span>
+                    </div>
+                    {expiryDate && (
+                      <p className="text-sm text-gray-500">
+                        Abonnement valide jusqu&apos;au{" "}
+                        <strong className="text-gray-800">
+                          {expiryDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                        </strong>
+                      </p>
+                    )}
+                    <button
+                      onClick={() => setPreviewOpen(true)}
+                      className="inline-flex items-center gap-2 border border-primary text-primary px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-50 transition-colors"
+                    >
+                      Aperçu de mon annonce
+                    </button>
+                    {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <p className="text-sm text-amber-800 font-medium mb-2">
+                          Votre abonnement expire dans {daysUntilExpiry} jour{daysUntilExpiry > 1 ? "s" : ""}
+                        </p>
+                        <Link
+                          href="/dashboard/subscription"
+                          className="text-sm text-amber-700 font-semibold hover:underline"
+                        >
+                          Renouveler maintenant →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </SectionShell>
+              );
+            }
+
+            return (
+              <SectionShell title="Publier mon annonce" emoji="🚀">
+                <div className="max-w-md space-y-5">
+                  {!canPublish && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                      <p className="text-sm font-semibold text-amber-800">Complétez votre annonce avant de publier :</p>
+                      {!hasPhotos && (
+                        <button
+                          onClick={() => setActiveSection("photos")}
+                          className="block text-sm text-amber-700 hover:underline"
+                        >
+                          → Ajoutez au moins {MIN_PHOTOS} photos
+                        </button>
+                      )}
+                      {!hasCitq && (
+                        <button
+                          onClick={() => setActiveSection("infos")}
+                          className="block text-sm text-amber-700 hover:underline"
+                        >
+                          → Entrez votre numéro CITQ (6 chiffres)
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {isFree ? (
+                    <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
+                      🎉 Offre de lancement
+                    </div>
+                  ) : null}
+
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 mb-1">
+                      {isFree ? "Publiez votre chalet gratuitement" : "Publiez votre chalet"}
+                    </h3>
+                    {isFree && (
+                      <>
+                        <div className="flex items-center justify-between mb-1 mt-3">
+                          <span className="text-xs text-gray-600">Places gratuites restantes</span>
+                          <span className="text-xs font-bold text-primary">{slotsLeft} / {FREE_LAUNCH_LIMIT}</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                          <div
+                            className="bg-primary rounded-full h-1.5"
+                            style={{ width: `${(activeSubscriptionCount / FREE_LAUNCH_LIMIT) * 100}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Il reste <strong className="text-gray-700">{slotsLeft} place{slotsLeft > 1 ? "s" : ""} gratuite{slotsLeft > 1 ? "s" : ""}</strong> sur {FREE_LAUNCH_LIMIT}
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  <ul className="space-y-1.5">
+                    {PUBLISH_FEATURES.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
+                        <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div>
+                    {isFree ? (
+                      <>
+                        <p className="text-sm text-gray-400 line-through mb-0.5">299 $/an</p>
+                        <p className="text-2xl font-extrabold text-primary mb-1">GRATUIT</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-extrabold text-gray-900 mb-0.5">299 $</p>
+                        <p className="text-sm text-gray-400 mb-1">par année</p>
+                      </>
+                    )}
+                  </div>
+
+                  {publishError && (
+                    <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{publishError}</p>
+                  )}
+
+                  {isFree ? (
+                    <>
+                      <button
+                        onClick={handleActivateFree}
+                        disabled={publishLoading || !canPublish}
+                        className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+                      >
+                        {publishLoading ? "Activation…" : "Activer mon annonce gratuitement"}
+                      </button>
+                      <p className="text-xs text-gray-400">
+                        Valide jusqu&apos;au{" "}
+                        {oneYearFromNow.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleStripeCheckout}
+                        disabled={publishLoading || !canPublish}
+                        className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+                      >
+                        {publishLoading ? "Redirection vers le paiement…" : "Payer et publier — 299 $/an"}
+                      </button>
+                      <p className="text-xs text-gray-400">Paiement sécurisé par Stripe · Annulable à tout moment</p>
+                    </>
+                  )}
+                </div>
+              </SectionShell>
+            );
+          })()}
+
           {/* Save bar */}
           {hasSaveButton && (
             <div className="mt-6 pt-5 border-t border-gray-100 flex items-center gap-3">
@@ -588,31 +843,9 @@ export default function EditListingForm({
           )}
         </div>
 
-        {/* Mobile publish toggle */}
-        <div className="flex lg:hidden items-center justify-between mt-4 bg-white rounded-2xl border border-gray-100 px-5 py-4">
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              Statut : {isPublished ? "Publié" : "Brouillon"}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {isPublished ? "Visible publiquement" : "Non visible"}
-            </p>
-          </div>
-          <button
-            onClick={handleTogglePublish}
-            disabled={togglingPublish}
-            className={[
-              "px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50",
-              isPublished
-                ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                : "bg-primary text-white hover:bg-primary-dark",
-            ].join(" ")}
-          >
-            {togglingPublish ? "…" : isPublished ? "Dépublier" : "Publier"}
-          </button>
-        </div>
       </div>
     </div>
+    </>
   );
 }
 

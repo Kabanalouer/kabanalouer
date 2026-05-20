@@ -7,9 +7,19 @@ import FiltersModal from "@/components/chalets/FiltersModal";
 import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = {
-  title: "Chalets à louer au Québec — Kabanalouer",
+  title: "Chalets à louer au Québec",
   description:
-    "Parcourez des centaines de chalets au Québec. Filtrez par région, capacité et équipements. Contact direct avec les propriétaires.",
+    "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
+  alternates: { canonical: "/chalets" },
+  openGraph: {
+    title: "Chalets à louer au Québec | Kabanalouer",
+    description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
+    url: "/chalets",
+  },
+  twitter: {
+    title: "Chalets à louer au Québec | Kabanalouer",
+    description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements.",
+  },
 };
 
 interface PageProps {

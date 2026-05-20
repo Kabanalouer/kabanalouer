@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST() {
+export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const body = await request.json().catch(() => ({}));
+  const listingId: string | undefined = body.listingId;
 
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
@@ -45,10 +47,14 @@ export async function POST() {
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/dashboard/subscription?success=1`,
-    cancel_url: `${appUrl}/dashboard/subscription?canceled=1`,
+    success_url: listingId
+      ? `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`
+      : `${appUrl}/dashboard/subscription?success=1`,
+    cancel_url: listingId
+      ? `${appUrl}/dashboard/listings/${listingId}/publish?canceled=1`
+      : `${appUrl}/dashboard/subscription?canceled=1`,
     allow_promotion_codes: true,
-    metadata: { supabase_user_id: user.id },
+    metadata: { supabase_user_id: user.id, ...(listingId ? { listing_id: listingId } : {}) },
   });
 
   return NextResponse.json({ url: session.url });

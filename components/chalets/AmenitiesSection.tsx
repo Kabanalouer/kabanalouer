@@ -16,7 +16,7 @@ export default function AmenitiesSection({ amenities }: { amenities: string[] })
 
   return (
     <div>
-      <h2 className="font-semibold text-gray-900 mb-4">Caractéristiques du chalet</h2>
+      <h2 className="font-semibold text-gray-900 mb-4">Points forts du chalet</h2>
 
       {/* Top 3 highlight cards */}
       <div className="grid grid-cols-3 gap-3 mb-4">

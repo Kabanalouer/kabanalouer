@@ -7,28 +7,57 @@ const MONTH_NAMES = [
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
 ];
 const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-const MAX_OFFSET = 17; // 18 months total, indices 0–17
+const MAX_OFFSET = 17;
+
+const BLOCKED_COLOR = "#FECACA"; // red-200
 
 type BlockedEntry = { date: string; source: "manual" | "ical" };
+type RangePos = "start" | "end" | "middle" | "single";
 
 function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+function offsetDate(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T12:00:00Z");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function getRangePos(dateStr: string, allBlocked: Set<string>): RangePos {
+  const hasPrev = allBlocked.has(offsetDate(dateStr, -1));
+  const hasNext = allBlocked.has(offsetDate(dateStr, +1));
+  if (!hasPrev && !hasNext) return "single";
+  if (!hasPrev) return "start";
+  if (!hasNext) return "end";
+  return "middle";
+}
+
+function BlockBg({ pos }: { pos: RangePos }) {
+  const c = BLOCKED_COLOR;
+  if (pos === "middle") return <div className="absolute inset-0 rounded" style={{ background: c }} />;
+  if (pos === "start")  return <div className="absolute inset-y-0 right-0 w-1/2 rounded-r" style={{ background: c }} />;
+  if (pos === "end")    return <div className="absolute inset-y-0 left-0 w-1/2 rounded-l" style={{ background: c }} />;
+  return (
+    <div className="absolute inset-0 rounded overflow-hidden">
+      <div className="absolute inset-0" style={{ background: `linear-gradient(to top right, transparent 50%, ${c} 50%)` }} />
+      <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom left, transparent 50%, ${c} 50%)` }} />
+    </div>
+  );
+}
+
 function MonthGrid({
   year,
   month,
-  blockedDates,
-  icalDates,
+  allBlocked,
   today,
 }: {
   year: number;
   month: number;
-  blockedDates: Set<string>;
-  icalDates: Set<string>;
+  allBlocked: Set<string>;
   today: string;
 }) {
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInMonth    = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
 
   return (
@@ -46,19 +75,28 @@ function MonthGrid({
       <div className="grid grid-cols-7 gap-y-0.5">
         {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const dateStr = toDateStr(year, month, day);
-          const isPast = dateStr < today;
-          const isManual = blockedDates.has(dateStr);
-          const isIcal = icalDates.has(dateStr);
+          const day      = i + 1;
+          const dateStr  = toDateStr(year, month, day);
+          const isPast   = dateStr < today;
+          const isBlocked = allBlocked.has(dateStr);
+          const rangePos  = isBlocked ? getRangePos(dateStr, allBlocked) : null;
 
-          let cls = "aspect-square rounded text-[11px] flex items-center justify-center ";
-          if (isPast)        cls += "text-gray-200";
-          else if (isManual) cls += "bg-red-50 text-red-400 font-medium";
-          else if (isIcal)   cls += "bg-amber-50 text-amber-500 font-medium";
-          else               cls += "text-gray-600";
-
-          return <div key={day} className={cls}>{day}</div>;
+          return (
+            <div
+              key={day}
+              className="aspect-square relative flex items-center justify-center"
+            >
+              {rangePos && <BlockBg pos={rangePos} />}
+              <span className={[
+                "relative z-10 text-[11px]",
+                isPast    ? "text-gray-200" :
+                isBlocked ? "text-red-500 font-medium" :
+                            "text-gray-600",
+              ].join(" ")}>
+                {day}
+              </span>
+            </div>
+          );
         })}
       </div>
     </div>
@@ -67,13 +105,12 @@ function MonthGrid({
 
 export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] }) {
   const today = new Date().toISOString().slice(0, 10);
-  const now = new Date();
+  const now   = new Date();
 
-  const blockedDates = new Set(blocked.filter((e) => e.source === "manual").map((e) => e.date));
-  const icalDates    = new Set(blocked.filter((e) => e.source === "ical").map((e) => e.date));
+  const allBlocked = new Set(blocked.map((e) => e.date));
 
-  const [startOffset, setStartOffset] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [startOffset,   setStartOffset]   = useState(0);
+  const [visibleCount,  setVisibleCount]  = useState(3);
 
   useEffect(() => {
     const update = () => setVisibleCount(window.innerWidth < 640 ? 1 : 3);
@@ -104,7 +141,6 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-
         <button
           onClick={() => setStartOffset((o) => o + 1)}
           disabled={!canRight}
@@ -124,29 +160,36 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
             key={`${year}-${month}`}
             year={year}
             month={month}
-            blockedDates={blockedDates}
-            icalDates={icalDates}
+            allBlocked={allBlocked}
             today={today}
           />
         ))}
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-xs text-gray-500">
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-white border border-gray-200" />
+          <div className="relative w-4 h-4 rounded border border-gray-200 overflow-hidden bg-white shrink-0" />
           Disponible
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-red-50 border border-red-100" />
-          Indisponible
-        </div>
-        {icalDates.size > 0 && (
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-amber-50 border border-amber-100" />
-            Réservé (calendrier ext.)
+          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
+            <div className="absolute inset-0" style={{ background: BLOCKED_COLOR }} />
           </div>
-        )}
+          Non disponible
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
+            <div className="absolute inset-y-0 right-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
+          </div>
+          Arrivée
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
+            <div className="absolute inset-y-0 left-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
+          </div>
+          Départ
+        </div>
       </div>
 
       {blocked.length === 0 && (

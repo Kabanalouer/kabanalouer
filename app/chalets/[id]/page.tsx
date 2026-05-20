@@ -30,14 +30,34 @@ export async function generateMetadata({ params }: Props) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("listings")
-    .select("title, region, description")
+    .select("title, region, city, description, photos")
     .eq("id", id)
     .eq("is_published", true)
     .single();
   if (!data) return {};
+
+  const location = [data.city, data.region].filter(Boolean).join(", ");
+  const title = location ? `${data.title} | ${location}` : data.title;
+  const description = (data.description as string | null)?.slice(0, 160) ?? "";
+  const photos = normalizePhotos(data.photos);
+  const ogImage = photos[0]?.url ?? DEFAULT_PHOTO;
+
   return {
-    title: `${data.title} — Kabanalouer`,
-    description: data.description?.slice(0, 155),
+    title,
+    description,
+    alternates: { canonical: `/chalets/${id}` },
+    openGraph: {
+      title,
+      description,
+      url: `/chalets/${id}`,
+      type: "article",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: data.title }],
+    },
+    twitter: {
+      title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 
@@ -243,6 +263,41 @@ export default async function ListingPage({ params, searchParams }: Props) {
 
   const isOwner = !!(user && host && user.id === host.id);
 
+  const lodgingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    name: listing.title,
+    description: (listing.description as string | null) ?? "",
+    image: photos.map((p) => p.url),
+    url: `https://kabanalouer.vercel.app/chalets/${id}`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: city ?? listing.region,
+      addressRegion: listing.region,
+      addressCountry: "CA",
+    },
+    ...(listing.latitude && listing.longitude
+      ? { geo: { "@type": "GeoCoordinates", latitude: listing.latitude, longitude: listing.longitude } }
+      : {}),
+    ...(listing.price_on_request === false && listing.price_low > 0
+      ? { priceRange: `$${listing.price_low} CAD / nuit` }
+      : {}),
+    amenityFeature: amenities.map((a) => ({ "@type": "LocationFeatureSpecification", name: a, value: true })),
+    numberOfRooms: bedroomCount,
+    occupancy: { "@type": "QuantitativeValue", maxValue: listing.capacity, unitText: "personnes" },
+    ...(reviews && reviews.length > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: avgRating.toFixed(1),
+            reviewCount: reviews.length,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   const subtitleParts = [
     city ? `${city}, ${listing.region}` : listing.region,
     `${listing.capacity} personne${listing.capacity > 1 ? "s" : ""}`,
@@ -253,6 +308,10 @@ export default async function ListingPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(lodgingJsonLd) }}
+      />
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">

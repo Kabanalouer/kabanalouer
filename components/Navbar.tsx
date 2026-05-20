@@ -303,6 +303,9 @@ export default function Navbar() {
             <Link href="/chalets" className="text-gray-600 hover:text-primary transition-colors font-medium">
               Parcourir les chalets
             </Link>
+            <Link href="/devenir-hote" className="text-gray-600 hover:text-primary transition-colors font-medium">
+              Devenir hôte
+            </Link>
           </div>
 
           {/* Right side */}
@@ -400,6 +403,7 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 pb-5 px-4 sm:px-6">
             <Link href="/chalets" className="text-gray-700 font-medium py-1">Parcourir les chalets</Link>
+            <Link href="/devenir-hote" className="text-gray-700 font-medium py-1">Devenir hôte</Link>
             <div className="border-t border-gray-100 pt-3 mt-1 flex flex-col gap-2">
               {isHost && voyageurMode && (
                 <button onClick={exitVoyageurMode} className="text-left text-primary font-medium">
@@ -440,6 +444,9 @@ export default function Navbar() {
             <Link href="/comment-ca-marche" className="text-gray-600 hover:text-primary transition-colors font-medium">
               Comment ça marche
             </Link>
+            <Link href="/devenir-hote" className="text-gray-600 hover:text-primary transition-colors font-medium">
+              Devenir hôte
+            </Link>
           </div>
 
           {/* Desktop right */}
@@ -475,6 +482,7 @@ export default function Navbar() {
           <div className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 pb-5">
             <Link href="/chalets" className="text-gray-700 font-medium py-1">Parcourir les chalets</Link>
             <Link href="/comment-ca-marche" className="text-gray-700 font-medium py-1">Comment ça marche</Link>
+            <Link href="/devenir-hote" className="text-gray-700 font-medium py-1">Devenir hôte</Link>
             <div className="border-t border-gray-100 pt-3 mt-1 flex flex-col gap-2">
               <Link href="/login" className="text-gray-700 font-medium">Connexion</Link>
               <Link href="/signup" className="bg-primary text-white text-center py-2.5 rounded-xl font-semibold">

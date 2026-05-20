@@ -14,7 +14,8 @@ function SignupForm() {
     return n.startsWith("/") ? n : "/";
   })();
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("traveler");
@@ -31,7 +32,7 @@ function SignupForm() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, role } },
+      options: { data: { first_name: firstName, last_name: lastName, name: `${firstName} ${lastName}`, role } },
     });
 
     if (error) {
@@ -137,16 +138,29 @@ function SignupForm() {
             <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">{error}</div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom complet</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="Marie Tremblay"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="Marie"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="Tremblay"
+                required
+              />
+            </div>
           </div>
 
           <div>

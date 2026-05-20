@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
         .update({ role: "host", stripe_customer_id: session.customer as string })
         .eq("id", userId);
 
+      const listingId = session.metadata?.listing_id;
+      if (listingId) {
+        await supabase.from("listings").update({ is_published: true }).eq("id", listingId);
+      }
+
       break;
     }
 

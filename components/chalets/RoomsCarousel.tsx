@@ -111,8 +111,9 @@ function RoomCard({ room }: { room: Room }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
             <span className="text-3xl">{isBedroom ? "🛏" : "🛋"}</span>
+            <span className="text-xs text-gray-400">Aucune photo</span>
           </div>
         )}
 

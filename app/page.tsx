@@ -6,72 +6,35 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
+import { normalizePhotos } from "@/lib/photo";
+import type { Metadata } from "next";
 
-const MOCK_LISTINGS: Listing[] = [
-  {
-    id: "1",
-    title: "Chalet rustique au bord du lac Tremblant",
-    region: "Laurentides",
-    price: 275,
-    capacity: 8,
-    bedrooms: 4,
-    photos: ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80"],
-    tags: ["Bord du lac", "Spa", "Foyer"],
+export const metadata: Metadata = {
+  title: "Kabanalouer — Location de chalets au Québec | Contact direct avec les propriétaires",
+  description:
+    "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Kabanalouer — Location de chalets au Québec",
+    description:
+      "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service.",
+    url: "/",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80",
+        width: 1200,
+        height: 630,
+        alt: "Chalet au bord du lac au Québec",
+      },
+    ],
   },
-  {
-    id: "2",
-    title: "Villa de luxe avec vue sur le fleuve Saint-Laurent",
-    region: "Charlevoix",
-    price: 520,
-    capacity: 12,
-    bedrooms: 6,
-    photos: ["https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80"],
-    tags: ["Vue panoramique", "Piscine", "Ski"],
+  twitter: {
+    title: "Kabanalouer — Location de chalets au Québec",
+    description:
+      "Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
+    images: ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80"],
   },
-  {
-    id: "3",
-    title: "Micro-chalet moderne dans les bois",
-    region: "Estrie",
-    price: 185,
-    capacity: 4,
-    bedrooms: 2,
-    photos: ["https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80"],
-    isNew: true,
-    tags: ["Nature", "Tranquillité", "Randonnée"],
-  },
-  {
-    id: "4",
-    title: "Grand chalet familial près des pistes de ski",
-    region: "Lanaudière",
-    price: 350,
-    capacity: 16,
-    bedrooms: 8,
-    photos: ["https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80"],
-    tags: ["Ski alpin", "Piscine intérieure", "Billard"],
-  },
-  {
-    id: "5",
-    title: "Chalet au bord de la rivière Batiscan",
-    region: "Mauricie",
-    price: 225,
-    capacity: 6,
-    bedrooms: 3,
-    photos: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"],
-    isNew: true,
-    tags: ["Rivière", "Kayak", "Foyer extérieur"],
-  },
-  {
-    id: "6",
-    title: "Chalet nordique avec sauna et spa privatif",
-    region: "Saguenay–Lac-Saint-Jean",
-    price: 310,
-    capacity: 8,
-    bedrooms: 4,
-    photos: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80"],
-    isNew: true,
-    tags: ["Sauna", "Spa", "Raquettes"],
-  },
-];
+};
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -92,8 +55,45 @@ export default async function HomePage() {
     }
   }
 
+  const { data: rawListings } = await supabase
+    .from("listings")
+    .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({
+    id: l.id,
+    title: l.title ?? "",
+    region: l.region ?? "",
+    city: (l.city as string | null) ?? null,
+    price: (l.price_low as number) ?? 0,
+    priceOnRequest: (l.price_on_request as boolean) ?? false,
+    capacity: (l.capacity as number) ?? 1,
+    bedrooms: (l.bedrooms as number) ?? 1,
+    photos: normalizePhotos(l.photos).map((p) => p.url),
+    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+  }));
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Kabanalouer",
+    url: "https://kabanalouer.vercel.app",
+    description: "Marketplace de location de chalets au Québec",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://kabanalouer.vercel.app/chalets?destination={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <Navbar />
 
       {/* ── Hero ── */}
@@ -139,9 +139,9 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Chalets à la une</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Nouveaux chalets</h2>
             <p className="text-gray-500 mt-1 text-sm">
-              Des propriétaires vérifiés dans toutes les régions
+              Les derniers chalets ajoutés sur Kabanalouer
             </p>
           </div>
           <Link
@@ -152,7 +152,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_LISTINGS.map((listing) => (
+          {featuredListings.map((listing) => (
             <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
           ))}
         </div>
