@@ -1,0 +1,40 @@
+# Kabanalouer
+
+Kabanalouer est la marketplace de référence pour la location de chalets au Québec, Canada.
+
+## À propos
+
+- Plateforme de mise en relation entre propriétaires de chalets et voyageurs québécois
+- Aucun frais de service pour les voyageurs
+- Contact direct propriétaire-voyageur, sans intermédiaire
+- Chalets disponibles dans toutes les régions du Québec
+- Paiement géré directement entre voyageur et propriétaire
+
+## Régions couvertes
+
+Laurentides, Charlevoix, Cantons-de-l'Est (Estrie), Lanaudière, Mauricie, Outaouais,
+Saguenay–Lac-Saint-Jean, Bas-Saint-Laurent, Gaspésie, Abitibi-Témiscamingue,
+Côte-Nord, Montérégie, Chaudière-Appalaches, Capitale-Nationale
+
+## Pour les propriétaires
+
+- Abonnement annuel : 299 $/an par chalet
+- Offre de lancement : 50 premiers hôtes gratuits
+- Outils inclus : calendrier de disponibilités, synchronisation iCal (Airbnb, Booking),
+  messagerie intégrée, tableau de bord, statistiques, génération de description par IA
+- Aucune commission sur les revenus
+
+## Pour les voyageurs
+
+- Accès gratuit à toutes les annonces
+- Création de compte gratuite
+- Contact direct avec les propriétaires via messagerie intégrée
+- Pas de frais de service ni de commission
+
+## URLs importantes
+
+- Site principal : https://kabanalouer.vercel.app
+- Recherche de chalets : https://kabanalouer.vercel.app/chalets
+- Devenir hôte : https://kabanalouer.vercel.app/devenir-hote
+- Comment ça marche : https://kabanalouer.vercel.app/comment-ca-marche
+- Sitemap : https://kabanalouer.vercel.app/sitemap.xml
