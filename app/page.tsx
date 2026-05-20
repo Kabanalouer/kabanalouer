@@ -89,7 +89,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
@@ -97,37 +97,43 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative h-[580px] z-10">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80')",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-black/65" />
-        </div>
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            <span>✦</span>
-            <span>La marketplace des chalets québécois</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 max-w-3xl leading-tight">
-            Découvrez les plus beaux chalets du Québec
-          </h1>
-          <p className="text-lg md:text-xl mb-10 text-white/85 max-w-lg">
-            Contactez directement les propriétaires.
-            <br />
-            Sans intermédiaire, sans frais de service.
+      <section className="relative h-[600px] md:h-[660px] z-10 overflow-hidden">
+        {/* Photo */}
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-[1.02]"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80')",
+          }}
+        />
+        {/* Overlay — léger en haut, dense en bas */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 pb-8">
+          {/* Eyebrow */}
+          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/75 mb-5">
+            Plus de 500 chalets vérifiés au Québec
           </p>
+
+          {/* Headline */}
+          <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
+            Le Québec, un chalet à la fois.
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-base md:text-lg text-white/80 mb-10 max-w-md leading-relaxed">
+            Trouvez votre prochaine escapade en bord de lac, en forêt ou en montagne.
+            Contact direct avec les propriétaires.
+          </p>
+
           <SearchBar />
         </div>
       </section>
 
-      {/* ── Stats bar ── */}
+      {/* ── Stats strip ── */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-5 flex flex-wrap justify-center gap-6 md:gap-16">
+        <div className="max-w-5xl mx-auto px-4 py-5 flex flex-wrap justify-center gap-8 md:gap-20">
           <Stat value="500+" label="Chalets disponibles" />
           <Stat value="15" label="Régions du Québec" />
           <Stat value="0 $" label="Frais de service" />
@@ -136,78 +142,102 @@ export default async function HomePage() {
       </section>
 
       {/* ── Featured listings ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
-        <div className="flex items-end justify-between mb-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+        {/* Section header */}
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Nouveaux chalets</h2>
-            <p className="text-gray-500 mt-1 text-sm">
-              Les derniers chalets ajoutés sur Kabanalouer
+            <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-2">
+              Coups de cœur · Été 2026
             </p>
+            <h2 className="text-3xl font-bold text-charcoal-800 tracking-[-0.03em] leading-snug">
+              Des chalets choisis avec soin.
+            </h2>
           </div>
           <Link
             href="/chalets"
-            className="text-primary font-semibold text-sm hover:underline hidden md:block"
+            className="text-charcoal-800 font-medium text-sm underline underline-offset-4 hover:text-primary transition-colors hidden md:block"
           >
-            Voir tous les chalets →
+            Tout voir →
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredListings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
-          ))}
-        </div>
-        <div className="mt-8 flex justify-center md:hidden">
-          <Link href="/chalets" className="text-primary font-semibold">
+
+        {featuredListings.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+            {featuredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 text-charcoal-400">
+            <p className="text-lg font-medium mb-2">Aucun chalet disponible pour l&apos;instant.</p>
+            <p className="text-sm">De nouveaux chalets arrivent bientôt.</p>
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center md:hidden">
+          <Link
+            href="/chalets"
+            className="text-charcoal-800 font-medium text-sm underline underline-offset-4"
+          >
             Voir tous les chalets →
           </Link>
         </div>
       </section>
 
-      {/* ── Why Kabanalouer ── */}
-      <section className="bg-[#F8FAF9] py-16">
+      {/* ── Pourquoi Kabanalouer ── */}
+      <section className="bg-charcoal-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-12">
-            Pourquoi choisir Kabanalouer ?
-          </h2>
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-3">
+              Notre différence
+            </p>
+            <h2 className="text-3xl font-bold text-charcoal-800 tracking-[-0.03em]">
+              Pourquoi choisir Kabanalouer ?
+            </h2>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <WhyCard
-              emoji="🤝"
+              icon={<IconUsers />}
               title="Contact direct"
               description="Parlez directement aux propriétaires. Posez vos questions, négociez les dates, aucun intermédiaire entre vous."
             />
             <WhyCard
-              emoji="✅"
+              icon={<IconShieldCheck />}
               title="Propriétaires vérifiés"
-              description="Tous nos hôtes sont validés. Profils complets, photos authentiques et avis de vrais voyageurs pour vous guider."
+              description="Tous nos hôtes détiennent un numéro CITQ valide. Profils complets et photos authentiques pour vous guider."
             />
             <WhyCard
-              emoji="💸"
+              icon={<IconPercent />}
               title="Zéro frais de service"
-              description="Aucune commission cachée pour les voyageurs. Le prix affiché est le prix que vous payez."
+              description="Aucune commission cachée pour les voyageurs. Le prix affiché est le prix que vous payez, point final."
             />
           </div>
         </div>
       </section>
 
-      {/* ── Host CTA ── */}
-      <section className="bg-primary py-16">
+      {/* ── CTA Hôtes ── */}
+      <section className="bg-primary py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">
+          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/60 mb-4">
+            Pour les propriétaires
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-5 tracking-[-0.03em] leading-tight">
             Vous êtes propriétaire de chalet ?
           </h2>
-          <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto leading-relaxed">
+          <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
             Rejoignez des centaines de propriétaires qui font confiance à Kabanalouer.
             Abonnement annuel à seulement{" "}
-            <strong className="text-white">299 $/an</strong>.
+            <strong className="text-white font-semibold">299 $/an</strong> par chalet.
           </p>
           <Link
             href="/signup"
-            className="inline-block bg-white text-primary font-bold px-8 py-4 rounded-xl hover:bg-gray-50 transition-colors text-lg"
+            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-base"
           >
-            Inscrire mon chalet gratuitement →
+            Inscrire mon chalet →
           </Link>
-          <p className="text-white/55 text-sm mt-5">
-            30 jours d&apos;essai gratuit · Aucune carte requise pour commencer
+          <p className="text-white/50 text-xs mt-5 tracking-wide">
+            Offre gratuite pour les 50 premiers hôtes · Aucune carte requise
           </p>
         </div>
       </section>
@@ -217,29 +247,64 @@ export default async function HomePage() {
   );
 }
 
+/* ── Stat ── */
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-500 mt-0.5">{label}</div>
+      <div className="text-2xl font-bold text-charcoal-800 tracking-tight">{value}</div>
+      <div className="text-xs text-charcoal-400 mt-0.5 tracking-wide">{label}</div>
     </div>
   );
 }
 
+/* ── WhyCard ── */
 function WhyCard({
-  emoji,
+  icon,
   title,
   description,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
-      <div className="text-3xl mb-4">{emoji}</div>
-      <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+    <div className="bg-white rounded-2xl p-7 border border-gray-100">
+      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
+        {icon}
+      </div>
+      <h3 className="font-bold text-charcoal-800 text-[17px] mb-2">{title}</h3>
+      <p className="text-charcoal-400 text-sm leading-relaxed">{description}</p>
     </div>
+  );
+}
+
+/* ── Icons (Lucide-compatible SVG, stroke 1.75) ── */
+function IconUsers() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function IconShieldCheck() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  );
+}
+
+function IconPercent() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="7.5" r="1.5" />
+      <circle cx="16.5" cy="16.5" r="1.5" />
+      <line x1="19" y1="5" x2="5" y2="19" />
+    </svg>
   );
 }
