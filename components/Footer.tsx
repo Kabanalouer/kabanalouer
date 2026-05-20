@@ -20,8 +20,8 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-sm">
               <FooterLink href="/chalets" label="Parcourir les chalets" />
+              <FooterLink href="/regions" label="Toutes les régions" />
               <FooterLink href="/comment-ca-marche" label="Comment ça marche" />
-              <FooterLink href="/regions" label="Par région" />
             </ul>
           </div>
 
