@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <div className="text-white font-bold text-xl mb-3">Kabanalouer</div>
             <p className="text-sm leading-relaxed">
-              La marketplace des chalets québécois. Contact direct entre propriétaires et voyageurs.
+              La marketplace de la location de chalet au Québec. Contact direct entre voyageurs et propriétaires.
             </p>
           </div>
 
