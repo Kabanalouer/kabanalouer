@@ -17,8 +17,27 @@ const REGIONS = [
   "Saguenay–Lac-Saint-Jean",
   "Abitibi-Témiscamingue",
   "Côte-Nord",
+  "Montérégie",
+  "Chaudière-Appalaches",
   "Centre-du-Québec",
 ];
+
+// Maps region display value → slug for SEO landing pages
+const REGION_SLUG_MAP: Record<string, string> = {
+  "Charlevoix": "charlevoix",
+  "Estrie (Cantons-de-l'Est)": "cantons-de-lest",
+  "Gaspésie": "gaspesie",
+  "Lanaudière": "lanaudiere",
+  "Laurentides": "laurentides",
+  "Mauricie": "mauricie",
+  "Outaouais": "outaouais",
+  "Québec (ville et région)": "capitale-nationale",
+  "Saguenay–Lac-Saint-Jean": "saguenay-lac-saint-jean",
+  "Abitibi-Témiscamingue": "abitibi-temiscamingue",
+  "Côte-Nord": "cote-nord",
+  "Montérégie": "monteregie",
+  "Chaudière-Appalaches": "chaudiere-appalaches",
+};
 
 const MONTHS_FR = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -270,8 +289,6 @@ export default function SearchBar({
     : null;
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-
     // Destination: if user typed but didn't click a suggestion, try to match
     const active = destSelected ?? (() => {
       const q = destQuery.trim();
@@ -280,11 +297,21 @@ export default function SearchBar({
       if (regionMatch) return { label: regionMatch, type: "region" as const, value: regionMatch };
       return { label: q, type: "city" as const, value: q };
     })();
+
+    // Region-only search (no dates, no guests) → SEO landing page
+    if (active?.type === "region" && !checkin && !checkout && !guests) {
+      const slug = REGION_SLUG_MAP[active.value];
+      if (slug) {
+        router.push(`/chalets/${slug}`);
+        return;
+      }
+    }
+
+    const params = new URLSearchParams();
     if (active) {
       if (active.type === "region") params.set("region", active.value);
       else params.set("city", active.value);
     }
-
     if (checkin) params.set("checkin", checkin);
     if (checkout) params.set("checkout", checkout);
     if (guests) params.set("capacity", guests === "25+" ? "25" : guests);

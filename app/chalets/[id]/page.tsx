@@ -16,6 +16,8 @@ import HostCard from "@/components/chalets/HostCard";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import ShareButton from "@/components/chalets/ShareButton";
 import { normalizePhotos } from "@/lib/photo";
+import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
+import RegionLanding from "./RegionLanding";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -25,8 +27,32 @@ interface Props {
   searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string }>;
 }
 
+export async function generateStaticParams() {
+  return getRegionSlugs().map((slug) => ({ id: slug }));
+}
+
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
+
+  // Region landing page
+  const region = getRegionBySlug(id);
+  if (region) {
+    const title = `Chalets à louer ${region.locative}`;
+    const description = `Découvrez nos chalets à louer ${region.locative}, Québec. Contact direct avec les propriétaires, aucun frais de service. Réservez votre escapade dès aujourd'hui.`;
+    return {
+      title,
+      description,
+      alternates: { canonical: `/chalets/${id}` },
+      openGraph: {
+        title,
+        description,
+        url: `/chalets/${id}`,
+        images: [{ url: region.heroImage, width: 1920, height: 1080, alt: `Chalet ${region.locative}` }],
+      },
+      twitter: { title, description, images: [region.heroImage] },
+    };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("listings")
@@ -61,8 +87,13 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function ListingPage({ params, searchParams }: Props) {
+export default async function ListingOrRegionPage({ params, searchParams }: Props) {
   const { id } = await params;
+
+  // Region landing page — check before any DB query
+  const regionConfig = getRegionBySlug(id);
+  if (regionConfig) return <RegionLanding regionConfig={regionConfig} />;
+
   const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
   const supabase = await createClient();
 
