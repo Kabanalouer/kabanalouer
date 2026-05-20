@@ -5,7 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ContactButton from "@/components/chalets/ContactButton";
+import ContactForm from "@/components/chalets/ContactForm";
 import AvailabilityView from "@/components/chalets/AvailabilityView";
 import ListingMap from "@/components/chalets/ListingMap";
 import ExpandableText from "@/components/chalets/ExpandableText";
@@ -22,6 +22,7 @@ const DEFAULT_PHOTO =
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -40,8 +41,9 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function ListingPage({ params }: Props) {
+export default async function ListingPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: listing }, { data: { user } }] = await Promise.all([
@@ -58,6 +60,15 @@ export default async function ListingPage({ params }: Props) {
 
   // Increment view count (fire and forget — don't block page render)
   void supabase.rpc("increment_listing_views", { p_listing_id: id });
+
+  // User profile for pre-filling the contact form
+  const { data: userProfile } = user
+    ? await supabase.from("users").select("name, phone").eq("id", user.id).single()
+    : { data: null };
+  const profileName = (userProfile as { name?: string; phone?: string } | null)?.name ?? "";
+  const profilePhone = (userProfile as { name?: string; phone?: string } | null)?.phone ?? "";
+  const [profileFirstName, ...rest] = profileName.split(" ");
+  const profileLastName = rest.join(" ");
 
   const { data: availability } = await supabase
     .from("availability")
@@ -517,12 +528,7 @@ export default async function ListingPage({ params }: Props) {
               </div>
 
 
-              {/* Capacity */}
-              <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
-                <span>👥 {listing.capacity} personnes</span>
-                <span>·</span>
-                <span>🛏 {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
-              </div>
+              <hr className="border-gray-100 my-4" />
 
               {/* CTA */}
               {isOwner ? (
@@ -530,19 +536,25 @@ export default async function ListingPage({ params }: Props) {
                   C&apos;est votre chalet
                 </button>
               ) : (
-                <ContactButton
-                  listingId={listing.id}
-                  hostId={host?.id ?? ""}
-                  hostName={host?.name ?? "l'hôte"}
-                  listingTitle={listing.title}
-                  currentUserId={user?.id ?? null}
-                />
-              )}
-
-              {!isOwner && (
-                <p className="text-xs text-gray-400 text-center mt-3">
-                  Contact direct · Zéro frais de service
-                </p>
+                <>
+                  <ContactForm
+                    listingId={listing.id}
+                    hostId={host?.id ?? ""}
+                    hostName={host?.name ?? "l'hôte"}
+                    listingTitle={listing.title}
+                    currentUserId={user?.id ?? null}
+                    initialCheckin={urlCheckin}
+                    initialCheckout={urlCheckout}
+                    initialGuests={urlCapacity}
+                    initialFirstName={profileFirstName}
+                    initialLastName={profileLastName}
+                    initialEmail={user?.email ?? ""}
+                    initialPhone={profilePhone}
+                  />
+                  <p className="text-xs text-gray-400 text-center mt-3">
+                    Contact direct · Zéro frais de service
+                  </p>
+                </>
               )}
             </div>
           </div>
@@ -550,14 +562,30 @@ export default async function ListingPage({ params }: Props) {
 
         {/* Mobile CTA */}
         {!isOwner && (
-          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-4 z-40">
-            <ContactButton
-              listingId={listing.id}
-              hostId={host?.id ?? ""}
-              hostName={host?.name ?? "l'hôte"}
-              listingTitle={listing.title}
-              currentUserId={user?.id ?? null}
-            />
+          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 px-4 py-3 z-40 flex items-center justify-between gap-4">
+            {listing.price_on_request || listing.price_low === 0 ? (
+              <span className="text-sm font-bold text-gray-900">Prix sur demande</span>
+            ) : (
+              <div>
+                <span className="text-lg font-bold text-gray-900">{listing.price_low} $</span>
+                <span className="text-xs text-gray-400"> / nuit</span>
+              </div>
+            )}
+            {user ? (
+              <a
+                href="#contact-form"
+                className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+              >
+                Contacter l&apos;hôte
+              </a>
+            ) : (
+              <a
+                href={`/login?next=/chalets/${listing.id}`}
+                className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+              >
+                Contacter l&apos;hôte
+              </a>
+            )}
           </div>
         )}
       </main>
