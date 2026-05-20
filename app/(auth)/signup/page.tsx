@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Role = "traveler" | "host";
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const next = (() => {
+    const n = searchParams.get("next") ?? "/";
+    return n.startsWith("/") ? n : "/";
+  })();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,12 +44,10 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
+    const callbackUrl = `${window.location.origin}/auth/callback${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { role },
-      },
+      options: { redirectTo: callbackUrl, queryParams: { role } },
     });
   };
 
@@ -61,12 +66,18 @@ export default function SignupPage() {
             <strong className="text-gray-800">{email}</strong>.{" "}
             Cliquez dessus pour activer votre compte.
           </p>
-          <Link
-            href="/"
-            className="mt-6 inline-block text-primary font-semibold text-sm hover:underline"
-          >
-            ← Retour à l&apos;accueil
-          </Link>
+          {next !== "/" ? (
+            <Link
+              href={next}
+              className="mt-6 inline-block text-primary font-semibold text-sm hover:underline"
+            >
+              ← Retourner à la fiche du chalet
+            </Link>
+          ) : (
+            <Link href="/" className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+              ← Retour à l&apos;accueil
+            </Link>
+          )}
         </div>
       </div>
     );
@@ -174,7 +185,10 @@ export default function SignupPage() {
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Déjà un compte ?{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
+          <Link
+            href={`/login${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
+            className="text-primary font-semibold hover:underline"
+          >
             Se connecter
           </Link>
         </p>
@@ -190,27 +204,23 @@ export default function SignupPage() {
   );
 }
 
-function RoleButton({
-  selected,
-  onClick,
-  emoji,
-  title,
-  subtitle,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  emoji: string;
-  title: string;
-  subtitle: string;
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function RoleButton({ selected, onClick, emoji, title, subtitle }: {
+  selected: boolean; onClick: () => void; emoji: string; title: string; subtitle: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`border-2 rounded-xl p-4 text-left transition-all ${
-        selected
-          ? "border-primary bg-primary-50"
-          : "border-gray-200 hover:border-gray-300"
+        selected ? "border-primary bg-primary-50" : "border-gray-200 hover:border-gray-300"
       }`}
     >
       <div className="text-2xl mb-1">{emoji}</div>

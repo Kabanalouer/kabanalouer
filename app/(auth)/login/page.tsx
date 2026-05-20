@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const next = (() => {
+    const n = searchParams.get("next") ?? "/";
+    return n.startsWith("/") ? n : "/";
+  })();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,14 +32,15 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    router.push(next);
     router.refresh();
   };
 
   const handleGoogleLogin = async () => {
+    const callbackUrl = `${window.location.origin}/auth/callback${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl },
     });
   };
 
@@ -104,12 +111,23 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Pas encore de compte ?{" "}
-          <Link href="/signup" className="text-primary font-semibold hover:underline">
+          <Link
+            href={`/signup${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
+            className="text-primary font-semibold hover:underline"
+          >
             S&apos;inscrire gratuitement
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
 
