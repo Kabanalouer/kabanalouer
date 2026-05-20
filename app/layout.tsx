@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 const APP_URL = "https://kabanalouer.vercel.app";
 
@@ -32,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className="h-full">
+    <html lang="fr" className={`h-full ${jakarta.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

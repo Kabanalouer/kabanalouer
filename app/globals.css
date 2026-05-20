@@ -1,24 +1,258 @@
 @import "tailwindcss";
 
+/* ============================================================
+   KABANALOUER — Design Tokens v3
+   Coral primary · Charcoal text · Clean white surfaces
+   Plus Jakarta Sans · Geist Mono
+   ============================================================ */
+
+/* ── Tailwind theme → utility classes (bg-*, text-*, border-*, font-*) ── */
 @theme {
-  --color-primary: #0F6E56;
-  --color-primary-dark: #0A4F3E;
-  --color-secondary: #1D9E75;
-  --color-primary-50: #E8F5F1;
-  --color-ai: #534AB7;
+  /* Primary brand — coral (replaces #0F6E56 green) */
+  --color-primary:        #f04e45;
+  --color-primary-dark:   #d63a32;
+  --color-primary-press:  #b02b25;
+  --color-primary-50:     #fef2f1;
+  --color-primary-100:    #fbdfdc;
+  --color-primary-200:    #f5b8b1;
+  --color-primary-300:    #f08c82;
+  --color-primary-400:    #ed6c61;
+  --color-primary-600:    #d63a32;
+  --color-primary-700:    #b02b25;
+  --color-primary-800:    #871f1a;
+
+  /* Full coral palette (new code: bg-coral-*, text-coral-*) */
+  --color-coral-50:  #fef2f1;
+  --color-coral-100: #fbdfdc;
+  --color-coral-200: #f5b8b1;
+  --color-coral-300: #f08c82;
+  --color-coral-400: #ed6c61;
+  --color-coral-500: #f04e45;
+  --color-coral-600: #d63a32;
+  --color-coral-700: #b02b25;
+  --color-coral-800: #871f1a;
+  --color-coral-900: #561310;
+
+  /* Secondary — teal (bg-teal-*, text-teal-*) */
+  --color-secondary:      #008489;
+  --color-teal-50:  #e0f2f3;
+  --color-teal-100: #b8dee0;
+  --color-teal-200: #80c4c8;
+  --color-teal-300: #4baeb4;
+  --color-teal-400: #1d969d;
+  --color-teal-500: #008489;
+  --color-teal-600: #006a6e;
+  --color-teal-700: #00525a;
+  --color-teal-800: #003c44;
+  --color-teal-900: #00282d;
+
+  /* Charcoal neutrals (bg-charcoal-*, text-charcoal-*) */
+  --color-charcoal-50:  #f7f7f7;
+  --color-charcoal-100: #ebebeb;
+  --color-charcoal-200: #dddddd;
+  --color-charcoal-300: #c4c4c4;
+  --color-charcoal-400: #717171;
+  --color-charcoal-500: #5e5e5e;
+  --color-charcoal-600: #484848;
+  --color-charcoal-700: #333333;
+  --color-charcoal-800: #222222;
+  --color-charcoal-900: #111111;
+
+  /* Sage — nature/Quebec accent (bg-sage-*) */
+  --color-sage-100: #e9eee4;
+  --color-sage-400: #809570;
+  --color-sage-600: #4d6240;
+  --color-sage-800: #2a3a23;
+
+  /* AI components (keep existing) */
+  --color-ai:       #534AB7;
   --color-ai-light: #EEEDFE;
+
+  /* Font families */
+  --font-sans:    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* ── Raw CSS custom properties (design tokens, not Tailwind utilities) ── */
+:root {
+  /* --- Color palette (for CSS var() usage in components) --- */
+  --coral-50:  #fef2f1;
+  --coral-100: #fbdfdc;
+  --coral-200: #f5b8b1;
+  --coral-300: #f08c82;
+  --coral-400: #ed6c61;
+  --coral-500: #f04e45;
+  --coral-600: #d63a32;
+  --coral-700: #b02b25;
+  --coral-800: #871f1a;
+  --coral-900: #561310;
+
+  --teal-50:  #e0f2f3;
+  --teal-100: #b8dee0;
+  --teal-200: #80c4c8;
+  --teal-300: #4baeb4;
+  --teal-400: #1d969d;
+  --teal-500: #008489;
+  --teal-600: #006a6e;
+  --teal-700: #00525a;
+  --teal-800: #003c44;
+  --teal-900: #00282d;
+
+  --sage-100: #e9eee4;
+  --sage-400: #809570;
+  --sage-600: #4d6240;
+  --sage-800: #2a3a23;
+
+  --char-50:  #f7f7f7;
+  --char-100: #ebebeb;
+  --char-200: #dddddd;
+  --char-300: #c4c4c4;
+  --char-400: #717171;
+  --char-500: #5e5e5e;
+  --char-600: #484848;
+  --char-700: #333333;
+  --char-800: #222222;
+  --char-900: #111111;
+
+  --snow:      #ffffff;
+  --snow-warm: #fafafa;
+
+  /* --- Semantic feedback --- */
+  --success: #008489;
+  --warning: #ce9c00;
+  --danger:  #c43d3d;
+  --info:    #5e6a78;
+
+  /* --- Semantic color roles --- */
+  --bg-page:        var(--snow);
+  --bg-surface:     var(--snow);
+  --bg-surface-alt: var(--char-50);
+  --bg-inset:       var(--char-50);
+  --bg-inverse:     var(--char-800);
+
+  --fg-1:          var(--char-800);
+  --fg-2:          var(--char-600);
+  --fg-3:          var(--char-400);
+  --fg-4:          var(--char-300);
+  --fg-on-brand:   var(--snow);
+  --fg-on-inverse: var(--snow);
+  --fg-link:       var(--coral-600);
+
+  --border-1:      var(--char-100);
+  --border-2:      var(--char-200);
+  --border-strong: var(--char-300);
+  --border-focus:  var(--coral-500);
+
+  --brand-primary:        var(--coral-500);
+  --brand-primary-hover:  var(--coral-600);
+  --brand-primary-press:  var(--coral-700);
+  --brand-secondary:      var(--teal-500);
+
+  /* --- Legacy v1/v2 aliases (back-compat) --- */
+  --forest-500: var(--coral-500);
+  --forest-600: var(--coral-600);
+  --forest-700: var(--coral-700);
+  --ember-500:  var(--coral-500);
+  --ember-600:  var(--coral-600);
+  --lake-500:   var(--teal-500);
+  --lake-600:   var(--teal-600);
+  --birch-100:  var(--char-50);
+  --birch-500:  var(--char-400);
+  --birch-800:  var(--char-700);
+
+  /* --- Typography --- */
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans:    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body:    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --fs-xs:   12px;
+  --fs-sm:   13px;
+  --fs-base: 15px;
+  --fs-md:   16px;
+  --fs-lg:   18px;
+  --fs-xl:   22px;
+  --fs-2xl:  28px;
+  --fs-3xl:  34px;
+  --fs-4xl:  44px;
+  --fs-5xl:  56px;
+  --fs-6xl:  72px;
+
+  --lh-tight:   1.05;
+  --lh-snug:    1.2;
+  --lh-normal:  1.45;
+  --lh-relaxed: 1.6;
+
+  --tracking-tight:  -0.035em;
+  --tracking-normal: -0.01em;
+  --tracking-wide:   0.04em;
+  --tracking-caps:   0.08em;
+
+  --fw-light:     300;
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --fw-extrabold: 800;
+
+  /* --- Spacing (4px grid) --- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* --- Border radius --- */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-pill: 999px;
+
+  /* --- Shadows --- */
+  --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl:    0 24px 56px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(240, 78, 69, 0.45);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* --- Motion --- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --dur-fast:   140ms;
+  --dur-base:   220ms;
+  --dur-slow:   360ms;
+  --dur-slower: 540ms;
+}
+
+/* ── Animations ── */
 @keyframes progressSlide {
   0%   { transform: translateX(-100%); }
   50%  { transform: translateX(100%); }
   100% { transform: translateX(300%); }
 }
 
+/* ── Base ── */
 body {
   background: #ffffff;
-  color: #111827;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  color: #222222;
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
