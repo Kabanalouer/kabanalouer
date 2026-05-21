@@ -25,7 +25,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <FooterLogo />
             <p className="text-sm text-charcoal-400 leading-relaxed mt-4 max-w-xs">
-              La marketplace de la location de chalet au Québec. Contact direct entre voyageurs et propriétaires.
+              La marketplace de la location de chalet au Québec. Payez moins cher en contactant les propriétaires de chalet directement, sans commissions, ni frais de service.
             </p>
           </div>
 
