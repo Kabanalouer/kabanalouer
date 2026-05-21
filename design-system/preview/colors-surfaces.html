@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Surfaces — White &amp; Light Greys</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  body { background: var(--char-100); }
+  .card { padding: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .surface {
+    border-radius: var(--radius-md);
+    padding: 22px;
+    min-height: 140px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    font-family: var(--font-sans);
+  }
+  .surface.snow      { background: var(--snow); border: 1px solid var(--char-100); }
+  .surface.alt       { background: var(--char-50); border: 1px solid var(--char-100); }
+  .surface.inverse   { background: var(--char-800); color: var(--snow); }
+  .surface .role { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+  .surface .name { font-family: var(--font-display); font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+  .surface .hex { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+  .surface .vars { font-family: var(--font-mono); font-size: 10px; opacity: 0.6; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="surface snow">
+    <div class="role">Page · Cards</div>
+    <div>
+      <div class="name">Snow</div>
+      <div class="hex">#ffffff</div>
+      <div class="vars">--bg-page · --snow</div>
+    </div>
+  </div>
+  <div class="surface alt">
+    <div class="role">Alt sections</div>
+    <div>
+      <div class="name">Mist</div>
+      <div class="hex">#f7f7f7</div>
+      <div class="vars">--bg-surface-alt · --char-50</div>
+    </div>
+  </div>
+  <div class="surface inverse">
+    <div class="role">Inverse</div>
+    <div>
+      <div class="name">Char&nbsp;800</div>
+      <div class="hex">#222222</div>
+      <div class="vars">--bg-inverse · hôte CTA</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -76,15 +76,15 @@ export default function CommentCaMarchePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] py-20 border-b border-gray-100">
+      <section className="bg-[#F8FAF9] py-20 border-b border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            🏡 Pour les voyageurs
+            Pour les voyageurs
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
             Comment ça marche ?
           </h1>
-          <p className="text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
+          <p className="text-lg text-charcoal-500 max-w-lg mx-auto leading-relaxed">
             Trouver et réserver votre chalet idéal au Québec en 3 étapes simples.
           </p>
         </div>
@@ -96,20 +96,17 @@ export default function CommentCaMarchePage() {
           <div className="space-y-8">
             <Step
               number={1}
-              emoji="🔍"
               title="Cherchez"
               description="Utilisez notre moteur de recherche pour trouver le chalet parfait. Filtrez par région, dates, nombre de voyageurs et équipements. Consultez les photos, les disponibilités et les avis des voyageurs précédents."
               action={{ label: "Explorer les chalets", href: "/chalets" }}
             />
             <Step
               number={2}
-              emoji="💬"
               title="Contactez"
               description="Envoyez directement un message au propriétaire via notre messagerie intégrée. Posez vos questions, discutez des détails du séjour et obtenez une confirmation. Aucun intermédiaire, contact direct avec le propriétaire."
             />
             <Step
               number={3}
-              emoji="🏡"
               title="Profitez"
               description="Une fois votre séjour confirmé avec le propriétaire, il ne vous reste plus qu'à préparer vos valises et profiter de votre escapade au cœur du Québec !"
             />
@@ -121,21 +118,21 @@ export default function CommentCaMarchePage() {
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900">Pourquoi Kabanalouer ?</h2>
+            <h2 className="text-3xl font-bold text-charcoal-800">Pourquoi Kabanalouer ?</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <WhyCard
-              emoji="💸"
+              icon={<DollarIcon />}
               title="Aucun frais de service"
               description="Contrairement aux grandes plateformes, Kabanalouer ne charge aucun frais de service aux voyageurs. Le prix affiché est le prix que vous payez."
             />
             <WhyCard
-              emoji="🤝"
+              icon={<UsersIcon />}
               title="Contact direct avec les propriétaires"
               description="Pas d'intermédiaire. Vous communiquez directement avec le propriétaire pour personnaliser votre séjour."
             />
             <WhyCard
-              emoji="✅"
+              icon={<ShieldCheckIcon />}
               title="Chalets québécois vérifiés"
               description="Tous nos hôtes sont vérifiés. Des chalets authentiques partout au Québec, pour tous les budgets et toutes les saisons."
             />
@@ -146,7 +143,7 @@ export default function CommentCaMarchePage() {
       {/* ── FAQ ── */}
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+          <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">
             Questions fréquentes
           </h2>
           <div className="space-y-4">
@@ -183,7 +180,7 @@ export default function CommentCaMarchePage() {
           </p>
           <Link
             href="/chalets"
-            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-lg"
+            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
             Explorer les chalets →
           </Link>
@@ -197,13 +194,11 @@ export default function CommentCaMarchePage() {
 
 function Step({
   number,
-  emoji,
   title,
   description,
   action,
 }: {
   number: number;
-  emoji: string;
   title: string;
   description: string;
   action?: { label: string; href: string };
@@ -222,11 +217,8 @@ function Step({
 
       {/* Content */}
       <div className="flex-1 pb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-2xl">{emoji}</span>
-          <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-        </div>
-        <p className="text-gray-500 leading-relaxed max-w-xl">{description}</p>
+        <h3 className="text-xl font-bold text-charcoal-800 mb-3">{title}</h3>
+        <p className="text-charcoal-500 leading-relaxed max-w-xl">{description}</p>
         {action && (
           <Link
             href={action.href}
@@ -241,28 +233,52 @@ function Step({
 }
 
 function WhyCard({
-  emoji,
+  icon,
   title,
   description,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
-      <div className="text-3xl mb-4">{emoji}</div>
-      <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+    <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
+      <div className="mb-4">{icon}</div>
+      <h3 className="font-bold text-charcoal-800 mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <div className="border border-gray-100 rounded-2xl p-6 bg-[#F8FAF9]">
-      <p className="font-semibold text-gray-900 mb-2">{question}</p>
-      <p className="text-gray-500 text-sm leading-relaxed">{answer}</p>
+    <div className="border border-[#ebebeb] rounded-2xl p-6 bg-[#F8FAF9]">
+      <p className="font-semibold text-charcoal-800 mb-2">{question}</p>
+      <p className="text-charcoal-500 text-sm leading-relaxed">{answer}</p>
     </div>
+  );
+}
+
+function DollarIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  );
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
   );
 }

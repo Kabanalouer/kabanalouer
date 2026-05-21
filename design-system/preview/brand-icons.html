@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Iconography — Lucide</title>
+<link rel="stylesheet" href="_card.css"/>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+  .card { padding: 22px 24px; }
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 14px 12px; }
+  .icon { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--fg-1); }
+  .icon i { display: flex; align-items: center; justify-content: center; }
+  .icon .name { font-family: var(--font-mono); font-size: 9px; color: var(--fg-3); }
+  .head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .head h4 { font-family: var(--font-sans); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin: 0; }
+  .head .meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-4); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head">
+    <h4>Lucide</h4>
+    <span class="meta">outline · stroke 1.75 · currentColor</span>
+  </div>
+  <div class="grid">
+    <div class="icon"><i data-lucide="search"></i><span class="name">search</span></div>
+    <div class="icon"><i data-lucide="map-pin"></i><span class="name">map-pin</span></div>
+    <div class="icon"><i data-lucide="calendar"></i><span class="name">calendar</span></div>
+    <div class="icon"><i data-lucide="users"></i><span class="name">users</span></div>
+    <div class="icon"><i data-lucide="bed-double"></i><span class="name">bed</span></div>
+    <div class="icon"><i data-lucide="bath"></i><span class="name">bath</span></div>
+    <div class="icon"><i data-lucide="flame"></i><span class="name">flame</span></div>
+    <div class="icon"><i data-lucide="trees"></i><span class="name">trees</span></div>
+    <div class="icon"><i data-lucide="waves"></i><span class="name">waves</span></div>
+    <div class="icon"><i data-lucide="mountain-snow"></i><span class="name">mountain</span></div>
+    <div class="icon"><i data-lucide="heart"></i><span class="name">heart</span></div>
+    <div class="icon"><i data-lucide="star"></i><span class="name">star</span></div>
+    <div class="icon"><i data-lucide="wifi"></i><span class="name">wifi</span></div>
+    <div class="icon"><i data-lucide="car"></i><span class="name">car</span></div>
+    <div class="icon"><i data-lucide="dog"></i><span class="name">dog</span></div>
+    <div class="icon"><i data-lucide="key-round"></i><span class="name">key</span></div>
+    <div class="icon"><i data-lucide="message-circle"></i><span class="name">message</span></div>
+    <div class="icon"><i data-lucide="bell"></i><span class="name">bell</span></div>
+    <div class="icon"><i data-lucide="sliders-horizontal"></i><span class="name">filters</span></div>
+    <div class="icon"><i data-lucide="circle-user"></i><span class="name">profile</span></div>
+  </div>
+</div>
+<script>
+  lucide.createIcons({
+    attrs: { 'stroke-width': 1.75, width: 22, height: 22 }
+  });
+</script>
+</body>
+</html>

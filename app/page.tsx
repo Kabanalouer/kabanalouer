@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     url: "/",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80",
+        url: "https://kabanalouer.vercel.app/hero-chalet.webp",
         width: 1200,
         height: 630,
         alt: "Chalet au bord du lac au Québec",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Kabanalouer — Location de chalets au Québec",
     description:
       "Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
-    images: ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80"],
+    images: ["https://kabanalouer.vercel.app/hero-chalet.webp"],
   },
 };
 
@@ -97,13 +97,13 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative h-[600px] md:h-[660px] z-10 overflow-hidden">
+      <section className="relative h-[100svh] md:h-screen z-10 overflow-hidden">
         {/* Photo */}
         <div
           className="absolute inset-0 bg-cover bg-center scale-[1.02]"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80')",
+              "url('/hero-chalet.webp')",
           }}
         />
         {/* Overlay — léger en haut, dense en bas */}
@@ -111,20 +111,19 @@ export default async function HomePage() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 pb-8">
-          {/* Eyebrow */}
-          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/75 mb-5">
-            Plus de 500 chalets vérifiés au Québec
-          </p>
+          {/* Badge */}
+          <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
+            La marketplace de la location de chalet au Québec
+          </div>
 
           {/* Headline */}
           <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
-            Le Québec, un chalet à la fois.
+            Trouvez votre chalet au Québec en quelques clics.
           </h1>
 
           {/* Subtitle */}
           <p className="text-base md:text-lg text-white/80 mb-10 max-w-md leading-relaxed">
-            Trouvez votre prochaine escapade en bord de lac, en forêt ou en montagne.
-            Contact direct avec les propriétaires.
+            Payez moins cher en contactant le propriétaire directement.
           </p>
 
           <SearchBar />

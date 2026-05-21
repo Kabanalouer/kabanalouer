@@ -36,16 +36,16 @@ export default function ConfidentialitePage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 w-full flex-1">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Légal</p>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+          <p className="text-xs text-charcoal-400 uppercase tracking-widest mb-2">Légal</p>
+          <h1 className="text-3xl font-bold text-charcoal-800 mb-3">
             Politique de confidentialité
           </h1>
-          <p className="text-sm text-gray-400">Dernière mise à jour : mai 2026</p>
+          <p className="text-sm text-charcoal-400">Dernière mise à jour : mai 2026</p>
         </div>
 
         {/* Table of contents */}
-        <nav className="bg-gray-50 rounded-2xl p-6 mb-12 border border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+        <nav className="bg-charcoal-50 rounded-2xl p-6 mb-12 border border-[#ebebeb]">
+          <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-4">
             Table des matières
           </p>
           <ol className="space-y-2">
@@ -63,7 +63,7 @@ export default function ConfidentialitePage() {
         </nav>
 
         {/* Intro */}
-        <p className="text-gray-600 leading-relaxed mb-10">
+        <p className="text-charcoal-600 leading-relaxed mb-10">
           La présente politique de confidentialité décrit comment Kabanalouer (« nous »,
           « notre ») collecte, utilise et protège vos données personnelles lorsque vous
           utilisez la plateforme accessible à <strong>kabanalouer.vercel.app</strong>. Elle
@@ -74,7 +74,7 @@ export default function ConfidentialitePage() {
           électroniques</em> (LPRPDE, Canada).
         </p>
 
-        <div className="space-y-12 text-gray-700">
+        <div className="space-y-12 text-charcoal-700">
 
           {/* 1 */}
           <section id="responsable" className="scroll-mt-24">
@@ -101,8 +101,8 @@ export default function ConfidentialitePage() {
               <p>Nous collectons les catégories de données suivantes :</p>
 
               <div>
-                <p className="font-semibold text-gray-900 mb-2">Données d&apos;inscription</p>
-                <ul className="list-disc list-inside space-y-1 pl-2 text-gray-600">
+                <p className="font-semibold text-charcoal-800 mb-2">Données d&apos;inscription</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>Adresse courriel</li>
                   <li>Prénom et nom</li>
                   <li>Mot de passe (stocké sous forme hachée, jamais en clair)</li>
@@ -111,8 +111,8 @@ export default function ConfidentialitePage() {
               </div>
 
               <div>
-                <p className="font-semibold text-gray-900 mb-2">Données d&apos;annonce (hôtes)</p>
-                <ul className="list-disc list-inside space-y-1 pl-2 text-gray-600">
+                <p className="font-semibold text-charcoal-800 mb-2">Données d&apos;annonce (hôtes)</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>Informations sur le chalet (titre, description, adresse, équipements, tarifs)</li>
                   <li>Photos téléversées</li>
                   <li>Numéro CITQ</li>
@@ -121,8 +121,8 @@ export default function ConfidentialitePage() {
               </div>
 
               <div>
-                <p className="font-semibold text-gray-900 mb-2">Données de navigation</p>
-                <ul className="list-disc list-inside space-y-1 pl-2 text-gray-600">
+                <p className="font-semibold text-charcoal-800 mb-2">Données de navigation</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>Adresse IP</li>
                   <li>Type de navigateur et système d&apos;exploitation</li>
                   <li>Pages visitées et durée des visites</li>
@@ -131,16 +131,16 @@ export default function ConfidentialitePage() {
               </div>
 
               <div>
-                <p className="font-semibold text-gray-900 mb-2">Données de messagerie</p>
-                <ul className="list-disc list-inside space-y-1 pl-2 text-gray-600">
+                <p className="font-semibold text-charcoal-800 mb-2">Données de messagerie</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>Contenu des messages échangés entre hôtes et voyageurs via la plateforme</li>
                   <li>Horodatage des messages</li>
                 </ul>
               </div>
 
               <div>
-                <p className="font-semibold text-gray-900 mb-2">Données de paiement (hôtes)</p>
-                <ul className="list-disc list-inside space-y-1 pl-2 text-gray-600">
+                <p className="font-semibold text-charcoal-800 mb-2">Données de paiement (hôtes)</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>
                     Nous ne stockons pas vos données de paiement. Les transactions sont traitées
                     directement par <strong>Stripe</strong>. Nous conservons uniquement
@@ -194,28 +194,28 @@ export default function ConfidentialitePage() {
                 <LegalItem term="Supabase">
                   Base de données et authentification. Données stockées sur des serveurs AWS
                   (région us-east-1). Politique :{" "}
-                  <span className="text-gray-500">supabase.com/privacy</span>
+                  <span className="text-charcoal-500">supabase.com/privacy</span>
                 </LegalItem>
                 <LegalItem term="Vercel">
                   Hébergement et déploiement de la plateforme. Logs d&apos;accès conservés
                   selon la politique de Vercel. Politique :{" "}
-                  <span className="text-gray-500">vercel.com/legal/privacy-policy</span>
+                  <span className="text-charcoal-500">vercel.com/legal/privacy-policy</span>
                 </LegalItem>
                 <LegalItem term="Stripe">
                   Traitement des paiements d&apos;abonnement hôte. Stripe est certifié
                   PCI-DSS. Politique :{" "}
-                  <span className="text-gray-500">stripe.com/privacy</span>
+                  <span className="text-charcoal-500">stripe.com/privacy</span>
                 </LegalItem>
                 <LegalItem term="Google Analytics">
                   Analyse du trafic web (données agrégées et anonymisées). Adresses IP
                   tronquées. Politique :{" "}
-                  <span className="text-gray-500">policies.google.com/privacy</span>
+                  <span className="text-charcoal-500">policies.google.com/privacy</span>
                 </LegalItem>
                 <LegalItem term="Anthropic (Claude AI)">
                   Génération automatique de description d&apos;annonce (fonctionnalité
                   optionnelle). Seul le contenu de l&apos;annonce est transmis, sans données
                   personnelles identifiantes. Politique :{" "}
-                  <span className="text-gray-500">anthropic.com/privacy</span>
+                  <span className="text-charcoal-500">anthropic.com/privacy</span>
                 </LegalItem>
               </ul>
               <p>
@@ -395,11 +395,11 @@ export default function ConfidentialitePage() {
         </div>
 
         {/* Back links */}
-        <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
+        <div className="mt-16 pt-8 border-t border-[#ebebeb] flex flex-col sm:flex-row gap-3">
           <Link href="/conditions" className="text-sm text-primary hover:underline">
             Conditions d&apos;utilisation →
           </Link>
-          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+          <Link href="/" className="text-sm text-charcoal-400 hover:text-charcoal-600">
             Retour à l&apos;accueil
           </Link>
         </div>
@@ -412,7 +412,7 @@ export default function ConfidentialitePage() {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+    <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
       {children}
     </h2>
   );
@@ -422,7 +422,7 @@ function LegalItem({ term, children }: { term: string; children: React.ReactNode
   return (
     <li>
       <strong>{term} :</strong>{" "}
-      <span className="text-gray-600">{children}</span>
+      <span className="text-charcoal-600">{children}</span>
     </li>
   );
 }

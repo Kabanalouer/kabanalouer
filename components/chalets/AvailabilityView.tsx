@@ -62,13 +62,13 @@ function MonthGrid({
 
   return (
     <div className="flex-1 min-w-0">
-      <h3 className="text-sm font-semibold text-gray-700 text-center mb-3 capitalize">
+      <h3 className="text-sm font-semibold text-charcoal-700 text-center mb-3 capitalize">
         {MONTH_NAMES[month]} {year}
       </h3>
 
       <div className="grid grid-cols-7 mb-1">
         {DAY_NAMES.map((d) => (
-          <div key={d} className="text-center text-[10px] font-semibold text-gray-300 py-0.5">{d}</div>
+          <div key={d} className="text-center text-[10px] font-semibold text-charcoal-200 py-0.5">{d}</div>
         ))}
       </div>
 
@@ -89,9 +89,9 @@ function MonthGrid({
               {rangePos && <BlockBg pos={rangePos} />}
               <span className={[
                 "relative z-10 text-[11px]",
-                isPast    ? "text-gray-200" :
+                isPast    ? "text-charcoal-100" :
                 isBlocked ? "text-red-500 font-medium" :
-                            "text-gray-600",
+                            "text-charcoal-600",
               ].join(" ")}>
                 {day}
               </span>
@@ -135,9 +135,9 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
           onClick={() => setStartOffset((o) => o - 1)}
           disabled={!canLeft}
           aria-label="Mois précédent"
-          className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+          className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -145,9 +145,9 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
           onClick={() => setStartOffset((o) => o + 1)}
           disabled={!canRight}
           aria-label="Mois suivant"
-          className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+          className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -167,9 +167,9 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-xs text-gray-500">
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-xs text-charcoal-400">
         <div className="flex items-center gap-1.5">
-          <div className="relative w-4 h-4 rounded border border-gray-200 overflow-hidden bg-white shrink-0" />
+          <div className="relative w-4 h-4 rounded border border-[#ebebeb] overflow-hidden bg-white shrink-0" />
           Disponible
         </div>
         <div className="flex items-center gap-1.5">

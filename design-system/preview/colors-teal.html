@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Teal — Secondary</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .grid { display: grid; grid-template-columns: 1.4fr repeat(9, 1fr); gap: 8px; }
+  .hero {
+    min-height: 132px;
+    background: var(--teal-500);
+    color: var(--snow);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+  }
+  .hero .label { font-size: 11px; letter-spacing: var(--tracking-caps); text-transform: uppercase; opacity: 0.85; font-weight: 600; }
+  .hero .name { font-family: var(--font-display); font-size: 32px; line-height: 1; letter-spacing: -0.035em; font-weight: 800; }
+  .hero .hex { font-family: var(--font-mono); font-size: 11px; opacity: 0.9; }
+  .swatch { height: 132px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div class="hero">
+      <div class="label">Secondary · Teal</div>
+      <div>
+        <div class="name">Teal</div>
+        <div class="hex">#008489</div>
+      </div>
+    </div>
+    <div class="swatch light" style="background:var(--teal-50)"><span class="name">50</span><span class="hex">#e0f2f3</span></div>
+    <div class="swatch light" style="background:var(--teal-100)"><span class="name">100</span><span class="hex">#b8dee0</span></div>
+    <div class="swatch light" style="background:var(--teal-200)"><span class="name">200</span><span class="hex">#80c4c8</span></div>
+    <div class="swatch" style="background:var(--teal-300)"><span class="name">300</span><span class="hex">#4baeb4</span></div>
+    <div class="swatch" style="background:var(--teal-400)"><span class="name">400</span><span class="hex">#1d969d</span></div>
+    <div class="swatch" style="background:var(--teal-500); outline: 2px solid var(--char-800); outline-offset: -2px"><span class="name">500</span><span class="hex">#008489</span></div>
+    <div class="swatch" style="background:var(--teal-600)"><span class="name">600</span><span class="hex">#006a6e</span></div>
+    <div class="swatch" style="background:var(--teal-700)"><span class="name">700</span><span class="hex">#00525a</span></div>
+    <div class="swatch" style="background:var(--teal-900)"><span class="name">900</span><span class="hex">#00282d</span></div>
+  </div>
+</div>
+</body>
+</html>

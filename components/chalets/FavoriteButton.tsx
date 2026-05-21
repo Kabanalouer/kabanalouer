@@ -47,11 +47,11 @@ export default function FavoriteButton({
       className={`p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors disabled:opacity-60 ${className ?? ""}`}
     >
       {isFavorite ? (
-        <svg className="w-4 h-4 text-red-500 fill-current" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-primary fill-current" viewBox="0 0 24 24">
           <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       ) : (
-        <svg className="w-4 h-4 text-gray-400 hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 text-charcoal-300 hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       )}

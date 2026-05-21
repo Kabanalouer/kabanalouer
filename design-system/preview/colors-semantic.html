@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Semantic Colors</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .item {
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex; flex-direction: row; align-items: center; gap: 14px;
+    min-height: 130px;
+    box-shadow: var(--shadow-xs);
+  }
+  .item .col { flex: 1; }
+  .item .role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .item .name { font-family: var(--font-display); font-size: 22px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+  .item .hex { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; margin-top: 4px; }
+  .item .dot {
+    width: 28px; height: 28px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div class="item" style="background:var(--teal-50); color:var(--teal-700);">
+      <div class="dot" style="background:var(--teal-500)"></div>
+      <div class="col">
+        <div class="role">Success</div>
+        <div class="name">Teal</div>
+        <div class="hex">#008489</div>
+      </div>
+    </div>
+    <div class="item" style="background:#fdf5e6; color:#74542a;">
+      <div class="dot" style="background:#ce9c00"></div>
+      <div class="col">
+        <div class="role">Warning</div>
+        <div class="name">Amber</div>
+        <div class="hex">#ce9c00</div>
+      </div>
+    </div>
+    <div class="item" style="background:var(--coral-50); color:var(--coral-700);">
+      <div class="dot" style="background:#c43d3d"></div>
+      <div class="col">
+        <div class="role">Danger</div>
+        <div class="name">Brick</div>
+        <div class="hex">#c43d3d</div>
+      </div>
+    </div>
+    <div class="item" style="background:#eef0f2; color:#2f3540;">
+      <div class="dot" style="background:#5e6a78"></div>
+      <div class="col">
+        <div class="role">Info</div>
+        <div class="name">Slate</div>
+        <div class="hex">#5e6a78</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -45,19 +45,19 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-charcoal-50 py-12 px-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md">
         <Link href="/" className="flex items-center justify-center mb-8">
           <span className="text-2xl font-bold text-primary">Kabanalouer</span>
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Bon retour !</h1>
-        <p className="text-gray-500 mb-8 text-sm">Connectez-vous à votre compte.</p>
+        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Bon retour !</h1>
+        <p className="text-charcoal-500 mb-8 text-sm">Connectez-vous à votre compte.</p>
 
         {/* Google */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 px-4 hover:bg-gray-50 transition-colors mb-6 font-medium text-gray-700 text-sm"
+          className="w-full flex items-center justify-center gap-3 border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors mb-6 font-medium text-charcoal-700 text-sm"
         >
           <GoogleIcon />
           Continuer avec Google
@@ -73,28 +73,28 @@ function LoginForm() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
               Adresse courriel
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder="vous@exemple.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
               Mot de passe
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder="••••••••"
               required
             />
@@ -103,13 +103,13 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+            className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
           >
             {loading ? "Connexion…" : "Se connecter"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-charcoal-500">
           Pas encore de compte ?{" "}
           <Link
             href={`/signup${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
@@ -134,9 +134,9 @@ export default function LoginPage() {
 function Divider() {
   return (
     <div className="flex items-center gap-4 mb-6">
-      <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-xs text-gray-400">ou</span>
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-charcoal-200" />
+      <span className="text-xs text-charcoal-400">ou</span>
+      <div className="flex-1 h-px bg-charcoal-200" />
     </div>
   );
 }

@@ -38,17 +38,17 @@ function CalendarMonth({
   return (
     <div className="select-none w-full">
       <div className="flex items-center mb-3">
-        <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
+        <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-gray-900">{MONTHS_FR[month]} {year}</p>
-        <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
+        <p className="flex-1 text-center text-sm font-semibold text-charcoal-800">{MONTHS_FR[month]} {year}</p>
+        <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
         {DAYS_FR.map((d) => (
-          <div key={d} className="h-7 flex items-center justify-center text-[10px] font-medium text-gray-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="h-7 flex items-center justify-center text-[10px] font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -72,10 +72,10 @@ function CalendarMonth({
                 onMouseEnter={() => !isPast && onDayEnter(ds)}
                 onMouseLeave={onDayLeave}
                 className={["relative z-10 w-8 h-8 flex items-center justify-center text-xs rounded-full transition-all",
-                  isPast ? "text-gray-300 cursor-not-allowed" :
+                  isPast ? "text-charcoal-200 cursor-not-allowed" :
                   isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
-                  "hover:bg-gray-100 text-gray-800 cursor-pointer"].join(" ")}
+                  "hover:bg-charcoal-50 text-charcoal-800 cursor-pointer"].join(" ")}
               >{day}</button>
             </div>
           );
@@ -193,7 +193,7 @@ export default function ContactForm({
     return (
       <Link
         href={`/login?next=/chalets/${listingId}`}
-        className="block w-full bg-primary text-white py-3.5 rounded-xl font-bold text-center hover:bg-primary/90 transition-colors text-sm"
+        className="block w-full bg-primary text-white py-3.5 rounded-full font-bold text-center hover:bg-primary/90 transition-colors text-sm"
       >
         Contacter l&apos;hôte
       </Link>
@@ -209,8 +209,8 @@ export default function ContactForm({
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="font-semibold text-gray-900 text-sm mb-1">Demande envoyée !</p>
-        <p className="text-xs text-gray-500">
+        <p className="font-semibold text-charcoal-800 text-sm mb-1">Demande envoyée !</p>
+        <p className="text-xs text-charcoal-400">
           Votre demande a été envoyée à l&apos;hôte. Il vous répondra directement par message.
         </p>
         <Link href={`/messages?listing=${listingId}&with=${hostId}`} className="mt-3 block text-xs text-primary hover:underline">
@@ -223,26 +223,26 @@ export default function ContactForm({
   // ── Form ───────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-gray-900">Contacter l&apos;hôte</p>
+      <p className="text-sm font-semibold text-charcoal-800">Contacter l&apos;hôte</p>
 
       {/* Dates */}
       <div ref={calRef} className="relative">
         <button
           type="button"
           onClick={() => setCalendarOpen((o) => !o)}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 text-left hover:border-gray-300 transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#ebebeb] text-left hover:border-charcoal-200 transition-colors"
         >
-          <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span className={`text-sm ${datesLabel ? "text-gray-800" : "text-gray-400"}`}>
+          <span className={`text-sm ${datesLabel ? "text-charcoal-800" : "text-charcoal-400"}`}>
             {datesLabel ?? "Dates (arrivée — départ)"}
           </span>
         </button>
 
         {calendarOpen && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50 w-full">
+          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] p-4 z-50 w-full">
             <CalendarMonth
               year={calYear} month={calMonth} today={today}
               checkin={checkin} checkout={checkout} hoverDate={hoverDate}
@@ -250,10 +250,10 @@ export default function ContactForm({
               showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
             />
             {(checkin || checkout) && (
-              <div className="mt-3 pt-2.5 border-t border-gray-100 flex justify-end">
+              <div className="mt-3 pt-2.5 border-t border-[#ebebeb] flex justify-end">
                 <button
                   onClick={() => { setCheckin(""); setCheckout(""); setHoverDate(""); }}
-                  className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2"
+                  className="text-xs text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2"
                 >
                   Effacer
                 </button>
@@ -264,15 +264,15 @@ export default function ContactForm({
       </div>
 
       {/* Guests */}
-      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200">
-        <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#ebebeb]">
+        <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
         <select
           value={guests}
           onChange={(e) => setGuests(e.target.value)}
-          className={`bg-transparent outline-none text-sm appearance-none flex-1 cursor-pointer ${guests ? "text-gray-800" : "text-gray-400"}`}
+          className={`bg-transparent outline-none text-sm appearance-none flex-1 cursor-pointer ${guests ? "text-charcoal-800" : "text-charcoal-400"}`}
         >
           <option value="">Voyageurs</option>
           {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
@@ -289,14 +289,14 @@ export default function ContactForm({
           placeholder="Prénom *"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-gray-400"
+          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
         />
         <input
           type="text"
           placeholder="Nom"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-gray-400"
+          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
         />
       </div>
 
@@ -324,7 +324,7 @@ export default function ContactForm({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={3}
-        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-gray-400"
+        className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
       />
 
       {error && <p className="text-xs text-red-500">{error}</p>}
@@ -332,7 +332,7 @@ export default function ContactForm({
       <button
         onClick={handleSubmit}
         disabled={sending}
-        className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
+        className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
       >
         {sending ? "Envoi en cours…" : "Envoyer la demande"}
       </button>

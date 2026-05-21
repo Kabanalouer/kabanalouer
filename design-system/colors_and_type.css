@@ -1,0 +1,355 @@
+/* ============================================================
+   KABANALOUER — Design Tokens (v3 · Modern marketplace)
+   Coral primary · Charcoal text · Clean white surfaces
+   Plus Jakarta Sans typography · Geist Mono for code
+   ============================================================ */
+
+/* ---------- Web fonts ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ============================================================
+     BASE COLOR PALETTE
+     ============================================================ */
+
+  /* Coral — primary brand color (logo, CTAs, key emphasis) */
+  --coral-50:  #fef2f1;
+  --coral-100: #fbdfdc;
+  --coral-200: #f5b8b1;
+  --coral-300: #f08c82;
+  --coral-400: #ed6c61;
+  --coral-500: #f04e45;   /* PRIMARY */
+  --coral-600: #d63a32;   /* hover */
+  --coral-700: #b02b25;   /* press */
+  --coral-800: #871f1a;
+  --coral-900: #561310;
+
+  /* Teal — secondary accent (subtle, semantic, "verified" badges) */
+  --teal-50:  #e0f2f3;
+  --teal-100: #b8dee0;
+  --teal-200: #80c4c8;
+  --teal-300: #4baeb4;
+  --teal-400: #1d969d;
+  --teal-500: #008489;
+  --teal-600: #006a6e;
+  --teal-700: #00525a;
+  --teal-800: #003c44;
+  --teal-900: #00282d;
+
+  /* Sage — tertiary warm hint (forest signal, used sparingly for "nature/Quebec" cues) */
+  --sage-100: #e9eee4;
+  --sage-400: #809570;
+  --sage-600: #4d6240;
+  --sage-800: #2a3a23;
+
+  /* Charcoal — text & cool neutrals (matches Airbnb's spec exactly) */
+  --char-50:  #f7f7f7;   /* section alt bg */
+  --char-100: #ebebeb;   /* borders default */
+  --char-200: #dddddd;   /* borders strong */
+  --char-300: #c4c4c4;
+  --char-400: #717171;   /* body text */
+  --char-500: #5e5e5e;
+  --char-600: #484848;   /* secondary headings */
+  --char-700: #333333;
+  --char-800: #222222;   /* primary headings */
+  --char-900: #111111;
+
+  /* Pure surfaces */
+  --snow:      #ffffff;
+  --snow-warm: #fafafa;  /* very subtle warm white (rarely needed) */
+
+  /* Semantic — feedback */
+  --success: #008489;
+  --warning: #ce9c00;
+  --danger:  #c43d3d;
+  --info:    #5e6a78;
+
+  /* ============================================================
+     SEMANTIC COLOR ROLES
+     ============================================================ */
+
+  /* Backgrounds */
+  --bg-page:         var(--snow);      /* pure white */
+  --bg-surface:      var(--snow);      /* cards & panels */
+  --bg-surface-alt:  var(--char-50);   /* #f7f7f7 — alt sections */
+  --bg-inset:        var(--char-50);
+  --bg-inverse:      var(--char-800);  /* hostCTA gradient base */
+
+  /* Foreground / text */
+  --fg-1:            var(--char-800);  /* primary headings */
+  --fg-2:            var(--char-600);  /* secondary */
+  --fg-3:            var(--char-400);  /* body / meta */
+  --fg-4:            var(--char-300);  /* placeholder / disabled */
+  --fg-on-brand:     var(--snow);
+  --fg-on-inverse:   var(--snow);
+  --fg-link:         var(--coral-600);
+
+  /* Borders */
+  --border-1:        var(--char-100);  /* default */
+  --border-2:        var(--char-200);  /* strong */
+  --border-strong:   var(--char-300);
+  --border-focus:    var(--coral-500);
+
+  /* Brand */
+  --brand-primary:        var(--coral-500);
+  --brand-primary-hover:  var(--coral-600);
+  --brand-primary-press:  var(--coral-700);
+  --brand-secondary:      var(--teal-500);
+
+  /* ===== Legacy aliases (back-compat with v1/v2 references) ===== */
+  /* Old tokens map to new system so previously-written components still render correctly. */
+  --forest-50:  var(--coral-50);
+  --forest-100: var(--coral-100);
+  --forest-200: var(--coral-200);
+  --forest-300: var(--coral-300);
+  --forest-400: var(--coral-400);
+  --forest-500: var(--coral-500);
+  --forest-600: var(--coral-600);
+  --forest-700: var(--coral-700);
+  --forest-800: var(--coral-800);
+  --forest-900: var(--coral-900);
+
+  --ember-50:  var(--coral-50);
+  --ember-100: var(--coral-100);
+  --ember-200: var(--coral-200);
+  --ember-300: var(--coral-300);
+  --ember-400: var(--coral-400);
+  --ember-500: var(--coral-500);
+  --ember-600: var(--coral-600);
+  --ember-700: var(--coral-700);
+  --ember-800: var(--coral-800);
+  --ember-900: var(--coral-900);
+
+  --lake-50:   var(--teal-50);
+  --lake-100:  var(--teal-100);
+  --lake-200:  var(--teal-200);
+  --lake-300:  var(--teal-300);
+  --lake-400:  var(--teal-400);
+  --lake-500:  var(--teal-500);
+  --lake-600:  var(--teal-600);
+  --lake-700:  var(--teal-700);
+
+  --birch-50:  var(--snow);
+  --birch-100: var(--char-50);
+  --birch-200: var(--char-100);
+  --birch-300: var(--char-200);
+  --birch-400: var(--char-300);
+  --birch-500: var(--char-400);
+  --birch-600: var(--char-500);
+  --birch-700: var(--char-600);
+  --birch-800: var(--char-700);
+  --birch-900: var(--char-800);
+
+  /* ============================================================
+     TYPOGRAPHY
+     Plus Jakarta Sans for everything (display + UI + body)
+     Geist Mono for code / dates / IDs (rare in UI)
+     ============================================================ */
+
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans:    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body:    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Modular type scale */
+  --fs-xs:    12px;
+  --fs-sm:    13px;
+  --fs-base:  15px;
+  --fs-md:    16px;
+  --fs-lg:    18px;
+  --fs-xl:    22px;
+  --fs-2xl:   28px;
+  --fs-3xl:   34px;
+  --fs-4xl:   44px;
+  --fs-5xl:   56px;
+  --fs-6xl:   72px;
+
+  --lh-tight:   1.05;
+  --lh-snug:    1.2;
+  --lh-normal:  1.45;
+  --lh-relaxed: 1.6;
+
+  --tracking-tight:  -0.035em;
+  --tracking-normal: -0.01em;
+  --tracking-wide:   0.04em;
+  --tracking-caps:   0.08em;
+
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --fw-extrabold:800;
+
+  /* ============================================================
+     SPACING (4px grid)
+     ============================================================ */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ============================================================
+     RADII — Airbnb-modern (slightly tighter than v1)
+     ============================================================ */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   8px;    /* default buttons / inputs (Airbnb is 8) */
+  --radius-lg:   12px;   /* photos */
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-pill: 999px;
+
+  /* ============================================================
+     SHADOWS — cleaner, lighter (less paper-y than v1)
+     ============================================================ */
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl:  0 24px 56px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(240, 78, 69, 0.45);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* ============================================================
+     MOTION
+     ============================================================ */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --dur-fast:   140ms;
+  --dur-base:   220ms;
+  --dur-slow:   360ms;
+  --dur-slower: 540ms;
+}
+
+/* ============================================================
+   SEMANTIC TYPOGRAPHY UTILITIES
+   ============================================================ */
+
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+.t-display-xl {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: var(--fs-6xl);
+  line-height: 1.02;
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: var(--fs-5xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.t-h1 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.03em;
+  color: var(--fg-1);
+}
+
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.03em;
+  color: var(--fg-1);
+}
+
+.t-h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+
+.t-h4 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+}
+
+.t-body-lg {
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+
+.t-body {
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+
+.t-body-sm {
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+}
+
+.t-meta {
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-sm);
+  color: var(--fg-3);
+}
+
+.t-label {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  color: var(--fg-1);
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.kbn-reset {
+  font-family: var(--font-sans);
+  color: var(--fg-1);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

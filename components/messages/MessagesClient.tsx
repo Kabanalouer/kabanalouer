@@ -156,14 +156,14 @@ export default function MessagesClient({
   return (
     <div className="flex h-[calc(100vh-64px)]">
       {/* Sidebar: conversation list */}
-      <div className="w-80 border-r border-gray-100 flex flex-col bg-white">
-        <div className="p-4 border-b border-gray-100">
-          <h1 className="font-bold text-gray-900 text-lg">Messages</h1>
+      <div className="w-80 border-r border-[#ebebeb] flex flex-col bg-white">
+        <div className="p-4 border-b border-[#ebebeb]">
+          <h1 className="font-bold text-charcoal-800 text-lg">Messages</h1>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-sm">
+            <div className="p-6 text-center text-charcoal-400 text-sm">
               Aucune conversation pour le moment.
             </div>
           ) : (
@@ -174,12 +174,12 @@ export default function MessagesClient({
                 <button
                   key={`${conv.listing_id}-${conv.other_user_id}`}
                   onClick={() => selectConversation(conv)}
-                  className={`w-full text-left px-4 py-4 hover:bg-gray-50 transition-colors border-b border-gray-50 ${
-                    isActive ? "bg-primary-50 border-l-2 border-l-primary" : ""
+                  className={`w-full text-left px-4 py-4 hover:bg-charcoal-50 transition-colors border-b border-charcoal-50 ${
+                    isActive ? "bg-primary/5 border-l-2 border-l-primary" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-charcoal-200 flex-shrink-0 overflow-hidden">
                       {conv.other_user_avatar ? (
                         <Image
                           src={conv.other_user_avatar}
@@ -189,14 +189,14 @@ export default function MessagesClient({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-500 font-bold text-sm">
+                        <div className="w-full h-full flex items-center justify-center text-charcoal-500 font-bold text-sm">
                           {conv.other_user_name[0]?.toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-900 text-sm truncate">
+                        <span className="font-semibold text-charcoal-800 text-sm truncate">
                           {conv.other_user_name}
                         </span>
                         {conv.unread_count > 0 && (
@@ -205,8 +205,8 @@ export default function MessagesClient({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 truncate mt-0.5">{conv.listing_title}</p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{conv.last_message}</p>
+                      <p className="text-xs text-charcoal-400 truncate mt-0.5">{conv.listing_title}</p>
+                      <p className="text-xs text-charcoal-500 truncate mt-0.5">{conv.last_message}</p>
                     </div>
                   </div>
                 </button>
@@ -217,21 +217,25 @@ export default function MessagesClient({
       </div>
 
       {/* Main: thread view */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className="flex-1 flex flex-col bg-charcoal-50">
         {!selectedListingId || !selectedWithId ? (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-charcoal-400">
             <div className="text-center">
-              <div className="text-5xl mb-3">💬</div>
-              <p className="font-medium text-gray-500">Sélectionnez une conversation</p>
+              <div className="w-14 h-14 rounded-full bg-white border border-[#ebebeb] flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <p className="font-medium text-charcoal-500">Sélectionnez une conversation</p>
             </div>
           </div>
         ) : (
           <>
             {/* Thread header */}
-            <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center gap-3">
+            <div className="bg-white border-b border-[#ebebeb] px-6 py-4 flex items-center gap-3">
               {activeConv && (
                 <>
-                  <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-charcoal-200 overflow-hidden flex-shrink-0">
                     {activeConv.other_user_avatar ? (
                       <Image
                         src={activeConv.other_user_avatar}
@@ -241,14 +245,14 @@ export default function MessagesClient({
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500 font-bold text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-charcoal-500 font-bold text-sm">
                         {activeConv.other_user_name[0]?.toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{activeConv.other_user_name}</p>
-                    <p className="text-xs text-gray-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                    <p className="font-semibold text-charcoal-800 text-sm">{activeConv.other_user_name}</p>
+                    <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
                   </div>
                 </>
               )}
@@ -258,10 +262,10 @@ export default function MessagesClient({
             <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="text-gray-400 text-sm">Chargement…</div>
+                  <div className="text-charcoal-400 text-sm">Chargement…</div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                <div className="flex-1 flex items-center justify-center text-charcoal-400 text-sm">
                   Commencez la conversation !
                 </div>
               ) : (
@@ -276,13 +280,13 @@ export default function MessagesClient({
                         className={`max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                           isMine
                             ? "bg-primary text-white rounded-br-sm"
-                            : "bg-white text-gray-800 shadow-sm rounded-bl-sm"
+                            : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                         <p
                           className={`text-xs mt-1 ${
-                            isMine ? "text-primary-50/70" : "text-gray-400"
+                            isMine ? "text-primary-50/70" : "text-charcoal-400"
                           }`}
                         >
                           {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
@@ -299,20 +303,20 @@ export default function MessagesClient({
             </div>
 
             {/* Input */}
-            <div className="bg-white border-t border-gray-100 px-4 py-3 flex gap-3 items-end">
+            <div className="bg-white border-t border-[#ebebeb] px-4 py-3 flex gap-3 items-end">
               <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Écrivez votre message… (Entrée pour envoyer)"
                 rows={1}
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
+                className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
                 style={{ minHeight: "42px" }}
               />
               <button
                 onClick={handleSend}
                 disabled={sending || !newMessage.trim()}
-                className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
+                className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
               >
                 {sending ? "…" : "Envoyer"}
               </button>

@@ -25,8 +25,8 @@ export default function ContactForm() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Message envoyé !</h3>
-        <p className="text-sm text-gray-600 leading-relaxed">
+        <h3 className="text-lg font-bold text-charcoal-800 mb-2">Message envoyé !</h3>
+        <p className="text-sm text-charcoal-600 leading-relaxed">
           Merci ! Votre message a été envoyé. Nous vous répondrons dans les{" "}
           <strong>24 heures ouvrables</strong>.
         </p>
@@ -39,7 +39,7 @@ export default function ContactForm() {
       {/* Prénom + Nom */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="first-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
             Prénom <span className="text-red-400">*</span>
           </label>
           <input
@@ -48,12 +48,12 @@ export default function ContactForm() {
             type="text"
             required
             autoComplete="given-name"
-            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             placeholder="Marie"
           />
         </div>
         <div>
-          <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="last-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
             Nom <span className="text-red-400">*</span>
           </label>
           <input
@@ -62,7 +62,7 @@ export default function ContactForm() {
             type="text"
             required
             autoComplete="family-name"
-            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             placeholder="Tremblay"
           />
         </div>
@@ -70,7 +70,7 @@ export default function ContactForm() {
 
       {/* Courriel */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="email" className="block text-sm font-medium text-charcoal-700 mb-1.5">
           Courriel <span className="text-red-400">*</span>
         </label>
         <input
@@ -79,14 +79,14 @@ export default function ContactForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           placeholder="marie@exemple.com"
         />
       </div>
 
       {/* Sujet */}
       <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="subject" className="block text-sm font-medium text-charcoal-700 mb-1.5">
           Sujet <span className="text-red-400">*</span>
         </label>
         <select
@@ -94,7 +94,7 @@ export default function ContactForm() {
           name="subject"
           required
           defaultValue=""
-          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-white"
+          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-white"
         >
           <option value="" disabled>Choisir un sujet…</option>
           {SUBJECTS.map((s) => (
@@ -105,7 +105,7 @@ export default function ContactForm() {
 
       {/* Message */}
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="message" className="block text-sm font-medium text-charcoal-700 mb-1.5">
           Message <span className="text-red-400">*</span>
         </label>
         <textarea
@@ -113,7 +113,7 @@ export default function ContactForm() {
           name="message"
           required
           rows={5}
-          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
+          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
           placeholder="Décrivez votre question ou votre problème…"
         />
       </div>
@@ -128,7 +128,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
+        className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3.5 rounded-full hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
       >
         {isPending ? "Envoi en cours…" : "Envoyer le message →"}
       </button>

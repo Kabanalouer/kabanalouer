@@ -1,34 +1,15 @@
 import Link from "next/link";
+import Image from "next/image";
 
-// ── Logo wordmark (coral, fond clair) ─────────────────────────────────────────
 function FooterLogo() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 360 80"
-      fill="none"
+    <Image
+      src="/logo-wordmark.svg"
+      alt="Kabanalouer"
+      width={133}
+      height={28}
       className="h-7 w-auto"
-      aria-label="Kabanalouer"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M40 8 L72 42 L66 42 L66 68 L48 68 L48 56 C48 51.5817 44.4183 48 40 48 C35.5817 48 32 51.5817 32 56 L32 68 L14 68 L14 42 L8 42 Z"
-        fill="#f04e45"
-      />
-      <rect x="54" y="20" width="5" height="13" fill="#f04e45" />
-      <text
-        x="88"
-        y="52"
-        fontFamily="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
-        fontSize="34"
-        fontWeight="800"
-        letterSpacing="-1.3"
-        fill="#f04e45"
-      >
-        kabanalouer
-      </text>
-    </svg>
+    />
   );
 }
 

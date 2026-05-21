@@ -54,17 +54,17 @@ function SignupForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md text-center">
-          <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="min-h-screen flex items-center justify-center bg-charcoal-50 px-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md text-center">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
             <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Vérifiez vos courriels !</h2>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-3">Vérifiez vos courriels !</h2>
+          <p className="text-charcoal-500 text-sm leading-relaxed">
             On a envoyé un lien de confirmation à{" "}
-            <strong className="text-gray-800">{email}</strong>.{" "}
+            <strong className="text-charcoal-800">{email}</strong>.{" "}
             Cliquez dessus pour activer votre compte.
           </p>
           {next !== "/" ? (
@@ -85,30 +85,30 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-charcoal-50 py-12 px-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md">
         <Link href="/" className="flex items-center justify-center mb-8">
           <span className="text-2xl font-bold text-primary">Kabanalouer</span>
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Créer un compte</h1>
-        <p className="text-gray-500 text-sm mb-6">Rejoignez la communauté Kabanalouer</p>
+        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Créer un compte</h1>
+        <p className="text-charcoal-500 text-sm mb-6">Rejoignez la communauté Kabanalouer</p>
 
         {/* Role selection */}
         <div className="mb-6">
-          <p className="text-sm font-medium text-gray-700 mb-3">Je suis…</p>
+          <p className="text-sm font-medium text-charcoal-700 mb-3">Je suis…</p>
           <div className="grid grid-cols-2 gap-3">
             <RoleButton
               selected={role === "traveler"}
               onClick={() => setRole("traveler")}
-              emoji="🧳"
+              icon={<LuggageIcon />}
               title="Voyageur"
               subtitle="Je cherche un chalet"
             />
             <RoleButton
               selected={role === "host"}
               onClick={() => setRole("host")}
-              emoji="🏡"
+              icon={<HomeIcon />}
               title="Hôte"
               subtitle="Je loue mon chalet"
             />
@@ -125,7 +125,7 @@ function SignupForm() {
         {/* Google */}
         <button
           onClick={handleGoogleSignup}
-          className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 px-4 hover:bg-gray-50 transition-colors mb-6 font-medium text-gray-700 text-sm"
+          className="w-full flex items-center justify-center gap-3 border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors mb-6 font-medium text-charcoal-700 text-sm"
         >
           <GoogleIcon />
           Continuer avec Google
@@ -140,23 +140,23 @@ function SignupForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Prénom</label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="Marie"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nom</label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="Tremblay"
                 required
               />
@@ -164,24 +164,24 @@ function SignupForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse courriel</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Adresse courriel</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder="vous@exemple.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Mot de passe</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder="Minimum 8 caractères"
               minLength={8}
               required
@@ -191,13 +191,13 @@ function SignupForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+            className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
           >
             {loading ? "Création…" : "Créer mon compte"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-xs text-charcoal-500">
           Déjà un compte ?{" "}
           <Link
             href={`/login${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
@@ -206,9 +206,9 @@ function SignupForm() {
             Se connecter
           </Link>
         </p>
-        <p className="mt-3 text-center text-xs text-gray-400">
+        <p className="mt-3 text-center text-xs text-charcoal-400">
           En créant un compte, vous acceptez nos{" "}
-          <Link href="/conditions" className="underline hover:text-gray-600">
+          <Link href="/conditions" className="underline hover:text-charcoal-600">
             conditions d&apos;utilisation
           </Link>
           .
@@ -226,20 +226,20 @@ export default function SignupPage() {
   );
 }
 
-function RoleButton({ selected, onClick, emoji, title, subtitle }: {
-  selected: boolean; onClick: () => void; emoji: string; title: string; subtitle: string;
+function RoleButton({ selected, onClick, icon, title, subtitle }: {
+  selected: boolean; onClick: () => void; icon: React.ReactNode; title: string; subtitle: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`border-2 rounded-xl p-4 text-left transition-all ${
-        selected ? "border-primary bg-primary-50" : "border-gray-200 hover:border-gray-300"
+        selected ? "border-primary bg-primary/5" : "border-[#ebebeb] hover:border-charcoal-300"
       }`}
     >
-      <div className="text-2xl mb-1">{emoji}</div>
-      <div className="font-semibold text-gray-900 text-sm">{title}</div>
-      <div className="text-xs text-gray-500 mt-0.5">{subtitle}</div>
+      <div className="mb-3">{icon}</div>
+      <div className="font-semibold text-charcoal-800 text-sm">{title}</div>
+      <div className="text-xs text-charcoal-500 mt-0.5">{subtitle}</div>
     </button>
   );
 }
@@ -247,10 +247,27 @@ function RoleButton({ selected, onClick, emoji, title, subtitle }: {
 function Divider() {
   return (
     <div className="flex items-center gap-4 mb-6">
-      <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-xs text-gray-400">ou</span>
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-charcoal-200" />
+      <span className="text-xs text-charcoal-400">ou</span>
+      <div className="flex-1 h-px bg-charcoal-200" />
     </div>
+  );
+}
+
+function LuggageIcon() {
+  return (
+    <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zm-9-2V3m2 2V3m-2 0h2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+    </svg>
   );
 }
 

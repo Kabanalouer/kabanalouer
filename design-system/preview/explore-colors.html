@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Color Exploration — modern directions</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .head {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3);
+    margin: 0;
+  }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .dir {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--char-100);
+    background: var(--snow);
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .dir .num {
+    position: absolute; top: 8px; left: 10px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-4);
+  }
+  .dir .badge {
+    position: absolute; top: 8px; right: 10px;
+    font-family: var(--font-sans); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px;
+    background: var(--ember-100); color: var(--ember-700);
+  }
+  .dir .mini {
+    height: 110px; display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 12px; gap: 4px;
+  }
+  .dir .mini .title {
+    font-family: 'Instrument Serif', serif; font-size: 22px; line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .dir .mini .btn {
+    display: inline-flex; align-self: flex-start;
+    padding: 5px 11px; border-radius: 6px;
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+    margin-top: 4px;
+  }
+  .dir .swatches { display: flex; height: 26px; }
+  .dir .swatches div { flex: 1; }
+  .dir .meta {
+    padding: 10px 12px;
+    font-family: var(--font-sans); font-size: 11px; line-height: 1.45;
+    color: var(--fg-2);
+    border-top: 1px solid var(--char-100);
+    min-height: 100px;
+  }
+  .dir .meta b { color: var(--fg-1); font-weight: 600; display: block; font-size: 12px; margin-bottom: 4px; }
+  .dir .meta .hex { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <p class="head">4 directions modernes · gardent la chaleur, montent le niveau de raffinement</p>
+
+  <div class="grid">
+
+    <!-- DIRECTION A: Refined Forest (evolution) -->
+    <div class="dir">
+      <span class="num">A</span>
+      <span class="badge">Recommandé</span>
+      <div class="mini" style="background: #f8f5ef; color: #1c1c19;">
+        <span class="title">Au bord du <em style="font-style: italic; color: #2d5538;">lac</em>.</span>
+        <span class="btn" style="background: #cc4f2c; color: #f8f5ef;">Réserver</span>
+      </div>
+      <div class="swatches">
+        <div style="background: #2d5538;"></div>
+        <div style="background: #cc4f2c;"></div>
+        <div style="background: #3c7184;"></div>
+        <div style="background: #1c1c19;"></div>
+        <div style="background: #f8f5ef;"></div>
+      </div>
+      <div class="meta">
+        <b>Refined Forest</b>
+        Évolution du système actuel. Vert plus profond, terracotta plus sec, neutres plus propres (bone vs cream). Continuité de marque, allure plus posée.
+        <div class="hex" style="margin-top: 4px;">#2d5538 · #cc4f2c · #f8f5ef</div>
+      </div>
+    </div>
+
+    <!-- DIRECTION B: Sage & Clay -->
+    <div class="dir">
+      <span class="num">B</span>
+      <div class="mini" style="background: #f4f1eb; color: #1d1d1a;">
+        <span class="title">Au bord du <em style="font-style: italic; color: #6a7d5e;">lac</em>.</span>
+        <span class="btn" style="background: #b5523a; color: #f4f1eb;">Réserver</span>
+      </div>
+      <div class="swatches">
+        <div style="background: #6a7d5e;"></div>
+        <div style="background: #b5523a;"></div>
+        <div style="background: #c8b89a;"></div>
+        <div style="background: #1d1d1a;"></div>
+        <div style="background: #f4f1eb;"></div>
+      </div>
+      <div class="meta">
+        <b>Sage & Clay</b>
+        Désaturé, herbacé, presque scandinave. Vert plus gris, argile chaude. Très 2024–2026 (Aesop, Fellow, Quince). Risque : moins « québécois », plus universel.
+        <div class="hex" style="margin-top: 4px;">#6a7d5e · #b5523a · #f4f1eb</div>
+      </div>
+    </div>
+
+    <!-- DIRECTION C: Deep & Quiet -->
+    <div class="dir">
+      <span class="num">C</span>
+      <div class="mini" style="background: #f5f4f1; color: #1a1a18;">
+        <span class="title">Au bord du <em style="font-style: italic; color: #1a1a18;">lac</em>.</span>
+        <span class="btn" style="background: #1a1a18; color: #f5f4f1;">Réserver</span>
+      </div>
+      <div class="swatches">
+        <div style="background: #1a1a18;"></div>
+        <div style="background: #d45f3a;"></div>
+        <div style="background: #5c5a52;"></div>
+        <div style="background: #e8e6e0;"></div>
+        <div style="background: #f5f4f1;"></div>
+      </div>
+      <div class="meta">
+        <b>Deep & Quiet</b>
+        Noir doux comme primaire, un seul accent ambre, neutres pierre. Très Plum Guide / Tablet Hotels. Luxe minimal, la typo et la photo portent toute la marque.
+        <div class="hex" style="margin-top: 4px;">#1a1a18 · #d45f3a · #f5f4f1</div>
+      </div>
+    </div>
+
+    <!-- DIRECTION D: Lake First -->
+    <div class="dir">
+      <span class="num">D</span>
+      <div class="mini" style="background: #f4f4f0; color: #161e22;">
+        <span class="title">Au bord du <em style="font-style: italic; color: #1e4a5a;">lac</em>.</span>
+        <span class="btn" style="background: #d9743c; color: #f4f4f0;">Réserver</span>
+      </div>
+      <div class="swatches">
+        <div style="background: #1e4a5a;"></div>
+        <div style="background: #d9743c;"></div>
+        <div style="background: #88b1a9;"></div>
+        <div style="background: #161e22;"></div>
+        <div style="background: #f4f4f0;"></div>
+      </div>
+      <div class="meta">
+        <b>Lake First</b>
+        Bascule d'identité : le lac plutôt que la forêt. Bleu-teal profond, ambre toujours en accent. Plus rare au Québec, très différenciant.
+        <div class="hex" style="margin-top: 4px;">#1e4a5a · #d9743c · #f4f4f0</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -56,15 +56,15 @@ export default async function RegionsPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-gray-100 py-16">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            🍁 14 régions du Québec
+            14 régions du Québec
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-4 leading-tight">
             Explorez par région
           </h1>
-          <p className="text-lg text-gray-500 max-w-md mx-auto">
+          <p className="text-lg text-charcoal-500 max-w-md mx-auto">
             Trouvez votre chalet idéal dans toutes les régions du Québec
           </p>
         </div>
@@ -140,7 +140,7 @@ export default async function RegionsPage() {
           </p>
           <Link
             href="/devenir-hote"
-            className="inline-block bg-white text-primary font-bold px-8 py-4 rounded-xl hover:bg-gray-50 transition-colors text-lg"
+            className="inline-block bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
             Inscrire mon chalet →
           </Link>

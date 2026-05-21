@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Wordmark Exploration</title>
+<link rel="stylesheet" href="_card.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Lora:ital@0;1&family=Crimson+Pro:ital,wght@0,400;1,400&family=Space+Grotesk:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,opsz,SOFT,wght@1,9..144,0..100,400&display=swap" rel="stylesheet">
+<style>
+  .card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .head {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3);
+    margin: 0;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    background: var(--snow);
+    border: 1px solid var(--char-100);
+    border-radius: var(--radius-md);
+    padding: 22px 24px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+  .opt .num {
+    position: absolute; top: 8px; left: 12px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-4);
+  }
+  .opt .lockup {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 6px;
+  }
+  .opt .wordmark {
+    font-size: 38px;
+    line-height: 1;
+    color: var(--char-800);
+    letter-spacing: -0.02em;
+  }
+  .opt .label {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    color: var(--fg-1); letter-spacing: 0;
+  }
+  .opt .desc {
+    font-family: var(--font-sans); font-size: 11px; line-height: 1.45;
+    color: var(--fg-3);
+  }
+  .opt .badge {
+    position: absolute; top: 8px; right: 12px;
+    font-family: var(--font-sans); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ember-600);
+  }
+  .opt svg { flex-shrink: 0; }
+
+  /* Specific font stacks */
+  .f-instrument  { font-family: 'Instrument Serif', serif; font-weight: 400; }
+  .f-newsreader  { font-family: 'Newsreader', serif; font-weight: 400; font-style: italic; font-optical-sizing: auto; }
+  .f-lora        { font-family: 'Lora', serif; font-weight: 400; }
+  .f-crimson     { font-family: 'Crimson Pro', serif; font-weight: 400; }
+  .f-dm          { font-family: 'DM Serif Display', serif; font-weight: 400; }
+  .f-fraunces    { font-family: 'Fraunces', serif; font-weight: 400; font-style: italic; font-variation-settings: 'opsz' 144, 'SOFT' 100; }
+  .f-geist       { font-family: 'Geist', sans-serif; font-weight: 300; letter-spacing: -0.04em; }
+  .f-space       { font-family: 'Space Grotesk', sans-serif; font-weight: 500; letter-spacing: -0.04em; }
+</style>
+</head>
+<body>
+<div class="card">
+  <p class="head">Le mark · 8 essais de wordmark · tous en minuscules</p>
+  <div class="grid">
+
+    <div class="opt">
+      <span class="num">01</span>
+      <span class="badge">Actuel</span>
+      <span class="label">Instrument Serif</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-instrument">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif moderne italicy · expressif, éditorial. Vibe boutique-hôtel.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">02</span>
+      <span class="label">Newsreader Italic</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-newsreader">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif plus chaud et lisible · vibe magazine NYT. Bon en petit aussi.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">03</span>
+      <span class="label">Fraunces Italic Soft</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-fraunces">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif vintage-modern avec terminaisons rondes · vibe Coffee/Sweetgreen.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">04</span>
+      <span class="label">Crimson Pro Italic</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-crimson" style="font-style: italic;">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif classique élégant · vibe édition livre. Plus discret, moins « tendance ».</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">05</span>
+      <span class="label">Lora</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-lora">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif livresque, calligraphique · chaleureux, francophone-friendly.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">06</span>
+      <span class="label">DM Serif Display</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-dm">kabanalouer</span>
+      </div>
+      <span class="desc">Sérif haute densité · plus affirmé, occupe la place. Marketplace confiante.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">07</span>
+      <span class="label">Geist Light · sans</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-geist">kabanalouer</span>
+      </div>
+      <span class="desc">Grotesque moderne · vibe SaaS/Vercel. Très contemporain, moins chaleureux.</span>
+    </div>
+
+    <div class="opt">
+      <span class="num">08</span>
+      <span class="label">Space Grotesk Medium</span>
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 80 80"><path d="M40 8 L72 44 L64 44 L64 68 L48 68 L48 50 C48 46.6863 45.3137 44 42 44 L38 44 C34.6863 44 32 46.6863 32 50 L32 68 L16 68 L16 44 L8 44 Z" fill="#3d7048"/><rect x="54" y="18" width="6" height="12" fill="#3d7048"/><rect x="36" y="52" width="8" height="16" rx="1" fill="#c95a26"/></svg>
+        <span class="wordmark f-space">kabanalouer</span>
+      </div>
+      <span class="desc">Grotesque géométrique avec caractère · vibe Notion/Linear. Mémorable.</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

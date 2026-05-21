@@ -37,15 +37,15 @@ export default function AProposPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-gray-100 py-20">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            🍁 Fait au Québec
+            Fait au Québec
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
             Notre mission
           </h1>
-          <p className="text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
+          <p className="text-lg text-charcoal-500 max-w-lg mx-auto leading-relaxed">
             Connecter les voyageurs québécois avec les plus beaux chalets de la province.
             Sans intermédiaire, sans frais cachés.
           </p>
@@ -55,8 +55,8 @@ export default function AProposPage() {
       {/* ── Notre histoire ── */}
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Pourquoi Kabanalouer ?</h2>
-          <div className="space-y-4 text-gray-600 leading-relaxed text-lg">
+          <h2 className="text-3xl font-bold text-charcoal-800 mb-6">Pourquoi Kabanalouer ?</h2>
+          <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
             <p>
               Kabanalouer est né d&apos;un constat simple — les plateformes existantes chargent
               des frais de service élevés, compliquent la communication entre propriétaires et
@@ -80,20 +80,20 @@ export default function AProposPage() {
       {/* ── Nos valeurs ── */}
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Nos valeurs</h2>
+          <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">Nos valeurs</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ValueCard
-              emoji="🌲"
+              icon={<LeafIcon />}
               title="Authenticité québécoise"
               description="Nous mettons en valeur les chalets uniques du Québec, des Laurentides à la Gaspésie. Chaque annonce raconte une histoire, un lieu, une expérience."
             />
             <ValueCard
-              emoji="🤝"
+              icon={<UsersIcon />}
               title="Contact direct"
               description="Nous croyons que la meilleure expérience passe par une relation directe entre propriétaires et voyageurs. Aucun intermédiaire ne s'intercale entre vous."
             />
             <ValueCard
-              emoji="💚"
+              icon={<ShieldIcon />}
               title="Transparence"
               description="Aucune commission cachée, aucun frais surprise. Un modèle simple et honnête pour tous — le prix affiché est le prix que vous payez."
             />
@@ -104,7 +104,7 @@ export default function AProposPage() {
       {/* ── En chiffres ── */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+          <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">
             Kabanalouer en chiffres
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -127,13 +127,13 @@ export default function AProposPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/chalets"
-              className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-xl hover:bg-gray-50 transition-colors text-lg"
+              className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
             >
               Explorer les chalets →
             </Link>
             <Link
               href="/devenir-hote"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/20 transition-colors text-lg"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition-colors text-lg"
             >
               Afficher mon chalet →
             </Link>
@@ -147,28 +147,52 @@ export default function AProposPage() {
 }
 
 function ValueCard({
-  emoji,
+  icon,
   title,
   description,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
-      <div className="text-3xl mb-4">{emoji}</div>
-      <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+    <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
+      <div className="mb-4">{icon}</div>
+      <h3 className="font-bold text-charcoal-800 text-lg mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="text-center p-6 bg-[#F8FAF9] rounded-2xl border border-gray-100">
+    <div className="text-center p-6 bg-[#F8FAF9] rounded-2xl border border-[#ebebeb]">
       <div className="text-3xl font-bold text-primary mb-2">{value}</div>
-      <div className="text-sm text-gray-500 leading-snug">{label}</div>
+      <div className="text-sm text-charcoal-500 leading-snug">{label}</div>
     </div>
+  );
+}
+
+function LeafIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
   );
 }

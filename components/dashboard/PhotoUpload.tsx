@@ -263,7 +263,7 @@ export default function PhotoUpload({
           ? "opacity-40 scale-95"
           : overIdx === i && dragIdx !== null
           ? "ring-2 ring-primary ring-offset-2 scale-[1.03]"
-          : "hover:ring-1 hover:ring-gray-300"
+          : "hover:ring-1 hover:ring-charcoal-200"
       }`}
     >
       <Image
@@ -310,16 +310,16 @@ export default function PhotoUpload({
       key={slotKey}
       type="button"
       onClick={() => canUpload && inputRef.current?.click()}
-      className={`relative aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1.5 transition-colors ${
+      className={`relative aspect-square rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1.5 transition-colors ${
         canUpload
           ? "hover:border-primary hover:bg-primary-50 cursor-pointer"
           : "cursor-default opacity-40"
       }`}
     >
-      <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="w-6 h-6 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
       </svg>
-      <span className="text-[11px] text-gray-400 font-medium">{label}</span>
+      <span className="text-[11px] text-charcoal-400 font-medium">{label}</span>
     </button>
   );
 
@@ -327,16 +327,16 @@ export default function PhotoUpload({
     <div
       key={proc.id}
       className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-2 px-3 ${
-        proc.phase === "error" ? "bg-red-50 border border-red-100" : "bg-gray-100"
+        proc.phase === "error" ? "bg-red-50 border border-red-100" : "bg-charcoal-100"
       }`}
     >
       {proc.phase === "compressing" && (
         <>
-          <svg className="w-7 h-7 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg className="w-7 h-7 text-charcoal-400 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <span className="text-xs text-gray-400 text-center">Compression…</span>
+          <span className="text-xs text-charcoal-400 text-center">Compression…</span>
         </>
       )}
       {proc.phase === "uploading" && (
@@ -386,31 +386,31 @@ export default function PhotoUpload({
           onDrop={handleFileDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors"
+          className="border-2 border-dashed border-[#ebebeb] rounded-2xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors"
         >
           <div className="flex flex-col items-center gap-2">
-            <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-charcoal-500">
               <span className="text-primary font-semibold">Cliquez pour uploader</span> ou glissez des photos ici
             </p>
-            <p className="text-xs text-gray-400">JPG, PNG, WebP · Compressées automatiquement en WebP</p>
+            <p className="text-xs text-charcoal-400">JPG, PNG, WebP · Compressées automatiquement en WebP</p>
           </div>
         </div>
       ) : (
-        <div className="border-2 border-dashed border-gray-100 rounded-2xl p-5 text-center bg-gray-50">
-          <p className="text-sm font-semibold text-gray-500">Limite de {MAX_PHOTOS} photos atteinte</p>
-          <p className="text-xs text-gray-400 mt-1">Supprimez des photos pour en ajouter de nouvelles.</p>
+        <div className="border-2 border-dashed border-[#ebebeb] rounded-2xl p-5 text-center bg-charcoal-50">
+          <p className="text-sm font-semibold text-charcoal-500">Limite de {MAX_PHOTOS} photos atteinte</p>
+          <p className="text-xs text-charcoal-400 mt-1">Supprimez des photos pour en ajouter de nouvelles.</p>
         </div>
       )}
 
-      {saving && <span className="text-xs text-gray-400 animate-pulse">Sauvegarde…</span>}
+      {saving && <span className="text-xs text-charcoal-400 animate-pulse">Sauvegarde…</span>}
 
       {/* ── Sections 1 & 2: Cover + thumbnails gallery ───────────────────── */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-0.5">Photo de couverture et 4 miniatures</h3>
-        <p className="text-xs text-gray-400 mb-3">Vos 5 premières photos s&apos;afficheront comme ceci sur votre annonce.</p>
+        <h3 className="text-sm font-semibold text-charcoal-700 mb-0.5">Photo de couverture et 4 miniatures</h3>
+        <p className="text-xs text-charcoal-400 mb-3">Vos 5 premières photos s&apos;afficheront comme ceci sur votre annonce.</p>
 
         {/* Gallery layout — mirrors the public listing page */}
         <div className="flex gap-1.5 h-[340px]">
@@ -422,12 +422,12 @@ export default function PhotoUpload({
               <button
                 type="button"
                 onClick={() => canUpload && inputRef.current?.click()}
-                className={`h-full w-full rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+                className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
               >
-                <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                <span className="text-xs text-gray-400 font-medium">Couverture</span>
+                <span className="text-xs text-charcoal-400 font-medium">Couverture</span>
               </button>
             )}
           </div>
@@ -443,12 +443,12 @@ export default function PhotoUpload({
                   key={`empty-${photoIdx}`}
                   type="button"
                   onClick={() => canUpload && inputRef.current?.click()}
-                  className={`h-full w-full rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+                  className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
                 >
-                  <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  <span className="text-[10px] text-gray-400">{label}</span>
+                  <span className="text-[10px] text-charcoal-400">{label}</span>
                 </button>
               );
             })}
@@ -468,7 +468,7 @@ export default function PhotoUpload({
                   onMouseDown={(e) => e.stopPropagation()}
                   onChange={(e) => updateCaption(0, e.target.value)}
                   onBlur={() => savePhotos()}
-                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-300 transition"
+                  className="w-full text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
                 />
               </div>
             )}
@@ -487,7 +487,7 @@ export default function PhotoUpload({
                       onMouseDown={(e) => e.stopPropagation()}
                       onChange={(e) => updateCaption(photoIdx, e.target.value)}
                       onBlur={() => savePhotos()}
-                      className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-300 transition"
+                      className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
                     />
                   );
                 })}
@@ -507,8 +507,8 @@ export default function PhotoUpload({
       {/* ── Section 3: Other photos ───────────────────────────────────────── */}
       {others.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-gray-400 mb-2">Le reste de vos photos s&apos;afficheront dans le carrousel, lorsque le voyageur cliquera sur &laquo;&nbsp;Voir toutes les photos&nbsp;&raquo;.</p>
+          <h3 className="text-sm font-semibold text-charcoal-700 mb-0.5">Autres photos</h3>
+          <p className="text-xs text-charcoal-400 mb-2">Le reste de vos photos s&apos;afficheront dans le carrousel, lorsque le voyageur cliquera sur &laquo;&nbsp;Voir toutes les photos&nbsp;&raquo;.</p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
@@ -529,7 +529,7 @@ export default function PhotoUpload({
                     onMouseDown={(e) => e.stopPropagation()}
                     onChange={(e) => updateCaption(i, e.target.value)}
                     onBlur={() => savePhotos()}
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-300 transition"
+                    className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
                   />
                 </div>
               );
@@ -539,13 +539,13 @@ export default function PhotoUpload({
       )}
 
       {/* Footer */}
-      <div className="space-y-1 text-xs text-gray-400">
+      <div className="space-y-1 text-xs text-charcoal-400">
         <p className={photos.length >= MIN_PHOTOS ? "text-green-600" : "text-amber-600"}>
           {totalCount}/{MAX_PHOTOS} photos
         </p>
         <p>Minimum de photos : {MIN_PHOTOS}</p>
         <p>Maximum de photos : {MAX_PHOTOS}</p>
-        <p>💡 Astuce : Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
+        <p>Astuce : Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
       </div>
     </div>
   );

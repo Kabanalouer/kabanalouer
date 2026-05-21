@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Host Card</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { padding: 22px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .host {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--snow);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .avatar {
+    width: 56px; height: 56px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--ember-300), var(--forest-400));
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--snow-warm);
+    font-family: var(--font-display);
+    font-size: 26px;
+    position: relative;
+  }
+  .avatar .verified {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 22px; height: 22px;
+    background: var(--forest-500); border: 2px solid var(--snow);
+    border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--snow);
+  }
+  .host .info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .host .name { font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--fg-1); }
+  .host .meta { font-family: var(--font-sans); font-size: 13px; color: var(--fg-3); }
+  .host .quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--fg-2);
+    margin-top: 8px;
+  }
+  .host .stats { display: flex; gap: 14px; margin-top: 10px; }
+  .host .stats div { display: flex; flex-direction: column; gap: 2px; }
+  .host .stats b { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--fg-1); }
+  .host .stats span { font-family: var(--font-sans); font-size: 11px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="host">
+    <div class="avatar">M
+      <span class="verified"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+    <div class="info">
+      <span class="name">Marie-Pier</span>
+      <span class="meta">Hôtesse · Magog, QC</span>
+      <span class="quote">« Un coin de paradis qu'on aime partager. »</span>
+      <div class="stats">
+        <div><b>4,92</b><span>note moyenne</span></div>
+        <div><b>87</b><span>avis</span></div>
+        <div><b>5 ans</b><span>sur Kabanalouer</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="host">
+    <div class="avatar" style="background: linear-gradient(135deg, var(--lake-400), var(--forest-500));">J</div>
+    <div class="info">
+      <span class="name">Jean-François</span>
+      <span class="meta">Hôte · Mont-Tremblant, QC</span>
+      <span class="quote">« Le silence de la forêt, à 1 h de Montréal. »</span>
+      <div class="stats">
+        <div><b>4,87</b><span>note moyenne</span></div>
+        <div><b>43</b><span>avis</span></div>
+        <div><b>2 ans</b><span>sur Kabanalouer</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

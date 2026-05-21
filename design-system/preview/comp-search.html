@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Search Bar — Marketplace</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  body { background: var(--bg-page); }
+  .card { padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .search {
+    display: flex;
+    align-items: stretch;
+    background: var(--snow);
+    border: 1px solid var(--char-200);
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    max-width: 640px;
+  }
+  .search .seg {
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-right: 1px solid var(--char-100);
+    cursor: pointer;
+    flex: 1;
+    transition: background 140ms;
+  }
+  .search .seg:last-of-type { border-right: none; }
+  .search .seg .lbl { font-family: var(--font-sans); font-size: 11px; font-weight: 600; color: var(--fg-1); letter-spacing: 0; }
+  .search .seg .val { font-family: var(--font-sans); font-size: 13px; color: var(--fg-3); }
+  .search .seg.active { background: var(--birch-50); }
+  .search .seg.active .val { color: var(--fg-1); }
+  .search .submit {
+    background: var(--ember-500);
+    color: var(--snow-warm);
+    border: none;
+    width: 44px; height: 44px;
+    border-radius: 999px;
+    margin: 6px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 7px 14px;
+    border: 1px solid var(--char-200);
+    border-radius: 999px;
+    background: var(--snow);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--fg-1);
+    cursor: pointer;
+  }
+  .pill.active { background: var(--char-800); color: var(--snow-warm); border-color: var(--char-800); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="search">
+    <div class="seg active">
+      <span class="lbl">Destination</span>
+      <span class="val">Estrie</span>
+    </div>
+    <div class="seg">
+      <span class="lbl">Arrivée</span>
+      <span class="val">18 juil.</span>
+    </div>
+    <div class="seg">
+      <span class="lbl">Départ</span>
+      <span class="val">21 juil.</span>
+    </div>
+    <div class="seg">
+      <span class="lbl">Voyageurs</span>
+      <span class="val">4 voyageurs</span>
+    </div>
+    <button class="submit" aria-label="Rechercher">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+    </button>
+  </div>
+  <div class="pills">
+    <button class="pill active">Tout</button>
+    <button class="pill">Bord du lac</button>
+    <button class="pill">Spa</button>
+    <button class="pill">Foyer au bois</button>
+    <button class="pill">Animaux ok</button>
+    <button class="pill">Ski-in/ski-out</button>
+    <button class="pill">Vue panoramique</button>
+  </div>
+</div>
+</body>
+</html>

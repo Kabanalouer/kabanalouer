@@ -146,44 +146,6 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
   const nearbyActivities: string[] = Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [];
 
-  const NEARBY_EMOJI: Record<string, string> = {
-    "Glissades d'eau / Parc aquatique":           "💦",
-    "Vélo de montagne":                           "🚵",
-    "Piste cyclable":                             "🚲",
-    "Randonnée pédestre":                         "🥾",
-    "Pêche":                                      "🎣",
-    "Accès à un lac":                             "🏞️",
-    "Accès à un lac avec embarcation à moteur":   "⛵",
-    "Plage":                                      "🏖️",
-    "Parcours arbre-en-arbre":                    "🌲",
-    "Tyrolienne":                                 "🪂",
-    "Paintball":                                  "🎯",
-    "Go Kart":                                    "🏎️",
-    "Cinéparc":                                   "🚗",
-    "Équitation":                                 "🐴",
-    "Golf":                                       "⛳",
-    "Escalade":                                   "🧗",
-    "Croisière / Excursion nautique":             "🚢",
-    "Ski alpin":                                  "⛷️",
-    "Motoneige":                                  "🏔️",
-    "Traîneau à chiens":                          "🐕",
-    "Sentiers de raquettes":                      "👣",
-    "Ski de fond":                                "🎿",
-    "Pêche sur glace":                            "🎣",
-    "Glissade sur tube":                          "🛷",
-    "Patinage / Hockey extérieur":                "⛸️",
-    "Fatbike":                                    "🚵",
-    "Cabane à sucre":                             "🍁",
-    "Magasinage (shopping)":                      "🛍️",
-    "Musée":                                      "🏛️",
-    "Restaurant / Bistro":                        "🍽️",
-    "Microbrasserie":                             "🍺",
-    "Spa nordique":                               "♨️",
-    "Casino":                                     "🎰",
-    "Cinéma":                                     "🎬",
-    "Village touristique":                        "🏘️",
-  };
-
   const NEARBY_CATEGORIES: Record<string, string[]> = {
     "Été": [
       "Glissades d'eau / Parc aquatique", "Vélo de montagne", "Piste cyclable",
@@ -347,21 +309,21 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
-        <nav className="text-sm text-gray-400 mb-4">
+        <nav className="text-sm text-charcoal-400 mb-4">
           <Link href="/chalets" className="hover:text-primary transition-colors">Chalets</Link>
           <span className="mx-2">›</span>
           <Link href={`/chalets?region=${listing.region}`} className="hover:text-primary transition-colors">{listing.region}</Link>
           <span className="mx-2">›</span>
-          <span className="text-gray-600 truncate">{listing.title}</span>
+          <span className="text-charcoal-600 truncate">{listing.title}</span>
         </nav>
 
         {/* ── Title + subtitle ── */}
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800 leading-tight mb-2">
               {listing.title}
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-charcoal-400">
               {subtitleParts.join(" · ")}
             </p>
           </div>
@@ -371,7 +333,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               listingId={listing.id}
               initialIsFavorite={isFavorited}
               currentUserId={user?.id ?? null}
-              className="border border-gray-200"
+              className="border border-[#ebebeb]"
             />
           </div>
         </div>
@@ -386,12 +348,12 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Amenities — Caractéristiques du chalet */}
             {amenities.length > 0 && <AmenitiesSection amenities={amenities} />}
 
-            <hr className="border-gray-100" />
+            <hr className="border-[#ebebeb]" />
 
             {/* Description */}
             {listing.description && (
               <div>
-                <h2 className="font-semibold text-gray-900 mb-3">Description du chalet</h2>
+                <h2 className="font-semibold text-charcoal-800 mb-3">Description du chalet</h2>
                 <ExpandableText text={listing.description} />
               </div>
             )}
@@ -399,9 +361,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Rooms */}
             {rooms && rooms.length > 0 && (
               <>
-                <hr className="border-gray-100" />
+                <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Où vous dormirez</h2>
+                  <h2 className="font-semibold text-charcoal-800 mb-4">Où vous dormirez</h2>
                   <RoomsCarousel
                     rooms={rooms.map((r) => ({
                       id: r.id,
@@ -417,9 +379,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             )}
 
             {/* Availability */}
-            <hr className="border-gray-100" />
+            <hr className="border-[#ebebeb]" />
             <div>
-              <h2 className="font-semibold text-gray-900 mb-4">Disponibilités</h2>
+              <h2 className="font-semibold text-charcoal-800 mb-4">Disponibilités</h2>
               <AvailabilityView
                 blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
               />
@@ -428,9 +390,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Map */}
             {listing.latitude && listing.longitude && (
               <>
-                <hr className="border-gray-100" />
+                <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">Où se situe le chalet ?</h2>
+                  <h2 className="font-semibold text-charcoal-800 mb-4">Où se situe le chalet ?</h2>
                   <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
                 </div>
               </>
@@ -439,21 +401,21 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Nearby activities */}
             {nearbyActivities.length > 0 && (
               <>
-                <hr className="border-gray-100" />
+                <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-gray-900 mb-1">Quoi faire à proximité ?</h2>
-                  <p className="text-sm text-gray-400 mb-4">À moins de 30 minutes du chalet</p>
+                  <h2 className="font-semibold text-charcoal-800 mb-1">Quoi faire à proximité ?</h2>
+                  <p className="text-sm text-charcoal-400 mb-4">À moins de 30 minutes du chalet</p>
                   <div className="space-y-5">
                     {Object.entries(NEARBY_CATEGORIES).map(([cat, items]) => {
                       const catItems = items.filter((i) => nearbyActivities.includes(i));
                       if (catItems.length === 0) return null;
                       return (
                         <div key={cat}>
-                          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{cat}</h3>
+                          <h3 className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-2">{cat}</h3>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {catItems.map((a) => (
-                              <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
-                                <span className="text-base">{NEARBY_EMOJI[a] ?? "✓"}</span>
+                              <div key={a} className="flex items-center gap-2 text-sm text-charcoal-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                                 {a}
                               </div>
                             ))}
@@ -467,10 +429,10 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             )}
 
             {/* Reviews */}
-            <hr className="border-gray-100" />
+            <hr className="border-[#ebebeb]" />
             <div>
               <div className="flex items-center gap-3 mb-5">
-                <h2 className="font-semibold text-gray-900">
+                <h2 className="font-semibold text-charcoal-800">
                   Avis des voyageurs {reviews && reviews.length > 0 && `(${reviews.length})`}
                 </h2>
                 {avgRating > 0 && (
@@ -488,11 +450,11 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                 <div className="bg-ai-light rounded-2xl p-4 mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-bold text-ai bg-white px-2.5 py-1 rounded-full">
-                      ✦ Résumé IA
+                      Résumé IA
                     </span>
                     <span className="text-xs text-ai/60">Synthèse de {reviews!.length} avis</span>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{aiSummary}</p>
+                  <p className="text-sm text-charcoal-700 leading-relaxed">{aiSummary}</p>
                 </div>
               )}
 
@@ -503,16 +465,16 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     return (
                       <div key={review.id} className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                            <span className="text-xs font-bold text-gray-500">
+                          <div className="w-9 h-9 rounded-full bg-charcoal-50 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-bold text-charcoal-400">
                               {(author?.name?.[0] ?? "?").toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{author?.name ?? "Voyageur"}</p>
+                            <p className="text-sm font-semibold text-charcoal-800">{author?.name ?? "Voyageur"}</p>
                             <div className="flex gap-0.5">
                               {[...Array(5)].map((_, i) => (
-                                <svg key={i} className={`w-3 h-3 fill-current ${i < review.rating ? "text-yellow-400" : "text-gray-200"}`} viewBox="0 0 20 20">
+                                <svg key={i} className={`w-3 h-3 fill-current ${i < review.rating ? "text-yellow-400" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                               ))}
@@ -520,7 +482,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                           </div>
                         </div>
                         {review.comment && (
-                          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                          <p className="text-sm text-charcoal-500 leading-relaxed line-clamp-3">
                             {review.comment}
                           </p>
                         )}
@@ -529,47 +491,47 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                   })}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm">Nouveau chalet : soyez les premiers à laisser votre avis.</p>
+                <p className="text-charcoal-400 text-sm">Nouveau chalet : soyez les premiers à laisser votre avis.</p>
               )}
             </div>
 
             {/* Practical info */}
             <>
-              <hr className="border-gray-100" />
+              <hr className="border-[#ebebeb]" />
               <div>
-                <h2 className="font-semibold text-gray-900 mb-4">Informations pratiques</h2>
-                <div className="space-y-2 text-sm text-gray-700">
+                <h2 className="font-semibold text-charcoal-800 mb-4">Informations pratiques</h2>
+                <div className="space-y-2.5 text-sm text-charcoal-700">
                   {listing.checkin_time && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🔑</span>
+                    <div className="flex items-center gap-2.5">
+                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
                       <span>Arrivée : à partir de {(listing.checkin_time as string).replace(":", "h")}</span>
                     </div>
                   )}
                   {listing.checkout_time && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🧳</span>
+                    <div className="flex items-center gap-2.5">
+                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
                       <span>Départ : avant {(listing.checkout_time as string).replace(":", "h")}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{listing.checkin_type === "in_person" ? "🤝" : "🔑"}</span>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                     <span>
                       {listing.checkin_type === "in_person"
                         ? "Accueil sur place — Remise des clés en personne à l'arrivée"
                         : "Arrivée autonome — Accès par code numérique ou boîte à clés"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🐾</span>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     <span>{listing.pets_allowed ? "Animaux acceptés" : "Animaux non acceptés"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{listing.smoking_allowed ? "🚬" : "🚭"}</span>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     <span>{listing.smoking_allowed ? "Fumeurs acceptés" : "Fumeurs non acceptés"}</span>
                   </div>
                   {listing.citq_number && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🏷️</span>
+                    <div className="flex items-center gap-2.5">
+                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
                       <span>Numéro CITQ : {listing.citq_number as string}</span>
                     </div>
                   )}
@@ -580,7 +542,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Host section */}
             {host && (
               <>
-                <hr className="border-gray-100" />
+                <hr className="border-[#ebebeb]" />
                 <HostCard
                   host={host}
                   reviewCount={hostReviewCount}
@@ -598,31 +560,30 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
           {/* ── Right column — Pricing card ── */}
           <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
+            <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
               {/* Price */}
               <div className="mb-4">
                 {listing.price_on_request ? (
                   <div>
-                    <span className="text-xl font-bold text-gray-900">Prix sur demande</span>
-                    <p className="text-xs text-gray-400 mt-1">Contactez l&apos;hôte pour obtenir une soumission personnalisée.</p>
+                    <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
+                    <p className="text-xs text-charcoal-400 mt-1">Contactez l&apos;hôte pour obtenir une soumission personnalisée.</p>
                   </div>
                 ) : listing.price_low > 0 ? (
                   <>
-                    <p className="text-xs text-gray-400 mb-0.5">À partir de</p>
-                    <span className="text-3xl font-bold text-gray-900">{listing.price_low} $</span>
-                    <span className="text-gray-500 text-sm"> / nuit</span>
+                    <p className="text-xs text-charcoal-400 mb-0.5">À partir de</p>
+                    <span className="text-3xl font-bold text-charcoal-800">{listing.price_low} $</span>
+                    <span className="text-charcoal-400 text-sm"> /nuit</span>
                   </>
                 ) : (
-                  <span className="text-xl font-bold text-gray-900">Prix sur demande</span>
+                  <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
                 )}
               </div>
 
-
-              <hr className="border-gray-100 my-4" />
+              <hr className="border-[#ebebeb] my-4" />
 
               {/* CTA */}
               {isOwner ? (
-                <button disabled className="w-full py-3 rounded-xl bg-gray-100 text-gray-400 font-medium text-sm cursor-not-allowed">
+                <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
                   C&apos;est votre chalet
                 </button>
               ) : (
@@ -641,7 +602,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     initialEmail={user?.email ?? ""}
                     initialPhone={profilePhone}
                   />
-                  <p className="text-xs text-gray-400 text-center mt-3">
+                  <p className="text-xs text-charcoal-400 text-center mt-3">
                     Contact direct · Zéro frais de service
                   </p>
                 </>
@@ -652,26 +613,26 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
         {/* Mobile CTA */}
         {!isOwner && (
-          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 px-4 py-3 z-40 flex items-center justify-between gap-4">
+          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 py-3 z-40 flex items-center justify-between gap-4">
             {listing.price_on_request || listing.price_low === 0 ? (
-              <span className="text-sm font-bold text-gray-900">Prix sur demande</span>
+              <span className="text-sm font-bold text-charcoal-800">Prix sur demande</span>
             ) : (
               <div>
-                <span className="text-lg font-bold text-gray-900">{listing.price_low} $</span>
-                <span className="text-xs text-gray-400"> / nuit</span>
+                <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
+                <span className="text-xs text-charcoal-400"> /nuit</span>
               </div>
             )}
             {user ? (
               <a
                 href="#contact-form"
-                className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+                className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
                 Contacter l&apos;hôte
               </a>
             ) : (
               <a
                 href={`/login?next=/chalets/${listing.id}`}
-                className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+                className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
                 Contacter l&apos;hôte
               </a>

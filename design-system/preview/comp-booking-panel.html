@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Booking Panel</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .panel {
+    background: var(--snow);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .price-row {
+    display: flex; align-items: baseline; gap: 6px;
+    font-family: var(--font-sans);
+  }
+  .price-row .price { font-size: 24px; font-weight: 700; color: var(--fg-1); }
+  .price-row .per { font-size: 14px; color: var(--fg-3); }
+  .price-row .rating { margin-left: auto; font-size: 13px; color: var(--fg-1); display: flex; align-items: center; gap: 4px; }
+  .price-row .rating .star { color: var(--ember-500); }
+
+  .dates {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--char-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .dates > div { padding: 10px 12px; }
+  .dates > div + div { border-left: 1px solid var(--char-200); }
+  .dates .lbl { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+  .dates .val { font-family: var(--font-sans); font-size: 14px; color: var(--fg-1); margin-top: 2px; }
+
+  .guests {
+    border: 1px solid var(--char-200);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex; align-items: center;
+    cursor: pointer;
+  }
+  .guests .lbl { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-right: 12px; }
+  .guests .val { font-family: var(--font-sans); font-size: 14px; color: var(--fg-1); }
+  .guests svg { margin-left: auto; color: var(--fg-3); }
+
+  .cta {
+    background: var(--ember-500); color: var(--snow-warm);
+    border: none; border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-family: var(--font-sans); font-size: 16px; font-weight: 500;
+    cursor: pointer;
+  }
+
+  .breakdown { font-family: var(--font-sans); font-size: 13px; color: var(--fg-2); display: flex; flex-direction: column; gap: 8px; }
+  .breakdown .row { display: flex; justify-content: space-between; }
+  .breakdown .total { font-weight: 600; font-size: 15px; color: var(--fg-1); border-top: 1px solid var(--border-1); padding-top: 10px; margin-top: 4px; }
+
+  .note { font-family: var(--font-sans); font-size: 12px; color: var(--fg-3); text-align: center; }
+
+  /* second variant: confirmation */
+  .confirm {
+    background: var(--forest-50);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--forest-100);
+  }
+  .confirm .check {
+    width: 36px; height: 36px; border-radius: 999px;
+    background: var(--forest-500); color: var(--snow-warm);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .confirm h3 { font-family: var(--font-display); font-size: 26px; line-height: 1.1; color: var(--forest-800); margin: 6px 0 0; letter-spacing: -0.015em; }
+  .confirm p { font-family: var(--font-sans); font-size: 14px; color: var(--forest-800); margin: 0; line-height: 1.5; }
+  .confirm .code { font-family: var(--font-mono); font-size: 13px; color: var(--forest-700); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="panel">
+    <div class="price-row">
+      <span class="price">240 $</span>
+      <span class="per">/ nuit</span>
+      <span class="rating"><span class="star">★</span> 4,92 · 87 avis</span>
+    </div>
+    <div class="dates">
+      <div><div class="lbl">Arrivée</div><div class="val">18 juil.</div></div>
+      <div><div class="lbl">Départ</div><div class="val">21 juil.</div></div>
+    </div>
+    <div class="guests">
+      <span class="lbl">Voyageurs</span>
+      <span class="val">4 adultes · 1 enfant</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <button class="cta">Réserver</button>
+    <div class="breakdown">
+      <div class="row"><span>240 $ × 3 nuits</span><span>720 $</span></div>
+      <div class="row"><span>Frais de ménage</span><span>85 $</span></div>
+      <div class="row"><span>Frais de service</span><span>52 $</span></div>
+      <div class="row total"><span>Total</span><span>857 $</span></div>
+    </div>
+    <div class="note">Vous ne serez pas débité tout de suite.</div>
+  </div>
+
+  <div class="confirm">
+    <div class="check">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h3>C'est confirmé. Bon séjour, Marie&nbsp;!</h3>
+    <p>Votre chalet à Magog vous attend du <b>18 au 21 juillet</b>. Marie-Pier, votre hôtesse, vous écrira d'ici quelques heures.</p>
+    <div class="code">Code de réservation · <b>KBN-87421</b></div>
+  </div>
+</div>
+</body>
+</html>

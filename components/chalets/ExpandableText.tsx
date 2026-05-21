@@ -22,7 +22,7 @@ export default function ExpandableText({ text }: { text: string }) {
       <div className="relative">
         <p
           ref={ref}
-          className="text-gray-600 leading-relaxed whitespace-pre-line overflow-hidden transition-[max-height] duration-300 ease-in-out"
+          className="text-charcoal-600 leading-relaxed whitespace-pre-line overflow-hidden transition-[max-height] duration-300 ease-in-out"
           style={{ maxHeight: expanded || !needsTruncation ? "none" : `${LINE_HEIGHT * VISIBLE_LINES}px` }}
         >
           {text}

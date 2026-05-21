@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Coral — Primary</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .grid { display: grid; grid-template-columns: 1.4fr repeat(9, 1fr); gap: 8px; }
+  .hero {
+    min-height: 132px;
+    background: var(--coral-500);
+    color: var(--snow);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+  }
+  .hero .label { font-size: 11px; letter-spacing: var(--tracking-caps); text-transform: uppercase; opacity: 0.85; font-weight: 600; }
+  .hero .name { font-family: var(--font-display); font-size: 32px; line-height: 1; letter-spacing: -0.035em; font-weight: 800; }
+  .hero .hex { font-family: var(--font-mono); font-size: 11px; opacity: 0.9; }
+  .swatch { height: 132px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div class="hero">
+      <div class="label">Primary · Coral</div>
+      <div>
+        <div class="name">Coral</div>
+        <div class="hex">#f04e45</div>
+      </div>
+    </div>
+    <div class="swatch light" style="background:var(--coral-50)"><span class="name">50</span><span class="hex">#fef2f1</span></div>
+    <div class="swatch light" style="background:var(--coral-100)"><span class="name">100</span><span class="hex">#fbdfdc</span></div>
+    <div class="swatch light" style="background:var(--coral-200)"><span class="name">200</span><span class="hex">#f5b8b1</span></div>
+    <div class="swatch" style="background:var(--coral-300)"><span class="name">300</span><span class="hex">#f08c82</span></div>
+    <div class="swatch" style="background:var(--coral-400)"><span class="name">400</span><span class="hex">#ed6c61</span></div>
+    <div class="swatch" style="background:var(--coral-500); outline: 2px solid var(--char-800); outline-offset: -2px"><span class="name">500</span><span class="hex">#f04e45</span></div>
+    <div class="swatch" style="background:var(--coral-600)"><span class="name">600</span><span class="hex">#d63a32</span></div>
+    <div class="swatch" style="background:var(--coral-700)"><span class="name">700</span><span class="hex">#b02b25</span></div>
+    <div class="swatch" style="background:var(--coral-900)"><span class="name">900</span><span class="hex">#561310</span></div>
+  </div>
+</div>
+</body>
+</html>

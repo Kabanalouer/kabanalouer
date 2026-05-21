@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Display — Plus Jakarta Sans 800</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { display: flex; flex-direction: column; gap: 12px; padding: 28px 24px; }
+  .specimen {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--fg-1);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    font-size: 96px;
+  }
+  .specimen em { font-style: normal; color: var(--coral-500); }
+  .meta {
+    display: flex; gap: 24px; align-items: center;
+    color: var(--fg-3); font-size: 11px;
+    font-family: var(--font-mono);
+    border-top: 1px solid var(--border-1);
+    padding-top: 10px;
+  }
+  .meta strong { color: var(--fg-1); font-family: var(--font-sans); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="specimen">Au bord du <em>lac</em>.</div>
+  <div class="meta">
+    <span><strong>Plus Jakarta Sans</strong></span>
+    <span>300 — 800</span>
+    <span>display · UI · body</span>
+    <span>tracking −3.5%</span>
+  </div>
+</div>
+</body>
+</html>

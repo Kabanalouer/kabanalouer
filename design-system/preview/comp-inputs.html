@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Form Inputs</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; padding: 24px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--fg-2); letter-spacing: 0; }
+  .field .hint { font-family: var(--font-sans); font-size: 11px; color: var(--fg-3); }
+  .field .err { font-family: var(--font-sans); font-size: 11px; color: var(--danger); }
+  .input {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--fg-1);
+    background: var(--snow);
+    border: 1px solid var(--char-200);
+    border-radius: var(--radius-md);
+    padding: 11px 14px;
+    line-height: 1;
+    transition: all 140ms var(--ease-out);
+  }
+  .input::placeholder { color: var(--fg-4); }
+  .input.focus { border-color: var(--forest-500); box-shadow: var(--shadow-focus); outline: none; }
+  .input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(176,58,46,0.18); }
+
+  .checkrow { display: flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-size: 14px; color: var(--fg-1); }
+  .check {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1.5px solid var(--char-300);
+    background: var(--snow);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .check.on { background: var(--forest-500); border-color: var(--forest-500); }
+  .check.on::after { content: ''; width: 9px; height: 5px; border: 2px solid var(--snow-warm); border-top: 0; border-right: 0; transform: rotate(-45deg) translateY(-1px); }
+
+  .toggle {
+    width: 36px; height: 22px; border-radius: 999px; background: var(--char-200);
+    position: relative; transition: background 140ms;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 999px;
+    background: var(--snow); box-shadow: var(--shadow-xs);
+    transition: left 140ms var(--ease-out);
+  }
+  .toggle.on { background: var(--forest-500); }
+  .toggle.on::after { left: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="field">
+    <label>Destination</label>
+    <input class="input" placeholder="Charlevoix, Estrie, Laurentides..." />
+    <span class="hint">Recherche par région ou ville.</span>
+  </div>
+  <div class="field">
+    <label>Courriel</label>
+    <input class="input focus" value="marie.tremblay@" />
+    <span class="hint">On vous envoie la confirmation ici.</span>
+  </div>
+  <div class="field">
+    <label>Mot de passe</label>
+    <input class="input error" type="password" value="••••••" />
+    <span class="err">Minimum 8 caractères.</span>
+  </div>
+  <div class="field">
+    <label>Options</label>
+    <div class="checkrow" style="margin-top: 4px;"><span class="check on"></span> Animaux acceptés</div>
+    <div class="checkrow"><span class="check"></span> Spa extérieur</div>
+    <div class="checkrow"><span class="check on"></span> Foyer au bois</div>
+    <div class="checkrow" style="margin-top: 8px;"><span class="toggle on"></span> Recevoir des suggestions par courriel</div>
+  </div>
+</div>
+</body>
+</html>

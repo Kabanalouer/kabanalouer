@@ -170,15 +170,15 @@ export default function FaqHotesPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-gray-100 py-20">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            🏡 Pour les hôtes
+            Pour les hôtes
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
             Questions fréquentes — Hôtes
           </h1>
-          <p className="text-lg text-gray-500 max-w-lg mx-auto">
+          <p className="text-lg text-charcoal-500 max-w-lg mx-auto">
             Tout ce que vous devez savoir pour afficher votre chalet sur Kabanalouer
           </p>
         </div>
@@ -189,19 +189,19 @@ export default function FaqHotesPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-14">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-3 border-b border-[#ebebeb]">
                 {section.title}
               </h2>
               <div className="space-y-3">
                 {section.items.map(({ q, a }) => (
                   <details
                     key={q}
-                    className="group border border-gray-100 rounded-2xl bg-[#F8FAF9] overflow-hidden"
+                    className="group border border-[#ebebeb] rounded-2xl bg-[#F8FAF9] overflow-hidden"
                   >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-gray-900 text-sm select-none">
+                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-sm select-none">
                       {q}
                       <svg
-                        className="w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
+                        className="w-4 h-4 text-charcoal-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -210,7 +210,7 @@ export default function FaqHotesPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                       </svg>
                     </summary>
-                    <div className="px-6 pb-5 text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4">
+                    <div className="px-6 pb-5 text-sm text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
                       {a}
                     </div>
                   </details>
@@ -222,24 +222,24 @@ export default function FaqHotesPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="bg-[#F8FAF9] border-t border-gray-100 py-16">
+      <section className="bg-[#F8FAF9] border-t border-[#ebebeb] py-16">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-4">
             Vous avez d&apos;autres questions ?
           </h2>
-          <p className="text-gray-500 mb-8">
+          <p className="text-charcoal-500 mb-8">
             Notre équipe est disponible pour vous accompagner.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup?role=host"
-              className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-xl hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors"
             >
               Inscrire mon chalet →
             </Link>
             <Link
               href="/tarifs"
-              className="inline-flex items-center justify-center border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl hover:border-primary hover:text-primary transition-colors"
+              className="inline-flex items-center justify-center border border-[#ebebeb] text-charcoal-700 font-semibold px-8 py-4 rounded-full hover:border-primary hover:text-primary transition-colors"
             >
               Voir les tarifs
             </Link>

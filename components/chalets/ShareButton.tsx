@@ -26,7 +26,7 @@ export default function ShareButton() {
     <button
       onClick={handleShare}
       aria-label="Copier le lien de la fiche"
-      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#ebebeb] rounded-full text-sm text-charcoal-600 hover:bg-charcoal-50 transition-colors shadow-sm"
     >
       {copied ? (
         <>

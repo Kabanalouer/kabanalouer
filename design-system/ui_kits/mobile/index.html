@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kabanalouer — Mobile UI Kit</title>
+  <link rel="icon" href="../../assets/favicon.svg" />
+  <link rel="stylesheet" href="../../colors_and_type.css" />
+  <style>
+    html, body { margin: 0; padding: 0; background: var(--birch-100); font-family: var(--font-sans); color: var(--fg-1); }
+    body { -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    * { box-sizing: border-box; }
+    .stage {
+      max-width: 1440px; margin: 0 auto;
+      padding: 48px 32px 64px;
+    }
+    .stage h1 {
+      font-family: var(--font-display); font-size: 44px; font-weight: 400;
+      line-height: 1.05; letter-spacing: -0.02em;
+      color: var(--char-800); margin: 0 0 8px;
+    }
+    .stage p {
+      font-family: var(--font-sans); font-size: 16px; line-height: 1.55;
+      color: var(--fg-2); margin: 0 0 36px; max-width: 580px;
+    }
+    .phones {
+      display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+    }
+    .phone-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .phone-wrap .label {
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3);
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="../web/data.js"></script>
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="MobileScreens.jsx"></script>
+
+  <script type="text/babel">
+    function MobileApp() {
+      const [page, setPage] = React.useState('explore');
+      const [chalet, setChalet] = React.useState(null);
+
+      // Phone 1: independent explore->detail flow
+      const [p1Page, setP1Page] = React.useState('explore');
+      const [p1Chalet, setP1Chalet] = React.useState(null);
+
+      return (
+        <div className="stage">
+          <div className="phones">
+            <div className="phone-wrap">
+              <IOSDevice width={360} height={760}>
+                <ExploreScreen onChaletTap={(c) => { setP1Chalet(c); setP1Page('detail'); }} />
+              </IOSDevice>
+              <span className="label">Explorer</span>
+            </div>
+            <div className="phone-wrap">
+              <IOSDevice width={360} height={760}>
+                <DetailScreen chalet={window.KBN_DATA.CHALETS[0]} onBack={() => {}} onReserve={() => {}} />
+              </IOSDevice>
+              <span className="label">Fiche chalet</span>
+            </div>
+            <div className="phone-wrap">
+              <IOSDevice width={360} height={760}>
+                <TripsScreen />
+              </IOSDevice>
+              <span className="label">Mes voyages</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<MobileApp />);
+  </script>
+</body>
+</html>

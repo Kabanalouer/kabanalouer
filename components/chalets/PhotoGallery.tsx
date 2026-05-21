@@ -51,12 +51,12 @@ export default function PhotoGallery({ photos, title }: Props) {
     <>
       {/* ── Gallery grid ── */}
       <div className="relative mb-8">
-        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-2xl">
+        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-xl">
           <div className={`relative overflow-hidden ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
             <Image src={photos[0].url} alt={title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
           </div>
           {photos.slice(1, 5).map((p, i) => (
-            <div key={i} className="relative overflow-hidden bg-gray-100">
+            <div key={i} className="relative overflow-hidden bg-charcoal-50">
               <Image src={p.url} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
             </div>
           ))}
@@ -65,7 +65,7 @@ export default function PhotoGallery({ photos, title }: Props) {
         {photos.length > 5 && (
           <button
             onClick={() => { setIdx(0); setOpen(true); }}
-            className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-gray-900 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+            className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-charcoal-50 transition-colors border border-[#ebebeb]"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />

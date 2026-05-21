@@ -37,17 +37,17 @@ export default function ContactPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-gray-100 py-20">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            ✉️ Contact
+            Contact
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
             Contactez-nous
           </h1>
-          <p className="text-lg text-gray-500 max-w-md mx-auto">
+          <p className="text-lg text-charcoal-500 max-w-md mx-auto">
             Notre équipe est là pour vous aider. Nous répondons généralement dans les{" "}
-            <strong className="text-gray-700">24 heures ouvrables</strong>.
+            <strong className="text-charcoal-700">24 heures ouvrables</strong>.
           </p>
         </div>
       </section>
@@ -59,7 +59,7 @@ export default function ContactPage() {
 
             {/* Left — Form */}
             <div className="lg:col-span-3">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
+              <h2 className="text-xl font-bold text-charcoal-800 mb-6">
                 Envoyez-nous un message
               </h2>
               <ContactForm />
@@ -70,10 +70,12 @@ export default function ContactPage() {
 
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg">
-                    📧
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
                   </div>
-                  <h3 className="font-semibold text-gray-900">Courriel</h3>
+                  <h3 className="font-semibold text-charcoal-800">Courriel</h3>
                 </div>
                 <a
                   href="mailto:info@kabanalouer.ca"
@@ -85,12 +87,14 @@ export default function ContactPage() {
 
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg">
-                    🕐
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+                    </svg>
                   </div>
-                  <h3 className="font-semibold text-gray-900">Heures de réponse</h3>
+                  <h3 className="font-semibold text-charcoal-800">Heures de réponse</h3>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-charcoal-600 leading-relaxed">
                   Lundi au vendredi<br />
                   9h00 à 17h00
                 </p>
@@ -98,16 +102,18 @@ export default function ContactPage() {
 
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg">
-                    🌐
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.96 8.96 0 01.284-2.253" />
+                    </svg>
                   </div>
-                  <h3 className="font-semibold text-gray-900">Réseaux sociaux</h3>
+                  <h3 className="font-semibold text-charcoal-800">Réseaux sociaux</h3>
                 </div>
                 <div className="flex gap-3">
                   {/* Facebook */}
                   <span
                     aria-label="Facebook"
-                    className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 cursor-not-allowed"
+                    className="w-9 h-9 rounded-xl border border-[#ebebeb] flex items-center justify-center text-charcoal-400 cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
@@ -116,7 +122,7 @@ export default function ContactPage() {
                   {/* Instagram */}
                   <span
                     aria-label="Instagram"
-                    className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 cursor-not-allowed"
+                    className="w-9 h-9 rounded-xl border border-[#ebebeb] flex items-center justify-center text-charcoal-400 cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -125,7 +131,7 @@ export default function ContactPage() {
                     </svg>
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Bientôt disponibles</p>
+                <p className="text-xs text-charcoal-400 mt-2">Bientôt disponibles</p>
               </div>
 
             </div>
@@ -134,21 +140,21 @@ export default function ContactPage() {
       </section>
 
       {/* ── Quick FAQ ── */}
-      <section className="py-20 bg-[#F8FAF9] border-t border-gray-100">
+      <section className="py-20 bg-[#F8FAF9] border-t border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">
+          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
             Questions fréquentes
           </h2>
           <div className="space-y-3">
             {FAQ.map(({ q, a }) => (
               <details
                 key={q}
-                className="group border border-gray-100 rounded-2xl bg-white overflow-hidden"
+                className="group border border-[#ebebeb] rounded-2xl bg-white overflow-hidden"
               >
-                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-gray-900 text-sm select-none">
+                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-sm select-none">
                   {q}
                   <svg
-                    className="w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
+                    className="w-4 h-4 text-charcoal-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -157,7 +163,7 @@ export default function ContactPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <div className="px-6 pb-5 text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4">
+                <div className="px-6 pb-5 text-sm text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
                   {a}
                 </div>
               </details>

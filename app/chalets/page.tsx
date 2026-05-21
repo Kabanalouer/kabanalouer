@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
-import SearchBar from "@/components/SearchBar";
-import FiltersModal from "@/components/chalets/FiltersModal";
 import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = {
@@ -155,28 +153,6 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col lg:h-screen">
       <Navbar />
-
-      {/* Search bar + Filtres button */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-center gap-3">
-        <div className="flex-1 max-w-3xl min-w-0">
-          <SearchBar
-            initialRegion={region}
-            initialCity={city}
-            initialCheckin={checkin}
-            initialCheckout={checkout}
-            initialGuests={initialGuests}
-            iconOnly
-            preserveParams={preserveParams}
-          />
-        </div>
-        <FiltersModal
-          currentParams={{ region, city, checkin, checkout, capacity }}
-          initialMinBedrooms={minBedrooms}
-          initialMinBeds={minBeds}
-          initialMinBathrooms={minBathrooms}
-          initialAmenities={amenities}
-        />
-      </div>
 
       {/* flex-1 fills remaining height; overflow-hidden on desktop clips the split layout */}
       <div className="flex-1 lg:overflow-hidden">

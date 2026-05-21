@@ -54,8 +54,8 @@ export default function SubscriptionPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Abonnement</h1>
-      <p className="text-gray-500 mb-8">
+      <h1 className="text-2xl font-bold text-charcoal-800 mb-2">Abonnement</h1>
+      <p className="text-charcoal-500 mb-8">
         Gérez votre abonnement annuel pour publier vos chalets sur Kabanalouer.
       </p>
 
@@ -77,28 +77,28 @@ export default function SubscriptionPage() {
       )}
 
       {loading ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 animate-pulse h-40" />
+        <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 animate-pulse h-40" />
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
           {/* Status card */}
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="p-6 border-b border-[#ebebeb] flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Statut</p>
+              <p className="text-sm text-charcoal-500 mb-1">Statut</p>
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-block w-2.5 h-2.5 rounded-full ${
-                    isActive ? "bg-green-500" : "bg-gray-300"
+                    isActive ? "bg-green-500" : "bg-charcoal-300"
                   }`}
                 />
-                <span className="font-semibold text-gray-900">
+                <span className="font-semibold text-charcoal-800">
                   {isActive ? "Actif" : "Inactif"}
                 </span>
               </div>
             </div>
             {isActive && sub?.expires_at && (
               <div className="text-right">
-                <p className="text-sm text-gray-500 mb-1">Renouvellement</p>
-                <p className="font-semibold text-gray-900">
+                <p className="text-sm text-charcoal-500 mb-1">Renouvellement</p>
+                <p className="font-semibold text-charcoal-800">
                   {new Date(sub.expires_at).toLocaleDateString("fr-CA", {
                     year: "numeric",
                     month: "long",
@@ -110,11 +110,11 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Plan details */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-[#ebebeb]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-gray-900 text-lg">Abonnement Hôte</p>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="font-bold text-charcoal-800 text-lg">Abonnement hôte</p>
+                <p className="text-charcoal-500 text-sm mt-1">
                   Publiez un nombre illimité de chalets sur Kabanalouer
                 </p>
                 <ul className="mt-3 space-y-1.5">
@@ -124,7 +124,7 @@ export default function SubscriptionPage() {
                     "Génération IA de descriptions",
                     "Tableau de bord complet",
                   ].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                    <li key={f} className="flex items-center gap-2 text-sm text-charcoal-600">
                       <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -134,8 +134,8 @@ export default function SubscriptionPage() {
                 </ul>
               </div>
               <div className="text-right flex-shrink-0 ml-6">
-                <p className="text-3xl font-extrabold text-gray-900">299 $</p>
-                <p className="text-gray-400 text-sm">/ an</p>
+                <p className="text-3xl font-extrabold text-charcoal-800">299 $</p>
+                <p className="text-charcoal-400 text-sm">/ an</p>
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function SubscriptionPage() {
                 <button
                   onClick={handlePortal}
                   disabled={redirecting}
-                  className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
                 >
                   {redirecting ? "Redirection…" : "Gérer mon abonnement"}
                 </button>
@@ -156,12 +156,12 @@ export default function SubscriptionPage() {
               <button
                 onClick={handleSubscribe}
                 disabled={redirecting}
-                className="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
+                className="w-full bg-primary text-white py-3.5 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
               >
                 {redirecting ? "Redirection vers le paiement…" : "S'abonner pour 299 $/an"}
               </button>
             )}
-            <p className="text-xs text-gray-400 text-center mt-3">
+            <p className="text-xs text-charcoal-400 text-center mt-3">
               Paiement sécurisé par Stripe · Annulable à tout moment
             </p>
           </div>

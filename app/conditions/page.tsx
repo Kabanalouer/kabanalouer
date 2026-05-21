@@ -38,16 +38,16 @@ export default function ConditionsPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16 w-full flex-1">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Légal</p>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+          <p className="text-xs text-charcoal-400 uppercase tracking-widest mb-2">Légal</p>
+          <h1 className="text-3xl font-bold text-charcoal-800 mb-3">
             Conditions d&apos;utilisation
           </h1>
-          <p className="text-sm text-gray-400">Dernière mise à jour : mai 2026</p>
+          <p className="text-sm text-charcoal-400">Dernière mise à jour : mai 2026</p>
         </div>
 
         {/* Table of contents */}
-        <nav className="bg-gray-50 rounded-2xl p-6 mb-12 border border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+        <nav className="bg-charcoal-50 rounded-2xl p-6 mb-12 border border-[#ebebeb]">
+          <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-4">
             Table des matières
           </p>
           <ol className="space-y-2">
@@ -65,7 +65,7 @@ export default function ConditionsPage() {
         </nav>
 
         {/* Intro */}
-        <p className="text-gray-600 leading-relaxed mb-10">
+        <p className="text-charcoal-600 leading-relaxed mb-10">
           Les présentes conditions d&apos;utilisation (« Conditions ») régissent l&apos;accès et
           l&apos;utilisation de la plateforme Kabanalouer, accessible à l&apos;adresse{" "}
           <strong>kabanalouer.vercel.app</strong>, exploitée par Kabanalouer (« nous »,
@@ -73,7 +73,7 @@ export default function ConditionsPage() {
           d&apos;être lié par ces Conditions.
         </p>
 
-        <div className="space-y-12 text-gray-700">
+        <div className="space-y-12 text-charcoal-700">
 
           {/* 1 */}
           <section id="definitions" className="scroll-mt-24">
@@ -356,11 +356,11 @@ export default function ConditionsPage() {
         </div>
 
         {/* Back links */}
-        <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
+        <div className="mt-16 pt-8 border-t border-[#ebebeb] flex flex-col sm:flex-row gap-3">
           <Link href="/confidentialite" className="text-sm text-primary hover:underline">
             Politique de confidentialité →
           </Link>
-          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+          <Link href="/" className="text-sm text-charcoal-400 hover:text-charcoal-600">
             Retour à l&apos;accueil
           </Link>
         </div>
@@ -373,7 +373,7 @@ export default function ConditionsPage() {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+    <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
       {children}
     </h2>
   );
@@ -383,7 +383,7 @@ function LegalItem({ term, children }: { term: string; children: React.ReactNode
   return (
     <li>
       <strong>{term} :</strong>{" "}
-      <span className="text-gray-600">{children}</span>
+      <span className="text-charcoal-600">{children}</span>
     </li>
   );
 }

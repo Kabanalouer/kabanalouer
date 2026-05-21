@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { AMENITIES, AMENITY_EMOJI } from "@/lib/amenities";
+import { AMENITIES } from "@/lib/amenities";
 
 function CounterRow({ label, value, onChange, max = 8 }: {
   label: string;
@@ -17,29 +18,29 @@ function CounterRow({ label, value, onChange, max = 8 }: {
 
   return (
     <div className="flex items-center justify-between py-4">
-      <span className="text-sm text-gray-800">{label}</span>
+      <span className="text-sm text-charcoal-800">{label}</span>
       <div className="flex items-center gap-4">
         <button
           onClick={() => onChange(num <= 1 ? "" : String(num - 1))}
           disabled={atMin}
           className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
             atMin
-              ? "border-gray-200 text-gray-300 cursor-not-allowed"
-              : "border-gray-400 text-gray-700 hover:border-gray-800 hover:text-gray-900"
+              ? "border-[#ebebeb] text-charcoal-100 cursor-not-allowed"
+              : "border-charcoal-200 text-charcoal-600 hover:border-charcoal-800 hover:text-charcoal-800"
           }`}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
           </svg>
         </button>
-        <span className="w-8 text-center text-sm font-medium text-gray-900 tabular-nums">{display}</span>
+        <span className="w-8 text-center text-sm font-medium text-charcoal-800 tabular-nums">{display}</span>
         <button
           onClick={() => onChange(atMax ? String(max) : String(num + 1))}
           disabled={atMax}
           className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
             atMax
-              ? "border-gray-200 text-gray-300 cursor-not-allowed"
-              : "border-gray-400 text-gray-700 hover:border-gray-800 hover:text-gray-900"
+              ? "border-[#ebebeb] text-charcoal-100 cursor-not-allowed"
+              : "border-charcoal-200 text-charcoal-600 hover:border-charcoal-800 hover:text-charcoal-800"
           }`}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -119,10 +120,10 @@ export default function FiltersModal({
       {/* ── Button ────────────────────────────────────────────────────────── */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`relative flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-colors shrink-0 ${
+        className={`relative flex items-center gap-2 px-4 py-3 rounded-full border text-sm font-medium transition-colors shrink-0 ${
           activeCount > 0
-            ? "border-gray-900 bg-gray-900 text-white"
-            : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+            ? "border-charcoal-800 bg-charcoal-800 text-white"
+            : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
         }`}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -137,20 +138,20 @@ export default function FiltersModal({
         )}
       </button>
 
-      {/* ── Modal ─────────────────────────────────────────────────────────── */}
-      {isOpen && (
+      {/* ── Modal (portal — renders outside any stacking context) ─────── */}
+      {isOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
           <div className="relative bg-white rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-              <h2 className="text-base font-bold text-gray-900">Filtres</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] shrink-0">
+              <h2 className="text-base font-bold text-charcoal-800">Filtres</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-full hover:bg-charcoal-50 transition-colors"
               >
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -161,19 +162,19 @@ export default function FiltersModal({
 
               {/* Chambres et lits */}
               <div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">Chambres et lits</h3>
+                <h3 className="text-sm font-bold text-charcoal-800 mb-1">Chambres et lits</h3>
                 <CounterRow label="Chambres" value={minBedrooms} onChange={setMinBedrooms} />
-                <div className="h-px bg-gray-100" />
+                <div className="h-px bg-[#ebebeb]" />
                 <CounterRow label="Lits" value={minBeds} onChange={setMinBeds} />
-                <div className="h-px bg-gray-100" />
+                <div className="h-px bg-[#ebebeb]" />
                 <CounterRow label="Salles de bain" value={minBathrooms} onChange={setMinBathrooms} />
               </div>
 
-              <div className="h-px bg-gray-100" />
+              <div className="h-px bg-[#ebebeb]" />
 
               {/* Caractéristiques */}
               <div>
-                <h3 className="text-sm font-bold text-gray-900 mb-4">Caractéristiques</h3>
+                <h3 className="text-sm font-bold text-charcoal-800 mb-4">Caractéristiques</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {AMENITIES.map((amenity) => {
                     const active = selectedAmenities.includes(amenity);
@@ -183,7 +184,7 @@ export default function FiltersModal({
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors ${
                           active
                             ? "border-primary/40 bg-primary/5"
-                            : "border-gray-200 hover:border-gray-300"
+                            : "border-[#dddddd] hover:border-charcoal-300"
                         }`}
                       >
                         <input
@@ -194,7 +195,7 @@ export default function FiltersModal({
                         />
                         <span
                           className={`w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-colors ${
-                            active ? "bg-primary border-primary" : "border-gray-300"
+                            active ? "bg-primary border-primary" : "border-charcoal-200"
                           }`}
                         >
                           {active && (
@@ -203,8 +204,7 @@ export default function FiltersModal({
                             </svg>
                           )}
                         </span>
-                        <span className="text-base leading-none">{AMENITY_EMOJI[amenity]}</span>
-                        <span className={`text-sm ${active ? "font-medium" : ""}`}>{amenity}</span>
+                        <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>{amenity}</span>
                       </label>
                     );
                   })}
@@ -213,23 +213,24 @@ export default function FiltersModal({
             </div>
 
             {/* Footer */}
-            <div className="shrink-0 border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+            <div className="shrink-0 border-t border-[#ebebeb] px-6 py-4 flex items-center justify-between">
               <button
                 onClick={clearAll}
-                className="text-sm text-gray-500 hover:text-gray-900 underline underline-offset-2 transition-colors"
+                className="text-sm text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2 transition-colors"
               >
                 Tout effacer
               </button>
               <button
                 onClick={apply}
-                className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
               >
                 Afficher les résultats
               </button>
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -102,7 +102,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
 };
 
 const inputCls =
-  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 const FREE_LAUNCH_LIMIT = 50;
 const PUBLISH_FEATURES = [
@@ -319,14 +319,13 @@ export default function EditListingForm({
               key={s.id}
               onClick={() => { setActiveSection(s.id); setSaveError(""); setJustSaved(false); }}
               className={[
-                "flex items-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-xl text-sm font-medium transition-colors shrink-0",
+                "whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium transition-colors shrink-0",
                 activeSection === s.id
                   ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50",
+                  : "bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50",
               ].join(" ")}
             >
-              <span>{s.emoji}</span>
-              <span>{s.label}</span>
+              {s.label}
               {(s.id === "publier" ? isPublished : s.isComplete(form)) && activeSection !== s.id && (
                 <span className="text-green-500 text-xs">✓</span>
               )}
@@ -347,13 +346,10 @@ export default function EditListingForm({
                   "flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors",
                   active
                     ? "bg-primary text-white"
-                    : "text-gray-600 hover:bg-gray-100",
+                    : "text-charcoal-600 hover:bg-charcoal-50",
                 ].join(" ")}
               >
-                <span className="flex items-center gap-2.5">
-                  <span>{s.emoji}</span>
-                  <span>{s.label}</span>
-                </span>
+                <span>{s.label}</span>
                 {complete && !active && (
                   <span className="text-green-500 text-xs shrink-0">✓</span>
                 )}
@@ -362,18 +358,17 @@ export default function EditListingForm({
           })}
 
           {/* Bottom actions */}
-          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+          <div className="mt-4 pt-4 border-t border-[#ebebeb] space-y-2">
             <button
               onClick={() => setPreviewOpen(true)}
-              className="w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-colors flex items-center justify-center"
-              style={{ borderColor: "#0F6E56", color: "#0F6E56", background: "white" }}
+              className="w-full py-2.5 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center justify-center"
             >
               Aperçu de mon annonce
             </button>
             {isPublished && (
               <button
                 onClick={() => setDeleteModalOpen(true)}
-                className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors py-1"
+                className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
               >
                 Supprimer mon annonce
               </button>
@@ -385,15 +380,14 @@ export default function EditListingForm({
         <div className="flex lg:hidden flex-col gap-2 mt-3">
           <button
             onClick={() => setPreviewOpen(true)}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold border-2 bg-white transition-colors flex items-center justify-center"
-            style={{ borderColor: "#0F6E56", color: "#0F6E56" }}
+            className="w-full py-2.5 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center justify-center"
           >
             Aperçu de mon annonce
           </button>
           {isPublished && (
             <button
               onClick={() => setDeleteModalOpen(true)}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors py-1 text-center"
+              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
             >
               Supprimer mon annonce
             </button>
@@ -403,7 +397,7 @@ export default function EditListingForm({
 
       {/* ── Content area ────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl border border-[#ebebeb] p-6">
 
           {/* Section: Photos */}
           {activeSection === "photos" && (
@@ -427,7 +421,7 @@ export default function EditListingForm({
                 className={inputCls}
                 placeholder="ex. Chalet rustique au bord du lac, Laurentides"
               />
-              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-gray-400"}`}>
+              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.title.length}/50
               </p>
             </SectionShell>
@@ -443,7 +437,7 @@ export default function EditListingForm({
                 rows={32}
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
               />
-              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-gray-400"}`}>
+              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.description.length}/2500
               </p>
             </SectionShell>
@@ -504,7 +498,7 @@ export default function EditListingForm({
           {/* Section: À proximité */}
           {activeSection === "proximite" && (
             <SectionShell title="À proximité" emoji="🗺️">
-              <p className="text-sm text-gray-400 mb-5">À moins de 30 minutes du chalet</p>
+              <p className="text-sm text-charcoal-400 mb-5">À moins de 30 minutes du chalet</p>
               <NearbyActivitiesPicker
                 selected={form.nearby_activities}
                 onChange={(activities) => set("nearby_activities", activities)}
@@ -548,17 +542,22 @@ export default function EditListingForm({
             <SectionShell title="Tarifs" emoji="💰">
               {/* Pricing mode cards */}
               <div className="grid grid-cols-2 gap-3 mb-6">
-                {[
-                  { value: false, emoji: "💰", title: "À partir de", desc: "Affichez un prix de base sur votre fiche. Les voyageurs voient votre tarif minimum et vous contactent pour confirmer." },
-                  { value: true,  emoji: "✉️", title: "Sur demande",  desc: "Aucun prix affiché sur votre fiche. Les voyageurs vous contactent pour obtenir une soumission personnalisée." },
-                ].map((opt) => (
-                  <button key={String(opt.value)} type="button" onClick={() => set("price_on_request", opt.value)}
-                    className={`text-left p-4 rounded-xl border-2 transition-colors ${form.price_on_request === opt.value ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
-                    <span className="text-xl block mb-1">{opt.emoji}</span>
-                    <p className="font-semibold text-sm text-gray-900">{opt.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">{opt.desc}</p>
-                  </button>
-                ))}
+                <button type="button" onClick={() => set("price_on_request", false)}
+                  className={`text-left p-4 rounded-xl border-2 transition-colors ${!form.price_on_request ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
+                  <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="font-semibold text-sm text-charcoal-800">À partir de</p>
+                  <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Affichez un prix de base sur votre fiche. Les voyageurs voient votre tarif minimum et vous contactent pour confirmer.</p>
+                </button>
+                <button type="button" onClick={() => set("price_on_request", true)}
+                  className={`text-left p-4 rounded-xl border-2 transition-colors ${form.price_on_request ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
+                  <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                  <p className="font-semibold text-sm text-charcoal-800">Sur demande</p>
+                  <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Aucun prix affiché sur votre fiche. Les voyageurs vous contactent pour obtenir une soumission personnalisée.</p>
+                </button>
               </div>
 
               {/* Conditional price field */}
@@ -566,7 +565,7 @@ export default function EditListingForm({
                 <div className="max-w-xs">
                   <Label>Prix à partir de ($/nuit)</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
                     <input
                       type="number"
                       min={0}
@@ -576,19 +575,19 @@ export default function EditListingForm({
                       placeholder="189"
                     />
                   </div>
-                  <p className="text-sm text-gray-400 mt-3 leading-relaxed">
+                  <p className="text-sm text-charcoal-400 mt-3 leading-relaxed">
                     Ce prix sera affiché sur votre fiche publique. Vous communiquez le prix final directement avec le voyageur.
                   </p>
                   {form.price_low > 0 && (
-                    <div className="mt-4 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
-                      Aperçu : <span className="font-semibold text-gray-900">À partir de {form.price_low} $/nuit</span>
+                    <div className="mt-4 bg-charcoal-50 rounded-xl px-4 py-3 text-sm text-charcoal-600">
+                      Aperçu : <span className="font-semibold text-charcoal-800">À partir de {form.price_low} $/nuit</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-xl px-4 py-4 text-sm text-gray-600 leading-relaxed">
+                <div className="bg-charcoal-50 rounded-xl px-4 py-4 text-sm text-charcoal-600 leading-relaxed">
                   Votre fiche affichera :{" "}
-                  <span className="font-semibold text-gray-900">«&nbsp;Prix sur demande — Contactez l&apos;hôte&nbsp;»</span>
+                  <span className="font-semibold text-charcoal-800">«&nbsp;Prix sur demande — Contactez l&apos;hôte&nbsp;»</span>
                 </div>
               )}
             </SectionShell>
@@ -599,7 +598,7 @@ export default function EditListingForm({
             <SectionShell title="Informations générales" emoji="ℹ️">
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Numéro CITQ *</label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Numéro CITQ *</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -611,7 +610,7 @@ export default function EditListingForm({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Heure du check-in</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-in</label>
                     <select
                       value={form.checkin_time}
                       onChange={(e) => set("checkin_time", e.target.value)}
@@ -623,7 +622,7 @@ export default function EditListingForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Heure du check-out</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-out</label>
                     <select
                       value={form.checkout_time}
                       onChange={(e) => set("checkout_time", e.target.value)}
@@ -636,16 +635,16 @@ export default function EditListingForm({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Type d&apos;arrivée</label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Type d&apos;arrivée</label>
                   <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Animaux acceptés</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Animaux acceptés</label>
                     <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Fumeur accepté</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Fumeur accepté</label>
                     <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} />
                   </div>
                 </div>
@@ -677,7 +676,7 @@ export default function EditListingForm({
                       </span>
                     </div>
                     {expiryDate && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-charcoal-500">
                         Abonnement valide jusqu&apos;au{" "}
                         <strong className="text-gray-800">
                           {expiryDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
@@ -686,7 +685,7 @@ export default function EditListingForm({
                     )}
                     <button
                       onClick={() => setPreviewOpen(true)}
-                      className="inline-flex items-center gap-2 border border-primary text-primary px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-50 transition-colors"
+                      className="inline-flex items-center gap-2 border border-primary text-primary px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
                     >
                       Aperçu de mon annonce
                     </button>
@@ -735,28 +734,28 @@ export default function EditListingForm({
 
                   {isFree ? (
                     <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
-                      🎉 Offre de lancement
+                      Offre de lancement
                     </div>
                   ) : null}
 
                   <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-1">
+                    <h3 className="text-base font-bold text-charcoal-800 mb-1">
                       {isFree ? "Publiez votre chalet gratuitement" : "Publiez votre chalet"}
                     </h3>
                     {isFree && (
                       <>
                         <div className="flex items-center justify-between mb-1 mt-3">
-                          <span className="text-xs text-gray-600">Places gratuites restantes</span>
+                          <span className="text-xs text-charcoal-600">Places gratuites restantes</span>
                           <span className="text-xs font-bold text-primary">{slotsLeft} / {FREE_LAUNCH_LIMIT}</span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div className="w-full bg-charcoal-100 rounded-full h-1.5">
                           <div
                             className="bg-primary rounded-full h-1.5"
                             style={{ width: `${(activeSubscriptionCount / FREE_LAUNCH_LIMIT) * 100}%` }}
                           />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Il reste <strong className="text-gray-700">{slotsLeft} place{slotsLeft > 1 ? "s" : ""} gratuite{slotsLeft > 1 ? "s" : ""}</strong> sur {FREE_LAUNCH_LIMIT}
+                        <p className="text-xs text-charcoal-400 mt-1">
+                          Il reste <strong className="text-charcoal-700">{slotsLeft} place{slotsLeft > 1 ? "s" : ""} gratuite{slotsLeft > 1 ? "s" : ""}</strong> sur {FREE_LAUNCH_LIMIT}
                         </p>
                       </>
                     )}
@@ -764,7 +763,7 @@ export default function EditListingForm({
 
                   <ul className="space-y-1.5">
                     {PUBLISH_FEATURES.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
+                      <li key={f} className="flex items-center gap-2 text-sm text-charcoal-700">
                         <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
@@ -776,13 +775,13 @@ export default function EditListingForm({
                   <div>
                     {isFree ? (
                       <>
-                        <p className="text-sm text-gray-400 line-through mb-0.5">299 $/an</p>
+                        <p className="text-sm text-charcoal-400 line-through mb-0.5">299 $/an</p>
                         <p className="text-2xl font-extrabold text-primary mb-1">GRATUIT</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-2xl font-extrabold text-gray-900 mb-0.5">299 $</p>
-                        <p className="text-sm text-gray-400 mb-1">par année</p>
+                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">299 $</p>
+                        <p className="text-sm text-charcoal-400 mb-1">par année</p>
                       </>
                     )}
                   </div>
@@ -796,11 +795,11 @@ export default function EditListingForm({
                       <button
                         onClick={handleActivateFree}
                         disabled={publishLoading || !canPublish}
-                        className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+                        className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
                       >
                         {publishLoading ? "Activation…" : "Activer mon annonce gratuitement"}
                       </button>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-charcoal-400">
                         Valide jusqu&apos;au{" "}
                         {oneYearFromNow.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
                       </p>
@@ -810,11 +809,11 @@ export default function EditListingForm({
                       <button
                         onClick={handleStripeCheckout}
                         disabled={publishLoading || !canPublish}
-                        className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+                        className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
                       >
                         {publishLoading ? "Redirection vers le paiement…" : "Payer et publier — 299 $/an"}
                       </button>
-                      <p className="text-xs text-gray-400">Paiement sécurisé par Stripe · Annulable à tout moment</p>
+                      <p className="text-xs text-charcoal-400">Paiement sécurisé par Stripe · Annulable à tout moment</p>
                     </>
                   )}
                 </div>
@@ -824,11 +823,11 @@ export default function EditListingForm({
 
           {/* Save bar */}
           {hasSaveButton && (
-            <div className="mt-6 pt-5 border-t border-gray-100 flex items-center gap-3">
+            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex items-center gap-3">
               <button
                 onClick={handleSaveSection}
                 disabled={saving}
-                className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {saving ? (
                   <><Spinner />Enregistrement…</>
@@ -849,12 +848,11 @@ export default function EditListingForm({
   );
 }
 
-function SectionShell({ title, emoji, children }: { title: string; emoji: string; children: React.ReactNode }) {
+function SectionShell({ title, emoji: _emoji, children }: { title: string; emoji?: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-xl">{emoji}</span>
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-lg font-semibold text-charcoal-800">{title}</h2>
       </div>
       {children}
     </div>
@@ -863,7 +861,7 @@ function SectionShell({ title, emoji, children }: { title: string; emoji: string
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-sm font-medium text-gray-700 mb-1.5">{children}</label>
+    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{children}</label>
   );
 }
 
@@ -877,33 +875,37 @@ function Spinner() {
 }
 
 function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void }) {
-  const options = [
-    { id: "autonomous" as const, emoji: "🔑", title: "Arrivée autonome", desc: "Accès par code numérique ou boîte à clés" },
-    { id: "in_person" as const,  emoji: "🤝", title: "Accueil sur place",  desc: "Remise des clés en personne à l'arrivée" },
-  ];
   return (
     <div className="grid grid-cols-2 gap-3">
-      {options.map((o) => (
-        <button key={o.id} type="button" onClick={() => onChange(o.id)}
-          className={`text-left p-4 rounded-xl border-2 transition-colors ${value === o.id ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
-          <span className="text-xl block mb-1">{o.emoji}</span>
-          <p className="font-semibold text-sm text-gray-900">{o.title}</p>
-          <p className="text-xs text-gray-500 mt-0.5 leading-snug">{o.desc}</p>
-        </button>
-      ))}
+      <button type="button" onClick={() => onChange("autonomous")}
+        className={`text-left p-4 rounded-xl border-2 transition-colors ${value === "autonomous" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
+        <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+        </svg>
+        <p className="font-semibold text-sm text-charcoal-800">Arrivée autonome</p>
+        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Accès par code numérique ou boîte à clés</p>
+      </button>
+      <button type="button" onClick={() => onChange("in_person")}
+        className={`text-left p-4 rounded-xl border-2 transition-colors ${value === "in_person" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
+        <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+        </svg>
+        <p className="font-semibold text-sm text-charcoal-800">Accueil sur place</p>
+        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Remise des clés en personne à l&apos;arrivée</p>
+      </button>
     </div>
   );
 }
 
 function ToggleField({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm w-fit">
+    <div className="flex rounded-xl border border-[#ebebeb] overflow-hidden text-sm w-fit">
       <button type="button" onClick={() => onChange(false)}
-        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
         Non
       </button>
       <button type="button" onClick={() => onChange(true)}
-        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50"}`}>
+        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
         Oui
       </button>
     </div>

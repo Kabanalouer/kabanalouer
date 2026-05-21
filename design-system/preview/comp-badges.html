@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Badges &amp; Pills</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row-label { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); width: 80px; flex-shrink: 0; }
+
+  .badge {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .badge.solid-warm { background: var(--ember-500); color: var(--snow-warm); }
+  .badge.solid-cool { background: var(--forest-500); color: var(--snow-warm); }
+  .badge.solid-dark { background: var(--char-800); color: var(--snow-warm); }
+  .badge.soft-warm { background: var(--ember-100); color: var(--ember-700); }
+  .badge.soft-cool { background: var(--forest-100); color: var(--forest-700); }
+  .badge.soft-lake { background: var(--lake-100); color: var(--lake-700); }
+  .badge.outline { background: var(--snow); color: var(--char-700); border: 1px solid var(--char-200); }
+  .badge.dot::before {
+    content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor;
+  }
+  .badge.success { background: var(--forest-100); color: var(--forest-700); }
+  .badge.warning { background: #fdf5e6; color: #74542a; }
+  .badge.danger { background: #fbe9e6; color: #7a2820; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row"><span class="row-label">brand</span>
+    <span class="badge solid-warm">Coup de cœur</span>
+    <span class="badge solid-cool">Vérifié</span>
+    <span class="badge solid-dark">Nouveau</span>
+    <span class="badge soft-warm">Estrie</span>
+    <span class="badge soft-cool">Bord du lac</span>
+    <span class="badge soft-lake">Spa</span>
+    <span class="badge outline">Animaux ok</span>
+  </div>
+  <div class="row"><span class="row-label">status</span>
+    <span class="badge success dot">Confirmé</span>
+    <span class="badge warning dot">En attente</span>
+    <span class="badge danger dot">Annulé</span>
+    <span class="badge soft-cool dot">Hôte vérifié</span>
+  </div>
+  <div class="row"><span class="row-label">amenity</span>
+    <span class="badge outline">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/><circle cx="12" cy="8" r="4"/></svg>
+      8 voyageurs
+    </span>
+    <span class="badge outline">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9v9h20V9"/><path d="M2 9V5h20v4"/><path d="M6 13h4"/></svg>
+      4 chambres
+    </span>
+    <span class="badge outline">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6V3h6v3"/><path d="M3 11h18v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-7Z"/></svg>
+      Spa privé
+    </span>
+    <span class="badge outline">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 2-4"/><path d="M14 8s5 2 5 8a7 7 0 0 1-14 0"/></svg>
+      Foyer au bois
+    </span>
+  </div>
+</div>
+</body>
+</html>

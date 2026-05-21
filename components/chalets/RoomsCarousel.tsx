@@ -69,9 +69,9 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             onClick={() => scroll("left")}
             disabled={!canLeft}
             aria-label="Précédent"
-            className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+            className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
           >
-            <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -79,9 +79,9 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             onClick={() => scroll("right")}
             disabled={!canRight}
             aria-label="Suivant"
-            className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-gray-50"
+            className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
           >
-            <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -100,9 +100,9 @@ function RoomCard({ room }: { room: Room }) {
   const hasMultiple = photos.length > 1;
 
   return (
-    <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white h-full flex flex-col">
+    <div className="border border-[#ebebeb] rounded-xl overflow-hidden bg-white h-full flex flex-col">
       {/* Photo — 16:9 with optional carousel */}
-      <div className="relative w-full aspect-video overflow-hidden bg-gray-50">
+      <div className="relative w-full aspect-video overflow-hidden bg-charcoal-50">
         {photos.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -112,8 +112,10 @@ function RoomCard({ room }: { room: Room }) {
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
-            <span className="text-3xl">{isBedroom ? "🛏" : "🛋"}</span>
-            <span className="text-xs text-gray-400">Aucune photo</span>
+            <svg className="w-8 h-8 text-charcoal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+            <span className="text-xs text-charcoal-300">Aucune photo</span>
           </div>
         )}
 
@@ -125,7 +127,7 @@ function RoomCard({ room }: { room: Room }) {
               aria-label="Photo précédente"
               className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
             >
-              <svg className="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -135,7 +137,7 @@ function RoomCard({ room }: { room: Room }) {
               aria-label="Photo suivante"
               className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
             >
-              <svg className="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -155,22 +157,22 @@ function RoomCard({ room }: { room: Room }) {
 
       {/* Info */}
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <p className="font-semibold text-gray-900 text-sm">{room.name}</p>
-        <p className="text-xs text-gray-400">
+        <p className="font-semibold text-charcoal-800 text-sm">{room.name}</p>
+        <p className="text-xs text-charcoal-400">
           {isBedroom ? `${room.capacity} pers.` : `Capacité : ${room.capacity} pers.`}
         </p>
         {isBedroom && beds.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-0.5">
             {beds.map((b, i) => (
-              <span key={i} className="text-xs bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1 text-gray-600">
-                🛏 {b.quantity}× {BED_FR[b.type] ?? b.type}
+              <span key={i} className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600">
+                {b.quantity}× {BED_FR[b.type] ?? b.type}
               </span>
             ))}
           </div>
         )}
         {!isBedroom && sofaBeds && (
-          <span className="text-xs bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1 text-gray-600 self-start mt-0.5">
-            🛋 {sofaBeds.quantity} divan{sofaBeds.quantity > 1 ? "s" : ""}-lit
+          <span className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600 self-start mt-0.5">
+            {sofaBeds.quantity} divan{sofaBeds.quantity > 1 ? "s" : ""}-lit
           </span>
         )}
       </div>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Buttons — Primary &amp; Variants</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { display: flex; flex-direction: column; gap: 16px; padding: 24px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .row-label { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); width: 70px; flex-shrink: 0; }
+
+  .btn {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1;
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 140ms var(--ease-out);
+    display: inline-flex; align-items: center; gap: 8px;
+    letter-spacing: -0.005em;
+  }
+  .btn.primary { background: var(--ember-500); color: var(--snow-warm); }
+  .btn.primary.hover { background: var(--ember-600); }
+  .btn.primary.press { background: var(--ember-700); transform: scale(0.97); }
+  .btn.primary.disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn.secondary { background: var(--char-800); color: var(--snow-warm); }
+  .btn.secondary.hover { background: var(--char-900); }
+
+  .btn.outline { background: transparent; border-color: var(--char-300); color: var(--fg-1); }
+  .btn.outline.hover { background: var(--birch-100); border-color: var(--char-400); }
+
+  .btn.ghost { background: transparent; color: var(--fg-1); }
+  .btn.ghost.hover { background: var(--birch-100); }
+
+  .btn.brand { background: var(--forest-500); color: var(--snow-warm); }
+  .btn.brand.hover { background: var(--forest-600); }
+
+  .btn.sm { padding: 8px 12px; font-size: 13px; border-radius: var(--radius-sm); }
+  .btn.lg { padding: 16px 22px; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row"><span class="row-label">primary</span>
+    <button class="btn primary">Réserver</button>
+    <button class="btn primary hover">Réserver</button>
+    <button class="btn primary press">Réserver</button>
+    <button class="btn primary disabled">Réserver</button>
+  </div>
+  <div class="row"><span class="row-label">brand</span>
+    <button class="btn brand">Voir le chalet</button>
+    <button class="btn brand hover">Voir le chalet</button>
+    <button class="btn secondary">Continuer</button>
+    <button class="btn secondary hover">Continuer</button>
+  </div>
+  <div class="row"><span class="row-label">subtle</span>
+    <button class="btn outline">Filtres</button>
+    <button class="btn outline hover">Filtres</button>
+    <button class="btn ghost">Annuler</button>
+    <button class="btn ghost hover">Annuler</button>
+  </div>
+  <div class="row"><span class="row-label">sizes</span>
+    <button class="btn primary sm">Réserver</button>
+    <button class="btn primary">Réserver</button>
+    <button class="btn primary lg">Réserver — 720 $</button>
+  </div>
+</div>
+</body>
+</html>

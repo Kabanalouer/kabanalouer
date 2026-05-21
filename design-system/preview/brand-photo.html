@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Photo Treatment</title>
+<link rel="stylesheet" href="_card.css"/>
+<style>
+  .card { padding: 20px 24px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  .hero {
+    aspect-ratio: 16/10;
+    border-radius: var(--radius-lg);
+    background:
+      linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 60%),
+      url('https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=80&auto=format&fit=crop');
+    background-size: cover; background-position: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    display: flex; align-items: flex-end;
+    padding: 22px;
+  }
+  .hero .label {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--snow); opacity: 0.9;
+  }
+  .hero .title {
+    font-family: var(--font-display); font-weight: 800;
+    color: var(--snow);
+    font-size: 36px; line-height: 1.05; letter-spacing: -0.03em;
+    max-width: 320px;
+  }
+  .hero .text { display: flex; flex-direction: column; gap: 4px; }
+
+  .rules {
+    display: flex; flex-direction: column; gap: 10px;
+    font-family: var(--font-sans);
+    font-size: 12px; color: var(--fg-2); line-height: 1.5;
+  }
+  .rules h4 { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin: 0; }
+  .rules ul { margin: 0; padding: 0 0 0 16px; }
+  .rules ul li { margin-bottom: 4px; }
+  .rules b { color: var(--fg-1); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hero">
+    <div class="text">
+      <span class="label">Hero · plein bleed</span>
+      <span class="title">Au bord du lac, l'été commence ici.</span>
+    </div>
+  </div>
+  <div class="rules">
+    <h4>Traitement photo</h4>
+    <ul>
+      <li>Tons <b>chauds</b>, golden hour préférée</li>
+      <li>Lumière <b>naturelle</b>, pas de filtre fort</li>
+      <li>Bois, eau, forêt, neige — couleurs réelles</li>
+      <li><b>Pas</b> de noir &amp; blanc, pas de saturation forçée</li>
+      <li>Overlay sombre <b>seulement</b> sous texte hero (0 → 55 %)</li>
+      <li>Coins arrondis <b>radius-lg</b> (12 px) sur photos UI</li>
+      <li>Source par défaut : Unsplash. À remplacer par vraies photos d'hôtes pour la prod</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

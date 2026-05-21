@@ -94,7 +94,6 @@ export default async function DevenirHotePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-              <span>🚀</span>
               <span>Plateforme à plus forte croissance au Québec</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
@@ -109,13 +108,13 @@ export default async function DevenirHotePage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/signup?role=host"
-                className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-xl hover:bg-primary-dark transition-colors text-lg"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary-dark transition-colors text-lg"
               >
                 Inscrire mon chalet gratuitement →
               </Link>
               <Link
                 href="/chalets"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-4 rounded-xl hover:bg-white/20 transition-colors text-base"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-4 rounded-full hover:bg-white/20 transition-colors text-base"
               >
                 Voir les annonces
               </Link>
@@ -130,19 +129,19 @@ export default async function DevenirHotePage() {
       </section>
 
       {/* ── Launch offer ── */}
-      <section className="bg-white border-b border-gray-100">
+      <section className="bg-white border-b border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-5">
-            {isUrgent ? "🔥 Dernières places" : "🎉 Offre de lancement exclusive"}
+            {isUrgent ? "Dernières places" : "Offre de lancement exclusive"}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
             {remaining > 0 ? (
               <>Il reste <span className="text-primary">{remaining}</span> place{remaining !== 1 ? "s" : ""} gratuites</>
             ) : (
               "Offre de lancement terminée"
             )}
           </h2>
-          <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">
+          <p className="text-charcoal-500 text-sm mb-8 max-w-sm mx-auto">
             {remaining > 0
               ? `Après les ${FREE_LAUNCH_LIMIT} premiers hôtes, l'abonnement sera de 299 $/an par chalet.`
               : "L'abonnement annuel est de 299 $/an par chalet."}
@@ -150,11 +149,11 @@ export default async function DevenirHotePage() {
 
           {/* Progress bar */}
           <div className="max-w-sm mx-auto mb-2">
-            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+            <div className="flex justify-between text-xs text-charcoal-400 mb-1.5">
               <span>{usedSlots} / {FREE_LAUNCH_LIMIT} places utilisées</span>
               <span>{progressPct}%</span>
             </div>
-            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-3 bg-charcoal-100 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${isUrgent ? "bg-red-500" : "bg-primary"}`}
                 style={{ width: `${progressPct}%` }}
@@ -164,14 +163,14 @@ export default async function DevenirHotePage() {
 
           {isUrgent && remaining > 0 && (
             <p className="text-red-600 text-xs font-semibold mt-3">
-              ⚠️ Plus que {remaining} place{remaining !== 1 ? "s" : ""} — inscrivez-vous maintenant
+              Plus que {remaining} place{remaining !== 1 ? "s" : ""} — inscrivez-vous maintenant
             </p>
           )}
 
           <div className="mt-8">
             <Link
               href="/signup?role=host"
-              className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-xl hover:bg-primary-dark transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
             >
               {remaining > 0 ? "Profiter de l'offre gratuite →" : "Commencer à 299 $/an →"}
             </Link>
@@ -183,39 +182,39 @@ export default async function DevenirHotePage() {
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900">Pourquoi choisir Kabanalouer ?</h2>
-            <p className="text-gray-500 mt-3 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold text-charcoal-800">Pourquoi choisir Kabanalouer ?</h2>
+            <p className="text-charcoal-500 mt-3 max-w-xl mx-auto">
               Une plateforme pensée pour les propriétaires de chalets québécois, pas pour les grandes plateformes internationales.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <BenefitCard
-              emoji="🤝"
+              icon={<HandshakeIcon />}
               title="Contact direct"
               description="Communiquez directement avec vos voyageurs. Pas d'intermédiaire, pas de commission sur vos revenus."
             />
             <BenefitCard
-              emoji="💸"
+              icon={<DollarCircleIcon />}
               title="Zéro frais de service"
               description="Contrairement à Airbnb, aucun frais de service n'est prélevé sur vos réservations. Vous gardez 100 % de vos revenus."
             />
             <BenefitCard
-              emoji="🍁"
+              icon={<MapPinIcon />}
               title="Plateforme spécialisée Québec"
               description="Une plateforme pensée pour les chalets québécois. Vos voyageurs cherchent spécifiquement au Québec."
             />
             <BenefitCard
-              emoji="🛠️"
+              icon={<WrenchIcon />}
               title="Outils modernes inclus"
               description="Calendrier de disponibilités, sync iCal avec Airbnb et Booking, messagerie intégrée, tableau de bord et statistiques."
             />
             <BenefitCard
-              emoji="🔍"
+              icon={<SearchIcon />}
               title="Visibilité maximale"
               description="Référencement optimisé pour les recherches de chalets au Québec. Soyez trouvé par les bons voyageurs."
             />
             <BenefitCard
-              emoji="📋"
+              icon={<TagIcon />}
               title="Tarif simple et transparent"
               description="Un seul abonnement annuel de 299 $/an par chalet. Pas de surprise, pas de commission cachée."
             />
@@ -231,10 +230,10 @@ export default async function DevenirHotePage() {
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-5">
                 299 $/an · tout inclus
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl font-bold text-charcoal-800 mb-4">
                 Tout ce dont vous avez besoin, inclus dans votre abonnement
               </h2>
-              <p className="text-gray-500 mb-8 leading-relaxed">
+              <p className="text-charcoal-500 mb-8 leading-relaxed">
                 Un seul forfait, sans module payant supplémentaire. Tout ce qu'il vous faut pour gérer et promouvoir votre chalet en ligne.
               </p>
               <ul className="space-y-3.5">
@@ -250,14 +249,14 @@ export default async function DevenirHotePage() {
                 ].map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
-                    <span className="text-gray-700 text-sm">{feature}</span>
+                    <span className="text-charcoal-700 text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-10">
                 <Link
                   href="/signup?role=host"
-                  className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-xl hover:bg-primary-dark transition-colors"
+                  className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
                 >
                   Commencer gratuitement →
                 </Link>
@@ -266,27 +265,27 @@ export default async function DevenirHotePage() {
 
             {/* Price card */}
             <div className="w-full lg:w-72 shrink-0">
-              <div className="bg-[#F8FAF9] rounded-2xl border border-gray-100 p-8 text-center">
+              <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8 text-center">
                 {remaining > 0 ? (
                   <>
-                    <p className="text-sm text-gray-400 mb-1">Pour les {FREE_LAUNCH_LIMIT} premiers hôtes</p>
+                    <p className="text-sm text-charcoal-400 mb-1">Pour les {FREE_LAUNCH_LIMIT} premiers hôtes</p>
                     <div className="flex items-end justify-center gap-1 mb-1">
                       <span className="text-5xl font-bold text-primary">0 $</span>
-                      <span className="text-gray-400 mb-1.5">/an</span>
+                      <span className="text-charcoal-400 mb-1.5">/an</span>
                     </div>
-                    <p className="text-xs text-gray-400 mb-6">puis 299 $/an au renouvellement</p>
+                    <p className="text-xs text-charcoal-400 mb-6">puis 299 $/an au renouvellement</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-gray-400 mb-1">Abonnement annuel</p>
+                    <p className="text-sm text-charcoal-400 mb-1">Abonnement annuel</p>
                     <div className="flex items-end justify-center gap-1 mb-1">
                       <span className="text-5xl font-bold text-primary">299 $</span>
-                      <span className="text-gray-400 mb-1.5">/an</span>
+                      <span className="text-charcoal-400 mb-1.5">/an</span>
                     </div>
-                    <p className="text-xs text-gray-400 mb-6">par chalet, tout inclus</p>
+                    <p className="text-xs text-charcoal-400 mb-6">par chalet, tout inclus</p>
                   </>
                 )}
-                <div className="space-y-2 text-sm text-gray-600 text-left">
+                <div className="space-y-2 text-sm text-charcoal-600 text-left">
                   {["Annonce complète", "Outils de gestion", "Support inclus"].map((item) => (
                     <div key={item} className="flex items-center gap-2">
                       <span className="text-primary text-xs">✓</span>
@@ -296,11 +295,11 @@ export default async function DevenirHotePage() {
                 </div>
                 <Link
                   href="/signup?role=host"
-                  className="mt-6 w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors text-sm"
+                  className="mt-6 w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3 rounded-full hover:bg-primary-dark transition-colors text-sm"
                 >
                   Créer mon annonce
                 </Link>
-                <p className="text-xs text-gray-400 mt-3">Aucune carte requise pour commencer</p>
+                <p className="text-xs text-charcoal-400 mt-3">Aucune carte requise pour commencer</p>
               </div>
             </div>
           </div>
@@ -311,8 +310,8 @@ export default async function DevenirHotePage() {
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900">Ils font confiance à Kabanalouer</h2>
-            <p className="text-gray-500 mt-3">Des propriétaires de toutes les régions du Québec</p>
+            <h2 className="text-3xl font-bold text-charcoal-800">Ils font confiance à Kabanalouer</h2>
+            <p className="text-charcoal-500 mt-3">Des propriétaires de toutes les régions du Québec</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Testimonial
@@ -351,7 +350,7 @@ export default async function DevenirHotePage() {
           </p>
           <Link
             href="/signup?role=host"
-            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-lg"
+            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
             Commencer gratuitement →
           </Link>
@@ -373,19 +372,19 @@ export default async function DevenirHotePage() {
 }
 
 function BenefitCard({
-  emoji,
+  icon,
   title,
   description,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-colors">
-      <div className="text-3xl mb-4">{emoji}</div>
-      <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+    <div className="bg-white rounded-2xl p-6 border border-[#ebebeb] hover:border-primary/20 transition-colors">
+      <div className="mb-4">{icon}</div>
+      <h3 className="font-bold text-charcoal-800 mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -402,7 +401,7 @@ function Testimonial({
   stars: number;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100">
+    <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="flex gap-0.5 mb-4">
         {Array.from({ length: stars }).map((_, i) => (
           <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
@@ -410,16 +409,66 @@ function Testimonial({
           </svg>
         ))}
       </div>
-      <p className="text-gray-600 text-sm leading-relaxed mb-5 italic">&ldquo;{quote}&rdquo;</p>
+      <p className="text-charcoal-600 text-sm leading-relaxed mb-5 italic">&ldquo;{quote}&rdquo;</p>
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
           {name[0]}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900">{name}</p>
-          <p className="text-xs text-gray-400">{region}</p>
+          <p className="text-sm font-semibold text-charcoal-800">{name}</p>
+          <p className="text-xs text-charcoal-400">{region}</p>
         </div>
       </div>
     </div>
+  );
+}
+
+function HandshakeIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  );
+}
+
+function DollarCircleIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function MapPinIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+    </svg>
+  );
+}
+
+function WrenchIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+  );
+}
+
+function TagIcon() {
+  return (
+    <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+    </svg>
   );
 }

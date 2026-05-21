@@ -5,7 +5,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls =
-  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
@@ -13,7 +13,7 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
       type="button"
       onClick={onClick}
       disabled={saving}
-      className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+      className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
     >
       {saving ? "Enregistrement…" : saved ? "Enregistré ✓" : "Enregistrer"}
     </button>
@@ -29,8 +29,8 @@ function Toggle({ checked, onChange, label, description }: {
   return (
     <label className="flex items-start justify-between gap-4 cursor-pointer group">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900">{label}</p>
-        {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+        <p className="text-sm font-medium text-charcoal-800">{label}</p>
+        {description && <p className="text-xs text-charcoal-400 mt-0.5">{description}</p>}
       </div>
       <button
         type="button"
@@ -39,7 +39,7 @@ function Toggle({ checked, onChange, label, description }: {
         onClick={() => onChange(!checked)}
         className={[
           "relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5",
-          checked ? "bg-primary" : "bg-gray-200",
+          checked ? "bg-primary" : "bg-charcoal-200",
         ].join(" ")}
       >
         <span
@@ -55,8 +55,8 @@ function Toggle({ checked, onChange, label, description }: {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-      <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+    <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 space-y-5">
+      <h2 className="text-base font-semibold text-charcoal-800">{title}</h2>
       {children}
     </div>
   );
@@ -256,12 +256,12 @@ export default function ProfileForm({
               <button
                 type="button"
                 onClick={deleteAvatar}
-                className="text-sm text-gray-400 hover:text-red-500 transition-colors"
+                className="text-sm text-charcoal-400 hover:text-red-500 transition-colors"
               >
                 Supprimer la photo
               </button>
             )}
-            <p className="text-xs text-gray-400">JPG, PNG, WebP · Max 5 Mo</p>
+            <p className="text-xs text-charcoal-400">JPG, PNG, WebP · Max 5 Mo</p>
           </div>
           <input
             ref={avatarInputRef}
@@ -274,7 +274,7 @@ export default function ProfileForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Prénom</label>
             <input
               type="text"
               value={firstName}
@@ -284,7 +284,7 @@ export default function ProfileForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nom</label>
             <input
               type="text"
               value={lastName}
@@ -304,18 +304,18 @@ export default function ProfileForm({
       {/* ── Coordonnées ───────────────────────────────────────────────────── */}
       <Section title="Coordonnées">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Adresse email</label>
           <input
             type="email"
             value={email}
             readOnly
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-500 cursor-default focus:outline-none"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
           />
-          <p className="text-xs text-gray-400 mt-1">L'adresse email ne peut pas être modifiée ici.</p>
+          <p className="text-xs text-charcoal-400 mt-1">L'adresse email ne peut pas être modifiée ici.</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Numéro de téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+            Numéro de téléphone <span className="text-charcoal-400 font-normal">(optionnel)</span>
           </label>
           <input
             type="tel"
@@ -334,7 +334,7 @@ export default function ProfileForm({
       {/* ── Sécurité ──────────────────────────────────────────────────────── */}
       <Section title="Sécurité">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe actuel</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Mot de passe actuel</label>
           <input
             type="password"
             value={currentPassword}
@@ -344,7 +344,7 @@ export default function ProfileForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nouveau mot de passe</label>
           <input
             type="password"
             value={newPassword}
@@ -352,10 +352,10 @@ export default function ProfileForm({
             className={inputCls}
             autoComplete="new-password"
           />
-          <p className="text-xs text-gray-400 mt-1">Minimum 8 caractères.</p>
+          <p className="text-xs text-charcoal-400 mt-1">Minimum 8 caractères.</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le nouveau mot de passe</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Confirmer le nouveau mot de passe</label>
           <input
             type="password"
             value={confirmPassword}
@@ -369,7 +369,7 @@ export default function ProfileForm({
             type="button"
             onClick={changePassword}
             disabled={pwdSaving}
-            className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
           >
             {pwdSaving ? "Modification…" : pwdSaved ? "Mot de passe modifié ✓" : "Modifier le mot de passe"}
           </button>
@@ -406,8 +406,8 @@ export default function ProfileForm({
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-red-100 p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">Zone de danger</h2>
-        <p className="text-sm text-gray-500 mb-5">
+        <h2 className="text-base font-semibold text-charcoal-800 mb-1">Zone de danger</h2>
+        <p className="text-sm text-charcoal-500 mb-5">
           Ces actions sont irréversibles. Agissez avec précaution.
         </p>
 
@@ -419,7 +419,7 @@ export default function ProfileForm({
           <button
             type="button"
             onClick={() => setShowDeactivateConfirm(true)}
-            className="border border-red-300 text-red-600 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 transition-colors"
+            className="border border-red-300 text-red-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-50 transition-colors"
           >
             Désactiver mon compte
           </button>
@@ -434,14 +434,14 @@ export default function ProfileForm({
                 type="button"
                 onClick={deactivateAccount}
                 disabled={deactivating}
-                className="bg-red-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="bg-red-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {deactivating ? "En cours…" : "Oui, désactiver"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowDeactivateConfirm(false)}
-                className="border border-gray-200 text-gray-600 px-5 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="border border-[#ebebeb] text-charcoal-600 px-5 py-2 rounded-full text-sm font-medium hover:bg-charcoal-50 transition-colors"
               >
                 Annuler
               </button>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
 
 type Profile = {
@@ -13,36 +14,18 @@ type Profile = {
   avatar_url: string | null;
 };
 
-// ── Logo (inline SVG wordmark from design-system/assets/logo-wordmark.svg) ───
+// ── Logo ─────────────────────────────────────────────────────────────────────
 function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center shrink-0" aria-label="Kabanalouer — accueil">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 360 80"
-        fill="none"
-        className="h-8 w-auto"
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M40 8 L72 42 L66 42 L66 68 L48 68 L48 56 C48 51.5817 44.4183 48 40 48 C35.5817 48 32 51.5817 32 56 L32 68 L14 68 L14 42 L8 42 Z"
-          fill="#f04e45"
-        />
-        <rect x="54" y="20" width="5" height="13" fill="#f04e45" />
-        <text
-          x="88"
-          y="52"
-          fontFamily="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
-          fontSize="34"
-          fontWeight="800"
-          letterSpacing="-1.3"
-          fill="#f04e45"
-        >
-          kabanalouer
-        </text>
-      </svg>
+      <Image
+        src="/logo-wordmark.svg"
+        alt="Kabanalouer"
+        width={190}
+        height={40}
+        className="h-10 w-auto"
+        priority
+      />
     </Link>
   );
 }
@@ -215,17 +198,18 @@ export default function Navbar() {
   };
 
   const isHost = profile?.role === "host";
+  const isHome = pathname === "/";
 
   // Shared nav wrapper classes
   const navWrap = "bg-white/95 backdrop-blur-md border-b border-[#ebebeb] sticky top-0 z-50";
-  const navInner = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+  const navInner = "px-6 lg:px-8";
 
   // ── HOST NAVBAR ──────────────────────────────────────────────────────────────
   if (isHost && !voyageurMode && user && profile) {
     const tabCls = (pathPrefix: string, exact = false) => {
       const active = exact ? pathname === pathPrefix : pathname.startsWith(pathPrefix);
       return [
-        "flex items-center gap-2 px-5 h-full text-sm font-semibold transition-colors border-b-2",
+        "flex items-center gap-2 px-5 h-full text-[15px] font-semibold transition-colors border-b-2",
         active
           ? "border-charcoal-800 text-charcoal-800"
           : "border-transparent text-charcoal-400 hover:text-charcoal-700 hover:border-charcoal-200",
@@ -234,7 +218,7 @@ export default function Navbar() {
 
     return (
       <nav className={navWrap}>
-        <div className={`${navInner} h-16 flex items-stretch`}>
+        <div className={`${navInner} h-20 flex items-stretch`}>
 
           {/* Logo */}
           <div className="flex items-center mr-8 shrink-0">
@@ -259,7 +243,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 ml-6">
             <button
               onClick={enterVoyageurMode}
-              className="hidden sm:flex items-center gap-2 border border-[#dddddd] rounded-full py-2 px-4 text-sm font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
+              className="hidden sm:flex items-center gap-2 border border-[#dddddd] rounded-full py-2.5 px-5 text-[15px] font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -319,23 +303,23 @@ export default function Navbar() {
   if (user && profile) {
     return (
       <nav className={navWrap}>
-        <div className={`${navInner} h-16 flex items-center justify-between`}>
+        <div className={`${navInner} h-20 flex items-center`}>
 
-          <Logo />
-
-          {/* Center */}
-          <div className="hidden md:flex items-center gap-1 text-sm">
-            <NavLink href="/chalets">Parcourir les chalets</NavLink>
-            <NavLink href="/devenir-hote">Devenir hôte</NavLink>
+          {/* Left */}
+          <div className="flex items-center flex-1">
+            <Logo />
           </div>
 
+          {/* Center */}
+          {!isHome && <NavSearchBar />}
+
           {/* Right */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3 flex-1">
 
             {isHost && voyageurMode && (
               <button
                 onClick={exitVoyageurMode}
-                className="hidden sm:flex items-center gap-2 border border-primary text-primary rounded-full py-2 px-4 text-sm font-medium hover:bg-primary/5 transition-all"
+                className="hidden sm:flex items-center gap-2 border border-primary text-primary rounded-full py-2.5 px-5 text-[15px] font-medium hover:bg-primary/5 transition-all"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -437,41 +421,42 @@ export default function Navbar() {
   return (
     <nav className={navWrap}>
       <div className={navInner}>
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center h-20">
 
-          <Logo />
-
-          {/* Desktop center */}
-          <div className="hidden md:flex items-center gap-1 text-sm">
-            <NavLink href="/chalets">Parcourir les chalets</NavLink>
-            <NavLink href="/comment-ca-marche">Comment ça marche</NavLink>
-            <NavLink href="/devenir-hote">Devenir hôte</NavLink>
+          {/* Left */}
+          <div className="flex items-center flex-1">
+            <Logo />
           </div>
 
+          {/* Center */}
+          {!isHome && <NavSearchBar />}
+
           {/* Desktop right */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center justify-end gap-2 flex-1">
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
+              className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
             >
               Connexion
             </Link>
             <Link
               href="/signup"
-              className="bg-primary text-white text-sm px-5 py-2.5 rounded-full hover:bg-primary-dark transition-colors font-semibold"
+              className="bg-primary text-white text-[15px] px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
               Inscrire mon chalet
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
-          >
-            <IconMenu open={mobileOpen} />
-          </button>
+          {/* Mobile right */}
+          <div className="md:hidden flex items-center justify-end gap-1 flex-1">
+            <button
+              className="p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Menu"
+            >
+              <IconMenu open={mobileOpen} />
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -501,7 +486,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="px-4 py-2 text-sm font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
+      className="px-4 py-2.5 text-[15px] font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
     >
       {children}
     </Link>

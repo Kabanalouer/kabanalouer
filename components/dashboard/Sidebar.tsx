@@ -60,9 +60,9 @@ export default function DashboardSidebar({
   };
 
   return (
-    <aside className="w-60 bg-white border-r border-gray-100 flex flex-col min-h-screen shrink-0">
+    <aside className="w-60 bg-white border-r border-[#ebebeb] flex flex-col min-h-screen shrink-0">
       {/* Logo */}
-      <div className="p-5 border-b border-gray-100">
+      <div className="p-5 border-b border-[#ebebeb]">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-bold text-primary">Kabanalouer</span>
         </Link>
@@ -81,11 +81,11 @@ export default function DashboardSidebar({
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-primary-50 text-primary"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-primary/10 text-primary"
+                  : "text-charcoal-600 hover:bg-charcoal-50 hover:text-charcoal-800"
               }`}
             >
-              <span className={isActive ? "text-primary" : "text-gray-400"}>
+              <span className={isActive ? "text-primary" : "text-charcoal-400"}>
                 {item.icon}
               </span>
               {item.label}
@@ -93,10 +93,10 @@ export default function DashboardSidebar({
           );
         })}
 
-        <div className="pt-3 border-t border-gray-100 mt-3">
+        <div className="pt-3 border-t border-[#ebebeb] mt-3">
           <Link
             href="/dashboard/listings/new"
-            className="flex items-center justify-center gap-2 w-full bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-primary text-white py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -107,21 +107,21 @@ export default function DashboardSidebar({
       </nav>
 
       {/* User */}
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-4 border-t border-[#ebebeb]">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-primary-50 rounded-full flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
             <span className="text-primary font-bold text-sm">
               {(userName[0] ?? "?").toUpperCase()}
             </span>
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">{userName}</div>
-            <div className="text-xs text-gray-400 capitalize">{userRole === "host" ? "Hôte" : "Voyageur"}</div>
+            <div className="text-sm font-medium text-charcoal-800 truncate">{userName}</div>
+            <div className="text-xs text-charcoal-400 capitalize">{userRole === "host" ? "Hôte" : "Voyageur"}</div>
           </div>
         </div>
         <button
           onClick={handleSignOut}
-          className="w-full text-left text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="w-full text-left text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors"
         >
           Déconnexion →
         </button>
