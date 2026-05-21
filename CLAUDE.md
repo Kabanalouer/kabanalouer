@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## PROCHAINE ÉTAPE CRITIQUE
+
+Le build GitHub → Vercel échoue avec `supabaseKey is required`. Cause : le nouveau projet Vercel (connecté à GitHub) n'a pas les variables d'environnement.
+
+**Action requise :** Aller dans Vercel → Settings → Environment Variables et ajouter toutes les variables listées dans la section [Environment variables](#environment-variables) ci-dessous. Sans ça, tout push sur `main` produit un build cassé.
+
 ## Commands
 
 ```bash
