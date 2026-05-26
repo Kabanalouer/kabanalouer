@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { firstPhotoUrl } from "@/lib/photo";
-import DeleteListingModal from "./DeleteListingModal";
 
 type Listing = {
   id: string;
@@ -24,13 +21,9 @@ interface Props {
 }
 
 export default function ListingsClient({ listings, reviews }: Props) {
-  const router = useRouter();
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
-
   return (
-    <>
-      <div className="space-y-3">
-        {listings.map((listing) => {
+    <div className="space-y-3">
+      {listings.map((listing) => {
           const rev = reviews[listing.id];
           const photo = firstPhotoUrl(listing.photos);
           const title = listing.title || "Sans titre";
@@ -88,14 +81,7 @@ export default function ListingsClient({ listings, reviews }: Props) {
                     Voir la fiche ↗
                   </Link>
                 )}
-                {!listing.is_published && (
-                  <button
-                    onClick={() => setDeleteTarget({ id: listing.id, title })}
-                    className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
-                  >
-                    Supprimer
-                  </button>
-                )}
+
                 <Link
                   href={`/dashboard/listings/${listing.id}/edit`}
                   className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
@@ -105,20 +91,7 @@ export default function ListingsClient({ listings, reviews }: Props) {
               </div>
             </div>
           );
-        })}
-      </div>
-
-      {deleteTarget && (
-        <DeleteListingModal
-          listingId={deleteTarget.id}
-          listingTitle={deleteTarget.title}
-          onClose={() => setDeleteTarget(null)}
-          onDeleted={() => {
-            setDeleteTarget(null);
-            router.push("/dashboard/listings?deleted=1");
-          }}
-        />
-      )}
-    </>
+      })}
+    </div>
   );
 }
