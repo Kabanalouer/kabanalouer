@@ -35,9 +35,10 @@ export default function DeleteListingModal({ listingId, listingTitle, onClose, o
           Cette action est irréversible.
         </p>
 
-        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-sm text-red-700 leading-relaxed">
-          Toutes les photos, disponibilités et données associées seront perdues.
-          Votre abonnement ne sera ni remboursé ni transférable.
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-sm text-red-700 space-y-1.5 leading-relaxed">
+          <p>Cette action est irréversible.</p>
+          <p>Votre annonce et toutes ses photos seront supprimées définitivement.</p>
+          <p>L&apos;abonnement n&apos;est pas remboursable, ni transférable.</p>
         </div>
 
         {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
