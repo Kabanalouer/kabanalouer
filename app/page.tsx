@@ -122,7 +122,7 @@ export default async function HomePage() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed whitespace-nowrap">
+          <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed whitespace-nowrap font-semibold">
             Payez moins cher en contactant le propriétaire directement.
           </p>
 
