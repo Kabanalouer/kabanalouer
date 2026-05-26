@@ -18,13 +18,13 @@ type Profile = {
 function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center shrink-0" aria-label="Kabanalouer — accueil">
-      <Image
-        src="/logo-wordmark.svg"
-        alt="Kabanalouer"
-        width={190}
-        height={40}
-        className="h-10 w-auto"
-        priority
+      {/* <object> loads the SVG as its own document so relative hrefs inside resolve correctly */}
+      <object
+        type="image/svg+xml"
+        data="/logo-wordmark.svg"
+        aria-hidden="true"
+        className="h-10 w-auto pointer-events-none"
+        style={{ width: 190, height: 40 }}
       />
     </Link>
   );
