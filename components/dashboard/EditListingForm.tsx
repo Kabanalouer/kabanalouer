@@ -182,6 +182,7 @@ export default function EditListingForm({
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   // Title limit flash
@@ -361,7 +362,9 @@ export default function EditListingForm({
           <div className="mt-4 pt-4 border-t border-[#ebebeb] space-y-2">
             <button
               onClick={() => setPreviewOpen(true)}
-              className="w-full py-2.5 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center justify-center"
+              disabled={!canPreview}
+              title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
+              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
               Aperçu de mon annonce
             </button>
@@ -378,7 +381,9 @@ export default function EditListingForm({
         <div className="flex lg:hidden flex-col gap-2 mt-3">
           <button
             onClick={() => setPreviewOpen(true)}
-            className="w-full py-2.5 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center justify-center"
+            disabled={!canPreview}
+            title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
+            className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
           >
             Aperçu de mon annonce
           </button>
@@ -681,7 +686,9 @@ export default function EditListingForm({
                     )}
                     <button
                       onClick={() => setPreviewOpen(true)}
-                      className="inline-flex items-center gap-2 border border-primary text-primary px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
+                      disabled={!canPreview}
+                      title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
+                      className={`inline-flex items-center gap-2 border px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${canPreview ? "border-primary text-primary hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
                     >
                       Aperçu de mon annonce
                     </button>
