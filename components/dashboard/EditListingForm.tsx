@@ -365,14 +365,12 @@ export default function EditListingForm({
             >
               Aperçu de mon annonce
             </button>
-            {isPublished && (
-              <button
-                onClick={() => setDeleteModalOpen(true)}
-                className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
-              >
-                Supprimer mon annonce
-              </button>
-            )}
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
+            >
+              Supprimer mon annonce
+            </button>
           </div>
         </div>
 
@@ -384,14 +382,12 @@ export default function EditListingForm({
           >
             Aperçu de mon annonce
           </button>
-          {isPublished && (
-            <button
-              onClick={() => setDeleteModalOpen(true)}
-              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
-            >
-              Supprimer mon annonce
-            </button>
-          )}
+          <button
+            onClick={() => setDeleteModalOpen(true)}
+            className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
+          >
+            Supprimer mon annonce
+          </button>
         </div>
       </aside>
 
