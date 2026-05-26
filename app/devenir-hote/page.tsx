@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const metadata = {
@@ -177,6 +178,9 @@ export default async function DevenirHotePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Creation choice ── */}
+      <CreationChoiceSection />
 
       {/* ── Why Kabanalouer ── */}
       <section className="py-20 bg-[#F8FAF9]">
