@@ -1,15 +1,14 @@
 import Link from "next/link";
-import Image from "next/image";
 
 
 function FooterLogo() {
   return (
-    <Image
-      src="/logo-wordmark.svg"
-      alt="Kabanalouer"
-      width={133}
-      height={28}
-      className="h-7 w-auto"
+    <object
+      type="image/svg+xml"
+      data="/logo-wordmark.svg"
+      aria-hidden="true"
+      className="h-7 w-auto pointer-events-none"
+      style={{ width: 133, height: 28 }}
     />
   );
 }
