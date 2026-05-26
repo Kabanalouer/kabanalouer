@@ -7,7 +7,9 @@ import type { PhotoItem } from "@/lib/photo";
 
 const MAX_PHOTOS = 80;
 const MAX_DIM = 3840;
-const MAX_SIZE_MB = 2;
+const MAX_SIZE_MB = 8;
+const MIN_LONG_SIDE = 1200;
+const MIN_SHORT_SIDE = 800;
 export const MIN_PHOTOS = 5;
 
 // ── Image compression ────────────────────────────────────────────────────────
@@ -37,6 +39,11 @@ async function compressToWebP(
 ): Promise<{ blob: Blob; sizeMb: number } | { error: string }> {
   try {
     const img = await loadImage(file);
+    const longestSide = Math.max(img.naturalWidth, img.naturalHeight);
+    const shortestSide = Math.min(img.naturalWidth, img.naturalHeight);
+    if (longestSide < MIN_LONG_SIDE || shortestSide < MIN_SHORT_SIDE) {
+      return { error: "Cette photo est trop petite et risque d'être floue. Dimension minimale requise : 1200 x 800 px." };
+    }
     let w = img.naturalWidth;
     let h = img.naturalHeight;
     const longest = Math.max(w, h);
@@ -56,7 +63,7 @@ async function compressToWebP(
       const sizeMb = blob.size / 1024 / 1024;
       if (sizeMb <= MAX_SIZE_MB) return { blob, sizeMb };
     }
-    return { error: "Impossible de compresser cette photo sous 2 Mo." };
+    return { error: "Impossible de compresser cette photo sous 8 Mo." };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur de compression." };
   }
