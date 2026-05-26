@@ -9,7 +9,7 @@ interface Props {
   onDeleted: () => void;
 }
 
-export default function DeleteListingModal({ listingId, listingTitle, onClose, onDeleted }: Props) {
+export default function DeleteListingModal({ listingId, onClose, onDeleted }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,11 +29,7 @@ export default function DeleteListingModal({ listingId, listingTitle, onClose, o
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-        <h2 className="text-lg font-bold text-charcoal-800 mb-1">Supprimer cette annonce</h2>
-        <p className="text-sm text-charcoal-500 mb-5 leading-relaxed">
-          <strong className="text-charcoal-700">&ldquo;{listingTitle}&rdquo;</strong> sera supprimée définitivement.
-          Cette action est irréversible.
-        </p>
+        <h2 className="text-lg font-bold text-charcoal-800 mb-5">Supprimer cette annonce</h2>
 
         <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-sm text-red-700 space-y-1.5 leading-relaxed">
           <p>Cette action est irréversible.</p>
