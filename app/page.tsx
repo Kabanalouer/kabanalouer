@@ -118,7 +118,7 @@ export default async function HomePage() {
               La marketplace de la location de chalet au Québec
             </div>
             <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
-              Trouvez votre chalet en quelques clics.
+              Trouvez votre chalet au Québec en quelques clics.
             </h1>
             <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed whitespace-nowrap font-semibold">
               Payez moins cher en contactant le propriétaire directement.
