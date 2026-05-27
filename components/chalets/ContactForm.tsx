@@ -98,10 +98,6 @@ interface Props {
   initialCheckin?: string;
   initialCheckout?: string;
   initialGuests?: string;
-  initialFirstName?: string;
-  initialLastName?: string;
-  initialEmail?: string;
-  initialPhone?: string;
 }
 
 function hostSinceDuration(createdAt: string): string {
@@ -117,7 +113,6 @@ function hostSinceDuration(createdAt: string): string {
 export default function ContactForm({
   listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
   initialCheckin, initialCheckout, initialGuests,
-  initialFirstName, initialLastName, initialEmail, initialPhone,
 }: Props) {
   const now = new Date();
   const today = now.toISOString().split("T")[0];
@@ -131,10 +126,6 @@ export default function ContactForm({
   const calRef = useRef<HTMLDivElement>(null);
 
   const [guests, setGuests] = useState(initialGuests ?? "");
-  const [firstName, setFirstName] = useState(initialFirstName ?? "");
-  const [lastName, setLastName] = useState(initialLastName ?? "");
-  const [email, setEmail] = useState(initialEmail ?? "");
-  const [phone, setPhone] = useState(initialPhone ?? "");
   const [message, setMessage] = useState("");
 
   const [sending, setSending] = useState(false);
@@ -166,8 +157,8 @@ export default function ContactForm({
     : null;
 
   const handleSubmit = async () => {
-    if (!firstName.trim() || !email.trim()) {
-      setError("Prénom et courriel sont requis.");
+    if (!message.trim()) {
+      setError("Le message est requis.");
       return;
     }
     setSending(true);
@@ -176,12 +167,8 @@ export default function ContactForm({
     const lines = [
       checkin ? `Dates : ${formatShort(checkin)}${checkout ? ` → ${formatShort(checkout)}` : " (arrivée seulement)"}` : null,
       guests ? `Voyageurs : ${guests}` : null,
-      `Prénom : ${firstName}`,
-      `Nom : ${lastName || "—"}`,
-      `Courriel : ${email}`,
-      phone ? `Téléphone : ${phone}` : null,
       "",
-      message.trim() || `Bonjour ${hostName},\n\nJe suis intéressé(e) par votre chalet "${listingTitle}". Pourriez-vous me donner plus d'informations sur les disponibilités ?\n\nMerci !`,
+      message.trim(),
     ].filter((l) => l !== null).join("\n");
 
     const supabase = createClient();
@@ -322,45 +309,9 @@ export default function ContactForm({
         </select>
       </div>
 
-      {/* First name + Last name */}
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          type="text"
-          placeholder="Prénom *"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
-        />
-        <input
-          type="text"
-          placeholder="Nom"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
-        />
-      </div>
-
-      {/* Email */}
-      <input
-        type="email"
-        placeholder="Courriel *"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-gray-400"
-      />
-
-      {/* Phone */}
-      <input
-        type="tel"
-        placeholder="Téléphone (optionnel)"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-gray-400"
-      />
-
       {/* Message */}
       <textarea
-        placeholder="Message (optionnel)"
+        placeholder="Votre message *"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={3}

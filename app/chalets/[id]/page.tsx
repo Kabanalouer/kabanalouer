@@ -606,10 +606,6 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     initialCheckin={urlCheckin}
                     initialCheckout={urlCheckout}
                     initialGuests={urlCapacity}
-                    initialFirstName={profileFirstName}
-                    initialLastName={profileLastName}
-                    initialEmail={user?.email ?? ""}
-                    initialPhone={profilePhone}
                   />
                   <p className="text-xs text-charcoal-400 text-center mt-3">
                     Contact direct · Zéro frais de service
