@@ -256,15 +256,14 @@ export default function ContactForm({
 
       {/* Price */}
       <div className="py-1">
-        {priceOnRequest ? (
-          <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
-        ) : price && price > 0 ? (
+        <p className="text-xs text-charcoal-400 mb-0.5">À partir de</p>
+        {price && price > 0 && !priceOnRequest ? (
           <p>
             <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
             <span className="text-charcoal-400 text-sm font-semibold"> /nuit</span>
           </p>
         ) : (
-          <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
+          <span className="text-xl font-bold text-charcoal-800">Sur demande</span>
         )}
       </div>
 
