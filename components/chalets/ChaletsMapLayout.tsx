@@ -124,10 +124,10 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
         {/* Left: 55% — hidden when expanded */}
         <div className={`flex-[55] min-w-0 px-5 pt-5 pb-10 ${isExpanded ? "hidden" : ""}`}>
-          <div className="flex items-baseline justify-between mb-5">
+          <div className="mb-5">
             <h1 className="text-lg font-bold text-charcoal-800">Chalets au Québec</h1>
             {!isLoading && (
-              <span className="text-xs text-charcoal-400">
+              <span className="text-xs text-charcoal-400 mt-0.5 block">
                 {listings.length} résultat{listings.length !== 1 ? "s" : ""}
               </span>
             )}
@@ -146,10 +146,10 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
       {/* ── MOBILE: listings then map ── */}
       <div className="lg:hidden px-4 pt-5 pb-6">
-        <div className="flex items-baseline justify-between mb-5">
+        <div className="mb-5">
           <h1 className="text-lg font-bold text-charcoal-800">Chalets au Québec</h1>
           {!isLoading && listings.length > 0 && (
-            <span className="text-xs text-charcoal-400">
+            <span className="text-xs text-charcoal-400 mt-0.5 block">
               {listings.length} résultat{listings.length !== 1 ? "s" : ""}
             </span>
           )}
