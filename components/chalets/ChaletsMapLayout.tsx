@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import ListingCard, { type Listing } from "@/components/ListingCard";
+import Footer from "@/components/Footer";
 import type { MapBounds } from "./ChaletsMap";
 
 export interface ListingForMap extends Listing {
@@ -125,6 +126,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
             )}
           </div>
           {listGrid("grid-cols-2")}
+          <Footer />
         </div>
 
         {/* Right: sticky map */}
@@ -149,6 +151,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           )}
         </div>
         {listGrid("grid-cols-1 sm:grid-cols-2")}
+        <Footer />
 
         {/* Floating "Voir la carte" */}
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">

@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import { normalizePhotos } from "@/lib/photo";
 
@@ -163,10 +162,6 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         />
       </div>
 
-      {/* Footer only on mobile (map fills the screen on desktop) */}
-      <div className="lg:hidden">
-        <Footer />
-      </div>
     </div>
   );
 }
