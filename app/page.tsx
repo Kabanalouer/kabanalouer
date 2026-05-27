@@ -127,10 +127,10 @@ export default async function HomePage() {
 
             {/* Stats — directement sous la SearchBar */}
             <div className="mt-32 flex flex-wrap justify-center gap-8 md:gap-20">
-              <HeroStat value="500+" label="Chalets disponibles" />
-              <HeroStat value="15" label="Régions du Québec" />
               <HeroStat value="0 $" label="Frais de service" />
-              <HeroStat value="Direct" label="Contact propriétaire" />
+              <HeroStat value="100 %" label="Chalets québécois" />
+              <HeroStat value="Direct" label="Propriétaire à voyageur" />
+              <HeroStat value="Gratuit" label="Pour les voyageurs" />
             </div>
           </div>
 
