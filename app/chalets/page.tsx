@@ -3,22 +3,45 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import { normalizePhotos } from "@/lib/photo";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Chalets à louer au Québec",
-  description:
-    "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
-  alternates: { canonical: "/chalets" },
-  openGraph: {
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { city, region } = await searchParams;
+  const destination = city || region || null;
+
+  if (destination) {
+    return {
+      title: `Chalets à louer à ${destination} | Kabanalouer`,
+      description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
+      alternates: { canonical: "/chalets" },
+      openGraph: {
+        title: `Chalets à louer à ${destination} | Kabanalouer`,
+        description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
+        url: "/chalets",
+      },
+      twitter: {
+        title: `Chalets à louer à ${destination} | Kabanalouer`,
+        description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
+      },
+    };
+  }
+
+  return {
     title: "Chalets à louer au Québec | Kabanalouer",
-    description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
-    url: "/chalets",
-  },
-  twitter: {
-    title: "Chalets à louer au Québec | Kabanalouer",
-    description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements.",
-  },
-};
+    description:
+      "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
+    alternates: { canonical: "/chalets" },
+    openGraph: {
+      title: "Chalets à louer au Québec | Kabanalouer",
+      description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
+      url: "/chalets",
+    },
+    twitter: {
+      title: "Chalets à louer au Québec | Kabanalouer",
+      description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements.",
+    },
+  };
+}
 
 interface PageProps {
   searchParams: Promise<{
