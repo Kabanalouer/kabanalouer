@@ -102,9 +102,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     </div>
   );
 
-  const mapPanel = (height: string) => (
+  const mapFrame = (height: string) => (
     <div
-      className="rounded-2xl overflow-hidden border border-[#e8e8e8]"
+      className="rounded-2xl overflow-hidden border border-[#e8e8e8] w-full"
       style={{ height, boxShadow: "0 2px 16px rgba(0,0,0,0.10)" }}
     >
       <ChaletsMap
@@ -118,11 +118,11 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
   return (
     <>
-      {/* ── DESKTOP: two-column, sticky map ── */}
-      <div className="hidden lg:flex gap-6 px-6 pt-6 pb-2 items-start">
+      {/* ── DESKTOP: 55/45 split, sticky map ── */}
+      <div className="hidden lg:flex gap-5 px-5 pt-5 pb-2 items-start">
 
-        {/* Left: listings */}
-        <div className="flex-1 min-w-0">
+        {/* Left: 55% — listings */}
+        <div className="flex-[55] min-w-0">
           <div className="flex items-baseline justify-between mb-5">
             <h1 className="text-lg font-bold text-charcoal-800">Chalets au Québec</h1>
             {!isLoading && (
@@ -134,9 +134,12 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           {listGrid("grid-cols-2")}
         </div>
 
-        {/* Right: sticky map frame */}
-        <div className="w-[480px] shrink-0 sticky top-[88px] self-start">
-          {mapPanel("600px")}
+        {/* Right: 45% — sticky map, fills viewport height minus navbar */}
+        <div
+          className="flex-[45] shrink-0 sticky top-[80px] self-start"
+          style={{ height: "calc(100vh - 80px)" }}
+        >
+          {mapFrame("100%")}
         </div>
       </div>
 
@@ -154,7 +157,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
         {/* Map below listings on mobile */}
         <div className="mt-8">
-          {mapPanel("420px")}
+          {mapFrame("420px")}
         </div>
       </div>
     </>

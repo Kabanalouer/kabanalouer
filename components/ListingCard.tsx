@@ -51,7 +51,7 @@ export default function ListingCard({
   return (
     <Link href={`/chalets/${listing.id}`} className="group block">
       {/* ── Photo ── */}
-      <div className="relative aspect-[20/19] rounded-xl overflow-hidden bg-gray-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
+      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
         {listing.photos.length > 0 ? (
           <Image
             src={photos[idx]}
