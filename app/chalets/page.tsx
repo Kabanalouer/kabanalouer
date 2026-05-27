@@ -11,7 +11,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
   if (destination) {
     return {
-      title: `Chalets à louer à ${destination} | Kabanalouer`,
+      title: `Chalets à louer à ${destination}`,
       description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
       alternates: { canonical: "/chalets" },
       openGraph: {
@@ -27,7 +27,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   }
 
   return {
-    title: "Chalets à louer au Québec | Kabanalouer",
+    title: "Chalets à louer au Québec",
     description:
       "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
     alternates: { canonical: "/chalets" },
