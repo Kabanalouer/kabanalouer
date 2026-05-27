@@ -159,9 +159,8 @@ export default function ListingCard({
         {listing.priceOnRequest ? (
           <p className="text-[14px] text-charcoal-800 font-semibold">Sur demande</p>
         ) : listing.price > 0 ? (
-          <p className="text-[14px]">
-            <span className="font-semibold text-charcoal-800">{listing.price} $</span>
-            <span className="text-charcoal-400"> /nuit</span>
+          <p className="text-[14px] font-semibold text-charcoal-800">
+            {listing.price} $ <span className="text-charcoal-400">/nuit</span>
           </p>
         ) : null}
       </div>
