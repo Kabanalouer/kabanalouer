@@ -105,8 +105,8 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
   const mapFrame = (height: string, expanded = false) => (
     <div
-      className={`overflow-hidden border border-[#e8e8e8] w-full ${expanded ? "" : "rounded-2xl"}`}
-      style={{ height, boxShadow: expanded ? "none" : "0 2px 16px rgba(0,0,0,0.10)" }}
+      className="rounded-2xl overflow-hidden border border-[#e8e8e8] w-full"
+      style={{ height, boxShadow: "0 2px 16px rgba(0,0,0,0.10)" }}
     >
       <ChaletsMap
         listings={listings}
@@ -137,9 +137,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           {listGrid("grid-cols-2")}
         </div>
 
-        {/* Right: 45% normal / full width when expanded */}
+        {/* Right: 45% normal / full width when expanded, with floating padding */}
         <div
-          className={`${isExpanded ? "flex-1" : "flex-[45]"} shrink-0 sticky top-[80px] self-start overflow-hidden`}
+          className={`${isExpanded ? "flex-1 p-4" : "flex-[45] pt-4 pr-4 pb-4"} shrink-0 sticky top-[80px] self-start`}
           style={{ height: "calc(100vh - 80px)" }}
         >
           {mapFrame("100%", isExpanded)}
