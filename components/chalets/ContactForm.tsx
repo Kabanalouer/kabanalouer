@@ -240,8 +240,6 @@ export default function ContactForm({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-charcoal-800">Contacter le propriétaire</p>
-
       {/* Host mini-profile */}
       <div className="flex items-center gap-3 pb-1">
         <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
@@ -267,6 +265,7 @@ export default function ContactForm({
       </div>
 
       {/* Dates */}
+      <p className="text-sm font-semibold text-charcoal-800 pt-1">Demander mon prix</p>
       <div ref={calRef} className="relative">
         <button
           type="button"
