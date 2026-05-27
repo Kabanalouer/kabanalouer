@@ -255,11 +255,14 @@ export default function ContactForm({
           <p className="font-semibold text-charcoal-800 text-sm">
             {hostFirstName ? `Hôte : ${hostFirstName}` : "Propriétaire"}
           </p>
-          {hostCreatedAt && (
-            <p className="text-sm text-charcoal-400 mt-0.5">
-              Hôte depuis {hostSinceDuration(hostCreatedAt)}
-            </p>
-          )}
+          {hostCreatedAt && (() => {
+            const duration = hostSinceDuration(hostCreatedAt);
+            return (
+              <p className="text-sm text-charcoal-400 mt-0.5">
+                {duration === "Nouveau" ? "Nouveau" : `Hôte depuis ${duration}`}
+              </p>
+            );
+          })()}
         </div>
       </div>
 
