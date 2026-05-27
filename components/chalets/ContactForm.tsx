@@ -98,6 +98,8 @@ interface Props {
   initialCheckin?: string;
   initialCheckout?: string;
   initialGuests?: string;
+  price?: number | null;
+  priceOnRequest?: boolean;
 }
 
 function hostSinceDuration(createdAt: string): string {
@@ -113,6 +115,7 @@ function hostSinceDuration(createdAt: string): string {
 export default function ContactForm({
   listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
   initialCheckin, initialCheckout, initialGuests,
+  price, priceOnRequest,
 }: Props) {
   const now = new Date();
   const today = now.toISOString().split("T")[0];
@@ -249,6 +252,20 @@ export default function ContactForm({
             );
           })()}
         </div>
+      </div>
+
+      {/* Price */}
+      <div className="py-1">
+        {priceOnRequest ? (
+          <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
+        ) : price && price > 0 ? (
+          <p>
+            <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
+            <span className="text-charcoal-400 text-sm font-semibold"> /nuit</span>
+          </p>
+        ) : (
+          <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
+        )}
       </div>
 
       {/* Dates */}

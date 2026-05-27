@@ -568,26 +568,6 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
           {/* ── Right column — Pricing card ── */}
           <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
             <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
-              {/* Price */}
-              <div className="mb-4">
-                {listing.price_on_request ? (
-                  <div>
-                    <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
-                    <p className="text-xs text-charcoal-400 mt-1">Contactez l&apos;hôte pour obtenir une soumission personnalisée.</p>
-                  </div>
-                ) : listing.price_low > 0 ? (
-                  <>
-                    <p className="text-xs text-charcoal-400 mb-0.5">À partir de</p>
-                    <span className="text-3xl font-bold text-charcoal-800">{listing.price_low} $</span>
-                    <span className="text-charcoal-400 text-sm"> /nuit</span>
-                  </>
-                ) : (
-                  <span className="text-xl font-bold text-charcoal-800">Prix sur demande</span>
-                )}
-              </div>
-
-              <hr className="border-[#ebebeb] my-4" />
-
               {/* CTA */}
               {isOwner ? (
                 <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
@@ -606,6 +586,8 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     initialCheckin={urlCheckin}
                     initialCheckout={urlCheckout}
                     initialGuests={urlCapacity}
+                    price={listing.price_low as number | null}
+                    priceOnRequest={!!(listing.price_on_request)}
                   />
                   <p className="text-xs text-charcoal-400 text-center mt-3">
                     Contact direct · Zéro frais de service
