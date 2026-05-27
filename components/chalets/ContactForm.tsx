@@ -159,11 +159,9 @@ export default function ContactForm({
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
     : null;
 
+  const canSubmit = !!(checkin || guests || message.trim());
+
   const handleSubmit = async () => {
-    if (!message.trim()) {
-      setError("Le message est requis.");
-      return;
-    }
     setSending(true);
     setError("");
 
@@ -254,6 +252,8 @@ export default function ContactForm({
         </div>
       </div>
 
+      <hr className="border-charcoal-100" />
+
       {/* Price */}
       <div className="py-1">
         {priceOnRequest ? (
@@ -328,7 +328,7 @@ export default function ContactForm({
 
       {/* Message */}
       <textarea
-        placeholder="Votre message *"
+        placeholder="Votre message (optionnel)"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={3}
@@ -339,8 +339,8 @@ export default function ContactForm({
 
       <button
         onClick={handleSubmit}
-        disabled={sending}
-        className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
+        disabled={sending || !canSubmit}
+        className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {sending ? "Envoi en cours…" : "Envoyer la demande"}
       </button>
