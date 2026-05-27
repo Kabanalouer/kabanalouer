@@ -91,6 +91,8 @@ interface Props {
   listingId: string;
   hostId: string;
   hostName: string;
+  hostAvatarUrl?: string | null;
+  hostCreatedAt?: string | null;
   listingTitle: string;
   currentUserId: string | null;
   initialCheckin?: string;
@@ -102,8 +104,18 @@ interface Props {
   initialPhone?: string;
 }
 
+function hostSinceDuration(createdAt: string): string {
+  const created = new Date(createdAt);
+  const now = new Date();
+  const months = (now.getFullYear() - created.getFullYear()) * 12 + (now.getMonth() - created.getMonth());
+  if (months < 1) return "Nouveau";
+  if (months < 12) return `${months} mois`;
+  const years = Math.floor(months / 12);
+  return `${years} an${years > 1 ? "s" : ""}`;
+}
+
 export default function ContactForm({
-  listingId, hostId, hostName, listingTitle, currentUserId,
+  listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
   initialCheckin, initialCheckout, initialGuests,
   initialFirstName, initialLastName, initialEmail, initialPhone,
 }: Props) {
@@ -221,9 +233,31 @@ export default function ContactForm({
   }
 
   // ── Form ───────────────────────────────────────────────────────────────────
+  const hostFirstName = hostName.split(" ")[0];
+  const hostInitials = hostName.split(" ").map((n) => n[0] ?? "").join("").slice(0, 2).toUpperCase();
+
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-charcoal-800">Contacter l&apos;hôte</p>
+      <p className="text-sm font-semibold text-charcoal-800">Contacter le propriétaire</p>
+
+      {/* Host mini-profile */}
+      <div className="flex items-center gap-3 pb-1">
+        <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
+          {hostAvatarUrl ? (
+            <img src={hostAvatarUrl} alt={hostFirstName} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-white font-bold text-lg">{hostInitials}</span>
+          )}
+        </div>
+        <div>
+          <p className="font-semibold text-charcoal-800 text-sm">Hôte : {hostFirstName}</p>
+          {hostCreatedAt && (
+            <p className="text-sm text-charcoal-400 mt-0.5">
+              Hôte depuis {hostSinceDuration(hostCreatedAt)}
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Dates */}
       <div ref={calRef} className="relative">

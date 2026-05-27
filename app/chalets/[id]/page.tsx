@@ -592,6 +592,8 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     listingId={listing.id}
                     hostId={host?.id ?? ""}
                     hostName={host?.name ?? "l'hôte"}
+                    hostAvatarUrl={host?.avatar_url ?? null}
+                    hostCreatedAt={host?.created_at ?? null}
                     listingTitle={listing.title}
                     currentUserId={user?.id ?? null}
                     initialCheckin={urlCheckin}
