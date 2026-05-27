@@ -139,7 +139,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
         {/* Right: 45% normal / full width when expanded, with floating padding */}
         <div
-          className={`${isExpanded ? "flex-1 p-4" : "flex-[45] pt-4 pr-4 pb-4"} shrink-0 sticky top-[80px] self-start`}
+          className={`${isExpanded ? "flex-1 p-[50px]" : "flex-[45] pt-[50px] pr-[50px] pb-[50px]"} shrink-0 sticky top-[80px] self-start`}
           style={{ height: "calc(100vh - 80px)" }}
         >
           {mapFrame("100%", isExpanded)}
