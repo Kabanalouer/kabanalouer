@@ -233,8 +233,10 @@ export default function ContactForm({
   }
 
   // ── Form ───────────────────────────────────────────────────────────────────
-  const hostFirstName = hostName.split(" ")[0];
-  const hostInitials = hostName.split(" ").map((n) => n[0] ?? "").join("").slice(0, 2).toUpperCase();
+  // hostName is "l'hôte" when the host has no name set in their profile
+  const resolvedName = hostName && hostName !== "l'hôte" ? hostName : null;
+  const hostFirstName = resolvedName ? resolvedName.split(" ")[0] : null;
+  const hostInitials = hostFirstName ? hostFirstName[0].toUpperCase() : "H";
 
   return (
     <div className="space-y-3">
@@ -244,13 +246,15 @@ export default function ContactForm({
       <div className="flex items-center gap-3 pb-1">
         <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
           {hostAvatarUrl ? (
-            <img src={hostAvatarUrl} alt={hostFirstName} className="w-full h-full object-cover" />
+            <img src={hostAvatarUrl} alt={hostFirstName ?? "Hôte"} className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-bold text-lg">{hostInitials}</span>
           )}
         </div>
         <div>
-          <p className="font-semibold text-charcoal-800 text-sm">Hôte : {hostFirstName}</p>
+          <p className="font-semibold text-charcoal-800 text-sm">
+            {hostFirstName ? `Hôte : ${hostFirstName}` : "Propriétaire"}
+          </p>
           {hostCreatedAt && (
             <p className="text-sm text-charcoal-400 mt-0.5">
               Hôte depuis {hostSinceDuration(hostCreatedAt)}
