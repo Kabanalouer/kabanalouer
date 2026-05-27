@@ -26,7 +26,27 @@ const MAP_STYLES: google.maps.MapTypeStyle[] = [
   { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#888888" }] },
 ];
 
-// ── Inner component (must live inside <Map> to use useMap) ──────────────────
+// ── Scale bar ─────────────────────────────────────────────────────────────────
+
+function ScaleBar({ zoom, lat }: { zoom: number; lat: number }) {
+  const metersPerPx = (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+  const steps = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+  const targetMeters = metersPerPx * 80;
+  const nice = steps.find((s) => s >= targetMeters) ?? 100000;
+  const barWidth = Math.round(nice / metersPerPx);
+  const label = nice >= 1000 ? `${nice / 1000} km` : `${nice} m`;
+
+  return (
+    <div className="absolute bottom-8 right-3 z-10 flex flex-col items-end gap-1 pointer-events-none">
+      <span className="text-[10px] font-semibold text-charcoal-800 bg-white/90 px-1.5 py-0.5 rounded leading-tight">
+        {label}
+      </span>
+      <div className="h-[3px] bg-charcoal-700 rounded-sm" style={{ width: barWidth }} />
+    </div>
+  );
+}
+
+// ── Inner component (must live inside <Map> to use useMap) ────────────────────
 
 function MapContent({
   listings,
@@ -34,12 +54,14 @@ function MapContent({
   onHoverChange,
   onPendingBoundsChange,
   onMapReady,
+  onMapStateChange,
 }: {
   listings: ListingForMap[];
   hoveredId: string | null;
   onHoverChange: (id: string | null) => void;
   onPendingBoundsChange: (b: MapBounds) => void;
   onMapReady: (m: google.maps.Map) => void;
+  onMapStateChange: (s: { zoom: number; lat: number }) => void;
 }) {
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -52,18 +74,16 @@ function MapContent({
   useEffect(() => {
     if (!map) return;
     const listener = map.addListener("idle", () => {
+      onMapStateChange({ zoom: map.getZoom() ?? 9, lat: map.getCenter()?.lat() ?? 46.8 });
       if (isFirstIdle.current) { isFirstIdle.current = false; return; }
       const bounds = map.getBounds();
       if (!bounds) return;
       const ne = bounds.getNorthEast();
       const sw = bounds.getSouthWest();
-      onPendingBoundsChange({
-        minLat: sw.lat(), maxLat: ne.lat(),
-        minLng: sw.lng(), maxLng: ne.lng(),
-      });
+      onPendingBoundsChange({ minLat: sw.lat(), maxLat: ne.lat(), minLng: sw.lng(), maxLng: ne.lng() });
     });
     return () => window.google.maps.event.removeListener(listener);
-  }, [map, onPendingBoundsChange]);
+  }, [map, onPendingBoundsChange, onMapStateChange]);
 
   useEffect(() => {
     if (!map) return;
@@ -132,16 +152,12 @@ function MapContent({
                 style={{ display: "block" }}
               />
             )}
-            <p className="font-semibold text-gray-900 text-sm leading-snug mb-0.5 line-clamp-2">
-              {selected.title}
-            </p>
+            <p className="font-semibold text-gray-900 text-sm leading-snug mb-0.5 line-clamp-2">{selected.title}</p>
             <p className="text-xs text-gray-500 mb-2">
               {selected.city ? `${selected.city}, ${selected.region}` : selected.region}
             </p>
             <p className="text-sm font-bold text-gray-900 mb-3">
-              {selected.priceOnRequest
-                ? "Sur demande"
-                : `À partir de ${selected.price} $ / nuit`}
+              {selected.priceOnRequest ? "Sur demande" : `À partir de ${selected.price} $ / nuit`}
             </p>
             <a
               href={`/chalets/${selected.id}`}
@@ -156,60 +172,36 @@ function MapContent({
   );
 }
 
-// ── Map control buttons ───────────────────────────────────────────────────────
+// ── Button style ──────────────────────────────────────────────────────────────
 
 const btnCls = "w-9 h-9 bg-white rounded-lg border border-[#e0e0e0] shadow-sm flex items-center justify-center hover:bg-charcoal-50 transition-colors";
 
-// ── Public component ─────────────────────────────────────────────────────────
+// ── Public component ──────────────────────────────────────────────────────────
 
 export default function ChaletsMap({
   listings,
   hoveredId,
   onHoverChange,
   onBoundsChange,
+  isExpanded,
+  onToggleExpand,
 }: {
   listings: ListingForMap[];
   hoveredId: string | null;
   onHoverChange: (id: string | null) => void;
   onBoundsChange: (b: MapBounds) => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [hasMoved, setHasMoved] = useState(false);
   const [pendingBounds, setPendingBounds] = useState<MapBounds | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [mapState, setMapState] = useState({ zoom: 9, lat: 46.8 });
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  const handleMapReady = useCallback((m: google.maps.Map) => {
-    mapRef.current = m;
-  }, []);
-
-  const handlePendingBoundsChange = useCallback((b: MapBounds) => {
-    setPendingBounds(b);
-    setHasMoved(true);
-  }, []);
-
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (isFullscreen) document.exitFullscreen();
-    else containerRef.current.requestFullscreen();
-  };
-
-  const zoomIn = () => {
-    const m = mapRef.current;
-    if (m) m.setZoom((m.getZoom() ?? 9) + 1);
-  };
-
-  const zoomOut = () => {
-    const m = mapRef.current;
-    if (m) m.setZoom((m.getZoom() ?? 9) - 1);
-  };
+  const handleMapReady = useCallback((m: google.maps.Map) => { mapRef.current = m; }, []);
+  const handleMapStateChange = useCallback((s: { zoom: number; lat: number }) => setMapState(s), []);
+  const handlePendingBoundsChange = useCallback((b: MapBounds) => { setPendingBounds(b); setHasMoved(true); }, []);
 
   const handleSearchHere = () => {
     if (!pendingBounds) return;
@@ -217,14 +209,13 @@ export default function ChaletsMap({
     setHasMoved(false);
   };
 
+  const zoomIn = () => { const m = mapRef.current; if (m) m.setZoom((m.getZoom() ?? 9) + 1); };
+  const zoomOut = () => { const m = mapRef.current; if (m) m.setZoom((m.getZoom() ?? 9) - 1); };
+
   const withCoords = listings.filter((l) => l.lat != null && l.lng != null);
-  const center =
-    withCoords.length > 0
-      ? {
-          lat: withCoords.reduce((s, l) => s + l.lat!, 0) / withCoords.length,
-          lng: withCoords.reduce((s, l) => s + l.lng!, 0) / withCoords.length,
-        }
-      : QUEBEC_CENTER;
+  const center = withCoords.length > 0
+    ? { lat: withCoords.reduce((s, l) => s + l.lat!, 0) / withCoords.length, lng: withCoords.reduce((s, l) => s + l.lng!, 0) / withCoords.length }
+    : QUEBEC_CENTER;
 
   if (!apiKey) {
     return (
@@ -236,7 +227,7 @@ export default function ChaletsMap({
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div ref={containerRef} className="relative w-full h-full">
+      <div className="relative w-full h-full">
         <Map
           defaultCenter={center}
           defaultZoom={withCoords.length > 0 ? 9 : 7}
@@ -252,6 +243,7 @@ export default function ChaletsMap({
             onHoverChange={onHoverChange}
             onPendingBoundsChange={handlePendingBoundsChange}
             onMapReady={handleMapReady}
+            onMapStateChange={handleMapStateChange}
           />
         </Map>
 
@@ -270,25 +262,23 @@ export default function ChaletsMap({
           </div>
         )}
 
-        {/* Fullscreen toggle — top right */}
-        <button
-          onClick={toggleFullscreen}
-          className={`absolute top-3 right-3 z-10 ${btnCls}`}
-          aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
-        >
-          {isFullscreen ? (
-            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9V4.5M15 9h4.5M15 9l5.25-5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-            </svg>
-          )}
-        </button>
-
-        {/* Zoom controls — bottom right, above attribution */}
-        <div className="absolute bottom-8 right-3 z-10 flex flex-col gap-1">
+        {/* Controls: ↗/✕ · + · − stacked at top-right */}
+        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+          <button
+            onClick={onToggleExpand}
+            className={btnCls}
+            aria-label={isExpanded ? "Réduire la carte" : "Agrandir la carte"}
+          >
+            {isExpanded ? (
+              <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9V4.5M15 9h4.5M15 9l5.25-5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+              </svg>
+            )}
+          </button>
           <button onClick={zoomIn} className={btnCls} aria-label="Zoom avant">
             <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -300,6 +290,9 @@ export default function ChaletsMap({
             </svg>
           </button>
         </div>
+
+        {/* Scale bar — bottom right, above attribution */}
+        <ScaleBar zoom={mapState.zoom} lat={mapState.lat} />
       </div>
     </APIProvider>
   );

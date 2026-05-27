@@ -32,6 +32,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
     setIsLoading(true);
@@ -102,27 +103,29 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     </div>
   );
 
-  const mapFrame = (height: string) => (
+  const mapFrame = (height: string, expanded = false) => (
     <div
-      className="rounded-2xl overflow-hidden border border-[#e8e8e8] w-full"
-      style={{ height, boxShadow: "0 2px 16px rgba(0,0,0,0.10)" }}
+      className={`overflow-hidden border border-[#e8e8e8] w-full ${expanded ? "" : "rounded-2xl"}`}
+      style={{ height, boxShadow: expanded ? "none" : "0 2px 16px rgba(0,0,0,0.10)" }}
     >
       <ChaletsMap
         listings={listings}
         hoveredId={hoveredId}
         onHoverChange={setHoveredId}
         onBoundsChange={handleBoundsChange}
+        isExpanded={isExpanded}
+        onToggleExpand={() => setIsExpanded((v) => !v)}
       />
     </div>
   );
 
   return (
     <>
-      {/* ── DESKTOP: 55/45 split, sticky map ── */}
+      {/* ── DESKTOP: split layout ── */}
       <div className="hidden lg:flex gap-5 items-start">
 
-        {/* Left: 55% — listings, padded */}
-        <div className="flex-[55] min-w-0 px-5 pt-5 pb-10">
+        {/* Left: 55% — hidden when expanded */}
+        <div className={`flex-[55] min-w-0 px-5 pt-5 pb-10 ${isExpanded ? "hidden" : ""}`}>
           <div className="flex items-baseline justify-between mb-5">
             <h1 className="text-lg font-bold text-charcoal-800">Chalets au Québec</h1>
             {!isLoading && (
@@ -134,12 +137,12 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           {listGrid("grid-cols-2")}
         </div>
 
-        {/* Right: 45% — sticky map, exact viewport height minus navbar, no overflow */}
+        {/* Right: 45% normal / full width when expanded */}
         <div
-          className="flex-[45] shrink-0 sticky top-[80px] self-start overflow-hidden"
+          className={`${isExpanded ? "flex-1" : "flex-[45]"} shrink-0 sticky top-[80px] self-start overflow-hidden`}
           style={{ height: "calc(100vh - 80px)" }}
         >
-          {mapFrame("100%")}
+          {mapFrame("100%", isExpanded)}
         </div>
       </div>
 
