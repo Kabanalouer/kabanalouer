@@ -112,7 +112,7 @@ export default async function HomePage() {
         {/* Content — flex column justify-between: top content + bottom stats */}
         <div className="relative z-10 flex flex-col h-full text-white">
 
-          {/* Top: badge + titre + sous-titre + barre de recherche */}
+          {/* Contenu : badge + titre + sous-titre + recherche + stats */}
           <div className="flex flex-col items-center text-center px-4 pt-[12vh]">
             <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
               La marketplace de la location de chalet au Québec
@@ -124,13 +124,9 @@ export default async function HomePage() {
               Payez moins cher en contactant le propriétaire directement.
             </p>
             <SearchBar />
-          </div>
 
-          <div className="flex-1" />
-
-          {/* Bottom: stats */}
-          <div className="w-full border-t border-white/15">
-            <div className="flex flex-wrap justify-center gap-8 md:gap-20 px-4 py-5 bg-black/30 backdrop-blur-sm">
+            {/* Stats — directement sous la SearchBar */}
+            <div className="mt-12 flex flex-wrap justify-center gap-8 md:gap-20">
               <HeroStat value="500+" label="Chalets disponibles" />
               <HeroStat value="15" label="Régions du Québec" />
               <HeroStat value="0 $" label="Frais de service" />
