@@ -37,11 +37,16 @@ function ScaleBar({ zoom, lat }: { zoom: number; lat: number }) {
   const label = nice >= 1000 ? `${nice / 1000} km` : `${nice} m`;
 
   return (
-    <div className="absolute bottom-8 right-3 z-10 flex flex-col items-end gap-1 pointer-events-none">
-      <span className="text-[10px] font-semibold text-charcoal-800 bg-white/90 px-1.5 py-0.5 rounded leading-tight">
-        {label}
-      </span>
-      <div className="h-[3px] bg-charcoal-700 rounded-sm" style={{ width: barWidth }} />
+    <div className="absolute bottom-6 right-4 z-10 flex flex-col items-end gap-1.5 pointer-events-none">
+      <div
+        className="flex flex-col items-end gap-1.5 px-3 py-2 rounded-xl"
+        style={{ background: "rgba(0,0,0,0.60)" }}
+      >
+        <span className="text-[13px] font-semibold text-white leading-none tracking-wide">
+          {label}
+        </span>
+        <div className="h-[3px] bg-white rounded-full w-full" />
+      </div>
     </div>
   );
 }
