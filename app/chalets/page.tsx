@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import { normalizePhotos } from "@/lib/photo";
 
@@ -150,18 +151,16 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (amenities) preserveParams.amenities = amenities;
 
   return (
-    <div className="flex flex-col lg:h-screen">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-
-      {/* flex-1 fills remaining height; overflow-hidden on desktop clips the split layout */}
-      <div className="flex-1 lg:overflow-hidden">
+      <div className="flex-1">
         <ChaletsMapLayout
           initialListings={listings}
           currentUserId={user?.id ?? null}
           filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities }}
         />
       </div>
-
+      <Footer />
     </div>
   );
 }
