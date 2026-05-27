@@ -51,20 +51,25 @@ export default function PhotoGallery({ photos, title }: Props) {
     <>
       {/* ── Gallery grid ── */}
       <div className="relative mb-8">
-        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-xl">
-          <div className={`relative overflow-hidden ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
+        <div
+          className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-xl cursor-zoom-in"
+          onClick={() => { setIdx(0); setOpen(true); }}
+        >
+          <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
             <Image src={photos[0].url} alt={title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
           </div>
           {photos.slice(1, 5).map((p, i) => (
-            <div key={i} className="relative overflow-hidden bg-charcoal-50">
+            <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
               <Image src={p.url} alt={`Photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
             </div>
           ))}
         </div>
 
         {photos.length > 5 && (
           <button
-            onClick={() => { setIdx(0); setOpen(true); }}
+            onClick={(e) => { e.stopPropagation(); setIdx(0); setOpen(true); }}
             className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-charcoal-50 transition-colors border border-[#ebebeb]"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
