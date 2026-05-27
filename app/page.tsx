@@ -97,7 +97,7 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative h-[100svh] md:h-screen z-10 overflow-hidden">
+      <section className="relative h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] z-10 overflow-hidden">
         {/* Photo */}
         <div
           className="absolute inset-0 bg-cover bg-center scale-[1.02]"
