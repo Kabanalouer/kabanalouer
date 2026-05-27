@@ -119,10 +119,10 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   return (
     <>
       {/* ── DESKTOP: 55/45 split, sticky map ── */}
-      <div className="hidden lg:flex gap-5 px-5 pt-5 pb-2 items-start">
+      <div className="hidden lg:flex gap-5 items-start">
 
-        {/* Left: 55% — listings */}
-        <div className="flex-[55] min-w-0">
+        {/* Left: 55% — listings, padded */}
+        <div className="flex-[55] min-w-0 px-5 pt-5 pb-10">
           <div className="flex items-baseline justify-between mb-5">
             <h1 className="text-lg font-bold text-charcoal-800">Chalets au Québec</h1>
             {!isLoading && (
@@ -134,9 +134,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           {listGrid("grid-cols-2")}
         </div>
 
-        {/* Right: 45% — sticky map, fills viewport height minus navbar */}
+        {/* Right: 45% — sticky map, exact viewport height minus navbar, no overflow */}
         <div
-          className="flex-[45] shrink-0 sticky top-[80px] self-start"
+          className="flex-[45] shrink-0 sticky top-[80px] self-start overflow-hidden"
           style={{ height: "calc(100vh - 80px)" }}
         >
           {mapFrame("100%")}
