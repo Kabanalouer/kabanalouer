@@ -83,9 +83,7 @@ function ContactModal({
   onClose: () => void;
   onSent: () => void;
 }) {
-  const [message, setMessage] = useState(
-    `Bonjour ${hostName},\n\nJe suis intéressé(e) par votre chalet "${listingTitle}". Pourriez-vous me donner plus d'informations sur les disponibilités ?\n\nMerci !`
-  );
+  const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -130,7 +128,7 @@ function ContactModal({
           <>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="font-bold text-gray-900">Contacter {hostName}</h3>
+                <h3 className="font-bold text-gray-900">Contacter {hostName.split(" ")[0]}</h3>
                 <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{listingTitle}</p>
               </div>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -144,6 +142,7 @@ function ContactModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
+              placeholder="Votre message"
               className="w-full border border-gray-200 rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
             />
 
