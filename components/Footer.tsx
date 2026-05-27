@@ -74,7 +74,7 @@ export default function Footer() {
             © 2026 Kabanalouer · Tous droits réservés
           </p>
           <p className="text-xs text-charcoal-400">
-            Fait avec soin au Québec
+            Fait avec ❤️ au Québec.
           </p>
         </div>
       </div>
