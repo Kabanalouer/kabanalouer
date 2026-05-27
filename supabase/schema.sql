@@ -172,6 +172,7 @@ CREATE TABLE public.reviews (
   author_id   UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment     TEXT,
+  host_reply  TEXT,
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(listing_id, author_id)
 );
