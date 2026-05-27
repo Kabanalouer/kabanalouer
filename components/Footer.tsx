@@ -15,8 +15,8 @@ function FooterLogo() {
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-charcoal-50 border-t border-[#ebebeb]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <footer className="w-full block bg-charcoal-50 border-t border-[#ebebeb]">
+      <div className="px-6 lg:px-8 py-14">
 
         {/* ── Columns ── */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
