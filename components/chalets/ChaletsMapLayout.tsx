@@ -30,7 +30,7 @@ interface Props {
 
 export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
   const destination = filters.city || filters.region || null;
-  const pageTitle = destination ? `Chalets · ${destination}` : "{pageTitle}";
+  const pageTitle = destination ? `Chalets · ${destination}` : "Chalets au Québec";
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
