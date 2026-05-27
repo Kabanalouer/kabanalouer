@@ -117,20 +117,20 @@ function MapContent({
             >
               {listing.photos[0] ? (
                 <div
-                  className={`w-12 h-12 rounded-full overflow-hidden transition-all ${
-                    isActive ? "border-[3px] border-primary" : "border-[3px] border-white"
+                  className={`w-[72px] h-[72px] rounded-full overflow-hidden transition-all ${
+                    isActive ? "border-[4px] border-primary" : "border-[3px] border-white"
                   }`}
-                  style={{ boxShadow: isActive ? "0 4px 16px rgba(0,0,0,0.30)" : "0 2px 8px rgba(0,0,0,0.22)" }}
+                  style={{ boxShadow: isActive ? "0 6px 20px rgba(0,0,0,0.35)" : "0 2px 10px rgba(0,0,0,0.25)" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={listing.photos[0]} alt="" className="w-full h-full object-cover" width={48} height={48} />
+                  <img src={listing.photos[0]} alt="" className="w-full h-full object-cover" width={72} height={72} />
                 </div>
               ) : (
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center bg-white transition-all ${
-                    isActive ? "border-[3px] border-primary" : "border-[3px] border-white"
+                  className={`w-[72px] h-[72px] rounded-full flex items-center justify-center bg-white transition-all ${
+                    isActive ? "border-[4px] border-primary" : "border-[3px] border-white"
                   }`}
-                  style={{ boxShadow: isActive ? "0 4px 16px rgba(0,0,0,0.30)" : "0 2px 8px rgba(0,0,0,0.22)" }}
+                  style={{ boxShadow: isActive ? "0 6px 20px rgba(0,0,0,0.35)" : "0 2px 10px rgba(0,0,0,0.25)" }}
                 >
                   <svg className={`w-5 h-5 ${isActive ? "text-primary" : "text-charcoal-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />

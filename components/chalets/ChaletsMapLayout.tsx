@@ -92,9 +92,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
             key={listing.id}
             onMouseEnter={() => setHoveredId(listing.id)}
             onMouseLeave={() => setHoveredId(null)}
-            className={`transition-shadow duration-150 rounded-xl ${
-              hoveredId === listing.id ? "ring-2 ring-primary/50 ring-offset-2" : ""
-            }`}
+            className="rounded-xl"
           >
             <ListingCard listing={listing} currentUserId={currentUserId} />
           </div>
