@@ -109,34 +109,33 @@ export default async function HomePage() {
         {/* Overlay — léger en haut, dense en bas */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-start h-full text-white text-center px-4 pt-[14vh]">
-          {/* Badge */}
-          <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
-            La marketplace de la location de chalet au Québec
+        {/* Content — flex column justify-between: top content + bottom stats */}
+        <div className="relative z-10 flex flex-col justify-between h-full text-white">
+
+          {/* Top: badge + titre + sous-titre + barre de recherche */}
+          <div className="flex flex-col items-center text-center px-4 pt-[12vh]">
+            <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
+              La marketplace de la location de chalet au Québec
+            </div>
+            <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
+              Trouvez votre chalet au Québec en quelques clics.
+            </h1>
+            <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed whitespace-nowrap font-semibold">
+              Payez moins cher en contactant le propriétaire directement.
+            </p>
+            <SearchBar />
           </div>
 
-          {/* Headline */}
-          <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
-            Trouvez votre chalet au Québec en quelques clics.
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed whitespace-nowrap font-semibold">
-            Payez moins cher en contactant le propriétaire directement.
-          </p>
-
-          <SearchBar />
-        </div>
-
-        {/* Stats — anchored at bottom of hero */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15">
-          <div className="flex flex-wrap justify-center gap-8 md:gap-20 px-4 py-5 bg-black/30 backdrop-blur-sm">
-            <HeroStat value="500+" label="Chalets disponibles" />
-            <HeroStat value="15" label="Régions du Québec" />
-            <HeroStat value="0 $" label="Frais de service" />
-            <HeroStat value="Direct" label="Contact propriétaire" />
+          {/* Bottom: stats */}
+          <div className="w-full border-t border-white/15">
+            <div className="flex flex-wrap justify-center gap-8 md:gap-20 px-4 py-5 bg-black/30 backdrop-blur-sm">
+              <HeroStat value="500+" label="Chalets disponibles" />
+              <HeroStat value="15" label="Régions du Québec" />
+              <HeroStat value="0 $" label="Frais de service" />
+              <HeroStat value="Direct" label="Contact propriétaire" />
+            </div>
           </div>
+
         </div>
       </section>
 
