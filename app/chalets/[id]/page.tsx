@@ -100,7 +100,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   const [{ data: listing }, { data: { user } }] = await Promise.all([
     supabase
       .from("listings")
-      .select("*, host:host_id(id, name, avatar_url, created_at)")
+      .select("*")
       .eq("id", id)
       .eq("is_published", true)
       .single(),
@@ -108,6 +108,13 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   ]);
 
   if (!listing) notFound();
+
+  // Fetch host profile directly from public.users (avoids Supabase join ambiguity)
+  const { data: hostProfile } = await supabase
+    .from("users")
+    .select("id, name, avatar_url, created_at")
+    .eq("id", listing.host_id as string)
+    .single();
 
   // Increment view count (fire and forget — don't block page render)
   void supabase.rpc("increment_listing_views", { p_listing_id: id });
@@ -184,7 +191,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     } catch { /* silently fail */ }
   }
 
-  const host = listing.host as { id: string; name: string; avatar_url: string; created_at: string } | null;
+  const host = hostProfile as { id: string; name: string; avatar_url: string; created_at: string } | null;
 
   // Host stats (for HostCard)
   let hostReviewCount = 0;
