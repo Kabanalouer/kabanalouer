@@ -176,13 +176,11 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="flex-1">
-        <ChaletsMapLayout
-          initialListings={listings}
-          currentUserId={user?.id ?? null}
-          filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities }}
-        />
-      </div>
+      <ChaletsMapLayout
+        initialListings={listings}
+        currentUserId={user?.id ?? null}
+        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities }}
+      />
       <Footer />
     </div>
   );
