@@ -143,13 +143,16 @@ export default function ListingCard({
           {listing.title}
         </h3>
 
-        {/* Meta — location · capacity · bedrooms */}
+        {/* Meta — location · capacity · bedrooms · beds */}
         <p className="text-[13px] text-charcoal-400 mb-2">
           {location}
           {" · "}
           {listing.capacity} voyageur{listing.capacity > 1 ? "s" : ""}
           {" · "}
           {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}
+          {listing.beds != null && (
+            <>{" · "}{listing.beds} lit{listing.beds > 1 ? "s" : ""}</>
+          )}
         </p>
 
         {/* Price */}
