@@ -7,8 +7,8 @@ function FooterLogo() {
       type="image/svg+xml"
       data="/logo-wordmark.svg"
       aria-hidden="true"
-      className="h-7 w-auto pointer-events-none"
-      style={{ width: 133, height: 28 }}
+      className="h-9 w-auto pointer-events-none"
+      style={{ width: 166, height: 35 }}
     />
   );
 }
