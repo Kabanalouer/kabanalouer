@@ -128,15 +128,15 @@ export default async function HomePage() {
 
           <SearchBar />
         </div>
-      </section>
 
-      {/* ── Stats strip ── */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 py-5 flex flex-wrap justify-center gap-8 md:gap-20">
-          <Stat value="500+" label="Chalets disponibles" />
-          <Stat value="15" label="Régions du Québec" />
-          <Stat value="0 $" label="Frais de service" />
-          <Stat value="Direct" label="Contact propriétaire" />
+        {/* Stats — anchored at bottom of hero */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15">
+          <div className="flex flex-wrap justify-center gap-8 md:gap-20 px-4 py-5 bg-black/30 backdrop-blur-sm">
+            <HeroStat value="500+" label="Chalets disponibles" />
+            <HeroStat value="15" label="Régions du Québec" />
+            <HeroStat value="0 $" label="Frais de service" />
+            <HeroStat value="Direct" label="Contact propriétaire" />
+          </div>
         </div>
       </section>
 
@@ -246,12 +246,12 @@ export default async function HomePage() {
   );
 }
 
-/* ── Stat ── */
-function Stat({ value, label }: { value: string; label: string }) {
+/* ── HeroStat ── */
+function HeroStat({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-charcoal-800 tracking-tight">{value}</div>
-      <div className="text-xs text-charcoal-400 mt-0.5 tracking-wide">{label}</div>
+      <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+      <div className="text-xs text-white/70 mt-0.5 tracking-wide">{label}</div>
     </div>
   );
 }
