@@ -168,7 +168,7 @@ const AMENITY_CONFIG: Record<string, AmenityConfig> = {
         <path d="M17 16h4M19 14v4" />
       </svg>
     ),
-    description: "Large sélection de jeux de société sur place",
+    description: "Sélection de jeux de société sur place",
   },
   "Livres et Revues": {
     icon: (
