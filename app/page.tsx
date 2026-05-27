@@ -110,7 +110,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 pb-8">
+        <div className="relative z-10 flex flex-col items-center justify-start h-full text-white text-center px-4 pt-[14vh]">
           {/* Badge */}
           <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
             La marketplace de la location de chalet au Québec
