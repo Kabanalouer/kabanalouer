@@ -110,10 +110,10 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
 
         {/* Content — flex column justify-between: top content + bottom stats */}
-        <div className="relative z-10 flex flex-col justify-between h-full text-white">
+        <div className="relative z-10 flex flex-col h-full text-white">
 
           {/* Top: badge + titre + sous-titre + barre de recherche */}
-          <div className="flex flex-col items-center text-center px-4 pt-[6vh]">
+          <div className="flex flex-col items-center text-center px-4 pt-[12vh]">
             <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.06em] uppercase px-4 py-2 rounded-full mb-6">
               La marketplace de la location de chalet au Québec
             </div>
@@ -125,6 +125,8 @@ export default async function HomePage() {
             </p>
             <SearchBar />
           </div>
+
+          <div className="flex-1" />
 
           {/* Bottom: stats */}
           <div className="w-full border-t border-white/15">
