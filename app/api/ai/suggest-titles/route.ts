@@ -9,7 +9,10 @@ const SYSTEM_PROMPT =
   "Le titre est aussi utilisé comme balise meta title sur Google et les moteurs de recherche. " +
   "Il doit contenir les mots-clés naturels que les voyageurs cherchent (ex: nom du chalet si connu, type de chalet, équipements phares, région). " +
   "Si le proprio a donné un nom propre à son chalet, le mettre en premier. " +
-  "Pense aussi aux recherches faites dans les LLM comme ChatGPT.";
+  "Pense aussi aux recherches faites dans les LLM comme ChatGPT. " +
+  "RÈGLE SEO PRIORITAIRE : Si le titre actuel ou les informations de la fiche contiennent un nom propre de chalet (ex: 'Chalet Authentik 50', 'Chalet du Lac', 'Villa des Pins', etc.), AU MOINS 2 des 3 suggestions doivent commencer par ce nom propre. " +
+  "Les voyageurs qui connaissent déjà ce chalet le cherchent par son nom sur Google — c'est le mot-clé SEO le plus important. " +
+  "Détecte le nom propre dans le titre existant et utilise-le.";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -20,9 +23,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Clé API Anthropic manquante." }, { status: 503 });
   }
 
-  const { region, city, capacity, bedrooms, amenities, nearby_activities } = await request.json();
+  const { current_title, region, city, capacity, bedrooms, amenities, nearby_activities } = await request.json();
 
   const lines = [
+    current_title ? `Titre actuel : ${current_title}` : null,
     region ? `Région : ${region}` : null,
     city ? `Ville : ${city}` : null,
     capacity ? `Capacité : ${capacity} personnes` : null,

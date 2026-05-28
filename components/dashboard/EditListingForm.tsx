@@ -330,8 +330,8 @@ export default function EditListingForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          region: form.region, city: initialCity, capacity: form.capacity,
-          bedrooms: form.bedrooms, amenities: form.amenities,
+          current_title: form.title, region: form.region, city: initialCity,
+          capacity: form.capacity, bedrooms: form.bedrooms, amenities: form.amenities,
           nearby_activities: form.nearby_activities,
         }),
       });
