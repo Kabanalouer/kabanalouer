@@ -540,9 +540,9 @@ export default function PhotoUpload({
         <p className={photos.length >= MIN_PHOTOS ? "text-green-600" : "text-amber-600"}>
           {totalCount}/{MAX_PHOTOS} photos
         </p>
-        <p>Minimum de photos : {MIN_PHOTOS}</p>
-        <p>Maximum de photos : {MAX_PHOTOS}</p>
-        <p>Astuce : Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
+        <p><span className="font-semibold text-charcoal-500">Minimum de photos :</span> {MIN_PHOTOS}</p>
+        <p><span className="font-semibold text-charcoal-500">Maximum de photos :</span> {MAX_PHOTOS}</p>
+        <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
       </div>
     </div>
   );
