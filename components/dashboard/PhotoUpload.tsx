@@ -481,7 +481,7 @@ export default function PhotoUpload({
       {others.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-charcoal-400 mb-3">Ajoutez autant de photos que vous voulez pour présenter votre chalet en détail.</p>
+          <p className="text-xs text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
