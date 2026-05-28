@@ -195,6 +195,17 @@ export default function EditListingForm({
   const [descAtLimit, setDescAtLimit] = useState(false);
   const descLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Title AI
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const [titleGenerating, setTitleGenerating] = useState(false);
+  const [titleGenError, setTitleGenError] = useState("");
+  const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
+
+  // Description AI
+  const [descGenerating, setDescGenerating] = useState(false);
+  const [descGenError, setDescGenError] = useState("");
+  const [showDescContextWarning, setShowDescContextWarning] = useState(false);
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -293,6 +304,65 @@ export default function EditListingForm({
     } else {
       set("description", value);
     }
+  };
+
+  const contextScore = [
+    form.region.trim().length > 0,
+    form.capacity > 0,
+    form.bedrooms > 0,
+    form.amenities.length > 0,
+    form.nearby_activities.length > 0,
+  ].filter(Boolean).length;
+
+  const goToNextIncompleteSection = () => {
+    const next = SECTIONS.find((s) => s.id !== "publier" && !s.isComplete(form));
+    if (next) setActiveSection(next.id);
+  };
+
+  const handleGenerateTitles = async (force = false) => {
+    if (!force && contextScore < 3) { setShowTitleContextWarning(true); return; }
+    setShowTitleContextWarning(false);
+    setTitleGenerating(true);
+    setTitleGenError("");
+    setTitleSuggestions([]);
+    try {
+      const res = await fetch("/api/ai/suggest-titles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          region: form.region, city: initialCity, capacity: form.capacity,
+          bedrooms: form.bedrooms, amenities: form.amenities,
+          nearby_activities: form.nearby_activities,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) setTitleGenError(data.error ?? "Erreur lors de la génération.");
+      else setTitleSuggestions(data.suggestions ?? []);
+    } catch { setTitleGenError("Erreur lors de la génération."); }
+    setTitleGenerating(false);
+  };
+
+  const handleGenerateDescription = async (force = false) => {
+    if (!force && contextScore < 3) { setShowDescContextWarning(true); return; }
+    setShowDescContextWarning(false);
+    setDescGenerating(true);
+    setDescGenError("");
+    try {
+      const res = await fetch("/api/ai/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title, region: form.region, city: initialCity,
+          capacity: form.capacity, bedrooms: form.bedrooms, bathrooms: form.bathrooms,
+          amenities: form.amenities, nearby_activities: form.nearby_activities,
+          price_low: form.price_low, price_on_request: form.price_on_request,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) setDescGenError(data.error ?? "Erreur lors de la génération.");
+      else handleDescriptionChange(data.description ?? "");
+    } catch { setDescGenError("Erreur lors de la génération."); }
+    setDescGenerating(false);
   };
 
   const hasSaveButton = SECTION_FIELDS[activeSection].length > 0;
@@ -418,6 +488,53 @@ export default function EditListingForm({
           {activeSection === "titre" && (
             <SectionShell title="Titre" emoji="✏️">
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {TITLE_MAX} caractères.</p>
+
+              {/* AI generate button */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => void handleGenerateTitles()}
+                  disabled={titleGenerating}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-full px-4 py-2 transition-colors disabled:opacity-50"
+                >
+                  {titleGenerating ? (
+                    <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  )}
+                  {titleGenerating ? "Génération en cours…" : "Générer avec l'IA"}
+                </button>
+
+                {showTitleContextWarning && !titleGenerating && (
+                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    <p className="text-sm text-amber-800 mb-3">Pour un meilleur résultat, complétez d&apos;abord les sections Caractéristiques, Région et Capacité, puis revenez ici.</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void handleGenerateTitles(true)}
+                        className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                      >
+                        Générer quand même
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowTitleContextWarning(false); goToNextIncompleteSection(); }}
+                        className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                      >
+                        Continuer la fiche
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
+              </div>
+
               <input
                 type="text"
                 value={form.title}
@@ -428,6 +545,25 @@ export default function EditListingForm({
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.title.length}/{TITLE_MAX}
               </p>
+
+              {/* Suggestions */}
+              {titleSuggestions.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-medium text-charcoal-400">Cliquez pour utiliser :</p>
+                  <div className="flex flex-col gap-2">
+                    {titleSuggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { handleTitleChange(s); setTitleSuggestions([]); }}
+                        className="text-left text-sm px-4 py-2.5 rounded-xl border border-[#ebebeb] hover:border-primary hover:bg-primary/5 text-charcoal-700 transition-colors"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </SectionShell>
           )}
 
@@ -435,6 +571,53 @@ export default function EditListingForm({
           {activeSection === "description" && (
             <SectionShell title="Description" emoji="📝">
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {DESC_MAX} caractères.</p>
+
+              {/* AI generate button */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => void handleGenerateDescription()}
+                  disabled={descGenerating}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-full px-4 py-2 transition-colors disabled:opacity-50"
+                >
+                  {descGenerating ? (
+                    <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  )}
+                  {descGenerating ? "Génération en cours…" : "Générer avec l'IA"}
+                </button>
+
+                {showDescContextWarning && !descGenerating && (
+                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    <p className="text-sm text-amber-800 mb-3">Pour un meilleur résultat, complétez d&apos;abord les sections Caractéristiques, Région et Capacité, puis revenez ici.</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void handleGenerateDescription(true)}
+                        className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                      >
+                        Générer quand même
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowDescContextWarning(false); goToNextIncompleteSection(); }}
+                        className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                      >
+                        Continuer la fiche
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
+              </div>
+
               <textarea
                 value={form.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
