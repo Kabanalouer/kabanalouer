@@ -53,10 +53,13 @@ function Toggle({ checked, onChange, label, description }: {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 space-y-5">
-      <h2 className="text-base font-semibold text-charcoal-800">{title}</h2>
+      <div>
+        <h2 className="text-base font-semibold text-charcoal-800">{title}</h2>
+        {description && <p className="text-sm text-charcoal-400 mt-0.5">{description}</p>}
+      </div>
       {children}
     </div>
   );
@@ -256,7 +259,7 @@ export default function ProfileForm({
     <div className="space-y-6">
 
       {/* ── Informations personnelles ──────────────────────────────────────── */}
-      <Section title="Informations personnelles">
+      <Section title="Informations personnelles" description="Ces informations seront visibles dans la fiche de votre chalet.">
         {/* Avatar */}
         <div className="flex items-center gap-5">
           <div className="relative w-20 h-20 shrink-0">
@@ -342,7 +345,7 @@ export default function ProfileForm({
 
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
       {role === "host" && (
-        <Section title="Présentation du propriétaire">
+        <Section title="Présentation du propriétaire" description="Ces informations seront visibles dans la fiche de votre chalet.">
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-medium text-charcoal-700">Bio</label>
@@ -391,7 +394,7 @@ export default function ProfileForm({
       )}
 
       {/* ── Coordonnées ───────────────────────────────────────────────────── */}
-      <Section title="Coordonnées">
+      <Section title="Coordonnées" description="Ces informations ne seront pas publiques.">
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Adresse email</label>
           <input
