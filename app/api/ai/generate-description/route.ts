@@ -52,14 +52,13 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join("\n");
 
-function stripTrailingMeta(text: string): string {
-  // Remove any trailing block starting with known meta patterns or a bold line (**...)
-  const patterns = [/\*\*Comptage[\s\S]*$/i, /Comptage des caractères[\s\S]*$/i, /\n---[\s\S]*$/, /\n\*\*[^\n]*$/];
-  let result = text;
-  for (const pattern of patterns) {
-    result = result.replace(pattern, "");
-  }
-  return result.trimEnd();
+function cleanDescription(text: string): string {
+  const lines = text.split("\n");
+  // Remove lines starting with # or ** (headers, bold labels)
+  const filtered = lines.filter((line) => !line.trimStart().startsWith("#") && !line.trimStart().startsWith("**"));
+  // Drop leading blank lines
+  while (filtered.length > 0 && filtered[0].trim() === "") filtered.shift();
+  return filtered.join("\n").trimEnd();
 }
 
 function truncateToLastSentence(text: string, max: number): string {
@@ -88,14 +87,14 @@ function truncateToLastSentence(text: string, max: number): string {
         {
           role: "user",
           content:
-            `Génère une description complète pour cette annonce de chalet. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de 2500 caractères, espaces compris. Compte les caractères avant de répondre. Arrête-toi à une phrase complète avant la limite. Ne jamais couper une phrase en plein milieu. Commence par une phrase d'accroche forte. Décris l'ambiance, les points forts, les activités à proximité. Ne tutoie jamais le voyageur, utilise "vous". Ne jamais inclure de comptage de caractères, de note, de commentaire ou d'explication à la fin de ta réponse. Retourne uniquement le texte de la description, rien d'autre.\n\nContexte :\n${lines}`,
+            `Génère une description complète pour cette annonce de chalet. Retourne UNIQUEMENT le texte de la description, sans titre, sans en-tête, sans label, sans section, sans markdown, sans astérisques, sans dièse (#), sans comptage. Commence directement par la première phrase de la description. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de 2500 caractères, espaces compris. Arrête-toi à une phrase complète avant la limite. Ne jamais couper une phrase en plein milieu. Commence par une phrase d'accroche forte. Décris l'ambiance, les points forts, les activités à proximité. Ne tutoie jamais le voyageur, utilise "vous".\n\nContexte :\n${lines}`,
         },
       ],
     });
 
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
     if (!raw) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
-    const cleaned = stripTrailingMeta(raw);
+    const cleaned = cleanDescription(raw);
     return NextResponse.json({ description: truncateToLastSentence(cleaned, 2500) });
   } catch (err) {
     console.error("[generate-description]", err);
