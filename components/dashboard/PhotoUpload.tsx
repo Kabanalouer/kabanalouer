@@ -395,7 +395,7 @@ export default function PhotoUpload({
         <p className="text-xs text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
         <div className="aspect-video w-full relative">
           {photos[0] ? (
-            renderPhotoTile(photos[0], 0, "Couverture", "absolute inset-0")
+            renderPhotoTile(photos[0], 0, "Couverture", "w-full h-full")
           ) : (
             <button
               type="button"
