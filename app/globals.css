@@ -8,30 +8,30 @@
 
 /* ── Tailwind theme → utility classes (bg-*, text-*, border-*, font-*) ── */
 @theme {
-  /* Primary brand — coral (replaces #0F6E56 green) */
-  --color-primary:        #f04e45;
-  --color-primary-dark:   #d63a32;
-  --color-primary-press:  #b02b25;
-  --color-primary-50:     #fef2f1;
-  --color-primary-100:    #fbdfdc;
-  --color-primary-200:    #f5b8b1;
-  --color-primary-300:    #f08c82;
-  --color-primary-400:    #ed6c61;
-  --color-primary-600:    #d63a32;
-  --color-primary-700:    #b02b25;
-  --color-primary-800:    #871f1a;
+  /* Primary brand — olive */
+  --color-primary:        #636e40;
+  --color-primary-dark:   #4d5631;
+  --color-primary-press:  #3a4124;
+  --color-primary-50:     #f5f6ec;
+  --color-primary-100:    #e8ebdc;
+  --color-primary-200:    #c7ccb5;
+  --color-primary-300:    #a6ad8e;
+  --color-primary-400:    #858e67;
+  --color-primary-600:    #4d5631;
+  --color-primary-700:    #3a4124;
+  --color-primary-800:    #262b16;
 
-  /* Full coral palette (new code: bg-coral-*, text-coral-*) */
-  --color-coral-50:  #fef2f1;
-  --color-coral-100: #fbdfdc;
-  --color-coral-200: #f5b8b1;
-  --color-coral-300: #f08c82;
-  --color-coral-400: #ed6c61;
-  --color-coral-500: #f04e45;
-  --color-coral-600: #d63a32;
-  --color-coral-700: #b02b25;
-  --color-coral-800: #871f1a;
-  --color-coral-900: #561310;
+  /* Full olive palette (bg-coral-*, text-coral-* — kept for back-compat) */
+  --color-coral-50:  #f5f6ec;
+  --color-coral-100: #e8ebdc;
+  --color-coral-200: #c7ccb5;
+  --color-coral-300: #a6ad8e;
+  --color-coral-400: #858e67;
+  --color-coral-500: #636e40;
+  --color-coral-600: #4d5631;
+  --color-coral-700: #3a4124;
+  --color-coral-800: #262b16;
+  --color-coral-900: #121508;
 
   /* Secondary — teal (bg-teal-*, text-teal-*) */
   --color-secondary:      #008489;
@@ -77,16 +77,16 @@
 /* ── Raw CSS custom properties (design tokens, not Tailwind utilities) ── */
 :root {
   /* --- Color palette (for CSS var() usage in components) --- */
-  --coral-50:  #fef2f1;
-  --coral-100: #fbdfdc;
-  --coral-200: #f5b8b1;
-  --coral-300: #f08c82;
-  --coral-400: #ed6c61;
-  --coral-500: #f04e45;
-  --coral-600: #d63a32;
-  --coral-700: #b02b25;
-  --coral-800: #871f1a;
-  --coral-900: #561310;
+  --coral-50:  #f5f6ec;
+  --coral-100: #e8ebdc;
+  --coral-200: #c7ccb5;
+  --coral-300: #a6ad8e;
+  --coral-400: #858e67;
+  --coral-500: #636e40;
+  --coral-600: #4d5631;
+  --coral-700: #3a4124;
+  --coral-800: #262b16;
+  --coral-900: #121508;
 
   --teal-50:  #e0f2f3;
   --teal-100: #b8dee0;
@@ -227,7 +227,7 @@
   --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-xl:    0 24px 56px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
-  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(240, 78, 69, 0.45);
+  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(99, 110, 64, 0.45);
   --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* --- Motion --- */
