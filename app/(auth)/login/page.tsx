@@ -47,8 +47,14 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoal-50 py-12 px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center mb-8">
-          <span className="text-2xl font-bold text-primary">Kabanalouer</span>
+        <Link href="/" className="flex items-center justify-center mb-8" aria-label="Kabanalouer — accueil">
+          <object
+            type="image/svg+xml"
+            data="/logo-wordmark.svg"
+            aria-hidden="true"
+            className="pointer-events-none"
+            style={{ height: 40, width: "auto" }}
+          />
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Bon retour !</h1>
