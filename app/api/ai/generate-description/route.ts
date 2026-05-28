@@ -52,6 +52,22 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join("\n");
 
+function truncateToLastSentence(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const truncated = text.slice(0, max);
+  // Find the last sentence-ending punctuation followed by a space or end of string
+  const lastSentenceEnd = Math.max(
+    truncated.lastIndexOf(". "),
+    truncated.lastIndexOf("! "),
+    truncated.lastIndexOf("? "),
+    truncated.lastIndexOf(".\n"),
+    truncated.lastIndexOf("!\n"),
+    truncated.lastIndexOf("?\n"),
+  );
+  if (lastSentenceEnd > max * 0.5) return text.slice(0, lastSentenceEnd + 1).trimEnd();
+  return truncated.trimEnd();
+}
+
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
@@ -62,14 +78,14 @@ export async function POST(request: Request) {
         {
           role: "user",
           content:
-            `Génère une description complète pour cette annonce de chalet. Maximum 2500 caractères. Commence par une phrase d'accroche forte. Décris l'ambiance, les points forts, les activités à proximité. Ne tutoie jamais le voyageur, utilise "vous".\n\nContexte :\n${lines}`,
+            `Génère une description complète pour cette annonce de chalet. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de 2500 caractères, espaces compris. Compte les caractères avant de répondre. Arrête-toi à une phrase complète avant la limite. Ne jamais couper une phrase en plein milieu. Commence par une phrase d'accroche forte. Décris l'ambiance, les points forts, les activités à proximité. Ne tutoie jamais le voyageur, utilise "vous".\n\nContexte :\n${lines}`,
         },
       ],
     });
 
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
     if (!raw) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
-    return NextResponse.json({ description: raw.slice(0, 2500) });
+    return NextResponse.json({ description: truncateToLastSentence(raw, 2500) });
   } catch (err) {
     console.error("[generate-description]", err);
     return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });

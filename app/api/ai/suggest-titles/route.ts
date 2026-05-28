@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         {
           role: "user",
           content:
-            `Génère 3 suggestions de titre pour cette annonce de chalet. Maximum 50 caractères chacun. Accrocheur, met en avant le point fort principal. Format JSON : {"suggestions": ["str", "str", "str"]}\n\nContexte :\n${lines}`,
+            `Génère 3 suggestions de titre pour cette annonce de chalet. CONTRAINTE ABSOLUE : chaque suggestion doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les caractères avant de répondre. Si une suggestion dépasse 50 caractères, raccourcis-la. Accrocheur, met en avant le point fort principal. Format JSON : {"suggestions": ["str", "str", "str"]}\n\nContexte :\n${lines}`,
         },
       ],
     });
