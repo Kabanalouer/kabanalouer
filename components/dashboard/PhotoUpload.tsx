@@ -393,14 +393,14 @@ export default function PhotoUpload({
       <div>
         <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photo de couverture</h3>
         <p className="text-xs text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
-        <div className="h-64">
+        <div className="aspect-video w-full relative">
           {photos[0] ? (
-            renderPhotoTile(photos[0], 0, "Couverture", "h-full")
+            renderPhotoTile(photos[0], 0, "Couverture", "absolute inset-0")
           ) : (
             <button
               type="button"
               onClick={() => canUpload && inputRef.current?.click()}
-              className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+              className={`absolute inset-0 rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
             >
               <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
