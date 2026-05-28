@@ -100,10 +100,11 @@ function SignupForm() {
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Créer un compte</h1>
-        <p className="text-charcoal-500 text-sm">Rejoignez la communauté Kabanalouer</p>
-        {roleParam === "host" && (
-          <p className="text-xs text-charcoal-400 mt-1 mb-6">Vous créez un compte hôte</p>
-        )}
+        <p className="text-charcoal-500 text-sm mb-6">
+          {roleParam === "host"
+            ? "Rejoignez la communauté Kabanalouer en tant qu'hôte"
+            : "Rejoignez la communauté Kabanalouer"}
+        </p>
 
         {/* Role selection — hidden when role is pre-set via URL */}
         {!roleParam && (
@@ -128,7 +129,7 @@ function SignupForm() {
           </div>
         )}
 
-        {role === "host" && (
+        {role === "host" && !roleParam && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 leading-relaxed">
             Un abonnement de <strong>299 $/an</strong> est requis pour les hôtes.
             Vous pourrez vous abonner une fois votre compte créé.
