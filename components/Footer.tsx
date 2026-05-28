@@ -47,7 +47,7 @@ export default function Footer() {
               Hôtes
             </h3>
             <ul className="space-y-3 text-sm">
-              <FooterLink href="/signup" label="Inscrire mon chalet" />
+              <FooterLink href="/devenir-hote" label="Inscrire mon chalet" />
               <FooterLink href="/devenir-hote" label="Pourquoi nous choisir ?" />
               <FooterLink href="/tarifs" label="Tarifs et abonnement" />
               <FooterLink href="/faq-hotes" label="FAQ hôtes" />

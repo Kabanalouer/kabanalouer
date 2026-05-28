@@ -227,7 +227,7 @@ export default async function HomePage() {
             <strong className="text-white font-semibold">299 $/an</strong> par chalet.
           </p>
           <Link
-            href="/signup"
+            href="/devenir-hote"
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-base"
           >
             Inscrire mon chalet →

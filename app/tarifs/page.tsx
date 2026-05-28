@@ -137,7 +137,7 @@ export default async function TarifsPage() {
             </ul>
 
             <Link
-              href="/signup?role=host"
+              href={hasOffer ? "/signup?role=host" : "/devenir-hote"}
               className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-4 rounded-full hover:bg-primary/90 transition-colors text-base"
             >
               {hasOffer ? "Profiter de l'offre gratuite →" : "Inscrire mon chalet →"}

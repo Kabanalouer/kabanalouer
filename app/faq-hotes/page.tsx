@@ -232,7 +232,7 @@ export default function FaqHotesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href="/signup?role=host"
+              href="/devenir-hote"
               className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors"
             >
               Inscrire mon chalet →
