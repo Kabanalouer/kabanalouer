@@ -389,92 +389,83 @@ export default function PhotoUpload({
 
       {saving && <span className="text-xs text-charcoal-400 animate-pulse">Sauvegarde…</span>}
 
-      {/* ── Sections 1 & 2: Cover + thumbnails gallery ───────────────────── */}
+      {/* ── Section 1: Photo de couverture ───────────────────────────────── */}
       <div>
-        <h3 className="text-sm font-semibold text-charcoal-700 mb-0.5">Photo de couverture et 4 miniatures</h3>
-        <p className="text-xs text-charcoal-400 mb-3">Vos 5 premières photos s&apos;afficheront comme ceci sur votre annonce.</p>
+        <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photo de couverture</h3>
+        <p className="text-xs text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
+        <div className="h-64">
+          {photos[0] ? (
+            renderPhotoTile(photos[0], 0, "Couverture", "h-full")
+          ) : (
+            <button
+              type="button"
+              onClick={() => canUpload && inputRef.current?.click()}
+              className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+            >
+              <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-xs text-charcoal-400 font-medium">Couverture</span>
+            </button>
+          )}
+        </div>
+        {photos[0] && (
+          <input
+            type="text"
+            value={photos[0].caption}
+            maxLength={140}
+            placeholder="Légende (optionnel)"
+            onMouseDown={(e) => e.stopPropagation()}
+            onChange={(e) => updateCaption(0, e.target.value)}
+            onBlur={() => savePhotos()}
+            className="mt-1.5 w-full text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
+          />
+        )}
+      </div>
 
-        {/* Gallery layout — mirrors the public listing page */}
-        <div className="flex gap-1.5 h-[340px]">
-          {/* Cover — left ~60% */}
-          <div className="flex-[3] min-w-0">
-            {photos[0] ? (
-              renderPhotoTile(photos[0], 0, "Couverture", "h-full")
-            ) : (
+      {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
+      <div>
+        <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
+        <p className="text-xs text-charcoal-400 mb-3">Ces 4 photos s&apos;affichent à côté de la photo de couverture sur votre fiche.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((photoIdx) => {
+            const photo = photos[photoIdx];
+            const label = `Miniature ${photoIdx}`;
+            if (photo) return renderPhotoTile(photo, photoIdx, label, "aspect-square");
+            return (
               <button
+                key={`empty-${photoIdx}`}
                 type="button"
                 onClick={() => canUpload && inputRef.current?.click()}
-                className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-2 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+                className={`aspect-square w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1.5 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
               >
-                <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                <span className="text-xs text-charcoal-400 font-medium">Couverture</span>
+                <span className="text-[10px] text-charcoal-400">{label}</span>
               </button>
-            )}
-          </div>
-
-          {/* Thumbnails — right ~40%, 2×2 grid */}
-          <div className="flex-[2] min-w-0 grid grid-cols-2 grid-rows-2 gap-1.5">
+            );
+          })}
+        </div>
+        {photos.slice(1, 5).some(Boolean) && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-1.5">
             {[1, 2, 3, 4].map((photoIdx) => {
               const photo = photos[photoIdx];
-              const label = `Miniature ${photoIdx}`;
-              if (photo) return renderPhotoTile(photo, photoIdx, label, "h-full");
+              if (!photo) return <div key={photoIdx} />;
               return (
-                <button
-                  key={`empty-${photoIdx}`}
-                  type="button"
-                  onClick={() => canUpload && inputRef.current?.click()}
-                  className={`h-full w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
-                >
-                  <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="text-[10px] text-charcoal-400">{label}</span>
-                </button>
+                <input
+                  key={photoIdx}
+                  type="text"
+                  value={photo.caption}
+                  maxLength={140}
+                  placeholder={`Légende ${photoIdx}`}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onChange={(e) => updateCaption(photoIdx, e.target.value)}
+                  onBlur={() => savePhotos()}
+                  className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
+                />
               );
             })}
-          </div>
-        </div>
-
-        {/* Captions for the 5 gallery photos */}
-        {(photos[0] || photos.slice(1, 5).some(Boolean)) && (
-          <div className="mt-2 space-y-1.5">
-            {photos[0] && (
-              <div>
-                <input
-                  type="text"
-                  value={photos[0].caption}
-                  maxLength={140}
-                  placeholder="Légende de la couverture (optionnel)"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onChange={(e) => updateCaption(0, e.target.value)}
-                  onBlur={() => savePhotos()}
-                  className="w-full text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
-                />
-              </div>
-            )}
-            {photos.slice(1, 5).length > 0 && (
-              <div className="grid grid-cols-4 gap-3">
-                {[1, 2, 3, 4].map((photoIdx) => {
-                  const photo = photos[photoIdx];
-                  if (!photo) return <div key={photoIdx} />;
-                  return (
-                    <input
-                      key={photoIdx}
-                      type="text"
-                      value={photo.caption}
-                      maxLength={140}
-                      placeholder={`Légende miniature ${photoIdx}`}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onChange={(e) => updateCaption(photoIdx, e.target.value)}
-                      onBlur={() => savePhotos()}
-                      className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
-                    />
-                  );
-                })}
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -486,18 +477,17 @@ export default function PhotoUpload({
         </div>
       )}
 
-      {/* ── Section 3: Other photos ───────────────────────────────────────── */}
+      {/* ── Section 3: Autres photos ─────────────────────────────────────── */}
       {others.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-700 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-charcoal-400 mb-2">Le reste de vos photos s&apos;afficheront dans le carrousel, lorsque le voyageur cliquera sur &laquo;&nbsp;Voir toutes les photos&nbsp;&raquo;.</p>
+          <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
+          <p className="text-xs text-charcoal-400 mb-3">Ajoutez autant de photos que vous voulez pour présenter votre chalet en détail.</p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
               return renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square");
             })}
           </div>
-          {/* Captions for other photos */}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-1.5">
             {others.map((item, j) => {
               const i = j + 5;
