@@ -43,25 +43,33 @@ export async function POST(request: Request) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 250,
+      max_tokens: 512,
       system: SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
           content:
-            `Génère 3 suggestions de titre pour cette annonce de chalet. CONTRAINTE ABSOLUE : chaque suggestion doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les caractères avant de répondre. Si une suggestion dépasse 50 caractères, raccourcis-la. Accrocheur, met en avant le point fort principal. Format JSON : {"suggestions": ["str", "str", "str"]}\n\nContexte :\n${lines}`,
+            `Génère 3 suggestions de titre pour cette annonce de chalet. CONTRAINTE ABSOLUE : chaque suggestion doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les caractères avant de répondre. Si une suggestion dépasse 50 caractères, raccourcis-la. Accrocheur, met en avant le point fort principal. Réponds UNIQUEMENT avec le JSON, sans explication ni texte supplémentaire. Format JSON : {"suggestions": ["str", "str", "str"]}\n\nContexte :\n${lines}`,
         },
       ],
     });
 
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("JSON introuvable dans la réponse.");
-    const parsed = JSON.parse(jsonMatch[0]);
-    const suggestions = (parsed.suggestions as string[]).map((s) => s.slice(0, 50));
+    const jsonMatch = raw.match(/\{[\s\S]*?\}/);
+    if (!jsonMatch) {
+      console.error("[suggest-titles] no JSON in response:", raw);
+      throw new Error(`JSON introuvable dans la réponse : ${raw.slice(0, 200)}`);
+    }
+    const parsed = JSON.parse(jsonMatch[0]) as { suggestions?: unknown };
+    if (!Array.isArray(parsed.suggestions) || parsed.suggestions.length === 0) {
+      console.error("[suggest-titles] unexpected shape:", parsed);
+      throw new Error("Format de réponse inattendu.");
+    }
+    const suggestions = (parsed.suggestions as string[]).map((s) => String(s).slice(0, 50));
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[suggest-titles]", err);
-    return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Erreur inconnue.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
