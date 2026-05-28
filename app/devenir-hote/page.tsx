@@ -2,6 +2,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
+import HostCTA from "@/components/devenir-hote/HostCTA";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const metadata = {
@@ -107,12 +108,10 @@ export default async function DevenirHotePage() {
               Contact direct avec les voyageurs, zéro frais de service.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/signup?role=host"
+              <HostCTA
+                label="Inscrire mon chalet gratuitement →"
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary-dark transition-colors text-lg"
-              >
-                Inscrire mon chalet gratuitement →
-              </Link>
+              />
               <Link
                 href="/chalets"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-4 rounded-full hover:bg-white/20 transition-colors text-base"
@@ -169,12 +168,10 @@ export default async function DevenirHotePage() {
           )}
 
           <div className="mt-8">
-            <Link
-              href="/signup?role=host"
+            <HostCTA
+              label={remaining > 0 ? "Profiter de l'offre gratuite →" : "Commencer à 299 $/an →"}
               className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
-            >
-              {remaining > 0 ? "Profiter de l'offre gratuite →" : "Commencer à 299 $/an →"}
-            </Link>
+            />
           </div>
         </div>
       </section>
@@ -258,12 +255,10 @@ export default async function DevenirHotePage() {
                 ))}
               </ul>
               <div className="mt-10">
-                <Link
-                  href="/signup?role=host"
+                <HostCTA
+                  label="Commencer gratuitement →"
                   className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
-                >
-                  Commencer gratuitement →
-                </Link>
+                />
               </div>
             </div>
 
@@ -297,12 +292,10 @@ export default async function DevenirHotePage() {
                     </div>
                   ))}
                 </div>
-                <Link
-                  href="/signup?role=host"
+                <HostCTA
+                  label="Créer mon annonce"
                   className="mt-6 w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3 rounded-full hover:bg-primary-dark transition-colors text-sm"
-                >
-                  Créer mon annonce
-                </Link>
+                />
                 <p className="text-xs text-charcoal-400 mt-3">Aucune carte requise pour commencer</p>
               </div>
             </div>
@@ -352,12 +345,10 @@ export default async function DevenirHotePage() {
               <> Profitez de l&apos;offre gratuite — il reste seulement <strong className="text-white">{remaining} place{remaining !== 1 ? "s" : ""}</strong>.</>
             )}
           </p>
-          <Link
-            href="/signup?role=host"
+          <HostCTA
+            label="Commencer gratuitement →"
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
-          >
-            Commencer gratuitement →
-          </Link>
+          />
           {remaining > 0 ? (
             <p className="text-white/55 text-sm mt-5">
               Offre gratuite pour les {remaining} première{remaining !== 1 ? "s" : ""} place{remaining !== 1 ? "s" : ""} disponible{remaining !== 1 ? "s" : ""}

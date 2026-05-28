@@ -352,6 +352,7 @@ export default function Navbar() {
                       Messages
                       {unreadCount > 0 && <UnreadDot />}
                     </Link>
+                    <DropdownLink href="/devenir-hote">Inscrire mon chalet</DropdownLink>
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}
@@ -401,6 +402,7 @@ export default function Navbar() {
                 Messages
                 {unreadCount > 0 && <UnreadDot />}
               </Link>
+              <MobileLink href="/devenir-hote">Inscrire mon chalet</MobileLink>
               <button onClick={handleSignOut} className="text-left px-3 py-2 text-sm text-charcoal-400">
                 Déconnexion
               </button>
