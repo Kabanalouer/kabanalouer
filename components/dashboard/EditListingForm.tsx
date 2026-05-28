@@ -105,6 +105,8 @@ const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 const FREE_LAUNCH_LIMIT = 50;
+const TITLE_MAX = 50;
+const DESC_MAX = 2500;
 const PUBLISH_FEATURES = [
   "Annonce visible sur Kabanalouer",
   "Messagerie avec les voyageurs",
@@ -272,8 +274,8 @@ export default function EditListingForm({
   };
 
   const handleTitleChange = (value: string) => {
-    if (value.length > 50) {
-      set("title", value.slice(0, 50));
+    if (value.length > TITLE_MAX) {
+      set("title", value.slice(0, TITLE_MAX));
       if (titleLimitTimer.current) clearTimeout(titleLimitTimer.current);
       setTitleAtLimit(true);
       titleLimitTimer.current = setTimeout(() => setTitleAtLimit(false), 1500);
@@ -283,8 +285,8 @@ export default function EditListingForm({
   };
 
   const handleDescriptionChange = (value: string) => {
-    if (value.length > 2500) {
-      set("description", value.slice(0, 2500));
+    if (value.length > DESC_MAX) {
+      set("description", value.slice(0, DESC_MAX));
       if (descLimitTimer.current) clearTimeout(descLimitTimer.current);
       setDescAtLimit(true);
       descLimitTimer.current = setTimeout(() => setDescAtLimit(false), 1500);
@@ -415,6 +417,7 @@ export default function EditListingForm({
           {/* Section: Titre */}
           {activeSection === "titre" && (
             <SectionShell title="Titre" emoji="✏️">
+              <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {TITLE_MAX} caractères.</p>
               <input
                 type="text"
                 value={form.title}
@@ -423,7 +426,7 @@ export default function EditListingForm({
                 placeholder="ex. Chalet rustique au bord du lac, Laurentides"
               />
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
-                {form.title.length}/50
+                {form.title.length}/{TITLE_MAX}
               </p>
             </SectionShell>
           )}
@@ -431,6 +434,7 @@ export default function EditListingForm({
           {/* Section: Description */}
           {activeSection === "description" && (
             <SectionShell title="Description" emoji="📝">
+              <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {DESC_MAX} caractères.</p>
               <textarea
                 value={form.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
@@ -439,7 +443,7 @@ export default function EditListingForm({
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
               />
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
-                {form.description.length}/2500
+                {form.description.length}/{DESC_MAX}
               </p>
             </SectionShell>
           )}
