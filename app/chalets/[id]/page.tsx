@@ -544,7 +544,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               {canReview && <ReviewForm listingId={listing.id} />}
               {user && !isOwner && !canReview && !hasMessaged && (
                 <p className="text-sm text-charcoal-400 mt-6 px-4 py-3 bg-charcoal-50 rounded-xl">
-                  Contactez l&apos;hôte pour pouvoir laisser un avis après votre séjour.
+                  Contactez le propriétaire pour pouvoir laisser un avis après votre séjour.
                 </p>
               )}
             </div>
@@ -625,7 +625,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                   <ContactForm
                     listingId={listing.id}
                     hostId={host?.id ?? ""}
-                    hostName={host?.name ?? "l'hôte"}
+                    hostName={host?.name ?? "le propriétaire"}
                     hostAvatarUrl={host?.avatar_url ?? null}
                     hostCreatedAt={host?.created_at ?? null}
                     listingTitle={listing.title}
@@ -661,14 +661,14 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                 href="#contact-form"
                 className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
-                Contacter l&apos;hôte
+                Contacter le propriétaire
               </a>
             ) : (
               <a
                 href={`/login?next=/chalets/${listing.id}`}
                 className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
-                Contacter l&apos;hôte
+                Contacter le propriétaire
               </a>
             )}
           </div>

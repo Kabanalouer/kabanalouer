@@ -106,12 +106,12 @@ export default function ConfidentialitePage() {
                   <li>Adresse courriel</li>
                   <li>Prénom et nom</li>
                   <li>Mot de passe (stocké sous forme hachée, jamais en clair)</li>
-                  <li>Rôle (hôte ou voyageur)</li>
+                  <li>Rôle (propriétaire ou voyageur)</li>
                 </ul>
               </div>
 
               <div>
-                <p className="font-semibold text-charcoal-800 mb-2">Données d&apos;annonce (hôtes)</p>
+                <p className="font-semibold text-charcoal-800 mb-2">Données d&apos;annonce (propriétaires)</p>
                 <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>Informations sur le chalet (titre, description, adresse, équipements, tarifs)</li>
                   <li>Photos téléversées</li>
@@ -133,13 +133,13 @@ export default function ConfidentialitePage() {
               <div>
                 <p className="font-semibold text-charcoal-800 mb-2">Données de messagerie</p>
                 <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
-                  <li>Contenu des messages échangés entre hôtes et voyageurs via la plateforme</li>
+                  <li>Contenu des messages échangés entre propriétaires et voyageurs via la plateforme</li>
                   <li>Horodatage des messages</li>
                 </ul>
               </div>
 
               <div>
-                <p className="font-semibold text-charcoal-800 mb-2">Données de paiement (hôtes)</p>
+                <p className="font-semibold text-charcoal-800 mb-2">Données de paiement (propriétaires)</p>
                 <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
                   <li>
                     Nous ne stockons pas vos données de paiement. Les transactions sont traitées
@@ -160,7 +160,7 @@ export default function ConfidentialitePage() {
                 <li>Créer et gérer votre compte utilisateur.</li>
                 <li>Afficher vos annonces aux voyageurs sur la plateforme.</li>
                 <li>
-                  Permettre la communication entre hôtes et voyageurs via la messagerie
+                  Permettre la communication entre propriétaires et voyageurs via la messagerie
                   intégrée.
                 </li>
                 <li>Traiter les paiements d&apos;abonnement via Stripe.</li>
@@ -202,7 +202,7 @@ export default function ConfidentialitePage() {
                   <span className="text-charcoal-500">vercel.com/legal/privacy-policy</span>
                 </LegalItem>
                 <LegalItem term="Stripe">
-                  Traitement des paiements d&apos;abonnement hôte. Stripe est certifié
+                  Traitement des paiements d&apos;abonnement propriétaire. Stripe est certifié
                   PCI-DSS. Politique :{" "}
                   <span className="text-charcoal-500">stripe.com/privacy</span>
                 </LegalItem>

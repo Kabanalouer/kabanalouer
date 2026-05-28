@@ -44,13 +44,13 @@ export default function Footer() {
           {/* Hôtes */}
           <div>
             <h3 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
-              Hôtes
+              Proprios
             </h3>
             <ul className="space-y-3 text-sm">
               <FooterLink href="/devenir-hote" label="Inscrire mon chalet" />
               <FooterLink href="/devenir-hote" label="Pourquoi nous choisir ?" />
               <FooterLink href="/tarifs" label="Tarifs et abonnement" />
-              <FooterLink href="/faq-hotes" label="FAQ hôtes" />
+              <FooterLink href="/faq-hotes" label="FAQ proprios" />
             </ul>
           </div>
 

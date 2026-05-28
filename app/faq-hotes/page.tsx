@@ -4,12 +4,12 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "FAQ Hôtes",
+  title: "FAQ Propriétaires",
   description:
     "Toutes les réponses à vos questions sur la publication de votre chalet sur Kabanalouer.",
   alternates: { canonical: "/faq-hotes" },
   openGraph: {
-    title: "FAQ Hôtes | Kabanalouer",
+    title: "FAQ Propriétaires | Kabanalouer",
     description:
       "Toutes les réponses à vos questions sur la publication de votre chalet sur Kabanalouer.",
     url: "/faq-hotes",
@@ -25,7 +25,7 @@ const faqJsonLd = {
       name: "Comment créer mon annonce ?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Créez un compte hôte gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce ».",
+        text: "Créez un compte propriétaire gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce ».",
       },
     },
     {
@@ -90,7 +90,7 @@ const SECTIONS: FaqSection[] = [
     items: [
       {
         q: "Comment créer mon annonce ?",
-        a: "Créez un compte hôte gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce ».",
+        a: "Créez un compte propriétaire gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce ».",
       },
       {
         q: "Combien de temps faut-il pour créer une annonce ?",
@@ -154,7 +154,7 @@ const SECTIONS: FaqSection[] = [
       },
       {
         q: "L'offre gratuite s'applique-t-elle à tous mes chalets ?",
-        a: "L'offre gratuite s'applique aux 50 premiers abonnements activés sur la plateforme, tous hôtes confondus.",
+        a: "L'offre gratuite s'applique aux 50 premiers abonnements activés sur la plateforme, tous propriétaires confondus.",
       },
     ],
   },
@@ -173,10 +173,10 @@ export default function FaqHotesPage() {
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            Pour les hôtes
+            Pour les proprios
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
-            Questions fréquentes — Hôtes
+            Questions fréquentes — Propriétaires
           </h1>
           <p className="text-lg text-charcoal-500 max-w-lg mx-auto">
             Tout ce que vous devez savoir pour afficher votre chalet sur Kabanalouer

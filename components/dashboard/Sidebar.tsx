@@ -116,7 +116,7 @@ export default function DashboardSidebar({
           </div>
           <div className="min-w-0">
             <div className="text-sm font-medium text-charcoal-800 truncate">{userName}</div>
-            <div className="text-xs text-charcoal-400 capitalize">{userRole === "host" ? "Hôte" : "Voyageur"}</div>
+            <div className="text-xs text-charcoal-400 capitalize">{userRole === "host" ? "Proprio" : "Voyageur"}</div>
           </div>
         </div>
         <button

@@ -588,7 +588,7 @@ export default function EditListingForm({
               ) : (
                 <div className="bg-charcoal-50 rounded-xl px-4 py-4 text-sm text-charcoal-600 leading-relaxed">
                   Votre fiche affichera :{" "}
-                  <span className="font-semibold text-charcoal-800">«&nbsp;Prix sur demande — Contactez l&apos;hôte&nbsp;»</span>
+                  <span className="font-semibold text-charcoal-800">«&nbsp;Prix sur demande — Contactez le propriétaire&nbsp;»</span>
                 </div>
               )}
             </SectionShell>

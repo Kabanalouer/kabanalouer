@@ -77,9 +77,9 @@ export async function submitImportRequest(
   );
 
   const { error } = await admin.from("contact_messages").insert({
-    name: profile?.name ?? user.email ?? "Hôte",
+    name: profile?.name ?? user.email ?? "Propriétaire",
     email: user.email ?? "",
-    subject: "Import annonce - hôte connecté",
+    subject: "Import annonce - proprio connecté",
     message: `Lien de l'annonce : ${listingUrl}`,
   });
 

@@ -26,7 +26,7 @@ export default function ContactButton({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-4 rounded-xl font-bold text-center hover:bg-primary-dark transition-colors"
       >
-        Contacter l&apos;hôte
+        Contacter le propriétaire
       </a>
     );
   }
@@ -48,7 +48,7 @@ export default function ContactButton({
         onClick={() => setOpen(true)}
         className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary-dark transition-colors"
       >
-        Contacter l&apos;hôte
+        Contacter le propriétaire
       </button>
 
       {open && (

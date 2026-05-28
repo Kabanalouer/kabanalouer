@@ -265,7 +265,7 @@ export default function Navbar() {
                     <Avatar profile={profile} size={36} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-charcoal-800 truncate">{profile.name}</p>
-                      <p className="text-xs text-primary font-medium">Hôte</p>
+                      <p className="text-xs text-primary font-medium">Proprio</p>
                     </div>
                   </div>
                   <div className="py-1">
@@ -318,7 +318,7 @@ export default function Navbar() {
                 onClick={exitVoyageurMode}
                 className="hidden sm:flex items-center rounded-full py-2 px-4 text-[15px] font-medium text-charcoal-800 hover:bg-charcoal-100 transition-colors"
               >
-                Mode hôte
+                Mode proprio
               </button>
             )}
 
@@ -358,7 +358,7 @@ export default function Navbar() {
                         onClick={exitVoyageurMode}
                         className="sm:hidden w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                       >
-                        Mode hôte
+                        Mode proprio
                       </button>
                     )}
                   </div>
@@ -389,11 +389,11 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="md:hidden border-t border-[#ebebeb] px-4 sm:px-6 py-4 flex flex-col gap-1 pb-5">
             <MobileLink href="/chalets">Parcourir les chalets</MobileLink>
-            <MobileLink href="/devenir-hote">Devenir hôte</MobileLink>
+            <MobileLink href="/devenir-hote">Devenir proprio</MobileLink>
             <div className="border-t border-[#ebebeb] pt-3 mt-2 flex flex-col gap-1">
               {isHost && voyageurMode && (
                 <button onClick={exitVoyageurMode} className="text-left px-3 py-2 text-sm font-medium text-primary">
-                  Mode hôte
+                  Mode proprio
                 </button>
               )}
               <MobileLink href="/dashboard/profile">Mon profil</MobileLink>
@@ -460,7 +460,7 @@ export default function Navbar() {
           <div className="md:hidden border-t border-[#ebebeb] py-4 flex flex-col gap-1 pb-5">
             <MobileLink href="/chalets">Parcourir les chalets</MobileLink>
             <MobileLink href="/comment-ca-marche">Comment ça marche</MobileLink>
-            <MobileLink href="/devenir-hote">Devenir hôte</MobileLink>
+            <MobileLink href="/devenir-hote">Devenir proprio</MobileLink>
             <div className="border-t border-[#ebebeb] pt-3 mt-2 flex flex-col gap-2">
               <MobileLink href="/devenir-hote">Inscrire mon chalet</MobileLink>
               <Link

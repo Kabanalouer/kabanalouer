@@ -102,7 +102,7 @@ function SignupForm() {
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Créer un compte</h1>
         <p className="text-charcoal-500 text-sm mb-6">
           {roleParam === "host"
-            ? "Rejoignez la communauté Kabanalouer en tant qu'hôte"
+            ? "Rejoignez la communauté Kabanalouer en tant que propriétaire"
             : "Rejoignez la communauté Kabanalouer"}
         </p>
 
@@ -122,7 +122,7 @@ function SignupForm() {
                 selected={role === "host"}
                 onClick={() => setRole("host")}
                 icon={<HomeIcon />}
-                title="Hôte"
+                title="Proprio"
                 subtitle="Je loue mon chalet"
               />
             </div>
@@ -131,7 +131,7 @@ function SignupForm() {
 
         {role === "host" && !roleParam && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 leading-relaxed">
-            Un abonnement de <strong>299 $/an</strong> est requis pour les hôtes.
+            Un abonnement de <strong>299 $/an</strong> est requis pour les propriétaires.
             Vous pourrez vous abonner une fois votre compte créé.
           </div>
         )}

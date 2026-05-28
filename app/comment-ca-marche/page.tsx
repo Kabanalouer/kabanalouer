@@ -36,7 +36,7 @@ const faqJsonLd = {
       name: "Comment contacter un propriétaire ?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Cliquez sur « Contacter l'hôte » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message.",
+        text: "Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message.",
       },
     },
     {
@@ -134,7 +134,7 @@ export default function CommentCaMarchePage() {
             <WhyCard
               icon={<ShieldCheckIcon />}
               title="Chalets québécois vérifiés"
-              description="Tous nos hôtes sont vérifiés. Des chalets authentiques partout au Québec, pour tous les budgets et toutes les saisons."
+              description="Tous nos propriétaires sont vérifiés. Des chalets authentiques partout au Québec, pour tous les budgets et toutes les saisons."
             />
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function CommentCaMarchePage() {
             />
             <FaqItem
               question="Comment contacter un propriétaire ?"
-              answer="Cliquez sur « Contacter l'hôte » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message."
+              answer="Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message."
             />
             <FaqItem
               question="Est-ce que je dois payer pour créer un compte ?"

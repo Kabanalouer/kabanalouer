@@ -194,7 +194,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
 
       {blocked.length === 0 && (
         <p className="text-xs text-primary mt-3 font-medium">
-          Ce chalet est disponible pour toutes les dates — contactez l&apos;hôte pour confirmer.
+          Ce chalet est disponible pour toutes les dates — contactez le propriétaire pour confirmer.
         </p>
       )}
     </div>

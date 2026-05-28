@@ -72,7 +72,7 @@ export default async function ListingsPage({
           </div>
           <h3 className="font-semibold text-charcoal-800 mb-2">Aucune annonce pour l&apos;instant</h3>
           <p className="text-charcoal-400 text-sm mb-6 max-w-sm mx-auto">
-            Créez votre première annonce et rejoignez notre communauté d&apos;hôtes !
+            Créez votre première annonce et rejoignez notre communauté de propriétaires !
           </p>
           <Link
             href="/dashboard/listings/new"

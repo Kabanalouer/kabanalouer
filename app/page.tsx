@@ -201,7 +201,7 @@ export default async function HomePage() {
             <WhyCard
               icon={<IconShieldCheck />}
               title="Propriétaires vérifiés"
-              description="Tous nos hôtes détiennent un numéro CITQ valide. Profils complets et photos authentiques pour vous guider."
+              description="Tous nos propriétaires détiennent un numéro CITQ valide. Profils complets et photos authentiques pour vous guider."
             />
             <WhyCard
               icon={<IconPercent />}
@@ -233,7 +233,7 @@ export default async function HomePage() {
             Inscrire mon chalet →
           </Link>
           <p className="text-white/50 text-xs mt-5 tracking-wide">
-            Offre gratuite pour les 50 premiers hôtes · Aucune carte requise
+            Offre gratuite pour les 50 premiers propriétaires · Aucune carte requise
           </p>
         </div>
       </section>

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "Je suis voyageur, comment contacter un propriétaire ?",
-    a: "Utilisez la messagerie intégrée sur la fiche du chalet. Créez un compte gratuit pour envoyer un message directement à l'hôte.",
+    a: "Utilisez la messagerie intégrée sur la fiche du chalet. Créez un compte gratuit pour envoyer un message directement au propriétaire.",
   },
   {
     q: "J'ai un problème avec mon annonce ?",

@@ -19,9 +19,9 @@ const TOC = [
   { id: "definitions", label: "1. Définitions" },
   { id: "service", label: "2. Description du service" },
   { id: "inscription", label: "3. Inscription et comptes" },
-  { id: "hotes", label: "4. Obligations des hôtes" },
+  { id: "hotes", label: "4. Obligations des propriétaires" },
   { id: "voyageurs", label: "5. Obligations des voyageurs" },
-  { id: "abonnement", label: "6. Abonnement hôte" },
+  { id: "abonnement", label: "6. Abonnement propriétaire" },
   { id: "contenu-interdit", label: "7. Contenu interdit" },
   { id: "propriete-intellectuelle", label: "8. Propriété intellectuelle" },
   { id: "responsabilite", label: "9. Limitation de responsabilité" },
@@ -83,19 +83,19 @@ export default function ConditionsPage() {
                 Le site web Kabanalouer et ses fonctionnalités, accessible à
                 kabanalouer.vercel.app.
               </LegalItem>
-              <LegalItem term="Hôte">
+              <LegalItem term="Propriétaire">
                 Tout utilisateur qui crée une annonce de location de chalet sur la Plateforme.
               </LegalItem>
               <LegalItem term="Voyageur">
-                Tout utilisateur qui consulte les annonces et contacte des hôtes via la
+                Tout utilisateur qui consulte les annonces et contacte des propriétaires via la
                 Plateforme.
               </LegalItem>
               <LegalItem term="Annonce">
-                L&apos;ensemble des informations publiées par un Hôte pour présenter son chalet
+                L&apos;ensemble des informations publiées par un Propriétaire pour présenter son chalet
                 (description, photos, tarifs, disponibilités).
               </LegalItem>
               <LegalItem term="Abonnement">
-                Le forfait annuel souscrit par un Hôte pour publier une Annonce sur la
+                Le forfait annuel souscrit par un Propriétaire pour publier une Annonce sur la
                 Plateforme.
               </LegalItem>
             </ul>
@@ -106,11 +106,11 @@ export default function ConditionsPage() {
             <H2>2. Description du service</H2>
             <p className="text-sm leading-relaxed">
               Kabanalouer est une plateforme de mise en relation entre propriétaires de chalets
-              (Hôtes) et locataires potentiels (Voyageurs) au Québec. Kabanalouer facilite la
+              (Propriétaires) et locataires potentiels (Voyageurs) au Québec. Kabanalouer facilite la
               publication d&apos;annonces et la communication entre utilisateurs, mais{" "}
               <strong>n&apos;est pas partie aux contrats de location</strong> conclus entre les
-              Hôtes et les Voyageurs. Les transactions financières se font directement entre
-              Hôtes et Voyageurs, sans que Kabanalouer n&apos;intervienne comme intermédiaire de
+              Propriétaires et les Voyageurs. Les transactions financières se font directement entre
+              Propriétaires et Voyageurs, sans que Kabanalouer n&apos;intervienne comme intermédiaire de
               paiement dans les transactions locatives.
             </p>
           </section>
@@ -138,9 +138,9 @@ export default function ConditionsPage() {
 
           {/* 4 */}
           <section id="hotes" className="scroll-mt-24">
-            <H2>4. Obligations des hôtes</H2>
+            <H2>4. Obligations des propriétaires</H2>
             <div className="space-y-3 text-sm leading-relaxed">
-              <p>En tant qu&apos;Hôte, vous vous engagez à :</p>
+              <p>En tant que Propriétaire, vous vous engagez à :</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>
                   <strong>Détenir un numéro CITQ valide</strong> (6 chiffres) conformément
@@ -182,14 +182,14 @@ export default function ConditionsPage() {
                   logement.
                 </li>
                 <li>
-                  Respecter les règles de la maison communiquées par l&apos;Hôte lors de
+                  Respecter les règles de la maison communiquées par le Propriétaire lors de
                   votre séjour.
                 </li>
                 <li>
                   Fournir des informations véridiques dans vos demandes de contact.
                 </li>
                 <li>
-                  Ne pas harceler ou importuner les Hôtes.
+                  Ne pas harceler ou importuner les Propriétaires.
                 </li>
               </ul>
             </div>
@@ -197,12 +197,12 @@ export default function ConditionsPage() {
 
           {/* 6 */}
           <section id="abonnement" className="scroll-mt-24">
-            <H2>6. Abonnement hôte</H2>
+            <H2>6. Abonnement propriétaire</H2>
             <div className="space-y-3 text-sm leading-relaxed">
               <p>
                 La publication d&apos;une Annonce requiert la souscription à un abonnement annuel
                 au prix de <strong>299 $ CAD par chalet</strong>, sauf dans le cadre de
-                l&apos;offre de lancement accordée aux premiers hôtes.
+                l&apos;offre de lancement accordée aux premiers propriétaires.
               </p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>
@@ -284,7 +284,7 @@ export default function ConditionsPage() {
             <div className="space-y-3 text-sm leading-relaxed">
               <p>
                 Kabanalouer est une <strong>plateforme de mise en relation</strong> et
-                n&apos;est pas partie aux contrats conclus entre Hôtes et Voyageurs.
+                n&apos;est pas partie aux contrats conclus entre Propriétaires et Voyageurs.
                 Kabanalouer ne peut être tenu responsable :
               </p>
               <ul className="list-disc list-inside space-y-2 pl-2">
@@ -293,7 +293,7 @@ export default function ConditionsPage() {
                   dommages, annulation, désaccord sur l&apos;état du logement).
                 </li>
                 <li>
-                  De l&apos;exactitude des informations publiées par les Hôtes.
+                  De l&apos;exactitude des informations publiées par les Propriétaires.
                 </li>
                 <li>
                   Des actes ou omissions des utilisateurs sur la Plateforme.

@@ -12,9 +12,9 @@ function seniority(createdAt: string): string {
     (new Date().getFullYear() - new Date(createdAt).getFullYear()) * 12 +
     (new Date().getMonth() - new Date(createdAt).getMonth());
   if (months < 1) return "Nouveau";
-  if (months < 12) return `${months} mois en tant qu'hôte`;
+  if (months < 12) return `${months} mois en tant que propriétaire`;
   const y = Math.floor(months / 12);
-  return `${y} an${y > 1 ? "s" : ""} en tant qu'hôte`;
+  return `${y} an${y > 1 ? "s" : ""} en tant que propriétaire`;
 }
 
 interface Props {
@@ -35,7 +35,7 @@ export default function HostCard({
 }: Props) {
   return (
     <div>
-      <h2 className="font-semibold text-charcoal-800 mb-5">Faites connaissance avec votre hôte</h2>
+      <h2 className="font-semibold text-charcoal-800 mb-5">Faites connaissance avec votre propriétaire</h2>
 
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Left: host card ── */}
@@ -57,9 +57,9 @@ export default function HostCard({
           </div>
 
           <p className="font-bold text-xl text-charcoal-800 leading-tight">
-            {host.name?.split(" ")[0] ?? "Hôte"}
+            {host.name?.split(" ")[0] ?? "Proprio"}
           </p>
-          <p className="text-sm text-charcoal-400 mb-5">Hôte</p>
+          <p className="text-sm text-charcoal-400 mb-5">Proprio</p>
 
           {/* Stats */}
           <div className="w-full border-t border-[#ebebeb] pt-4 space-y-2.5">
@@ -86,7 +86,7 @@ export default function HostCard({
 
         {/* ── Right: info + contact ── */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-charcoal-800 mb-4">Informations sur l&apos;hôte</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-4">Informations sur le propriétaire</h3>
           <div className="space-y-3 mb-6 text-sm text-charcoal-700">
             {responseRate !== null && (
               <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function HostCard({
             <ContactButton
               listingId={listingId}
               hostId={host.id}
-              hostName={host.name ?? "l'hôte"}
+              hostName={host.name ?? "le propriétaire"}
               listingTitle={listingTitle}
               currentUserId={currentUserId}
             />

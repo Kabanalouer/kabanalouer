@@ -195,7 +195,7 @@ export default function ContactForm({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-3.5 rounded-full font-bold text-center hover:bg-primary/90 transition-colors text-sm"
       >
-        Contacter l&apos;hôte
+        Contacter le propriétaire
       </Link>
     );
   }
@@ -211,7 +211,7 @@ export default function ContactForm({
         </div>
         <p className="font-semibold text-charcoal-800 text-sm mb-1">Demande envoyée !</p>
         <p className="text-xs text-charcoal-400">
-          Votre demande a été envoyée à l&apos;hôte. Il vous répondra directement par message.
+          Votre demande a été envoyée au propriétaire. Il vous répondra directement par message.
         </p>
         <Link href={`/messages?listing=${listingId}&with=${hostId}`} className="mt-3 block text-xs text-primary hover:underline">
           Voir la messagerie →
@@ -222,7 +222,7 @@ export default function ContactForm({
 
   // ── Form ───────────────────────────────────────────────────────────────────
   // hostName is "l'hôte" when the host has no name set in their profile
-  const resolvedName = hostName && hostName !== "l'hôte" ? hostName : null;
+  const resolvedName = hostName && hostName !== "le propriétaire" ? hostName : null;
   const hostFirstName = resolvedName ? resolvedName.split(" ")[0] : null;
   const hostInitials = hostFirstName ? hostFirstName[0].toUpperCase() : "H";
 
@@ -232,20 +232,20 @@ export default function ContactForm({
       <div className="flex items-center gap-3 pb-1">
         <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
           {hostAvatarUrl ? (
-            <img src={hostAvatarUrl} alt={hostFirstName ?? "Hôte"} className="w-full h-full object-cover" />
+            <img src={hostAvatarUrl} alt={hostFirstName ?? "Propriétaire"} className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-bold text-lg">{hostInitials}</span>
           )}
         </div>
         <div>
           <p className="font-semibold text-charcoal-800 text-sm">
-            {hostFirstName ? `Hôte : ${hostFirstName}` : "Propriétaire"}
+            {hostFirstName ? `Propriétaire : ${hostFirstName}` : "Propriétaire"}
           </p>
           {hostCreatedAt && (() => {
             const duration = hostSinceDuration(hostCreatedAt);
             return (
               <p className="text-sm text-charcoal-400 mt-0.5">
-                {duration === "Nouveau" ? "Nouveau" : `Hôte depuis ${duration}`}
+                {duration === "Nouveau" ? "Nouveau" : `Propriétaire depuis ${duration}`}
               </p>
             );
           })()}

@@ -113,7 +113,7 @@ export default function SubscriptionPage() {
           <div className="p-6 border-b border-[#ebebeb]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-charcoal-800 text-lg">Abonnement hôte</p>
+                <p className="font-bold text-charcoal-800 text-lg">Abonnement propriétaire</p>
                 <p className="text-charcoal-500 text-sm mt-1">
                   Publiez un nombre illimité de chalets sur Kabanalouer
                 </p>

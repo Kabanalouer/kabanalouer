@@ -7,12 +7,12 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Tarifs et abonnement",
   description:
-    "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers hôtes.",
+    "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.",
   alternates: { canonical: "/tarifs" },
   openGraph: {
     title: "Tarifs et abonnement | Kabanalouer",
     description:
-      "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers hôtes.",
+      "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.",
     url: "/tarifs",
   },
 };

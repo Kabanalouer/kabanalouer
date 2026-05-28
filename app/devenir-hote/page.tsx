@@ -6,12 +6,12 @@ import HostCTA from "@/components/devenir-hote/HostCTA";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const metadata = {
-  title: "Affichez votre chalet sur Kabanalouer | 50 premiers hôtes gratuits",
+  title: "Affichez votre chalet sur Kabanalouer | 50 premiers propriétaires gratuits",
   description:
-    "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299$/an. Offre gratuite pour les 50 premiers hôtes.",
+    "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299$/an. Offre gratuite pour les 50 premiers propriétaires.",
   alternates: { canonical: "/devenir-hote" },
   openGraph: {
-    title: "Affichez votre chalet sur Kabanalouer | 50 premiers hôtes gratuits",
+    title: "Affichez votre chalet sur Kabanalouer | 50 premiers propriétaires gratuits",
     description:
       "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299$/an.",
     url: "/devenir-hote",
@@ -26,7 +26,7 @@ export const metadata = {
   },
   twitter: {
     title: "Affichez votre chalet sur Kabanalouer",
-    description: "Zéro commission, contact direct avec les voyageurs. Offre gratuite pour les 50 premiers hôtes.",
+    description: "Zéro commission, contact direct avec les voyageurs. Offre gratuite pour les 50 premiers propriétaires.",
     images: ["https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1200&q=80"],
   },
 };
@@ -59,7 +59,7 @@ const organizationJsonLd = {
   },
   offers: {
     "@type": "Offer",
-    name: "Abonnement annuel hôte",
+    name: "Abonnement annuel propriétaire",
     price: "299",
     priceCurrency: "CAD",
     description: "Abonnement annuel pour les propriétaires de chalets — tout inclus, aucune commission.",
@@ -143,7 +143,7 @@ export default async function DevenirHotePage() {
           </h2>
           <p className="text-charcoal-500 text-sm mb-8 max-w-sm mx-auto">
             {remaining > 0
-              ? `Après les ${FREE_LAUNCH_LIMIT} premiers hôtes, l'abonnement sera de 299 $/an par chalet.`
+              ? `Après les ${FREE_LAUNCH_LIMIT} premiers propriétaires, l'abonnement sera de 299 $/an par chalet.`
               : "L'abonnement annuel est de 299 $/an par chalet."}
           </p>
 
@@ -267,7 +267,7 @@ export default async function DevenirHotePage() {
               <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8 text-center">
                 {remaining > 0 ? (
                   <>
-                    <p className="text-sm text-charcoal-400 mb-1">Pour les {FREE_LAUNCH_LIMIT} premiers hôtes</p>
+                    <p className="text-sm text-charcoal-400 mb-1">Pour les {FREE_LAUNCH_LIMIT} premiers propriétaires</p>
                     <div className="flex items-end justify-center gap-1 mb-1">
                       <span className="text-5xl font-bold text-primary">0 $</span>
                       <span className="text-charcoal-400 mb-1.5">/an</span>
