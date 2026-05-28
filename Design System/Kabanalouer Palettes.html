@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Kabanalouer — 5 palettes alternatives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #ebebeb; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #222; -webkit-font-smoothing: antialiased; }
+  .header {
+    padding: 32px 40px 16px;
+    background: #fff;
+    border-bottom: 1px solid #ebebeb;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+    font-size: 28px; letter-spacing: -0.025em; color: #222; margin: 0 0 6px;
+  }
+  .header p {
+    font-size: 14px; color: #717171; margin: 0;
+  }
+  .grid {
+    padding: 24px 40px 60px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .demo {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #ebebeb;
+    overflow: hidden;
+    display: grid; grid-template-columns: 260px 1fr;
+  }
+  .demo .info {
+    padding: 28px 28px;
+    background: #fafafa;
+    border-right: 1px solid #ebebeb;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .demo .num {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #717171;
+  }
+  .demo .name {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800;
+    line-height: 1; letter-spacing: -0.03em;
+  }
+  .demo .swatches { display: flex; gap: 6px; }
+  .demo .sw {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+    display: flex; align-items: flex-end; padding: 4px;
+    font-family: 'Plus Jakarta Sans', monospace; font-size: 8px;
+    color: rgba(255,255,255,0.85);
+  }
+  .demo .sw.light { color: rgba(0,0,0,0.55); }
+  .demo .desc {
+    font-size: 13px; color: #717171; line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .demo .desc b { color: #222; font-weight: 600; }
+  .demo .pro {
+    font-size: 12px; color: #008489; font-weight: 600;
+  }
+  .demo .con {
+    font-size: 12px; color: #b44628; font-weight: 600;
+  }
+
+  /* Mock browser */
+  .demo .mock {
+    padding: 16px 18px;
+    background: #fff;
+    overflow: hidden;
+  }
+  .mock .nav {
+    display: flex; align-items: center; gap: 14px; padding: 0 0 12px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .mock .logo {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+    font-size: 18px; letter-spacing: -0.03em;
+    line-height: 1; flex-shrink: 0;
+  }
+  .mock .logo img { height: 24px; width: auto; }
+  .mock .search {
+    flex: 1; display: flex; align-items: center;
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 999px;
+    padding: 4px 4px 4px 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    font-size: 11px; color: #222;
+    gap: 12px;
+  }
+  .mock .search span { font-weight: 500; }
+  .mock .search .sep { width: 1px; height: 14px; background: #ebebeb; }
+  .mock .search .mute { color: #717171; }
+  .mock .search .btn {
+    width: 24px; height: 24px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 4px; color: #fff; font-size: 11px;
+  }
+  .mock .nav .cta {
+    padding: 8px 14px; border-radius: 999px;
+    color: #fff; font-size: 11px; font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .mock .breadcrumb {
+    margin: 16px 0 6px;
+    font-size: 11px; color: #717171;
+  }
+  .mock h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
+    font-size: 18px; letter-spacing: -0.025em; color: #222; margin: 0 0 4px;
+  }
+  .mock .meta {
+    font-size: 10px; color: #717171; margin-bottom: 10px;
+  }
+  .mock .gallery {
+    display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr;
+    gap: 4px; border-radius: 10px; overflow: hidden;
+    aspect-ratio: 2.5/1;
+  }
+  .mock .gallery .big { grid-row: span 2; background-size: cover; background-position: center; }
+  .mock .gallery .sm { background-size: cover; background-position: center; }
+
+  .mock .booking-row {
+    margin-top: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .mock .booking-row .feature {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: #484848;
+  }
+  .mock .booking-row .feature b {
+    color: #222; font-weight: 600; font-size: 11px;
+  }
+  .mock .booking-row .icon {
+    width: 18px; height: 18px;
+  }
+  .mock .panel {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .mock .panel .price {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
+    font-size: 16px; letter-spacing: -0.02em;
+  }
+  .mock .panel .price span { font-size: 11px; font-weight: 400; color: #717171; }
+  .mock .panel .contact {
+    margin-top: 8px;
+    padding: 8px 14px; border-radius: 999px;
+    color: #fff; font-size: 11px; font-weight: 600;
+    text-align: center;
+  }
+  .mock .panel .note {
+    margin-top: 6px;
+    font-size: 9px; color: #717171; text-align: center;
+  }
+
+  .row-bottom {
+    display: grid; grid-template-columns: 1.6fr 1fr;
+    gap: 16px; margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>5 directions de palette pour Kabanalouer</h1>
+  <p>Comparées sur votre vraie page « Chalet Authentik 50 ». Coral en référence en haut, 5 alternatives « chalet + nature » en-dessous.</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const PHOTO_LAKE = 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800&q=70&auto=format&fit=crop';
+const PHOTO_FOREST = 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=400&q=70&auto=format&fit=crop';
+const PHOTO_INTERIOR = 'https://images.unsplash.com/photo-1518602164578-cd0074062767?w=400&q=70&auto=format&fit=crop';
+const PHOTO_POOL = 'https://images.unsplash.com/photo-1564013434775-f71db0030976?w=400&q=70&auto=format&fit=crop';
+const PHOTO_GYM = 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400&q=70&auto=format&fit=crop';
+const PHOTO_KAYAK = 'https://images.unsplash.com/photo-1604762524889-3e2fcc145683?w=400&q=70&auto=format&fit=crop';
+
+const VARIANTS = [
+  {
+    num: '00',
+    name: 'Coral',
+    cabin: '../assets/logo-mark.png',
+    primary: '#f04e45',
+    primaryHover: '#d63a32',
+    palePrimary: '#fef2f1',
+    pale: '#fbdfdc',
+    swatches: ['#f04e45', '#fbdfdc', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Votre direction actuelle.</b> Énergique, marketplace-moderne, mais perçu proche d\'Airbnb par certains utilisateurs.',
+    pro: '✓ Énergie immédiate',
+    con: '✗ Cliché marketplace (Airbnb)',
+    isCurrent: true,
+  },
+  {
+    num: '01',
+    name: 'Forêt',
+    cabin: '../scraps/cabin-forest.png',
+    primary: '#2d5538',
+    primaryHover: '#1f3e29',
+    palePrimary: '#eef2ec',
+    pale: '#e8f0e8',
+    swatches: ['#2d5538', '#e8f0e8', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Le vert classique du chalet.</b> Pin, conifère, forêt profonde. Lit immédiatement « nature ». Très utilisé par Tentree, Patagonia, Mountain Hardwear.',
+    pro: '✓ Immédiatement nature',
+    con: '⚠ Vert chalet déjà commun',
+  },
+  {
+    num: '02',
+    name: 'Mousse',
+    cabin: '../scraps/cabin-moss.png',
+    primary: '#636e40',
+    primaryHover: '#4d5631',
+    palePrimary: '#eff1e3',
+    pale: '#e8ebdc',
+    swatches: ['#636e40', '#e8ebdc', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Vert mousse / sauge moderne.</b> Plus organique, plus tendance que le vert forêt classique. Vibe Aesop, Roman Health, marque outdoor moderne.',
+    pro: '✓ Moderne, matériel, distinctif',
+    con: '⚠ Moins d’énergie que le coral',
+  },
+  {
+    num: '03',
+    name: 'Émeraude',
+    cabin: '../scraps/cabin-emerald.png',
+    primary: '#1d5040',
+    primaryHover: '#143828',
+    palePrimary: '#daeae2',
+    pale: '#cae0d2',
+    swatches: ['#1d5040', '#cae0d2', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Vert émeraude profond.</b> Plus saturé que forêt, jewel-tone. Évoque les conifères mouillés, la mousse après la pluie. Premium et riche.',
+    pro: '✓ Premium, riche, jewel-tone',
+    con: '⚠ Plus formel que forêt',
+  },
+  {
+    num: '04',
+    name: 'Olive',
+    cabin: '../scraps/cabin-olive.png',
+    primary: '#5e6936',
+    primaryHover: '#454d27',
+    palePrimary: '#e9ebd5',
+    pale: '#dde0c4',
+    swatches: ['#5e6936', '#dde0c4', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Vert olive / utility.</b> Plus jaune que mousse, plus terreux. Vibe gear outdoor (Filson, Carhartt). Plus « cabin de chasse » que « spa-resort ».',
+    pro: '✓ Robuste, outdoor authentique',
+    con: '⚠ Moins luxe, moins féminin',
+  },
+  {
+    num: '05',
+    name: 'Eucalyptus',
+    cabin: '../scraps/cabin-eucalyptus.png',
+    primary: '#5a8378',
+    primaryHover: '#3f6359',
+    palePrimary: '#e1ebe6',
+    pale: '#d2e0d8',
+    swatches: ['#5a8378', '#d2e0d8', '#222222', '#717171', '#f7f7f7'],
+    desc: '<b>Vert-bleu dusty.</b> Calme, wellness, spa. Tendance contemporaine (Goop, Quince). Mélange végétation et eau — chalet au bord du lac en hiver.',
+    pro: '✓ Wellness moderne, distinctif',
+    con: '⚠ Plus pastel, moins d’énergie CTA',
+  },
+];
+
+const grid = document.getElementById('grid');
+for (const v of VARIANTS) {
+  const el = document.createElement('div');
+  el.className = 'demo';
+  if (v.isCurrent) el.style.opacity = '0.85';
+  el.innerHTML = `
+    <div class="info">
+      <span class="num">${v.num} ${v.isCurrent ? '— Référence (actuel)' : ''}</span>
+      <div class="name" style="color: ${v.primary};">${v.name}</div>
+      <div class="swatches">
+        ${v.swatches.map((s, i) => {
+          const light = (i === 1 || i === 4);
+          return `<div class="sw ${light ? 'light' : ''}" style="background:${s};">${s}</div>`;
+        }).join('')}
+      </div>
+      <div class="desc">${v.desc}</div>
+      <div class="pro">${v.pro}</div>
+      <div class="con">${v.con}</div>
+    </div>
+    <div class="mock">
+      <div class="nav">
+        <div class="logo" style="color: ${v.primary};">
+          <img src="${v.cabin}" alt="" />
+          kabanalouer
+        </div>
+        <div class="search">
+          <span>Destination</span>
+          <span class="sep"></span>
+          <span class="mute">Dates</span>
+          <span class="sep"></span>
+          <span class="mute">Voyageurs</span>
+          <span class="btn" style="background: ${v.primary};">🔍</span>
+        </div>
+        <span style="font-size:11px; color:#222;">Connexion</span>
+        <span class="cta" style="background: ${v.primary};">Inscrire mon chalet</span>
+      </div>
+      <div class="breadcrumb">Chalets › Laurentides › Chalet Authentik 50</div>
+      <h2>Chalet Authentik 50 | Spa, piscine et accès au lac</h2>
+      <div class="meta">Mille-Isles, Laurentides · 16 personnes · 4 chambres · 9 lits · 3 salles de bain</div>
+      <div class="gallery">
+        <div class="big" style="background-image: url('${PHOTO_LAKE}');"></div>
+        <div class="sm" style="background-image: url('${PHOTO_KAYAK}');"></div>
+        <div class="sm" style="background-image: url('${PHOTO_POOL}');"></div>
+        <div class="sm" style="background-image: url('${PHOTO_INTERIOR}');"></div>
+        <div class="sm" style="background-image: url('${PHOTO_GYM}');"></div>
+      </div>
+      <div class="row-bottom">
+        <div>
+          <div class="booking-row" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 12px;">
+            <div class="feature">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="${v.primary}" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <b>Bord de l'eau</b> — Accès direct au bord de l'eau depuis le chalet
+            </div>
+            <div class="feature">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="${v.primary}" stroke-width="2"><path d="M3 21h18M5 21V11l7-7 7 7v10M9 21V14h6v7"/></svg>
+              <b>Situé sur un resort</b> — Chalet avec services
+            </div>
+            <div class="feature">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="${v.primary}" stroke-width="2"><path d="M12 2v20M5 12h14"/></svg>
+              <b>Spa</b> — Spa privé sur la terrasse
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="price">240 $ <span>/ nuit</span></div>
+          <div class="contact" style="background: ${v.primary};">Contacter l'hôte</div>
+          <div class="note">Contact direct · Zéro frais de service</div>
+        </div>
+      </div>
+    </div>
+  `;
+  grid.appendChild(el);
+}
+</script>
+</body>
+</html>

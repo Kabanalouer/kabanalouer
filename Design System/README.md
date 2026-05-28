@@ -221,10 +221,13 @@ Trois variantes :
 ├── ICONOGRAPHY.md             ← règles d'iconographie · Lucide via CDN
 ├── colors_and_type.css        ← TOKENS · couleurs, type, espacement, radii, ombres, motion
 ├── assets/
-│   ├── logo-mark.svg          ← silhouette chalet seul (favicon, compact)
-│   ├── logo-wordmark.svg      ← mark + « kabanalouer » sur fond clair
-│   ├── logo-wordmark-light.svg ← version sur fond foncé
-│   └── favicon.svg            ← 80×80 avec arrière-plan birch
+│   ├── logo-mark.png          ← cabin coral plein avec détails coral pâle + blanc (raster, 1689×1920)
+│   ├── logo-mark.svg          ← wrapper SVG autour de logo-mark.png (back-compat)
+│   ├── logo-wordmark.svg      ← cabin + « kabanalouer » (Plus Jakarta 700) pour fond clair
+│   ├── logo-wordmark-light.svg ← version texte blanc pour fond foncé
+│   ├── favicon.png            ← 64×64 raster pour usage web
+│   ├── favicon-32.png         ← 32×32 pour tiny rendering
+│   └── favicon.svg            ← wrapper SVG du favicon
 ├── fonts/
 │   └── README.md              ← stratégie fontes (Google Fonts CDN pour l'instant)
 ├── preview/                   ← 25 cards du Design System tab

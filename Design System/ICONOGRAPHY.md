@@ -52,7 +52,9 @@ import { Home, MapPin, Star, Heart } from 'lucide-react';
 
 ### Logo et marque
 
-Le **mark Kabanalouer** (silhouette de chalet + petite porte orange) est dans `assets/logo-mark.svg`. Le **wordmark complet** est dans `assets/logo-wordmark.svg` (foncé) et `assets/logo-wordmark-light.svg` (clair, sur fond sombre).
+Le **mark Kabanalouer** est un chalet en rondins illustré, corps en coral plein (`#f04e45`) avec rondins, porte et fenêtre en blanc, et toit (X-beams, cheminée, fumée) en coral pâle (`#fbdfdc`). Fichier raster `assets/logo-mark.png` (1689×1920). Un wrapper SVG `assets/logo-mark.svg` permet l'usage là où un format vectoriel est attendu.
+
+Le **wordmark complet** est dans `assets/logo-wordmark.svg` (texte coral, pour fond clair) et `assets/logo-wordmark-light.svg` (texte blanc, pour fond foncé). Les deux embarquent le mark PNG via `<image href="logo-mark.png">` — gardez le PNG à côté du SVG quand vous les déployez.
 
 **Règle d'espacement clear-space :** marge minimale autour du logo = hauteur du « o » dans « kabanalouer » (~12 px à taille 80).
 

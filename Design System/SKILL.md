@@ -46,7 +46,7 @@ Ask the user what they want to build (landing page, slide deck, email, mobile mo
 | Need | Path |
 |---|---|
 | Tokens (colors, type, spacing) | `colors_and_type.css` |
-| Logo (mark + wordmark) | `assets/logo-mark.svg`, `assets/logo-wordmark.svg`, `assets/logo-wordmark-light.svg`, `assets/favicon.svg` |
+| Logo (mark + wordmark) | `assets/logo-mark.png` (raster cabin), `assets/logo-wordmark.svg` (cabin + text), `assets/logo-wordmark-light.svg` (white text), `assets/favicon.png` |
 | Iconography rules | `ICONOGRAPHY.md` |
 | Web components (React JSX) | `ui_kits/web/*.jsx` |
 | Mobile screens (React JSX, iOS frame) | `ui_kits/mobile/*.jsx` |

@@ -22,7 +22,7 @@ function LucideIcon({ name, size = 18, stroke = 1.75, ...rest }) {
 function Logo({ onClick }) {
   return (
     <div className="kbn-logo" onClick={onClick} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
-      <img src="../../assets/logo-mark.svg" alt="" style={{ height: 32, width: 32 }} />
+      <img src="../../assets/logo-mark.png" alt="" style={{ height: 36, width: 'auto' }} />
       <span style={{
         fontFamily: 'var(--font-display)',
         fontSize: 22,

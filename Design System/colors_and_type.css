@@ -12,17 +12,29 @@
      BASE COLOR PALETTE
      ============================================================ */
 
-  /* Coral — primary brand color (logo, CTAs, key emphasis) */
-  --coral-50:  #fef2f1;
-  --coral-100: #fbdfdc;
-  --coral-200: #f5b8b1;
-  --coral-300: #f08c82;
-  --coral-400: #ed6c61;
-  --coral-500: #f04e45;   /* PRIMARY */
-  --coral-600: #d63a32;   /* hover */
-  --coral-700: #b02b25;   /* press */
-  --coral-800: #871f1a;
-  --coral-900: #561310;
+  /* Moss — primary brand color (logo, CTAs, key emphasis) */
+  --moss-50:  #f5f6ec;
+  --moss-100: #e8ebdc;
+  --moss-200: #d2d7b7;
+  --moss-300: #afb786;
+  --moss-400: #8d9762;
+  --moss-500: #636e40;   /* PRIMARY */
+  --moss-600: #4d5631;   /* hover */
+  --moss-700: #3a4124;   /* press */
+  --moss-800: #272c18;
+  --moss-900: #15180d;
+
+  /* Coral aliases (legacy back-compat — now point to moss) */
+  --coral-50:  var(--moss-50);
+  --coral-100: var(--moss-100);
+  --coral-200: var(--moss-200);
+  --coral-300: var(--moss-300);
+  --coral-400: var(--moss-400);
+  --coral-500: var(--moss-500);
+  --coral-600: var(--moss-600);
+  --coral-700: var(--moss-700);
+  --coral-800: var(--moss-800);
+  --coral-900: var(--moss-900);
 
   /* Teal — secondary accent (subtle, semantic, "verified" badges) */
   --teal-50:  #e0f2f3;
@@ -82,18 +94,18 @@
   --fg-4:            var(--char-300);  /* placeholder / disabled */
   --fg-on-brand:     var(--snow);
   --fg-on-inverse:   var(--snow);
-  --fg-link:         var(--coral-600);
+  --fg-link:         var(--moss-600);
 
   /* Borders */
   --border-1:        var(--char-100);  /* default */
   --border-2:        var(--char-200);  /* strong */
   --border-strong:   var(--char-300);
-  --border-focus:    var(--coral-500);
+  --border-focus:    var(--moss-500);
 
   /* Brand */
-  --brand-primary:        var(--coral-500);
-  --brand-primary-hover:  var(--coral-600);
-  --brand-primary-press:  var(--coral-700);
+  --brand-primary:        var(--moss-500);
+  --brand-primary-hover:  var(--moss-600);
+  --brand-primary-press:  var(--moss-700);
   --brand-secondary:      var(--teal-500);
 
   /* ===== Legacy aliases (back-compat with v1/v2 references) ===== */
@@ -218,7 +230,7 @@
   --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-xl:  0 24px 56px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
-  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(240, 78, 69, 0.45);
+  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(99, 110, 64, 0.45);
   --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* ============================================================

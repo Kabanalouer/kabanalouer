@@ -16,7 +16,7 @@ function Footer() {
         gap: 32,
       }}>
         <div>
-          <img src="../../assets/logo-wordmark.svg" alt="Kabanalouer" style={{ height: 36 }} />
+          <img src="../../assets/logo-wordmark.svg" alt="Kabanalouer" style={{ height: 48 }} />
           <p style={{
             fontFamily: 'var(--font-sans)', fontSize: 14, lineHeight: 1.55,
             color: 'var(--fg-2)', maxWidth: 320, marginTop: 16, textWrap: 'pretty',
