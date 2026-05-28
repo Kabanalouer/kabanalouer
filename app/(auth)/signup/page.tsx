@@ -14,11 +14,13 @@ function SignupForm() {
     return n.startsWith("/") ? n : "/";
   })();
 
+  const roleParam = searchParams.get("role") === "host" ? "host" : null;
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("traveler");
+  const [role, setRole] = useState<Role>(roleParam ?? "traveler");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -98,28 +100,33 @@ function SignupForm() {
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Créer un compte</h1>
-        <p className="text-charcoal-500 text-sm mb-6">Rejoignez la communauté Kabanalouer</p>
+        <p className="text-charcoal-500 text-sm">Rejoignez la communauté Kabanalouer</p>
+        {roleParam === "host" && (
+          <p className="text-xs text-charcoal-400 mt-1 mb-6">Vous créez un compte hôte</p>
+        )}
 
-        {/* Role selection */}
-        <div className="mb-6">
-          <p className="text-sm font-medium text-charcoal-700 mb-3">Je suis…</p>
-          <div className="grid grid-cols-2 gap-3">
-            <RoleButton
-              selected={role === "traveler"}
-              onClick={() => setRole("traveler")}
-              icon={<LuggageIcon />}
-              title="Voyageur"
-              subtitle="Je cherche un chalet"
-            />
-            <RoleButton
-              selected={role === "host"}
-              onClick={() => setRole("host")}
-              icon={<HomeIcon />}
-              title="Hôte"
-              subtitle="Je loue mon chalet"
-            />
+        {/* Role selection — hidden when role is pre-set via URL */}
+        {!roleParam && (
+          <div className="mb-6 mt-6">
+            <p className="text-sm font-medium text-charcoal-700 mb-3">Je suis…</p>
+            <div className="grid grid-cols-2 gap-3">
+              <RoleButton
+                selected={role === "traveler"}
+                onClick={() => setRole("traveler")}
+                icon={<LuggageIcon />}
+                title="Voyageur"
+                subtitle="Je cherche un chalet"
+              />
+              <RoleButton
+                selected={role === "host"}
+                onClick={() => setRole("host")}
+                icon={<HomeIcon />}
+                title="Hôte"
+                subtitle="Je loue mon chalet"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {role === "host" && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 leading-relaxed">
