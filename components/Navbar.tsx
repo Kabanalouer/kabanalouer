@@ -428,16 +428,16 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center justify-end gap-2 flex-1">
             <Link
-              href="/login"
-              className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
+              href="/devenir-hote"
+              className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
             >
-              Connexion
+              Inscrire mon chalet
             </Link>
             <Link
               href="/signup"
               className="bg-primary text-white text-[15px] px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
-              Inscrire mon chalet
+              Créer un compte
             </Link>
           </div>
 
@@ -460,12 +460,12 @@ export default function Navbar() {
             <MobileLink href="/comment-ca-marche">Comment ça marche</MobileLink>
             <MobileLink href="/devenir-hote">Devenir hôte</MobileLink>
             <div className="border-t border-[#ebebeb] pt-3 mt-2 flex flex-col gap-2">
-              <MobileLink href="/login">Connexion</MobileLink>
+              <MobileLink href="/devenir-hote">Inscrire mon chalet</MobileLink>
               <Link
                 href="/signup"
                 className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
               >
-                Inscrire mon chalet
+                Créer un compte
               </Link>
             </div>
           </div>
