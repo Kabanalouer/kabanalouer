@@ -200,11 +200,14 @@ export default function EditListingForm({
   const [titleGenerating, setTitleGenerating] = useState(false);
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
+  const [savedTitle, setSavedTitle] = useState<string | null>(null);
 
   // Description AI
   const [descGenerating, setDescGenerating] = useState(false);
   const [descGenError, setDescGenError] = useState("");
   const [showDescContextWarning, setShowDescContextWarning] = useState(false);
+  const [savedDescription, setSavedDescription] = useState<string | null>(null);
+  const [showDescRestoreButtons, setShowDescRestoreButtons] = useState(false);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -238,6 +241,9 @@ export default function EditListingForm({
     } else {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
+      setSavedTitle(null);
+      setSavedDescription(null);
+      setShowDescRestoreButtons(false);
     }
   };
 
@@ -359,8 +365,14 @@ export default function EditListingForm({
         }),
       });
       const data = await res.json();
-      if (!res.ok) setDescGenError(data.error ?? "Erreur lors de la génération.");
-      else handleDescriptionChange(data.description ?? "");
+      if (!res.ok) {
+        setDescGenError(data.error ?? "Erreur lors de la génération.");
+      } else {
+        const hadOriginal = form.description.trim().length > 0;
+        if (hadOriginal) setSavedDescription(form.description);
+        handleDescriptionChange(data.description ?? "");
+        if (hadOriginal) setShowDescRestoreButtons(true);
+      }
     } catch { setDescGenError("Erreur lors de la génération."); }
     setDescGenerating(false);
   };
@@ -538,7 +550,7 @@ export default function EditListingForm({
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
+                onChange={(e) => { if (savedTitle !== null) setSavedTitle(null); handleTitleChange(e.target.value); }}
                 className={inputCls}
                 placeholder="ex. Chalet rustique au bord du lac, Laurentides"
               />
@@ -555,13 +567,30 @@ export default function EditListingForm({
                       <button
                         key={i}
                         type="button"
-                        onClick={() => { handleTitleChange(s); setTitleSuggestions([]); }}
+                        onClick={() => {
+                          if (form.title.trim()) setSavedTitle(form.title);
+                          handleTitleChange(s);
+                          setTitleSuggestions([]);
+                        }}
                         className="text-left text-sm px-4 py-2.5 rounded-xl border border-[#ebebeb] hover:border-primary hover:bg-primary/5 text-charcoal-700 transition-colors"
                       >
                         {s}
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Restore original title */}
+              {savedTitle !== null && titleSuggestions.length === 0 && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => { handleTitleChange(savedTitle); setSavedTitle(null); }}
+                    className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
+                  >
+                    Restaurer le titre original
+                  </button>
                 </div>
               )}
             </SectionShell>
@@ -620,7 +649,10 @@ export default function EditListingForm({
 
               <textarea
                 value={form.description}
-                onChange={(e) => handleDescriptionChange(e.target.value)}
+                onChange={(e) => {
+                  if (showDescRestoreButtons) { setShowDescRestoreButtons(false); setSavedDescription(null); }
+                  handleDescriptionChange(e.target.value);
+                }}
                 className={`${inputCls} resize-none`}
                 rows={32}
                 placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
@@ -628,6 +660,30 @@ export default function EditListingForm({
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.description.length}/{DESC_MAX}
               </p>
+
+              {/* Restore original description */}
+              {showDescRestoreButtons && savedDescription !== null && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setShowDescRestoreButtons(false); setSavedDescription(null); }}
+                    className="text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-full px-5 py-2.5 transition-colors"
+                  >
+                    Utiliser cette description
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDescriptionChange(savedDescription);
+                      setShowDescRestoreButtons(false);
+                      setSavedDescription(null);
+                    }}
+                    className="text-sm font-medium text-charcoal-600 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-5 py-2.5 transition-colors"
+                  >
+                    Restaurer l&apos;original
+                  </button>
+                </div>
+              )}
             </SectionShell>
           )}
 
