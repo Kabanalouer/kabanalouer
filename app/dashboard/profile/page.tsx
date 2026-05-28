@@ -11,9 +11,11 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, avatar_url, phone, notifications_prefs")
+    .select("name, avatar_url, phone, notifications_prefs, role, bio")
     .eq("id", user.id)
     .single();
+
+  const p = profile as Record<string, unknown> | null;
 
   return (
     <div className="max-w-2xl">
@@ -26,8 +28,10 @@ export default async function ProfilePage() {
         email={user.email ?? ""}
         initialName={profile?.name ?? ""}
         initialAvatarUrl={profile?.avatar_url ?? null}
-        initialPhone={(profile as Record<string, unknown>)?.phone as string ?? ""}
-        initialNotifPrefs={(profile as Record<string, unknown>)?.notifications_prefs as Record<string, boolean> ?? {}}
+        initialPhone={p?.phone as string ?? ""}
+        initialNotifPrefs={p?.notifications_prefs as Record<string, boolean> ?? {}}
+        role={p?.role as string ?? "traveler"}
+        initialBio={p?.bio as string ?? ""}
       />
     </div>
   );

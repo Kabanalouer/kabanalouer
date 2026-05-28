@@ -73,6 +73,8 @@ export default function ProfileForm({
   initialAvatarUrl,
   initialPhone,
   initialNotifPrefs,
+  role,
+  initialBio,
 }: {
   userId: string;
   email: string;
@@ -80,6 +82,8 @@ export default function ProfileForm({
   initialAvatarUrl: string | null;
   initialPhone: string;
   initialNotifPrefs: Record<string, boolean>;
+  role: string;
+  initialBio: string;
 }) {
   const supabase = createClient();
 
@@ -134,6 +138,41 @@ export default function ProfileForm({
     setInfoSaving(false);
     if (error) setInfoError("Erreur lors de l'enregistrement.");
     else { setInfoSaved(true); setTimeout(() => setInfoSaved(false), 2500); }
+  };
+
+  // ── Bio ──────────────────────────────────────────────────────────────────────
+  const [bio, setBio] = useState(initialBio);
+  const [bioSaving, setBioSaving] = useState(false);
+  const [bioSaved, setBioSaved] = useState(false);
+  const [bioError, setBioError] = useState("");
+  const [bioGenerating, setBioGenerating] = useState(false);
+
+  const saveBio = async () => {
+    setBioSaving(true);
+    setBioError("");
+    const { error } = await supabase.from("users").update({ bio: bio.trim() || null }).eq("id", userId);
+    setBioSaving(false);
+    if (error) setBioError("Erreur lors de l'enregistrement.");
+    else { setBioSaved(true); setTimeout(() => setBioSaved(false), 2500); }
+  };
+
+  const generateBio = async () => {
+    setBioGenerating(true);
+    setBioError("");
+    try {
+      const res = await fetch("/api/ai/generate-bio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName: firstName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erreur API");
+      setBio(data.bio.slice(0, 300));
+    } catch (e) {
+      setBioError(e instanceof Error ? e.message : "Erreur lors de la génération.");
+    } finally {
+      setBioGenerating(false);
+    }
   };
 
   // ── Contact ──────────────────────────────────────────────────────────────────
@@ -300,6 +339,56 @@ export default function ProfileForm({
           <ErrorMsg msg={infoError} />
         </div>
       </Section>
+
+      {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
+      {role === "host" && (
+        <Section title="Présentation du propriétaire">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-charcoal-700">Bio</label>
+              <button
+                type="button"
+                onClick={generateBio}
+                disabled={bioGenerating}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-dark transition-colors disabled:opacity-50"
+              >
+                {bioGenerating ? (
+                  <>
+                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Génération…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                    Générer avec l&apos;IA
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="relative">
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value.slice(0, 300))}
+                className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+                placeholder="Bonjour ! Je m'appelle…"
+                maxLength={300}
+              />
+              <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
+                {bio.length} / 300
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} />
+            <ErrorMsg msg={bioError} />
+          </div>
+        </Section>
+      )}
 
       {/* ── Coordonnées ───────────────────────────────────────────────────── */}
       <Section title="Coordonnées">

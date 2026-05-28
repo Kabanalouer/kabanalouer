@@ -113,7 +113,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   // Fetch host profile directly from public.users (avoids Supabase join ambiguity)
   const { data: hostProfile } = await supabase
     .from("users")
-    .select("id, name, avatar_url, created_at")
+    .select("id, name, avatar_url, created_at, bio")
     .eq("id", listing.host_id as string)
     .single();
 
@@ -213,7 +213,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     } catch { /* silently fail */ }
   }
 
-  const host = hostProfile as { id: string; name: string; avatar_url: string; created_at: string } | null;
+  const host = hostProfile as { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null } | null;
 
   // Host stats (for HostCard)
   let hostReviewCount = 0;

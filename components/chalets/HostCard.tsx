@@ -18,7 +18,7 @@ function seniority(createdAt: string): string {
 }
 
 interface Props {
-  host: { id: string; name: string; avatar_url: string; created_at: string };
+  host: { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null };
   reviewCount: number;
   avgRating: number;
   responseRate: number | null;
@@ -86,7 +86,10 @@ export default function HostCard({
 
         {/* ── Right: info + contact ── */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-charcoal-800 mb-4">Informations sur le propriétaire</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-4">Présentation du propriétaire</h3>
+          {host.bio && (
+            <p className="text-sm text-charcoal-600 leading-relaxed mb-4">{host.bio}</p>
+          )}
           <div className="space-y-3 mb-6 text-sm text-charcoal-700">
             {responseRate !== null && (
               <div className="flex items-center gap-2">
