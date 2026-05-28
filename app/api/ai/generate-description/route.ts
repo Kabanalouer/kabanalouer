@@ -5,7 +5,10 @@ import { NextResponse } from "next/server";
 const SYSTEM_PROMPT =
   "Tu es un expert en rédaction d'annonces de location de chalet au Québec. " +
   "Tu maîtrises les meilleures pratiques d'Airbnb et Chalets.com. " +
-  "Tu rédiges en français québécois, avec un ton chaleureux et authentique. Pas d'emojis. Sentence case.";
+  "Tu rédiges en français québécois, avec un ton chaleureux et authentique. Pas d'emojis. Sentence case. " +
+  "La description est utilisée comme meta description sur Google. " +
+  "Les 160 premiers caractères sont les plus importants pour le SEO — ils doivent contenir les mots-clés principaux (type de chalet, région, équipements phares) de façon naturelle. " +
+  "La description complète doit aussi être optimisée pour apparaître dans les recherches des LLM et agents IA qui cherchent des chalets au Québec.";
 
 export async function POST(request: Request) {
   const supabase = await createClient();

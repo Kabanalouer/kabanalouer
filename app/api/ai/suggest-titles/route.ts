@@ -5,7 +5,11 @@ import { NextResponse } from "next/server";
 const SYSTEM_PROMPT =
   "Tu es un expert en rédaction d'annonces de location de chalet au Québec. " +
   "Tu maîtrises les meilleures pratiques d'Airbnb et Chalets.com. " +
-  "Tu rédiges en français québécois, avec un ton chaleureux et authentique. Pas d'emojis. Sentence case.";
+  "Tu rédiges en français québécois, avec un ton chaleureux et authentique. Pas d'emojis. Sentence case. " +
+  "Le titre est aussi utilisé comme balise meta title sur Google et les moteurs de recherche. " +
+  "Il doit contenir les mots-clés naturels que les voyageurs cherchent (ex: nom du chalet si connu, type de chalet, équipements phares, région). " +
+  "Si le proprio a donné un nom propre à son chalet, le mettre en premier. " +
+  "Pense aussi aux recherches faites dans les LLM comme ChatGPT.";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
