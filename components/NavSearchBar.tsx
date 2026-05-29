@@ -420,11 +420,15 @@ function NavSearchBarInner() {
           {activeField === "guests" && (
             <div className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-xl border border-[#ebebeb] z-[9999] w-[300px]">
               {([
-                { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults },
-                { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren },
-                { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies },
-                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets },
-              ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>> }>).map(({ label, sub, val, set }, idx, arr) => (
+                { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults,
+                  decrDis: adults === 0 || (adults === 1 && children + babies > 0), incrDis: totalGuests >= 24 },
+                { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren,
+                  decrDis: children === 0, incrDis: totalGuests >= 24 },
+                { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies,
+                  decrDis: babies === 0, incrDis: totalGuests >= 24 },
+                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets,
+                  decrDis: pets === 0, incrDis: pets >= 5 },
+              ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>>; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, set, decrDis, incrDis }, idx, arr) => (
                 <div key={label}>
                   <div className="flex items-center justify-between px-5 py-4">
                     <div>
@@ -435,7 +439,7 @@ function NavSearchBarInner() {
                       <button
                         type="button"
                         onMouseDown={(e) => { e.preventDefault(); set((v) => Math.max(0, v - 1)); }}
-                        disabled={val === 0}
+                        disabled={decrDis}
                         className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
@@ -444,7 +448,8 @@ function NavSearchBarInner() {
                       <button
                         type="button"
                         onMouseDown={(e) => { e.preventDefault(); set((v) => v + 1); }}
-                        className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 transition-colors"
+                        disabled={incrDis}
+                        className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       </button>

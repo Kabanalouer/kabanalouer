@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -97,7 +97,10 @@ interface Props {
   currentUserId: string | null;
   initialCheckin?: string;
   initialCheckout?: string;
-  initialGuests?: string;
+  initialAdults?: number;
+  initialChildren?: number;
+  initialBabies?: number;
+  initialPets?: number;
   price?: number | null;
   priceOnRequest?: boolean;
 }
@@ -114,7 +117,8 @@ function hostSinceDuration(createdAt: string): string {
 
 export default function ContactForm({
   listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
-  initialCheckin, initialCheckout, initialGuests,
+  initialCheckin, initialCheckout,
+  initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
 }: Props) {
   const now = new Date();
@@ -128,7 +132,10 @@ export default function ContactForm({
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const calRef = useRef<HTMLDivElement>(null);
 
-  const [guests, setGuests] = useState(initialGuests ?? "");
+  const [adults, setAdults] = useState(initialAdults ?? 0);
+  const [children, setChildren] = useState(initialChildren ?? 0);
+  const [babies, setBabies] = useState(initialBabies ?? 0);
+  const [pets, setPets] = useState(initialPets ?? 0);
   const [message, setMessage] = useState("");
 
   const [sending, setSending] = useState(false);
@@ -159,15 +166,23 @@ export default function ContactForm({
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
     : null;
 
-  const canSubmit = !!(checkin || guests || message.trim());
+  const guestTotal = adults + children + babies;
+  const canSubmit = !!(checkin || guestTotal > 0 || pets > 0 || message.trim());
 
   const handleSubmit = async () => {
     setSending(true);
     setError("");
 
+    const guestDetail = [
+      adults > 0 ? `${adults} adulte${adults > 1 ? "s" : ""}` : null,
+      children > 0 ? `${children} enfant${children > 1 ? "s" : ""}` : null,
+      babies > 0 ? `${babies} bébé${babies > 1 ? "s" : ""}` : null,
+      pets > 0 ? `${pets} animal${pets > 1 ? "aux" : ""}` : null,
+    ].filter(Boolean).join(", ");
+
     const lines = [
       checkin ? `Dates : ${formatShort(checkin)}${checkout ? ` → ${formatShort(checkout)}` : " (arrivée seulement)"}` : null,
-      guests ? `Voyageurs : ${guests}` : null,
+      guestDetail ? `Voyageurs : ${guestDetail}` : null,
       "",
       message.trim(),
     ].filter((l) => l !== null).join("\n");
@@ -307,22 +322,45 @@ export default function ContactForm({
       </div>
 
       {/* Guests */}
-      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#ebebeb]">
-        <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <select
-          value={guests}
-          onChange={(e) => setGuests(e.target.value)}
-          className={`bg-transparent outline-none text-sm appearance-none flex-1 cursor-pointer ${guests ? "text-charcoal-800" : "text-charcoal-400"}`}
-        >
-          <option value="">Voyageurs</option>
-          {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={String(n)}>{n} voyageur{n > 1 ? "s" : ""}</option>
-          ))}
-          <option value="25+">25 voyageurs et +</option>
-        </select>
+      <div className="rounded-xl border border-[#ebebeb]">
+        {([
+          { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults,
+            decrDis: adults === 0 || (adults === 1 && children + babies > 0), incrDis: guestTotal >= 24 },
+          { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren,
+            decrDis: children === 0, incrDis: guestTotal >= 24 },
+          { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies,
+            decrDis: babies === 0, incrDis: guestTotal >= 24 },
+          { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets,
+            decrDis: pets === 0, incrDis: pets >= 5 },
+        ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>>; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, set, decrDis, incrDis }, idx) => (
+          <div key={label} className={idx > 0 ? "border-t border-[#ebebeb]" : ""}>
+            <div className="flex items-center justify-between px-3 py-2.5">
+              <div>
+                <p className="text-sm font-medium text-charcoal-800">{label}</p>
+                <p className="text-xs text-charcoal-400">{sub}</p>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => set((v) => Math.max(0, v - 1))}
+                  disabled={decrDis}
+                  className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                </button>
+                <span className="w-4 text-center text-sm font-medium text-charcoal-800">{val}</span>
+                <button
+                  type="button"
+                  onClick={() => set((v) => v + 1)}
+                  disabled={incrDis}
+                  className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Message */}

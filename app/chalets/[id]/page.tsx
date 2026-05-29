@@ -632,7 +632,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     currentUserId={user?.id ?? null}
                     initialCheckin={urlCheckin}
                     initialCheckout={urlCheckout}
-                    initialGuests={urlCapacity}
+                    initialAdults={parseInt(urlCapacity ?? "0") || 0}
                     price={listing.price_low as number | null}
                     priceOnRequest={!!(listing.price_on_request)}
                   />
