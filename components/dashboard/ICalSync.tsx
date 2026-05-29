@@ -76,10 +76,6 @@ export default function ICalSync({
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           URL iCal à importer
         </label>
-        <p className="text-xs text-gray-400 mb-3">
-          Dans Airbnb : Calendrier → Disponibilités → Exporter le calendrier ·
-          Dans Booking.com : Propriétés → Calendrier → Synchronisation iCal
-        </p>
         <div className="flex gap-2">
           <input
             type="url"
