@@ -34,6 +34,7 @@ type FormState = {
   checkout_time: string;
   pets_allowed: boolean;
   smoking_allowed: boolean;
+  min_age: number;
   checkin_type: "autonomous" | "in_person";
   nearby_activities: string[];
   price_on_request: boolean;
@@ -97,7 +98,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
-  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "checkin_type"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
   publier:      [],
 };
 
@@ -168,6 +169,7 @@ export default function EditListingForm({
     checkout_time: "11:00",
     pets_allowed: false,
     smoking_allowed: false,
+    min_age: 21,
     checkin_type: "autonomous" as const,
     nearby_activities: [],
     price_on_request: false,
@@ -969,6 +971,28 @@ export default function EditListingForm({
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Fumeur accepté</label>
                     <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Âge minimum requis pour louer le chalet</label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => set("min_age", Math.max(18, form.min_age - 1))}
+                      disabled={form.min_age <= 18}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <span className="w-20 text-center text-sm font-semibold text-charcoal-800">{form.min_age} ans</span>
+                    <button
+                      type="button"
+                      onClick={() => set("min_age", Math.min(30, form.min_age + 1))}
+                      disabled={form.min_age >= 30}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
                   </div>
                 </div>
               </div>
