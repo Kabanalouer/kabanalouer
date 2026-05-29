@@ -67,8 +67,7 @@ export default function ICalSync({
       <div>
         <h2 className="font-bold text-gray-900 mb-1">Synchronisation iCal</h2>
         <p className="text-sm text-gray-500">
-          Importez vos réservations depuis Airbnb, Booking.com ou Google Calendar.
-          Synchronisation automatique toutes les heures.
+          Importez votre calendrier de disponibilités depuis votre logiciel de gestion locative (Lodgify, Guesty,...), Airbnb, Booking.com ou autres. Synchronisation automatique toutes les heures.
         </p>
       </div>
 
