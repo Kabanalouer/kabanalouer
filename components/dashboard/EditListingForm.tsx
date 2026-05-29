@@ -690,41 +690,112 @@ export default function EditListingForm({
           {/* Section: Capacité */}
           {activeSection === "capacite" && (
             <SectionShell title="Nombre de voyageurs" emoji="👥">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {/* Voyageurs */}
                 <div>
                   <Label>Capacité (personnes)</Label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.capacity >= 40 ? "40 et +" : String(form.capacity)}
-                    onFocus={(e) => { if (form.capacity >= 40) e.target.select(); }}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                      if (raw === "") return;
-                      const v = parseInt(raw);
-                      if (!isNaN(v)) set("capacity", Math.min(40, Math.max(1, v)));
-                    }}
-                    onBlur={() => { if (form.capacity < 1) set("capacity", 1); }}
-                    className={inputCls}
-                  />
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => set("capacity", Math.max(1, form.capacity - 1))}
+                      disabled={form.capacity <= 1}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.capacity >= 40 ? "40 et +" : String(form.capacity)}
+                      onFocus={(e) => { if (form.capacity >= 40) e.target.select(); }}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                        if (raw === "") return;
+                        const v = parseInt(raw);
+                        if (!isNaN(v)) set("capacity", Math.min(40, Math.max(1, v)));
+                      }}
+                      onBlur={() => { if (form.capacity < 1) set("capacity", 1); }}
+                      className="w-20 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => set("capacity", Math.min(40, form.capacity + 1))}
+                      disabled={form.capacity >= 40}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
                 </div>
+                {/* Chambres */}
                 <div>
                   <Label>Chambres</Label>
-                  <input
-                    type="number" min={1} max={20}
-                    value={form.bedrooms}
-                    onChange={(e) => set("bedrooms", parseInt(e.target.value) || 1)}
-                    className={inputCls}
-                  />
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => set("bedrooms", Math.max(1, form.bedrooms - 1))}
+                      disabled={form.bedrooms <= 1}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={String(form.bedrooms)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                        if (raw === "") return;
+                        const v = parseInt(raw);
+                        if (!isNaN(v)) set("bedrooms", Math.min(20, Math.max(1, v)));
+                      }}
+                      onBlur={() => { if (form.bedrooms < 1) set("bedrooms", 1); }}
+                      className="w-14 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => set("bedrooms", Math.min(20, form.bedrooms + 1))}
+                      disabled={form.bedrooms >= 20}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
                 </div>
+                {/* Salles de bain */}
                 <div>
                   <Label>Salles de bain</Label>
-                  <input
-                    type="number" min={1} max={10}
-                    value={form.bathrooms}
-                    onChange={(e) => set("bathrooms", parseInt(e.target.value) || 1)}
-                    className={inputCls}
-                  />
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => set("bathrooms", Math.max(1, form.bathrooms - 1))}
+                      disabled={form.bathrooms <= 1}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={String(form.bathrooms)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                        if (raw === "") return;
+                        const v = parseInt(raw);
+                        if (!isNaN(v)) set("bathrooms", Math.min(10, Math.max(1, v)));
+                      }}
+                      onBlur={() => { if (form.bathrooms < 1) set("bathrooms", 1); }}
+                      className="w-14 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => set("bathrooms", Math.min(10, form.bathrooms + 1))}
+                      disabled={form.bathrooms >= 10}
+                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </SectionShell>
