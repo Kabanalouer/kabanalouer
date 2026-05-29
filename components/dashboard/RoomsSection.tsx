@@ -343,7 +343,7 @@ function BedroomCard({
 
       {/* Photos */}
       <div>
-        <span className="text-sm text-gray-500 block mb-2">Photos de la chambre</span>
+        <span className="text-sm font-semibold text-charcoal-700 block mb-2">Photos de la chambre</span>
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}
@@ -408,7 +408,7 @@ function LivingRoomCard({
 
       {/* Photos */}
       <div>
-        <span className="text-sm text-gray-500 block mb-2">Photos du salon</span>
+        <span className="text-sm font-semibold text-charcoal-700 block mb-2">Photos du salon</span>
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}
