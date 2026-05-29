@@ -83,7 +83,6 @@ const SECTIONS: Array<{
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
-  { id: "publier",      label: "Publier mon annonce",  emoji: "🚀", isComplete: () => false },
 ];
 
 // Fields saved per section
@@ -411,7 +410,7 @@ export default function EditListingForm({
               ].join(" ")}
             >
               {s.label}
-              {(s.id === "publier" ? isPublished : s.isComplete(form)) && activeSection !== s.id && (
+              {s.isComplete(form) && activeSection !== s.id && (
                 <span className="text-green-500 text-xs">✓</span>
               )}
             </button>
@@ -421,7 +420,7 @@ export default function EditListingForm({
         {/* Desktop: vertical list */}
         <div className="hidden lg:flex flex-col gap-1">
           {SECTIONS.map((s) => {
-            const complete = s.id === "publier" ? isPublished : s.isComplete(form);
+            const complete = s.isComplete(form);
             const active = activeSection === s.id;
             return (
               <button
