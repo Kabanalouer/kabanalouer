@@ -242,9 +242,7 @@ function NavSearchBarInner() {
   const destLabel = destSelected?.label ?? null;
   const datesLabel = checkin ? `${formatShort(checkin)}${checkout ? ` – ${formatShort(checkout)}` : ""}` : null;
   const totalGuests = adults + children + babies;
-  const guestsLabel = (totalGuests > 0 || pets > 0)
-    ? [totalGuests > 0 && `${totalGuests} voy.`, pets > 0 && `${pets} anim.`].filter(Boolean).join(" · ")
-    : null;
+  const guestsLabel = totalGuests > 0 ? `${totalGuests} voy.` : null;
   const popularRegions: DestItem[] = REGIONS.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
 
   const filtersCurrentParams = {

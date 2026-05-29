@@ -298,11 +298,8 @@ export default function SearchBar({
     : null;
 
   const guestTotal = adults + children + babies;
-  const guestsLabel = (guestTotal > 0 || pets > 0)
-    ? [
-        guestTotal > 0 && `${guestTotal} voyageur${guestTotal > 1 ? "s" : ""}`,
-        pets > 0 && `${pets} animal${pets > 1 ? "aux" : ""}`,
-      ].filter(Boolean).join(" · ")
+  const guestsLabel = guestTotal > 0
+    ? `${guestTotal} voyageur${guestTotal > 1 ? "s" : ""}`
     : null;
 
   const handleSearch = () => {
