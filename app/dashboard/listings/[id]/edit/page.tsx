@@ -1,16 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
-
-function adminSupabase() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 export const metadata = { title: "Modifier le chalet — Kabanalouer" };
 
@@ -34,19 +26,12 @@ export default async function EditListingPage({ params }: Props) {
 
   if (!listing) notFound();
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://kabanalouer.com";
-  const exportUrl = `${appUrl}/api/listings/${id}/ical`;
-
-  const [{ data: subscription }, { count: activeCount }, { data: blockedDates }] = await Promise.all([
+  const [{ data: subscription }, { data: blockedDates }] = await Promise.all([
     supabase
       .from("subscriptions")
       .select("status, expires_at")
       .eq("user_id", user.id)
       .maybeSingle(),
-    adminSupabase()
-      .from("subscriptions")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active"),
     supabase
       .from("availability")
       .select("date, source")
@@ -68,11 +53,9 @@ export default async function EditListingPage({ params }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.expires_at ?? null}
-        activeSubscriptionCount={activeCount ?? 0}
         initialBlocked={(blockedDates ?? []) as import("@/components/dashboard/AvailabilityCalendar").BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}
-        exportUrl={exportUrl}
         initialData={{
           title: listing.title ?? "",
           description: listing.description ?? "",
@@ -94,6 +77,7 @@ export default async function EditListingPage({ params }: Props) {
           checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
           price_on_request: (listing.price_on_request as boolean | null) ?? false,
+          min_age: (listing.min_age as number | null) ?? 21,
         }}
       />
     </div>
