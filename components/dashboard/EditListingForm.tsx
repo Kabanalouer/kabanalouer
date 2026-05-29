@@ -806,7 +806,7 @@ export default function EditListingForm({
           {/* Section: Chambres */}
           {activeSection === "chambres" && (
             <SectionShell title="Chambres" emoji="🛏">
-              <p className="text-sm text-charcoal-400 -mt-3 mb-5">Une présentation soignée de vos chambres augmente beaucoup vos chances de louer votre chalet.</p>
+              <p className="text-sm text-charcoal-400 -mt-3 mb-5">L&apos;ajout de photos de vos chambres augmente beaucoup vos chances de louer votre chalet.</p>
               <RoomsSection userId={userId} listingId={listingId} />
             </SectionShell>
           )}
