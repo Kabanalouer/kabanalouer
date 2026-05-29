@@ -693,20 +693,20 @@ export default function EditListingForm({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label>Capacité (personnes)</Label>
-                  <div className="relative">
-                    <input
-                      type="number" min={1} max={40}
-                      value={form.capacity}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value);
-                        set("capacity", isNaN(v) ? 1 : Math.min(40, Math.max(1, v)));
-                      }}
-                      className={`${inputCls} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                    />
-                    {form.capacity >= 40 && (
-                      <span className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-charcoal-400 pointer-events-none select-none">+</span>
-                    )}
-                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={form.capacity >= 40 ? "40 et +" : String(form.capacity)}
+                    onFocus={(e) => { if (form.capacity >= 40) e.target.select(); }}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      if (raw === "") return;
+                      const v = parseInt(raw);
+                      if (!isNaN(v)) set("capacity", Math.min(40, Math.max(1, v)));
+                    }}
+                    onBlur={() => { if (form.capacity < 1) set("capacity", 1); }}
+                    className={inputCls}
+                  />
                 </div>
                 <div>
                   <Label>Chambres</Label>
