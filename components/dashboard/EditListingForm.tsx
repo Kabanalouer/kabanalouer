@@ -693,7 +693,7 @@ export default function EditListingForm({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {/* Voyageurs */}
                 <div>
-                  <Label>Capacité (personnes)</Label>
+                  <Label>Capacité maximale (personnes)</Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -729,7 +729,7 @@ export default function EditListingForm({
                 </div>
                 {/* Chambres */}
                 <div>
-                  <Label>Chambres</Label>
+                  <Label>Nombre de chambre(s)</Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -764,7 +764,7 @@ export default function EditListingForm({
                 </div>
                 {/* Salles de bain */}
                 <div>
-                  <Label>Salles de bain</Label>
+                  <Label>Nombre de salle de bain</Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
