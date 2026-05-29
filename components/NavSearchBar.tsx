@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SearchBar from "./SearchBar";
 import FiltersModal from "./chalets/FiltersModal";
@@ -140,7 +140,8 @@ function NavSearchBarInner() {
   const initCity = searchParams.get("city") ?? "";
   const initCheckin = searchParams.get("checkin") ?? "";
   const initCheckout = searchParams.get("checkout") ?? "";
-  const initGuests = searchParams.get("capacity") ?? "";
+  const initCapacity = searchParams.get("capacity") ?? "";
+  const initPetsParam = searchParams.get("pets") ?? "";
   const initMinBedrooms = searchParams.get("minBedrooms") ?? undefined;
   const initMinBeds = searchParams.get("minBeds") ?? undefined;
   const initMinBathrooms = searchParams.get("minBathrooms") ?? undefined;
@@ -154,7 +155,10 @@ function NavSearchBarInner() {
   );
   const [checkin, setCheckin] = useState(initCheckin);
   const [checkout, setCheckout] = useState(initCheckout);
-  const [guests, setGuests] = useState(initGuests);
+  const [adults, setAdults] = useState(parseInt(initCapacity) || 0);
+  const [children, setChildren] = useState(0);
+  const [babies, setBabies] = useState(0);
+  const [pets, setPets] = useState(parseInt(initPetsParam) || 0);
   const [activeField, setActiveField] = useState<"dest" | "dates" | "guests" | null>(null);
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
@@ -205,7 +209,7 @@ function NavSearchBarInner() {
       return { label: q, type: "city" as const, value: q };
     })();
 
-    if (active?.type === "region" && !checkin && !checkout && !guests) {
+    if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
       const slug = REGION_SLUG_MAP[active.value];
       if (slug) { router.push(`/chalets/${slug}`); return; }
     }
@@ -217,7 +221,9 @@ function NavSearchBarInner() {
     }
     if (checkin) params.set("checkin", checkin);
     if (checkout) params.set("checkout", checkout);
-    if (guests) params.set("capacity", guests === "25+" ? "25" : guests);
+    const totalCapacity = adults + children + babies;
+    if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
+    if (pets > 0) params.set("pets", String(pets));
     router.push(`/chalets${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
@@ -235,7 +241,10 @@ function NavSearchBarInner() {
 
   const destLabel = destSelected?.label ?? null;
   const datesLabel = checkin ? `${formatShort(checkin)}${checkout ? ` – ${formatShort(checkout)}` : ""}` : null;
-  const guestsLabel = guests ? (guests === "25+" ? "25+ voy." : `${guests} voy.`) : null;
+  const totalGuests = adults + children + babies;
+  const guestsLabel = (totalGuests > 0 || pets > 0)
+    ? [totalGuests > 0 && `${totalGuests} voy.`, pets > 0 && `${pets} anim.`].filter(Boolean).join(" · ")
+    : null;
   const popularRegions: DestItem[] = REGIONS.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
 
   const filtersCurrentParams = {
@@ -243,7 +252,7 @@ function NavSearchBarInner() {
     city: initCity || undefined,
     checkin: initCheckin || undefined,
     checkout: initCheckout || undefined,
-    capacity: initGuests || undefined,
+    capacity: initCapacity || undefined,
   };
 
   return (
@@ -409,28 +418,41 @@ function NavSearchBarInner() {
           </button>
 
           {activeField === "guests" && (
-            <div className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-xl border border-[#ebebeb] z-[9999] w-[200px] max-h-[220px] overflow-y-auto">
-              <button
-                onMouseDown={(e) => { e.preventDefault(); setGuests(""); setActiveField(null); }}
-                className="w-full px-4 py-2.5 text-left text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
-              >
-                Peu importe
-              </button>
-              {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
-                <button
-                  key={n}
-                  onMouseDown={(e) => { e.preventDefault(); setGuests(String(n)); setActiveField(null); }}
-                  className={`w-full px-4 py-2.5 text-left text-sm hover:bg-charcoal-50 transition-colors ${guests === String(n) ? "text-primary font-semibold" : "text-charcoal-800"}`}
-                >
-                  {n} voyageur{n > 1 ? "s" : ""}
-                </button>
+            <div className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-xl border border-[#ebebeb] z-[9999] w-[300px]">
+              {([
+                { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults },
+                { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren },
+                { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies },
+                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets },
+              ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>> }>).map(({ label, sub, val, set }, idx, arr) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <div>
+                      <p className="text-sm font-medium text-charcoal-800">{label}</p>
+                      <p className="text-xs text-charcoal-400 mt-0.5">{sub}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); set((v) => Math.max(0, v - 1)); }}
+                        disabled={val === 0}
+                        className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                      </button>
+                      <span className="w-5 text-center text-sm font-medium text-charcoal-800">{val}</span>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); set((v) => v + 1); }}
+                        className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                  {idx < arr.length - 1 && <div className="mx-5 border-t border-[#ebebeb]" />}
+                </div>
               ))}
-              <button
-                onMouseDown={(e) => { e.preventDefault(); setGuests("25+"); setActiveField(null); }}
-                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-charcoal-50 transition-colors ${guests === "25+" ? "text-primary font-semibold" : "text-charcoal-800"}`}
-              >
-                25 voyageurs et +
-              </button>
             </div>
           )}
         </div>
@@ -477,7 +499,10 @@ function NavSearchBarInner() {
               initialCity={destSelected?.type === "city" ? destSelected.value : undefined}
               initialCheckin={checkin}
               initialCheckout={checkout}
-              initialGuests={guests}
+              initialAdults={adults}
+              initialChildren={children}
+              initialBabies={babies}
+              initialPets={pets}
             />
           </div>
         </div>

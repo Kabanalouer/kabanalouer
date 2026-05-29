@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 // ── Static data ──────────────────────────────────────────────────────────────
@@ -150,7 +150,10 @@ interface SearchBarProps {
   initialCity?: string;
   initialCheckin?: string;
   initialCheckout?: string;
-  initialGuests?: string;
+  initialAdults?: number;
+  initialChildren?: number;
+  initialBabies?: number;
+  initialPets?: number;
   iconOnly?: boolean;
   preserveParams?: Record<string, string>;
 }
@@ -160,7 +163,10 @@ export default function SearchBar({
   initialCity,
   initialCheckin,
   initialCheckout,
-  initialGuests,
+  initialAdults,
+  initialChildren,
+  initialBabies,
+  initialPets,
   iconOnly = false,
   preserveParams,
 }: SearchBarProps = {}) {
@@ -192,7 +198,10 @@ export default function SearchBar({
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // ── Guests state ──
-  const [guests, setGuests] = useState(initialGuests ?? "");
+  const [adults, setAdults] = useState(initialAdults ?? 0);
+  const [children, setChildren] = useState(initialChildren ?? 0);
+  const [babies, setBabies] = useState(initialBabies ?? 0);
+  const [pets, setPets] = useState(initialPets ?? 0);
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
 
@@ -288,6 +297,15 @@ export default function SearchBar({
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
     : null;
 
+  const guestsLabel = (() => {
+    const parts: string[] = [];
+    if (adults > 0) parts.push(`${adults} adulte${adults > 1 ? "s" : ""}`);
+    if (children > 0) parts.push(`${children} enfant${children > 1 ? "s" : ""}`);
+    if (babies > 0) parts.push(`${babies} bébé${babies > 1 ? "s" : ""}`);
+    if (pets > 0) parts.push(`${pets} animal${pets > 1 ? "aux" : ""}`);
+    return parts.length > 0 ? parts.join(" · ") : null;
+  })();
+
   const handleSearch = () => {
     // Destination: if user typed but didn't click a suggestion, try to match
     const active = destSelected ?? (() => {
@@ -299,7 +317,7 @@ export default function SearchBar({
     })();
 
     // Region-only search (no dates, no guests) → SEO landing page
-    if (active?.type === "region" && !checkin && !checkout && !guests) {
+    if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
       const slug = REGION_SLUG_MAP[active.value];
       if (slug) {
         router.push(`/chalets/${slug}`);
@@ -314,7 +332,9 @@ export default function SearchBar({
     }
     if (checkin) params.set("checkin", checkin);
     if (checkout) params.set("checkout", checkout);
-    if (guests) params.set("capacity", guests === "25+" ? "25" : guests);
+    const totalCapacity = adults + children + babies;
+    if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
+    if (pets > 0) params.set("pets", String(pets));
     if (preserveParams) {
       for (const [k, v] of Object.entries(preserveParams)) {
         if (v) params.set(k, v);
@@ -521,36 +541,47 @@ export default function SearchBar({
         </svg>
         <button
           onClick={() => { setGuestsOpen((o) => !o); setDestOpen(false); setCalendarOpen(false); }}
-          className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer ${guests ? "text-gray-700" : "text-gray-400"}`}
+          className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer truncate ${guestsLabel ? "text-gray-700" : "text-gray-400"}`}
         >
-          {guests
-            ? guests === "25+" ? "25 voyageurs et +" : `${guests} voyageur${parseInt(guests) > 1 ? "s" : ""}`
-            : "Voyageurs"}
+          {guestsLabel ?? "Voyageurs"}
         </button>
 
         {guestsOpen && (
-          <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-[9999] w-[210px] max-h-[220px] overflow-y-auto">
-            <button
-              onMouseDown={(e) => { e.preventDefault(); setGuests(""); setGuestsOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-50 transition-colors"
-            >
-              Voyageurs
-            </button>
-            {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
-              <button
-                key={n}
-                onMouseDown={(e) => { e.preventDefault(); setGuests(String(n)); setGuestsOpen(false); }}
-                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors ${guests === String(n) ? "text-primary font-semibold" : "text-gray-800"}`}
-              >
-                {n} voyageur{n > 1 ? "s" : ""}
-              </button>
+          <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-[9999] w-[300px]">
+            {([
+              { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults },
+              { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren },
+              { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies },
+              { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets },
+            ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>> }>).map(({ label, sub, val, set }, idx, arr) => (
+              <div key={label}>
+                <div className="flex items-center justify-between px-5 py-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => set((v) => Math.max(0, v - 1))}
+                      disabled={val === 0}
+                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-gray-600 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <span className="w-5 text-center text-sm font-medium text-gray-800">{val}</span>
+                    <button
+                      type="button"
+                      onClick={() => set((v) => v + 1)}
+                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-gray-600 hover:border-gray-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
+                </div>
+                {idx < arr.length - 1 && <div className="mx-5 border-t border-[#ebebeb]" />}
+              </div>
             ))}
-            <button
-              onMouseDown={(e) => { e.preventDefault(); setGuests("25+"); setGuestsOpen(false); }}
-              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors ${guests === "25+" ? "text-primary font-semibold" : "text-gray-800"}`}
-            >
-              25 voyageurs et +
-            </button>
           </div>
         )}
       </div>
