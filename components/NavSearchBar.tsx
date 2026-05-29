@@ -418,15 +418,26 @@ function NavSearchBarInner() {
           {activeField === "guests" && (
             <div className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-xl border border-[#ebebeb] z-[9999] w-[300px]">
               {([
-                { label: "Adultes", sub: "13 ans et plus", val: adults, set: setAdults,
-                  decrDis: adults === 0 || (adults === 1 && children + babies > 0), incrDis: totalGuests >= 24 },
-                { label: "Enfants", sub: "De 2 à 12 ans", val: children, set: setChildren,
-                  decrDis: children === 0, incrDis: totalGuests >= 24 },
-                { label: "Bébés", sub: "Moins de 2 ans", val: babies, set: setBabies,
-                  decrDis: babies === 0, incrDis: totalGuests >= 24 },
-                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets, set: setPets,
+                { label: "Adultes", sub: "13 ans et plus", val: adults,
+                  onDecr: () => setAdults((v) => Math.max(0, v - 1)),
+                  onIncr: () => setAdults((v) => v + 1),
+                  decrDis: adults === 0 || (adults === 1 && children + babies > 0),
+                  incrDis: totalGuests >= 24 },
+                { label: "Enfants", sub: "De 2 à 12 ans", val: children,
+                  onDecr: () => setChildren((v) => Math.max(0, v - 1)),
+                  onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
+                  decrDis: children === 0,
+                  incrDis: adults === 0 ? totalGuests >= 23 : totalGuests >= 24 },
+                { label: "Bébés", sub: "Moins de 2 ans", val: babies,
+                  onDecr: () => setBabies((v) => Math.max(0, v - 1)),
+                  onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
+                  decrDis: babies === 0,
+                  incrDis: adults === 0 ? totalGuests >= 23 : totalGuests >= 24 },
+                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets,
+                  onDecr: () => setPets((v) => Math.max(0, v - 1)),
+                  onIncr: () => setPets((v) => v + 1),
                   decrDis: pets === 0, incrDis: pets >= 5 },
-              ] as Array<{ label: string; sub: string; val: number; set: React.Dispatch<React.SetStateAction<number>>; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, set, decrDis, incrDis }, idx, arr) => (
+              ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx, arr) => (
                 <div key={label}>
                   <div className="flex items-center justify-between px-5 py-4">
                     <div>
@@ -436,7 +447,7 @@ function NavSearchBarInner() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); set((v) => Math.max(0, v - 1)); }}
+                        onMouseDown={(e) => { e.preventDefault(); onDecr(); }}
                         disabled={decrDis}
                         className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       >
@@ -445,7 +456,7 @@ function NavSearchBarInner() {
                       <span className="w-5 text-center text-sm font-medium text-charcoal-800">{val}</span>
                       <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); set((v) => v + 1); }}
+                        onMouseDown={(e) => { e.preventDefault(); onIncr(); }}
                         disabled={incrDis}
                         className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       >
