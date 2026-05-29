@@ -7,12 +7,10 @@ export default function ICalSync({
   listingId,
   initialUrl,
   initialLastSync,
-  exportUrl,
 }: {
   listingId: string;
   initialUrl: string | null;
   initialLastSync: string | null;
-  exportUrl: string;
 }) {
   const supabase = createClient();
   const [icalUrl, setIcalUrl] = useState(initialUrl ?? "");
@@ -21,7 +19,6 @@ export default function ICalSync({
   const [syncing, setSyncing] = useState(false);
   const [urlSaved, setUrlSaved] = useState(false);
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const handleSaveUrl = async () => {
     setSaving(true);
@@ -54,12 +51,6 @@ export default function ICalSync({
     } finally {
       setSyncing(false);
     }
-  };
-
-  const handleCopyExport = () => {
-    navigator.clipboard.writeText(exportUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -124,31 +115,6 @@ export default function ICalSync({
       </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
-
-      {/* Export URL */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Votre lien iCal Kabanalouer (à exporter)
-        </label>
-        <p className="text-xs text-gray-400 mb-3">
-          Ajoutez ce lien dans Airbnb, Booking.com, ou Google Calendar pour
-          synchroniser vos blocages Kabanalouer vers ces plateformes.
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            readOnly
-            value={exportUrl}
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-600 font-mono text-xs"
-          />
-          <button
-            onClick={handleCopyExport}
-            className="border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors whitespace-nowrap"
-          >
-            {copied ? "✓ Copié" : "Copier"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

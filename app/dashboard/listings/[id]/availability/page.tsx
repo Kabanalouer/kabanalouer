@@ -75,7 +75,6 @@ export default async function AvailabilityPage({ params }: Props) {
           listingId={id}
           initialUrl={listing.ical_url ?? null}
           initialLastSync={listing.ical_last_sync ?? null}
-          exportUrl={exportUrl}
         />
       </div>
     </div>

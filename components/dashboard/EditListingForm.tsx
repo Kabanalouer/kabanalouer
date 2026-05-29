@@ -841,7 +841,6 @@ export default function EditListingForm({
                   listingId={listingId}
                   initialUrl={icalUrl}
                   initialLastSync={icalLastSync}
-                  exportUrl={exportUrl}
                 />
               </div>
             </SectionShell>
