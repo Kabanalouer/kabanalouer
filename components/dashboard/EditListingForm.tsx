@@ -694,7 +694,7 @@ export default function EditListingForm({
                 <div>
                   <Label>Capacité (personnes)</Label>
                   <input
-                    type="number" min={1} max={30}
+                    type="number" min={1} max={40}
                     value={form.capacity}
                     onChange={(e) => set("capacity", parseInt(e.target.value) || 1)}
                     className={inputCls}
