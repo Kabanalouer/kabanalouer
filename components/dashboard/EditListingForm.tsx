@@ -693,12 +693,20 @@ export default function EditListingForm({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label>Capacité (personnes)</Label>
-                  <input
-                    type="number" min={1} max={40}
-                    value={form.capacity}
-                    onChange={(e) => set("capacity", parseInt(e.target.value) || 1)}
-                    className={inputCls}
-                  />
+                  <div className="relative">
+                    <input
+                      type="number" min={1} max={40}
+                      value={form.capacity}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value);
+                        set("capacity", isNaN(v) ? 1 : Math.min(40, Math.max(1, v)));
+                      }}
+                      className={`${inputCls} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                    />
+                    {form.capacity >= 40 && (
+                      <span className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-charcoal-400 pointer-events-none select-none">+</span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label>Chambres</Label>
