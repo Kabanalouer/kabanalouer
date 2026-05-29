@@ -23,8 +23,8 @@ function Logo({ href = "/" }: { href?: string }) {
         type="image/svg+xml"
         data="/logo-wordmark.svg"
         aria-hidden="true"
-        className="h-10 w-auto pointer-events-none"
-        style={{ width: 190, height: 40 }}
+        className="h-[50px] w-auto pointer-events-none"
+        style={{ width: 238, height: 50 }}
       />
     </Link>
   );
