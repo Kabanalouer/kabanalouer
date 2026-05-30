@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 interface Props {
   reviewId: string;
   existingReply: string | null;
+  allowEdit?: boolean;
 }
 
-export default function ReviewReplyForm({ reviewId, existingReply }: Props) {
+export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = true }: Props) {
   const router = useRouter();
   const [reply, setReply] = useState(existingReply ?? "");
   const [open, setOpen] = useState(!existingReply);
@@ -39,12 +40,14 @@ export default function ReviewReplyForm({ reviewId, existingReply }: Props) {
       <div className="mt-3 pl-4 border-l-2 border-[#ebebeb]">
         <p className="text-xs font-semibold text-charcoal-600 mb-1">Votre réponse :</p>
         <p className="text-sm text-charcoal-500 leading-relaxed">{existingReply}</p>
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-2 text-xs text-primary hover:underline"
-        >
-          Modifier la réponse
-        </button>
+        {allowEdit && (
+          <button
+            onClick={() => setOpen(true)}
+            className="mt-2 text-xs text-primary hover:underline"
+          >
+            Modifier la réponse
+          </button>
+        )}
       </div>
     );
   }
@@ -67,7 +70,7 @@ export default function ReviewReplyForm({ reviewId, existingReply }: Props) {
         >
           {saving ? "Enregistrement…" : "Répondre"}
         </button>
-        {existingReply && (
+        {allowEdit && existingReply && (
           <button onClick={() => { setOpen(false); setReply(existingReply); }} className="text-xs text-charcoal-400 hover:text-charcoal-600">
             Annuler
           </button>

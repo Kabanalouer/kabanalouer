@@ -93,6 +93,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unansweredReviewsCount, setUnansweredReviewsCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [voyageurMode, setVoyageurMode] = useState(false);
@@ -143,19 +144,34 @@ export default function Navbar() {
     setUnreadCount(count ?? 0);
   };
 
+  const loadUnansweredReviews = async (userId: string) => {
+    const { data: listings } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("host_id", userId);
+    if (!listings || listings.length === 0) { setUnansweredReviewsCount(0); return; }
+    const { count } = await supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .in("listing_id", listings.map((l) => l.id))
+      .is("host_reply", null);
+    setUnansweredReviewsCount(count ?? 0);
+  };
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       if (data.user) {
         loadProfile(data.user.id);
         loadUnread(data.user.id);
+        loadUnansweredReviews(data.user.id);
       }
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user ?? null;
       setUser(u);
-      if (u) { loadProfile(u.id); loadUnread(u.id); }
+      if (u) { loadProfile(u.id); loadUnread(u.id); loadUnansweredReviews(u.id); }
       else { setProfile(null); setUnreadCount(0); }
     });
 
@@ -236,6 +252,14 @@ export default function Navbar() {
             <Link href="/messages" className={tabCls("/messages")}>
               Messages
               {unreadCount > 0 && <UnreadDot />}
+            </Link>
+            <Link href="/dashboard/avis" className={tabCls("/dashboard/avis")}>
+              Mes avis
+              {unansweredReviewsCount > 0 && (
+                <span className="bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
+                  {unansweredReviewsCount > 9 ? "9+" : unansweredReviewsCount}
+                </span>
+              )}
             </Link>
           </div>
 
