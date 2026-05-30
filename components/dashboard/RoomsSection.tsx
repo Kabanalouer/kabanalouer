@@ -170,18 +170,25 @@ export default function RoomsSection({
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-gray-400 text-sm">Chargement…</div>;
+    return <div className="py-8 text-center text-charcoal-400 text-sm">Chargement…</div>;
   }
 
   return (
     <div className="space-y-8">
 
+      {/* Value-add message */}
+      <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
+        <p className="text-sm text-charcoal-700">
+          Les chalets avec photos de chambres reçoivent 3× plus de demandes de la part des voyageurs.
+        </p>
+      </div>
+
       {/* ── Chambres ──────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-gray-900 mb-4">Chambres</h3>
+        <h3 className="font-semibold text-charcoal-800 mb-4">Chambres</h3>
 
         {bedrooms.length === 0 && (
-          <p className="text-sm text-gray-400 mb-4">Aucune chambre ajoutée.</p>
+          <p className="text-sm text-charcoal-400 mb-4">Aucune chambre ajoutée.</p>
         )}
 
         <div className="space-y-4">
@@ -207,14 +214,14 @@ export default function RoomsSection({
         </button>
       </div>
 
-      <div className="border-t border-gray-100" />
+      <div className="border-t border-[#ebebeb]" />
 
       {/* ── Salons ────────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-gray-900 mb-4">Salons / espaces de couchage</h3>
+        <h3 className="font-semibold text-charcoal-800 mb-4">Salons / espaces de couchage</h3>
 
         {livingRooms.length === 0 && (
-          <p className="text-sm text-gray-400 mb-4">Aucun salon ajouté.</p>
+          <p className="text-sm text-charcoal-400 mb-4">Aucun salon ajouté.</p>
         )}
 
         <div className="space-y-4">
@@ -238,11 +245,11 @@ export default function RoomsSection({
       </div>
 
       {/* ── Save bar ──────────────────────────────────────────────────── */}
-      <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+      <div className="pt-4 border-t border-[#ebebeb] flex items-center gap-3">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+          className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           {saving ? "Enregistrement…" : justSaved ? "Enregistré ✓" : "Enregistrer"}
         </button>
@@ -268,17 +275,22 @@ function BedroomCard({
 }) {
 
   return (
-    <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
+    <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <input
           value={room.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          className="flex-1 font-semibold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-200 focus:border-primary focus:outline-none py-0.5 text-sm"
+          className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
         />
+        {room.photos.length === 0 && (
+          <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+            Aucune photo
+          </span>
+        )}
         <button
           onClick={onRemove}
-          className="text-gray-300 hover:text-red-400 transition-colors"
+          className="text-charcoal-300 hover:text-red-400 transition-colors"
           aria-label="Supprimer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,20 +301,20 @@ function BedroomCard({
 
       {/* Capacity */}
       <div className="flex items-center gap-3">
-        <label className="text-sm text-gray-500 w-36 shrink-0">Capacité (personnes)</label>
+        <label className="text-sm text-charcoal-500 w-36 shrink-0">Capacité (personnes)</label>
         <input
           type="number" min={1} max={20}
           value={room.capacity}
           onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
-          className="w-20 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       {/* Beds */}
       <div>
-        <span className="text-sm text-gray-500 block mb-2">Lits</span>
+        <span className="text-sm text-charcoal-500 block mb-2">Lits</span>
         {room.beds.length === 0 && (
-          <p className="text-xs text-gray-300 mb-2">Aucun lit configuré.</p>
+          <p className="text-xs text-charcoal-300 mb-2">Aucun lit configuré.</p>
         )}
         <div className="space-y-2">
           {room.beds.map((bed, i) => (
@@ -310,7 +322,7 @@ function BedroomCard({
               <select
                 value={bed.type}
                 onChange={(e) => onUpdateBed(i, { type: e.target.value as BedType })}
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
                 {(Object.keys(BED_LABELS) as BedType[]).map((t) => (
                   <option key={t} value={t}>{BED_LABELS[t]}</option>
@@ -320,11 +332,11 @@ function BedroomCard({
                 type="number" min={1} max={4}
                 value={bed.quantity}
                 onChange={(e) => onUpdateBed(i, { quantity: parseInt(e.target.value) || 1 })}
-                className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <button
                 onClick={() => onRemoveBed(i)}
-                className="text-gray-300 hover:text-red-400 transition-colors p-1"
+                className="text-charcoal-300 hover:text-red-400 transition-colors p-1"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -366,17 +378,22 @@ function LivingRoomCard({
 }) {
 
   return (
-    <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
+    <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <input
           value={room.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          className="flex-1 font-semibold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-200 focus:border-primary focus:outline-none py-0.5 text-sm"
+          className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
         />
+        {room.photos.length === 0 && (
+          <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+            Aucune photo
+          </span>
+        )}
         <button
           onClick={onRemove}
-          className="text-gray-300 hover:text-red-400 transition-colors"
+          className="text-charcoal-300 hover:text-red-400 transition-colors"
           aria-label="Supprimer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -387,21 +404,21 @@ function LivingRoomCard({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-500 shrink-0">Divans-lits</label>
+          <label className="text-sm text-charcoal-500 shrink-0">Divans-lits</label>
           <input
             type="number" min={0} max={10}
             value={room.sofa_count}
             onChange={(e) => onUpdate({ sofa_count: parseInt(e.target.value) || 0 })}
-            className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-500 shrink-0">Capacité</label>
+          <label className="text-sm text-charcoal-500 shrink-0">Capacité</label>
           <input
             type="number" min={1} max={10}
             value={room.capacity}
             onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
-            className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
       </div>
