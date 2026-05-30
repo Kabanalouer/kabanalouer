@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PreviewModal from "./PreviewModal";
@@ -83,7 +83,7 @@ const SECTIONS: Array<{
   { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
   { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
   { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
-  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low > 0 },
+  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low >= 50 },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
@@ -192,6 +192,48 @@ export default function EditListingForm({
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [roomsValid, setRoomsValid] = useState(false);
+  const [locationValid, setLocationValid] = useState(!!(initialLat && initialLng));
+  const [showPublishErrors, setShowPublishErrors] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("rooms")
+      .select("beds")
+      .eq("listing_id", listingId)
+      .then(({ data }) => {
+        if (!data) return;
+        setRoomsValid(
+          data.some((r) => {
+            const beds = Array.isArray(r.beds) ? (r.beds as { type: string; quantity: number }[]) : [];
+            return beds.some((b) => b.quantity > 0);
+          })
+        );
+      });
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const REQUIRED_SECTION_IDS = new Set<SectionId>([
+    "photos", "titre", "description", "capacite", "chambres",
+    "equipements", "tarifs", "localisation", "infos",
+  ]);
+
+  const sectionValid: Partial<Record<SectionId, boolean>> = {
+    photos: form.photos.length >= MIN_PHOTOS,
+    titre: form.title.trim().length > 0,
+    description: form.description.trim().length > 0,
+    capacite: form.capacity >= 1,
+    chambres: roomsValid,
+    equipements: form.amenities.length > 0,
+    tarifs: form.price_on_request || form.price_low >= 50,
+    localisation: locationValid,
+    infos: form.citq_number.length === 6,
+  };
+
+  const incompleteSectionIds = (Object.entries(sectionValid) as [SectionId, boolean][])
+    .filter(([, valid]) => !valid)
+    .map(([id]) => id);
+
+  const allRequiredComplete = incompleteSectionIds.length === 0;
 
   // Title limit flash
   const [titleAtLimit, setTitleAtLimit] = useState(false);
@@ -427,8 +469,9 @@ export default function EditListingForm({
         {/* Desktop: vertical list */}
         <div className="hidden lg:flex flex-col gap-1">
           {SECTIONS.map((s) => {
-            const complete = s.isComplete(form);
             const active = activeSection === s.id;
+            const isRequired = REQUIRED_SECTION_IDS.has(s.id);
+            const valid = sectionValid[s.id];
             return (
               <button
                 key={s.id}
@@ -441,8 +484,10 @@ export default function EditListingForm({
                 ].join(" ")}
               >
                 <span>{s.label}</span>
-                {complete && !active && (
-                  <span className="text-green-500 text-xs shrink-0">✓</span>
+                {!active && isRequired && (
+                  valid
+                    ? <span className="text-green-500 text-xs shrink-0">✓</span>
+                    : <span className="text-red-500 text-xs shrink-0">✗</span>
                 )}
               </button>
             );
@@ -543,12 +588,16 @@ export default function EditListingForm({
           {/* Section: Photos */}
           {activeSection === "photos" && (
             <SectionShell title="Photos" emoji="📷">
+              <p className="text-sm font-medium text-charcoal-700 mb-3">
+                Photos <Req /> <span className="font-normal text-charcoal-400">(5 minimum)</span>
+              </p>
               <PhotoUpload
                 photos={form.photos}
                 userId={userId}
                 listingId={listingId}
                 onChange={(photos) => set("photos", photos)}
               />
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -603,6 +652,9 @@ export default function EditListingForm({
                 {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
               </div>
 
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+                Titre <Req />
+              </label>
               <input
                 type="text"
                 value={form.title}
@@ -649,6 +701,7 @@ export default function EditListingForm({
                   </button>
                 </div>
               )}
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -703,6 +756,9 @@ export default function EditListingForm({
                 {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
               </div>
 
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+                Description <Req />
+              </label>
               <textarea
                 value={form.description}
                 onChange={(e) => {
@@ -740,6 +796,7 @@ export default function EditListingForm({
                   </button>
                 </div>
               )}
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -749,7 +806,7 @@ export default function EditListingForm({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {/* Voyageurs */}
                 <div>
-                  <Label>Capacité maximale (personnes)</Label>
+                  <Label>Capacité maximale (personnes) <Req /></Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -854,24 +911,33 @@ export default function EditListingForm({
                   </div>
                 </div>
               </div>
+              <RequiredNote />
             </SectionShell>
           )}
 
           {/* Section: Chambres */}
           {activeSection === "chambres" && (
             <SectionShell title="Chambres" emoji="🛏">
-              <p className="text-sm text-charcoal-400 -mt-3 mb-5">L&apos;ajout de photos de vos chambres augmente beaucoup vos chances de louer votre chalet.</p>
+              <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-1">
+                Au moins 1 chambre avec 1 lit <Req />
+              </p>
+              <p className="text-sm text-charcoal-400 mb-5">L&apos;ajout de photos de vos chambres augmente beaucoup vos chances de louer votre chalet.</p>
               <RoomsSection userId={userId} listingId={listingId} />
+              <RequiredNote />
             </SectionShell>
           )}
 
           {/* Section: Équipements */}
           {activeSection === "equipements" && (
             <SectionShell title="Caractéristiques" emoji="✨">
+              <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-4">
+                Sélectionnez au moins 1 caractéristique <Req />
+              </p>
               <AmenitiesPicker
                 selected={form.amenities}
                 onChange={(amenities) => set("amenities", amenities)}
               />
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -912,7 +978,9 @@ export default function EditListingForm({
                 initialLat={initialLat}
                 initialLng={initialLng}
                 onRegionChange={(r) => set("region", r)}
+                onSaved={(hasPos) => setLocationValid(hasPos)}
               />
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -942,7 +1010,7 @@ export default function EditListingForm({
               {/* Conditional price field */}
               {!form.price_on_request ? (
                 <div className="max-w-xs">
-                  <Label>Prix à partir de ($/nuit)</Label>
+                  <Label>Prix à partir de ($/nuit) <Req /> <span className="font-normal text-charcoal-400 text-xs">(minimum 50 $)</span></Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
                     <input
@@ -969,6 +1037,7 @@ export default function EditListingForm({
                   <span className="font-semibold text-charcoal-800">«&nbsp;Prix sur demande — Contactez le propriétaire&nbsp;»</span>
                 </div>
               )}
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -977,7 +1046,7 @@ export default function EditListingForm({
             <SectionShell title="Informations générales" emoji="ℹ️">
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Numéro CITQ *</label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Numéro CITQ <Req /></label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -989,7 +1058,7 @@ export default function EditListingForm({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-in</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-in <Req /></label>
                     <select
                       value={form.checkin_time}
                       onChange={(e) => set("checkin_time", e.target.value)}
@@ -1001,7 +1070,7 @@ export default function EditListingForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-out</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-out <Req /></label>
                     <select
                       value={form.checkout_time}
                       onChange={(e) => set("checkout_time", e.target.value)}
@@ -1014,7 +1083,7 @@ export default function EditListingForm({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Type d&apos;arrivée</label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Type d&apos;arrivée <Req /></label>
                   <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1050,6 +1119,7 @@ export default function EditListingForm({
                   </div>
                 </div>
               </div>
+              <RequiredNote />
             </SectionShell>
           )}
 
@@ -1057,9 +1127,7 @@ export default function EditListingForm({
           {activeSection === "publier" && (() => {
             const slotsLeft = Math.max(0, FREE_LAUNCH_LIMIT - activeSubscriptionCount);
             const isFree = slotsLeft > 0;
-            const hasPhotos = (form.photos as PhotoItem[]).length >= MIN_PHOTOS;
-            const hasCitq = form.citq_number.length === 6;
-            const canPublish = hasPhotos && hasCitq;
+            const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate
               ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -1113,26 +1181,11 @@ export default function EditListingForm({
             return (
               <SectionShell title="Publier mon annonce" emoji="🚀">
                 <div className="max-w-md space-y-5">
-                  {!canPublish && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
-                      <p className="text-sm font-semibold text-amber-800">Complétez votre annonce avant de publier :</p>
-                      {!hasPhotos && (
-                        <button
-                          onClick={() => setActiveSection("photos")}
-                          className="block text-sm text-amber-700 hover:underline"
-                        >
-                          → Ajoutez au moins {MIN_PHOTOS} photos
-                        </button>
-                      )}
-                      {!hasCitq && (
-                        <button
-                          onClick={() => setActiveSection("infos")}
-                          className="block text-sm text-amber-700 hover:underline"
-                        >
-                          → Entrez votre numéro CITQ (6 chiffres)
-                        </button>
-                      )}
-                    </div>
+                  {showPublishErrors && !canPublish && (
+                    <PublishErrorBox
+                      incompleteSectionIds={incompleteSectionIds}
+                      onNavigate={(id) => { setActiveSection(id as SectionId); setShowPublishErrors(false); }}
+                    />
                   )}
 
                   {isFree ? (
@@ -1196,8 +1249,11 @@ export default function EditListingForm({
                   {isFree ? (
                     <>
                       <button
-                        onClick={handleActivateFree}
-                        disabled={publishLoading || !canPublish}
+                        onClick={() => {
+                          if (!canPublish) { setShowPublishErrors(true); return; }
+                          void handleActivateFree();
+                        }}
+                        disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
                         {publishLoading ? "Activation…" : "Activer mon annonce gratuitement"}
@@ -1210,8 +1266,11 @@ export default function EditListingForm({
                   ) : (
                     <>
                       <button
-                        onClick={handleStripeCheckout}
-                        disabled={publishLoading || !canPublish}
+                        onClick={() => {
+                          if (!canPublish) { setShowPublishErrors(true); return; }
+                          void handleStripeCheckout();
+                        }}
+                        disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
                         {publishLoading ? "Redirection vers le paiement…" : "Payer et publier — 299 $/an"}
@@ -1262,6 +1321,55 @@ export default function EditListingForm({
       </div>
     </div>
     </>
+  );
+}
+
+function Req() {
+  return <span className="text-[#636e40] font-medium">*</span>;
+}
+
+function RequiredNote() {
+  return <p className="mt-6 text-xs text-charcoal-400">* Champs requis pour publier</p>;
+}
+
+const SECTION_LABELS: Partial<Record<string, string>> = {
+  photos: "Photos",
+  titre: "Titre",
+  description: "Description",
+  capacite: "Nombre de voyageurs",
+  chambres: "Chambres",
+  equipements: "Caractéristiques",
+  tarifs: "Tarifs",
+  localisation: "Localisation",
+  infos: "Infos générales",
+};
+
+function PublishErrorBox({
+  incompleteSectionIds,
+  onNavigate,
+}: {
+  incompleteSectionIds: string[];
+  onNavigate: (id: string) => void;
+}) {
+  return (
+    <div className="border border-red-200 bg-red-50 rounded-xl p-4 space-y-2">
+      <p className="text-sm font-semibold text-red-700">
+        Complétez ces sections avant de publier :
+      </p>
+      <ul className="space-y-1">
+        {incompleteSectionIds.map((id) => (
+          <li key={id}>
+            <button
+              type="button"
+              onClick={() => onNavigate(id)}
+              className="text-sm text-red-600 hover:text-red-800 hover:underline text-left"
+            >
+              → {SECTION_LABELS[id] ?? id}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

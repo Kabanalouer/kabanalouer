@@ -54,11 +54,13 @@ function LocationForm({
   userId,
   initial,
   onRegionChange,
+  onSaved,
 }: {
   listingId: string;
   userId: string;
   initial: LocationData;
   onRegionChange: (region: string) => void;
+  onSaved?: (hasPosition: boolean) => void;
 }) {
   const supabase = createClient();
   const placesLib = useMapsLibrary("places");
@@ -138,6 +140,7 @@ function LocationForm({
     } else {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
+      onSaved?.(!!(position));
     }
   };
 
@@ -149,7 +152,7 @@ function LocationForm({
       {/* Address autocomplete */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Adresse (non affichée publiquement)
+          Adresse (non affichée publiquement) <span className="text-[#636e40] font-medium">*</span>
         </label>
         <input
           ref={inputRef}
@@ -177,7 +180,7 @@ function LocationForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Région</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Région <span className="text-[#636e40] font-medium">*</span></label>
           <input
             type="text"
             value={region}
@@ -272,6 +275,7 @@ export default function LocationSection({
   initialLat,
   initialLng,
   onRegionChange,
+  onSaved,
 }: {
   listingId: string;
   userId: string;
@@ -281,6 +285,7 @@ export default function LocationSection({
   initialLat: number | null;
   initialLng: number | null;
   onRegionChange: (region: string) => void;
+  onSaved?: (hasPosition: boolean) => void;
 }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -306,6 +311,7 @@ export default function LocationSection({
           lng: initialLng,
         }}
         onRegionChange={onRegionChange}
+        onSaved={onSaved}
       />
     </APIProvider>
   );
