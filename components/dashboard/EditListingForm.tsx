@@ -434,10 +434,10 @@ export default function EditListingForm({
                 key={s.id}
                 onClick={() => { setActiveSection(s.id); setSaveError(""); setJustSaved(false); }}
                 className={[
-                  "flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors",
+                  "flex items-center justify-between gap-3 py-2.5 text-sm text-left transition-colors",
                   active
-                    ? "bg-primary text-white"
-                    : "text-charcoal-600 hover:bg-charcoal-50",
+                    ? "pl-3 border-l-[3px] border-[#636e40] font-semibold text-[#636e40]"
+                    : "pl-4 font-medium text-charcoal-600 hover:text-charcoal-800",
                 ].join(" ")}
               >
                 <span>{s.label}</span>
