@@ -473,7 +473,7 @@ export default function EditListingForm({
               title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
               className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
-              Mettre en vedette
+              Booster mon annonce
             </button>
             <button
               onClick={() => setPreviewOpen(true)}
@@ -517,7 +517,7 @@ export default function EditListingForm({
             title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
             className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
           >
-            Mettre en vedette
+            Booster mon annonce
           </button>
           <button
             onClick={() => setPreviewOpen(true)}
