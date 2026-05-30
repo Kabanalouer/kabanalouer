@@ -62,6 +62,18 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(6);
 
+  const featuredIds = (rawListings ?? []).map((l) => l.id as string);
+  const today = new Date().toISOString().split("T")[0];
+  const { data: activePromos } = featuredIds.length > 0
+    ? await supabase
+        .from("promotions")
+        .select("listing_id")
+        .in("listing_id", featuredIds)
+        .eq("is_active", true)
+        .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`)
+    : { data: [] as { listing_id: string }[] };
+  const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
+
   const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({
     id: l.id,
     title: l.title ?? "",
@@ -73,6 +85,7 @@ export default async function HomePage() {
     bedrooms: (l.bedrooms as number) ?? 1,
     photos: normalizePhotos(l.photos).map((p) => p.url),
     tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    hasPromo: promoSet.has(l.id as string),
   }));
 
   const websiteJsonLd = {

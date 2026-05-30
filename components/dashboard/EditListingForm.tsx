@@ -14,6 +14,7 @@ import LocationSection from "./LocationSection";
 import AvailabilityCalendar, { type BlockedEntry } from "./AvailabilityCalendar";
 import ICalSync from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
+import PromotionsSection from "./PromotionsSection";
 
 
 type FormState = {
@@ -64,6 +65,7 @@ type SectionId =
   | "localisation"
   | "tarifs"
   | "infos"
+  | "promotions"
   | "publier";
 
 const SECTIONS: Array<{
@@ -83,6 +85,7 @@ const SECTIONS: Array<{
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
+  { id: "promotions",   label: "Promotions",           emoji: "",   isComplete: () => true },
 ];
 
 // Fields saved per section
@@ -98,6 +101,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
+  promotions:   [],
   publier:      [],
 };
 
@@ -1198,6 +1202,13 @@ export default function EditListingForm({
               </SectionShell>
             );
           })()}
+
+          {/* Section: Promotions */}
+          {activeSection === "promotions" && (
+            <SectionShell title="Promotions">
+              <PromotionsSection listingId={listingId} />
+            </SectionShell>
+          )}
 
           {/* Save bar */}
           {hasSaveButton && (

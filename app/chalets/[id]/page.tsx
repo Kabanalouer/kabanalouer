@@ -18,6 +18,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
+import { formatPromoLabel, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
 
 const DEFAULT_PHOTO =
@@ -251,11 +252,24 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     hostAvgResponseMs = stats.avgResponseMs;
   }
 
-  // Favorite status for current user
-  const { data: favData } = user
-    ? await supabase.from("favorites").select("id").eq("user_id", user.id).eq("listing_id", id).maybeSingle()
-    : { data: null };
+  // Favorite + active promo in parallel
+  const today = new Date().toISOString().split("T")[0];
+  const [{ data: favData }, { data: activePromoData }] = await Promise.all([
+    user
+      ? supabase.from("favorites").select("id").eq("user_id", user.id).eq("listing_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("promotions")
+      .select("type, value, min_nights, days_before, start_date, end_date")
+      .eq("listing_id", id)
+      .eq("is_active", true)
+      .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
   const isFavorited = !!favData;
+  const activePromo = activePromoData as PromoDisplay | null;
 
   // Subtitle calculations
   const city = (listing.city as string | null) ?? (() => {
@@ -621,6 +635,17 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
           {/* ── Right column — Pricing card ── */}
           <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
             <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
+              {/* Promo bandeau */}
+              {activePromo && (
+                <div className="mb-4 flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
+                  <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
+                  </svg>
+                  <p className="text-sm font-medium text-primary leading-snug">
+                    {formatPromoLabel(activePromo)}
+                  </p>
+                </div>
+              )}
               {/* CTA */}
               {isOwner ? (
                 <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
@@ -658,6 +683,11 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <span className="text-sm font-bold text-charcoal-800">Prix sur demande</span>
             ) : (
               <div>
+                {activePromo && (
+                  <p className="text-[11px] font-medium text-primary leading-none mb-1 truncate max-w-[160px]">
+                    {formatPromoLabel(activePromo)}
+                  </p>
+                )}
                 <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
                 <span className="text-xs text-charcoal-400"> /nuit</span>
               </div>

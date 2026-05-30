@@ -83,6 +83,15 @@ export async function GET(req: Request) {
 
   const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
 
+  const today = new Date().toISOString().split("T")[0];
+  const { data: activePromos } = await supabase
+    .from("promotions")
+    .select("listing_id")
+    .in("listing_id", listingIds)
+    .eq("is_active", true)
+    .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`);
+  const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
+
   const listings = rows.map((row) => {
     const id = row.id as string;
     const rooms = roomsByListing[id];
@@ -116,6 +125,7 @@ export async function GET(req: Request) {
       photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
       isFavorite: favSet.has(id),
       tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+      hasPromo: promoSet.has(id),
       lat: (row.latitude as number | null) ?? null,
       lng: (row.longitude as number | null) ?? null,
     };

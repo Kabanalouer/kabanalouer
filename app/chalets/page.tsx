@@ -137,6 +137,16 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     }
 
     const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
+
+    const today = new Date().toISOString().split("T")[0];
+    const { data: activePromos } = await supabase
+      .from("promotions")
+      .select("listing_id")
+      .in("listing_id", listingIds)
+      .eq("is_active", true)
+      .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`);
+    const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
+
     const minBedsNum = minBeds ? parseInt(minBeds) : null;
 
     listings = rows
@@ -158,6 +168,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
         isFavorite: favSet.has(row.id as string),
         tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+        hasPromo: promoSet.has(row.id as string),
         lat: (row.latitude as number | null) ?? null,
         lng: (row.longitude as number | null) ?? null,
       }));

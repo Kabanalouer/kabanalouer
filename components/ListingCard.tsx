@@ -18,6 +18,7 @@ export interface Listing {
   photos: string[];
   isFavorite?: boolean;
   isNew?: boolean;
+  hasPromo?: boolean;
   tags: string[];
 }
 
@@ -119,12 +120,19 @@ export default function ListingCard({
           </div>
         )}
 
-        {/* Badge */}
-        {listing.isNew && (
-          <span className="absolute top-3 left-3 bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm z-10">
-            Nouveau
-          </span>
-        )}
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {listing.hasPromo && (
+            <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+              Promo
+            </span>
+          )}
+          {listing.isNew && (
+            <span className="bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm">
+              Nouveau
+            </span>
+          )}
+        </div>
 
         {/* Favorite */}
         <div className="absolute top-2.5 right-2.5 z-10">
