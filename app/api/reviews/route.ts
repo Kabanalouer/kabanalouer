@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: "Kabanalouer <noreply@kabanalouer.ca>",
+          from: "Kabanalouer <onboarding@resend.dev>",
           to: hostData.email,
           subject: `Vous avez reçu un nouvel avis sur ${listingTitle}`,
           html: `<!DOCTYPE html>
