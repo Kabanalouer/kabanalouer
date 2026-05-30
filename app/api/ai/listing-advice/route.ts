@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 512,
       system:
         "Tu es un expert en optimisation d'annonces de location de chalet au Québec. " +
@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     if (!Array.isArray(parsed.conseils)) return NextResponse.json({ error: "Format de réponse invalide." }, { status: 500 });
     return NextResponse.json({ conseils: (parsed.conseils as string[]).slice(0, 3) });
   } catch (err) {
-    console.error("[listing-advice]", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[listing-advice] error:", message);
     return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
   }
 }
