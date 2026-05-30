@@ -902,7 +902,7 @@ export default function EditListingForm({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="font-semibold text-sm text-charcoal-800">À partir de</p>
-                  <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Affichez un prix de base sur votre fiche. Les voyageurs voient votre tarif minimum et vous contactent pour confirmer.</p>
+                  <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Affichez un prix de base sur votre fiche et générez des demandes de devis de la part des voyageurs pour leur donner le vrai prix selon les dates de leur séjour.</p>
                 </button>
                 <button type="button" onClick={() => set("price_on_request", true)}
                   className={`text-left p-4 rounded-xl border-2 transition-colors ${form.price_on_request ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
