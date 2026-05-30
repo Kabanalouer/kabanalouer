@@ -19,6 +19,7 @@ export interface Listing {
   isFavorite?: boolean;
   isNew?: boolean;
   hasPromo?: boolean;
+  isFeatured?: boolean;
   tags: string[];
 }
 
@@ -122,6 +123,11 @@ export default function ListingCard({
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {listing.isFeatured && (
+            <span className="bg-[#636e40] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+              Vedette
+            </span>
+          )}
           {listing.hasPromo && (
             <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
               Promo

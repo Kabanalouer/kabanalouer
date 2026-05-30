@@ -36,6 +36,39 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
   }));
 
+  // Vedette listings for this region and current month
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const { data: vedetteRows } = await supabase
+    .from("featured_listings")
+    .select("listing_id")
+    .eq("type", "region")
+    .eq("region", regionConfig.dbValue)
+    .eq("month", currentMonth)
+    .eq("status", "active")
+    .limit(3);
+  const vedetteIds = (vedetteRows ?? []).map((r) => r.listing_id as string);
+  const { data: rawVedette } = vedetteIds.length > 0
+    ? await supabase
+        .from("listings")
+        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities")
+        .in("id", vedetteIds)
+        .eq("is_published", true)
+    : { data: [] as typeof rawListings };
+  const vedetteListings: Listing[] = (rawVedette ?? []).map((l) => ({
+    id: l.id,
+    title: l.title ?? "",
+    region: l.region ?? "",
+    city: (l.city as string | null) ?? null,
+    price: (l.price_low as number) ?? 0,
+    priceOnRequest: (l.price_on_request as boolean) ?? false,
+    capacity: (l.capacity as number) ?? 1,
+    bedrooms: (l.bedrooms as number) ?? 1,
+    photos: normalizePhotos(l.photos).map((p) => p.url),
+    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    isFeatured: true,
+  }));
+
   const otherRegions = REGIONS.filter((r) => r.slug !== regionConfig.slug);
 
   const breadcrumbJsonLd = {
@@ -127,6 +160,18 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           <SearchBar initialRegion={regionConfig.dbValue} />
         </div>
       </section>
+
+      {/* ── Chalets en vedette dans cette région ── */}
+      {vedetteListings.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 w-full">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Chalets en vedette dans cette région</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+            {vedetteListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Results ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">

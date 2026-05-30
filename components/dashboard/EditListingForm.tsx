@@ -15,6 +15,7 @@ import AvailabilityCalendar, { type BlockedEntry } from "./AvailabilityCalendar"
 import ICalSync from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
+import FeaturedListingSection from "./FeaturedListingSection";
 
 
 type FormState = {
@@ -66,6 +67,7 @@ type SectionId =
   | "tarifs"
   | "infos"
   | "promotions"
+  | "vedette"
   | "publier";
 
 const SECTIONS: Array<{
@@ -102,6 +104,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
   promotions:   [],
+  vedette:      [],
   publier:      [],
 };
 
@@ -464,6 +467,15 @@ export default function EditListingForm({
               </button>
             )}
             <button
+              type="button"
+              onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
+              disabled={!isPublished}
+              title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
+              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+            >
+              Mettre en vedette
+            </button>
+            <button
               onClick={() => setPreviewOpen(true)}
               disabled={!canPreview}
               title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
@@ -498,6 +510,15 @@ export default function EditListingForm({
               Publier mon annonce
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
+            disabled={!isPublished}
+            title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
+            className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+          >
+            Mettre en vedette
+          </button>
           <button
             onClick={() => setPreviewOpen(true)}
             disabled={!canPreview}
@@ -1202,6 +1223,13 @@ export default function EditListingForm({
               </SectionShell>
             );
           })()}
+
+          {/* Section: Vedette */}
+          {activeSection === "vedette" && (
+            <SectionShell title="Annonce vedette">
+              <FeaturedListingSection listingId={listingId} region={form.region} />
+            </SectionShell>
+          )}
 
           {/* Section: Promotions */}
           {activeSection === "promotions" && (

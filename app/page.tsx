@@ -62,6 +62,38 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(6);
 
+  // Vedette listings for current month
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const { data: vedetteRows } = await supabase
+    .from("featured_listings")
+    .select("listing_id")
+    .eq("type", "home")
+    .eq("month", currentMonth)
+    .eq("status", "active")
+    .limit(3);
+  const vedetteIds = (vedetteRows ?? []).map((r) => r.listing_id as string);
+  const { data: rawVedette } = vedetteIds.length > 0
+    ? await supabase
+        .from("listings")
+        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities")
+        .in("id", vedetteIds)
+        .eq("is_published", true)
+    : { data: [] as typeof rawListings };
+  const vedetteListings: Listing[] = (rawVedette ?? []).map((l) => ({
+    id: l.id,
+    title: l.title ?? "",
+    region: l.region ?? "",
+    city: (l.city as string | null) ?? null,
+    price: (l.price_low as number) ?? 0,
+    priceOnRequest: (l.price_on_request as boolean) ?? false,
+    capacity: (l.capacity as number) ?? 1,
+    bedrooms: (l.bedrooms as number) ?? 1,
+    photos: normalizePhotos(l.photos).map((p) => p.url),
+    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    isFeatured: true,
+  }));
+
   const featuredIds = (rawListings ?? []).map((l) => l.id as string);
   const today = new Date().toISOString().split("T")[0];
   const { data: activePromos } = featuredIds.length > 0
@@ -149,6 +181,20 @@ export default async function HomePage() {
 
         </div>
       </section>
+
+      {/* ── Chalets en vedette ── */}
+      {vedetteListings.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 w-full">
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-8 tracking-[-0.02em]">
+            Chalets en vedette
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+            {vedetteListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Featured listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
