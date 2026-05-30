@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 512,
       system:
         "Tu es un expert en optimisation d'annonces de location de chalet au Québec. " +

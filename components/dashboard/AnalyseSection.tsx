@@ -32,8 +32,6 @@ type Props = {
   amenities: string[];
   nearbyActivities: string[];
   citqNumber: string;
-  checkinTime: string;
-  checkoutTime: string;
   icalUrl: string | null;
   initialBlocked: BlockedEntry[];
   region: string;
@@ -56,7 +54,7 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
 
 export default function AnalyseSection({
   userId, listingId, photoCount, title, description, amenities,
-  nearbyActivities, citqNumber, checkinTime, checkoutTime,
+  nearbyActivities, citqNumber,
   icalUrl, initialBlocked, region, capacity, onNavigate,
 }: Props) {
   const [dbData, setDbData] = useState<DbData | null>(null);
@@ -110,7 +108,7 @@ export default function AnalyseSection({
     { key: "photos25",   label: "25 photos et plus",                                         points: 5,  achieved: photoCount >= 25,               section: "photos" },
     { key: "roomPhotos", label: "Toutes les chambres et salons ont au moins 1 photo",        points: 10, achieved: dbData.roomsAllHavePhotos,        section: "chambres" },
     { key: "bio",        label: "Bio du propriétaire remplie",                               points: 5,  achieved: dbData.bioFilled,                profileLink: true, priority: !dbData.bioFilled },
-    { key: "avatar",     label: "Photo de profil remplie",                                   points: 5,  achieved: dbData.avatarFilled,             profileLink: true, priority: !dbData.avatarFilled },
+    { key: "avatar",     label: "Photo de profil remplie",                                   points: 10, achieved: dbData.avatarFilled,             profileLink: true, priority: !dbData.avatarFilled },
     { key: "title40",    label: "Titre de 40 caractères et plus",                            points: 5,  achieved: title.length >= 40,              section: "titre" },
     { key: "desc500",    label: "Description de 500 caractères et plus",                     points: 10, achieved: description.length >= 500,       section: "description" },
     { key: "desc1500",   label: "Description de 1500 caractères et plus",                    points: 5,  achieved: description.length >= 1500,      section: "description" },
@@ -118,7 +116,6 @@ export default function AnalyseSection({
     { key: "nearby",     label: "Activités à proximité renseignées",                         points: 5,  achieved: nearbyActivities.length > 0,     section: "proximite" },
     { key: "avail",      label: "iCal synchronisé ou disponibilités saisies",                points: 10, achieved: hasAvailability,                 section: "calendrier" },
     { key: "citq",       label: "Numéro CITQ renseigné (6 chiffres)",                        points: 5,  achieved: citqNumber.length === 6,         section: "infos" },
-    { key: "checkinout", label: "Heure de check-in et check-out renseignées",                points: 5,  achieved: !!(checkinTime && checkoutTime), section: "infos" },
     { key: "review1",    label: "Au moins 1 avis reçu",                                      points: 5,  achieved: dbData.reviewCount >= 1 },
     { key: "review6mo",  label: "Au moins 1 avis dans les 6 derniers mois",                  points: 5,  achieved: dbData.recentReviewCount >= 1 },
   ];

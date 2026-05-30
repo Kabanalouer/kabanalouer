@@ -1313,8 +1313,6 @@ export default function EditListingForm({
                 amenities={form.amenities}
                 nearbyActivities={form.nearby_activities}
                 citqNumber={form.citq_number}
-                checkinTime={form.checkin_time}
-                checkoutTime={form.checkout_time}
                 icalUrl={icalUrl}
                 initialBlocked={initialBlocked}
                 region={form.region}
