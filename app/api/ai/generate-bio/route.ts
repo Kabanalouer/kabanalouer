@@ -6,8 +6,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT =
   "Tu es un spécialiste en rédaction de présentation pour les propriétaires de chalet au Québec. " +
-  "Rédige une courte présentation chaleureuse et authentique en français québécois pour un propriétaire de chalet, " +
-  "à la première personne, maximum 280 caractères. Utilise le prénom fourni. Pas d'emojis.";
+  "Rédige une courte présentation en français québécois naturel pour un propriétaire de chalet, à la première personne, maximum 280 caractères. " +
+  "Utilise le prénom fourni. Pas d'emojis. Sentence case. " +
+  "Ton : chaleureux et authentique, mais professionnel. Jamais trop familier. " +
+  "Interdire absolument toute accroche décontractée comme 'Yo', 'Salut!', 'Hey', 'Allo les amis', 'Bonjour tout le monde' ou toute formule similaire. " +
+  "La bio doit commencer par une phrase sobre et accueillante qui présente le propriétaire (ex. : 'Je m'appelle [prénom] et…' ou '[Prénom], propriétaire de chalet depuis…').";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
