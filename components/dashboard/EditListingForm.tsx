@@ -16,6 +16,7 @@ import ICalSync from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
+import AnalyseSection from "./AnalyseSection";
 
 
 type FormState = {
@@ -67,6 +68,7 @@ type SectionId =
   | "tarifs"
   | "infos"
   | "promotions"
+  | "analyse"
   | "vedette"
   | "publier";
 
@@ -88,6 +90,7 @@ const SECTIONS: Array<{
   { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
   { id: "promotions",   label: "Promotions",           emoji: "",   isComplete: () => true },
+  { id: "analyse",      label: "Analyse de mon annonce", emoji: "", isComplete: () => true },
 ];
 
 // Fields saved per section
@@ -104,6 +107,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
   promotions:   [],
+  analyse:      [],
   vedette:      [],
   publier:      [],
 };
@@ -1294,6 +1298,29 @@ export default function EditListingForm({
           {activeSection === "promotions" && (
             <SectionShell title="Promotions">
               <PromotionsSection listingId={listingId} />
+            </SectionShell>
+          )}
+
+          {/* Section: Analyse */}
+          {activeSection === "analyse" && (
+            <SectionShell title="Analyse de mon annonce">
+              <AnalyseSection
+                userId={userId}
+                listingId={listingId}
+                photoCount={form.photos.length}
+                title={form.title}
+                description={form.description}
+                amenities={form.amenities}
+                nearbyActivities={form.nearby_activities}
+                citqNumber={form.citq_number}
+                checkinTime={form.checkin_time}
+                checkoutTime={form.checkout_time}
+                icalUrl={icalUrl}
+                initialBlocked={initialBlocked}
+                region={form.region}
+                capacity={form.capacity}
+                onNavigate={(s) => { setActiveSection(s as SectionId); setSaveError(""); setJustSaved(false); }}
+              />
             </SectionShell>
           )}
 
