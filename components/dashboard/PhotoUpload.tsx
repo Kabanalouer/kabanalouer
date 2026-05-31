@@ -457,29 +457,25 @@ export default function PhotoUpload({
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
             const label = `Miniature ${photoIdx}`;
-            if (photo) return renderPhotoTile(photo, photoIdx, label, "aspect-square");
-            return (
-              <button
-                key={`empty-${photoIdx}`}
-                type="button"
-                onClick={() => canUpload && inputRef.current?.click()}
-                className={`aspect-square w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1.5 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
-              >
-                <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="text-[10px] text-charcoal-400">{label}</span>
-              </button>
-            );
-          })}
-        </div>
-        {photos.slice(1, 5).some(Boolean) && (
-          <div className="grid grid-cols-2 gap-3 mt-1.5">
-            {[1, 2, 3, 4].map((photoIdx) => {
-              const photo = photos[photoIdx];
-              if (!photo) return <div key={photoIdx} />;
+            if (!photo) {
               return (
-                <div key={photoIdx} className="flex items-center gap-1">
+                <button
+                  key={`empty-${photoIdx}`}
+                  type="button"
+                  onClick={() => canUpload && inputRef.current?.click()}
+                  className={`aspect-square w-full rounded-xl border-2 border-dashed border-[#ebebeb] flex flex-col items-center justify-center gap-1.5 transition-colors ${canUpload ? "hover:border-primary hover:bg-primary-50 cursor-pointer" : "opacity-40 cursor-default"}`}
+                >
+                  <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-[10px] text-charcoal-400">{label}</span>
+                </button>
+              );
+            }
+            return (
+              <div key={photo.url}>
+                {renderPhotoTile(photo, photoIdx, label, "aspect-square")}
+                <div className="flex items-center gap-1 mt-1.5">
                   <input
                     type="text"
                     value={photo.caption}
@@ -493,10 +489,10 @@ export default function PhotoUpload({
                   />
                   <CaptionButton i={photoIdx} generatingIdx={generatingIdx} onClick={() => void generateCaption(photoIdx)} />
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Processing slots */}
@@ -514,26 +510,23 @@ export default function PhotoUpload({
           <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
-              return renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square");
-            })}
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-1.5">
-            {others.map((item, j) => {
-              const i = j + 5;
               return (
-                <div key={item.url} className="flex items-center gap-1">
-                  <input
-                    type="text"
-                    value={item.caption}
-                    maxLength={140}
-                    placeholder="Légende"
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onChange={(e) => updateCaption(i, e.target.value)}
-                    onBlur={() => savePhotos()}
-                    disabled={generatingIdx === i}
-                    className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
-                  />
-                  <CaptionButton i={i} generatingIdx={generatingIdx} onClick={() => void generateCaption(i)} />
+                <div key={item.url}>
+                  {renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square")}
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <input
+                      type="text"
+                      value={item.caption}
+                      maxLength={140}
+                      placeholder="Légende"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onChange={(e) => updateCaption(i, e.target.value)}
+                      onBlur={() => savePhotos()}
+                      disabled={generatingIdx === i}
+                      className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
+                    />
+                    <CaptionButton i={i} generatingIdx={generatingIdx} onClick={() => void generateCaption(i)} />
+                  </div>
                 </div>
               );
             })}
