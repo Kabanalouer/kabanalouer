@@ -93,6 +93,7 @@ export default function PhotoUpload({
   const [saving, setSaving] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [generatingIdx, setGeneratingIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean } | null>(null);
@@ -207,6 +208,27 @@ export default function PhotoUpload({
   const updateCaption = (i: number, caption: string) => {
     const next = photos.map((p, j) => (j === i ? { ...p, caption } : p));
     onChange(next);
+  };
+
+  const generateCaption = async (i: number) => {
+    const photo = photosRef.current[i];
+    if (!photo || generatingIdx !== null) return;
+    setGeneratingIdx(i);
+    try {
+      const res = await fetch("/api/ai/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: photo.url }),
+      });
+      const data = await res.json() as { caption?: string };
+      if (data.caption) {
+        const next = photosRef.current.map((p, j) => (j === i ? { ...p, caption: data.caption! } : p));
+        onChange(next);
+        savePhotos(next);
+      }
+    } finally {
+      setGeneratingIdx(null);
+    }
   };
 
   // ── Reorder ────────────────────────────────────────────────────────────────
@@ -410,16 +432,20 @@ export default function PhotoUpload({
           )}
         </div>
         {photos[0] && (
-          <input
-            type="text"
-            value={photos[0].caption}
-            maxLength={140}
-            placeholder="Légende (optionnel)"
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => updateCaption(0, e.target.value)}
-            onBlur={() => savePhotos()}
-            className="mt-1.5 w-full text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
-          />
+          <div className="mt-1.5 flex items-center gap-1">
+            <input
+              type="text"
+              value={photos[0].caption}
+              maxLength={140}
+              placeholder="Légende (optionnel)"
+              onMouseDown={(e) => e.stopPropagation()}
+              onChange={(e) => updateCaption(0, e.target.value)}
+              onBlur={() => savePhotos()}
+              disabled={generatingIdx === 0}
+              className="flex-1 text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
+            />
+            <CaptionButton i={0} generatingIdx={generatingIdx} onClick={() => void generateCaption(0)} />
+          </div>
         )}
       </div>
 
@@ -453,17 +479,20 @@ export default function PhotoUpload({
               const photo = photos[photoIdx];
               if (!photo) return <div key={photoIdx} />;
               return (
-                <input
-                  key={photoIdx}
-                  type="text"
-                  value={photo.caption}
-                  maxLength={140}
-                  placeholder={`Légende ${photoIdx}`}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onChange={(e) => updateCaption(photoIdx, e.target.value)}
-                  onBlur={() => savePhotos()}
-                  className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
-                />
+                <div key={photoIdx} className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={photo.caption}
+                    maxLength={140}
+                    placeholder={`Légende ${photoIdx}`}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onChange={(e) => updateCaption(photoIdx, e.target.value)}
+                    onBlur={() => savePhotos()}
+                    disabled={generatingIdx === photoIdx}
+                    className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
+                  />
+                  <CaptionButton i={photoIdx} generatingIdx={generatingIdx} onClick={() => void generateCaption(photoIdx)} />
+                </div>
               );
             })}
           </div>
@@ -492,7 +521,7 @@ export default function PhotoUpload({
             {others.map((item, j) => {
               const i = j + 5;
               return (
-                <div key={item.url}>
+                <div key={item.url} className="flex items-center gap-1">
                   <input
                     type="text"
                     value={item.caption}
@@ -501,8 +530,10 @@ export default function PhotoUpload({
                     onMouseDown={(e) => e.stopPropagation()}
                     onChange={(e) => updateCaption(i, e.target.value)}
                     onBlur={() => savePhotos()}
-                    className="w-full text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition"
+                    disabled={generatingIdx === i}
+                    className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
                   />
+                  <CaptionButton i={i} generatingIdx={generatingIdx} onClick={() => void generateCaption(i)} />
                 </div>
               );
             })}
@@ -545,5 +576,36 @@ export default function PhotoUpload({
         <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
       </div>
     </div>
+  );
+}
+
+function CaptionButton({
+  i,
+  generatingIdx,
+  onClick,
+}: {
+  i: number;
+  generatingIdx: number | null;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      title="Générer une légende"
+      onClick={onClick}
+      disabled={generatingIdx !== null}
+      className="shrink-0 p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-40"
+    >
+      {generatingIdx === i ? (
+        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      ) : (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+        </svg>
+      )}
+    </button>
   );
 }
