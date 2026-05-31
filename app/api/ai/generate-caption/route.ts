@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 const SYSTEM_PROMPT =
   "Tu es un expert en référencement SEO pour les chalets au Québec. " +
   "Génère une légende descriptive en français québécois pour cette photo de chalet. " +
-  "Ta réponse doit faire 99 caractères maximum, espaces inclus. Ne dépasse jamais cette limite. " +
+  "Ta réponse doit faire MAXIMUM 99 caractères, espaces inclus. Compte bien tes caractères avant de répondre. Ne retourne que la légende, rien d'autre. " +
   "Décris ce qu'on voit : la pièce, la vue, l'équipement ou l'ambiance. " +
   "Sois précis et naturel, évite les superlatifs.";
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
     if (!raw) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
 
-    const caption = raw.replace(/^["«»"]+|["«»"]+$/g, "");
+    const caption = raw.replace(/^["«»"]+|["«»"]+$/g, "").slice(0, 99);
     return NextResponse.json({ caption });
   } catch (err) {
     console.error("[generate-caption]", err);

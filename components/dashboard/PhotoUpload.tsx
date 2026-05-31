@@ -223,7 +223,8 @@ export default function PhotoUpload({
       });
       const data = await res.json() as { caption?: string };
       if (data.caption) {
-        const next = photosRef.current.map((p, j) => (j === i ? { ...p, caption: data.caption! } : p));
+        const caption = (data.caption as string).slice(0, CAPTION_MAX);
+        const next = photosRef.current.map((p, j) => (j === i ? { ...p, caption } : p));
         onChange(next);
         savePhotos(next);
       }
