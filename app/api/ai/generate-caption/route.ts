@@ -2,19 +2,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const CAPTION_MAX = 140;
-
 const SYSTEM_PROMPT =
   "Tu es un expert en référencement SEO pour les chalets au Québec. " +
   "Génère une légende descriptive en français québécois pour cette photo de chalet. " +
-  `Maximum ${CAPTION_MAX} caractères. ` +
+  "Ta réponse doit faire 139 caractères maximum, espaces inclus. Ne dépasse jamais cette limite. " +
   "Décris ce qu'on voit : la pièce, la vue, l'équipement ou l'ambiance. " +
   "Sois précis et naturel, évite les superlatifs.";
-
-function truncateToLastWord(text: string, max: number): string {
-  if (text.length <= max) return text;
-  return text.slice(0, max).replace(/\s+\S*$/, "").trimEnd();
-}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -47,7 +40,7 @@ export async function POST(request: Request) {
             },
             {
               type: "text",
-              text: `Génère une légende pour cette photo. Retourne UNIQUEMENT la légende, sans guillemets, sans ponctuation finale, sans markdown. Maximum ${CAPTION_MAX} caractères.`,
+              text: "Génère une légende pour cette photo. Retourne UNIQUEMENT la légende, sans guillemets, sans ponctuation finale, sans markdown. Ta réponse doit faire 139 caractères maximum, espaces inclus. Ne dépasse jamais cette limite.",
             },
           ],
         },
@@ -57,7 +50,7 @@ export async function POST(request: Request) {
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
     if (!raw) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
 
-    const caption = truncateToLastWord(raw.replace(/^["«»"]+|["«»"]+$/g, ""), CAPTION_MAX);
+    const caption = raw.replace(/^["«»"]+|["«»"]+$/g, "");
     return NextResponse.json({ caption });
   } catch (err) {
     console.error("[generate-caption]", err);

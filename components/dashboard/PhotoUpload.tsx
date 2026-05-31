@@ -453,7 +453,7 @@ export default function PhotoUpload({
       <div>
         <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
         <p className="text-xs text-charcoal-400 mb-3">Ces 4 photos s&apos;affichent à côté de la photo de couverture sur votre fiche.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
             const label = `Miniature ${photoIdx}`;
@@ -474,7 +474,7 @@ export default function PhotoUpload({
           })}
         </div>
         {photos.slice(1, 5).some(Boolean) && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-1.5">
+          <div className="grid grid-cols-2 gap-3 mt-1.5">
             {[1, 2, 3, 4].map((photoIdx) => {
               const photo = photos[photoIdx];
               if (!photo) return <div key={photoIdx} />;
@@ -511,13 +511,13 @@ export default function PhotoUpload({
         <div>
           <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
           <p className="text-xs text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
               return renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square");
             })}
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-1.5">
+          <div className="grid grid-cols-2 gap-3 mt-1.5">
             {others.map((item, j) => {
               const i = j + 5;
               return (
