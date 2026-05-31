@@ -11,6 +11,7 @@ const MAX_SIZE_MB = 8;
 const MIN_LONG_SIDE = 1200;
 const MIN_SHORT_SIDE = 800;
 export const MIN_PHOTOS = 5;
+const CAPTION_MAX = 100;
 
 // ── Image compression ────────────────────────────────────────────────────────
 
@@ -432,20 +433,17 @@ export default function PhotoUpload({
           )}
         </div>
         {photos[0] && (
-          <div className="mt-1.5 flex items-center gap-1">
-            <input
-              type="text"
-              value={photos[0].caption}
-              maxLength={140}
-              placeholder="Légende (optionnel)"
-              onMouseDown={(e) => e.stopPropagation()}
-              onChange={(e) => updateCaption(0, e.target.value)}
-              onBlur={() => savePhotos()}
-              disabled={generatingIdx === 0}
-              className="flex-1 text-xs border border-[#ebebeb] rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
-            />
-            <CaptionButton i={0} generatingIdx={generatingIdx} onClick={() => void generateCaption(0)} />
-          </div>
+          <CaptionField
+            value={photos[0].caption}
+            placeholder="Légende (optionnel)"
+            disabled={generatingIdx === 0}
+            onChange={(v) => updateCaption(0, v)}
+            onBlur={() => savePhotos()}
+            onMouseDown={(e) => e.stopPropagation()}
+            i={0}
+            generatingIdx={generatingIdx}
+            onGenerate={() => void generateCaption(0)}
+          />
         )}
       </div>
 
@@ -475,20 +473,17 @@ export default function PhotoUpload({
             return (
               <div key={photo.url}>
                 {renderPhotoTile(photo, photoIdx, label, "aspect-square")}
-                <div className="flex items-center gap-1 mt-1.5">
-                  <input
-                    type="text"
-                    value={photo.caption}
-                    maxLength={140}
-                    placeholder={`Légende ${photoIdx}`}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onChange={(e) => updateCaption(photoIdx, e.target.value)}
-                    onBlur={() => savePhotos()}
-                    disabled={generatingIdx === photoIdx}
-                    className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
-                  />
-                  <CaptionButton i={photoIdx} generatingIdx={generatingIdx} onClick={() => void generateCaption(photoIdx)} />
-                </div>
+                <CaptionField
+                  value={photo.caption}
+                  placeholder={`Légende ${photoIdx}`}
+                  disabled={generatingIdx === photoIdx}
+                  onChange={(v) => updateCaption(photoIdx, v)}
+                  onBlur={() => savePhotos()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  i={photoIdx}
+                  generatingIdx={generatingIdx}
+                  onGenerate={() => void generateCaption(photoIdx)}
+                />
               </div>
             );
           })}
@@ -513,20 +508,17 @@ export default function PhotoUpload({
               return (
                 <div key={item.url}>
                   {renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square")}
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <input
-                      type="text"
-                      value={item.caption}
-                      maxLength={140}
-                      placeholder="Légende"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onChange={(e) => updateCaption(i, e.target.value)}
-                      onBlur={() => savePhotos()}
-                      disabled={generatingIdx === i}
-                      className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50"
-                    />
-                    <CaptionButton i={i} generatingIdx={generatingIdx} onClick={() => void generateCaption(i)} />
-                  </div>
+                  <CaptionField
+                    value={item.caption}
+                    placeholder="Légende"
+                    disabled={generatingIdx === i}
+                    onChange={(v) => updateCaption(i, v)}
+                    onBlur={() => savePhotos()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    i={i}
+                    generatingIdx={generatingIdx}
+                    onGenerate={() => void generateCaption(i)}
+                  />
                 </div>
               );
             })}
@@ -568,6 +560,62 @@ export default function PhotoUpload({
         <p><span className="font-semibold text-charcoal-500">Maximum de photos :</span> {MAX_PHOTOS}</p>
         <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
       </div>
+    </div>
+  );
+}
+
+function CaptionField({
+  value,
+  placeholder,
+  disabled,
+  onChange,
+  onBlur,
+  onMouseDown,
+  i,
+  generatingIdx,
+  onGenerate,
+}: {
+  value: string;
+  placeholder: string;
+  disabled: boolean;
+  onChange: (v: string) => void;
+  onBlur: () => void;
+  onMouseDown: (e: React.MouseEvent) => void;
+  i: number;
+  generatingIdx: number | null;
+  onGenerate: () => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [value]);
+
+  const near = value.length >= CAPTION_MAX - 15;
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex items-start gap-1">
+        <textarea
+          ref={ref}
+          value={value}
+          maxLength={CAPTION_MAX}
+          placeholder={placeholder}
+          rows={1}
+          onMouseDown={onMouseDown}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          disabled={disabled}
+          className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50 resize-none overflow-hidden"
+        />
+        <CaptionButton i={i} generatingIdx={generatingIdx} onClick={onGenerate} />
+      </div>
+      <p className={`text-right text-[10px] mt-0.5 tabular-nums ${near ? "text-[#f04e45]" : "text-charcoal-300"}`}>
+        {value.length}/{CAPTION_MAX}
+      </p>
     </div>
   );
 }

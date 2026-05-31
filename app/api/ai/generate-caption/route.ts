@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 const SYSTEM_PROMPT =
   "Tu es un expert en référencement SEO pour les chalets au Québec. " +
   "Génère une légende descriptive en français québécois pour cette photo de chalet. " +
-  "Ta réponse doit faire 139 caractères maximum, espaces inclus. Ne dépasse jamais cette limite. " +
+  "Ta réponse doit faire 99 caractères maximum, espaces inclus. Ne dépasse jamais cette limite. " +
   "Décris ce qu'on voit : la pièce, la vue, l'équipement ou l'ambiance. " +
   "Sois précis et naturel, évite les superlatifs.";
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
             },
             {
               type: "text",
-              text: "Génère une légende pour cette photo. Retourne UNIQUEMENT la légende, sans guillemets, sans ponctuation finale, sans markdown. Ta réponse doit faire 139 caractères maximum, espaces inclus. Ne dépasse jamais cette limite.",
+              text: "Génère une légende pour cette photo. Retourne UNIQUEMENT la légende, sans guillemets, sans ponctuation finale, sans markdown. Ta réponse doit faire 99 caractères maximum, espaces inclus. Ne dépasse jamais cette limite.",
             },
           ],
         },
