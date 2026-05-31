@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
 
 type DbData = {
@@ -11,16 +12,6 @@ type DbData = {
   avatarFilled: boolean;
   reviewCount: number;
   recentReviewCount: number;
-};
-
-type Criterion = {
-  key: string;
-  label: string;
-  points: number;
-  achieved: boolean;
-  section?: string;
-  profileLink?: boolean;
-  priority?: boolean;
 };
 
 type Props = {
@@ -38,14 +29,6 @@ type Props = {
   capacity: number;
   onNavigate: (section: string) => void;
 };
-
-function getLevel(score: number): { color: string; label: string } {
-  if (score <= 30) return { color: "#ef4444", label: "Annonce incomplète" };
-  if (score <= 50) return { color: "#f97316", label: "Annonce à améliorer" };
-  if (score <= 70) return { color: "#f59e0b", label: "Bonne annonce" };
-  if (score <= 84) return { color: "#84cc16", label: "Très bonne annonce" };
-  return { color: "#636e40", label: "Annonce optimisée" };
-}
 
 const R = 50;
 const CX = 64;
@@ -101,27 +84,25 @@ export default function AnalyseSection({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const hasFutureBlocked = initialBlocked.some((b) => new Date(b.date) >= today);
-  const hasAvailability = !!(icalUrl?.trim()) || hasFutureBlocked;
 
-  const criteria: Criterion[] = [
-    { key: "photos5",    label: "5 photos minimum",                                         points: 10, achieved: photoCount >= 5,                section: "photos" },
-    { key: "photos25",   label: "25 photos et plus",                                         points: 5,  achieved: photoCount >= 25,               section: "photos" },
-    { key: "roomPhotos", label: "Toutes les chambres et salons ont au moins 1 photo",        points: 10, achieved: dbData.roomsAllHavePhotos,        section: "chambres" },
-    { key: "bio",        label: "Bio du propriétaire remplie",                               points: 5,  achieved: dbData.bioFilled,                profileLink: true, priority: !dbData.bioFilled },
-    { key: "avatar",     label: "Photo de profil remplie",                                   points: 10, achieved: dbData.avatarFilled,             profileLink: true, priority: !dbData.avatarFilled },
-    { key: "title40",    label: "Titre de 40 caractères et plus",                            points: 5,  achieved: title.length >= 40,              section: "titre" },
-    { key: "desc500",    label: "Description de 500 caractères et plus",                     points: 10, achieved: description.length >= 500,       section: "description" },
-    { key: "desc1500",   label: "Description de 1500 caractères et plus",                    points: 5,  achieved: description.length >= 1500,      section: "description" },
-    { key: "amenities",  label: "10 caractéristiques sélectionnées et plus",                 points: 10, achieved: amenities.length >= 10,          section: "equipements" },
-    { key: "nearby",     label: "Activités à proximité renseignées",                         points: 5,  achieved: nearbyActivities.length > 0,     section: "proximite" },
-    { key: "avail",      label: "iCal synchronisé ou disponibilités saisies",                points: 10, achieved: hasAvailability,                 section: "calendrier" },
-    { key: "citq",       label: "Numéro CITQ renseigné (6 chiffres)",                        points: 5,  achieved: citqNumber.length === 6,         section: "infos" },
-    { key: "review1",    label: "Au moins 1 avis reçu",                                      points: 5,  achieved: dbData.reviewCount >= 1 },
-    { key: "review6mo",  label: "Au moins 1 avis dans les 6 derniers mois",                  points: 5,  achieved: dbData.recentReviewCount >= 1 },
-  ];
+  const criteria = buildCriteria({
+    photoCount,
+    title,
+    description,
+    amenities,
+    nearbyActivities,
+    citqNumber,
+    icalUrl,
+    hasFutureBlocked,
+    roomsAllHavePhotos: dbData.roomsAllHavePhotos,
+    bioFilled: dbData.bioFilled,
+    avatarFilled: dbData.avatarFilled,
+    reviewCount: dbData.reviewCount,
+    recentReviewCount: dbData.recentReviewCount,
+  });
 
   const score = criteria.reduce((sum, c) => sum + (c.achieved ? c.points : 0), 0);
-  const { color, label } = getLevel(score);
+  const { color, label } = getScoreLevel(score);
 
   const priorityMissing = criteria.filter((c) => !c.achieved && c.priority);
   const regularMissing = criteria

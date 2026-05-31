@@ -17,6 +17,7 @@ import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
+import { computeScore, getScoreLevel } from "@/lib/listingScore";
 
 
 type FormState = {
@@ -116,6 +117,11 @@ const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 const FREE_LAUNCH_LIMIT = 50;
+
+const INDICATOR_SECTION_IDS = new Set<SectionId>([
+  "photos", "titre", "description", "capacite", "chambres",
+  "equipements", "tarifs", "calendrier", "localisation", "infos", "promotions",
+]);
 const TITLE_MAX = 50;
 const DESC_MAX = 2500;
 const PUBLISH_FEATURES = [
@@ -196,25 +202,54 @@ export default function EditListingForm({
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [roomsValid, setRoomsValid] = useState(false);
+  const [roomsHasBeds, setRoomsHasBeds] = useState(false);
+  const [roomsAllHavePhotos, setRoomsAllHavePhotos] = useState(false);
+  const [promotionsHasActive, setPromotionsHasActive] = useState(false);
+  const [scoreDbData, setScoreDbData] = useState({ bioFilled: false, avatarFilled: false, reviewCount: 0, recentReviewCount: 0 });
+  const [scoreDbLoaded, setScoreDbLoaded] = useState(false);
   const [locationValid, setLocationValid] = useState(!!(initialLat && initialLng));
   const [showPublishErrors, setShowPublishErrors] = useState(false);
 
   useEffect(() => {
     supabase
       .from("rooms")
-      .select("beds")
+      .select("beds, photos")
       .eq("listing_id", listingId)
       .then(({ data }) => {
         if (!data) return;
-        setRoomsValid(
+        setRoomsHasBeds(
           data.some((r) => {
             const beds = Array.isArray(r.beds) ? (r.beds as { type: string; quantity: number }[]) : [];
             return beds.some((b) => b.quantity > 0);
           })
         );
+        setRoomsAllHavePhotos(
+          data.length > 0 &&
+          data.every((r) => Array.isArray(r.photos) && (r.photos as string[]).length > 0)
+        );
       });
   }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    void Promise.all([
+      supabase.from("users").select("bio, avatar_url").eq("id", userId).single(),
+      supabase.from("reviews").select("created_at").eq("listing_id", listingId),
+      supabase.from("promotions").select("id").eq("listing_id", listingId).eq("is_active", true).limit(1),
+    ]).then(([userRes, reviewsRes, promoRes]) => {
+      const u = userRes.data;
+      const reviews = reviewsRes.data ?? [];
+      setScoreDbData({
+        bioFilled: !!u?.bio?.trim(),
+        avatarFilled: !!u?.avatar_url?.trim(),
+        reviewCount: reviews.length,
+        recentReviewCount: reviews.filter((r) => new Date(r.created_at) >= sixMonthsAgo).length,
+      });
+      setPromotionsHasActive((promoRes.data?.length ?? 0) > 0);
+      setScoreDbLoaded(true);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const REQUIRED_SECTION_IDS = new Set<SectionId>([
     "photos", "titre", "description", "capacite", "chambres",
@@ -226,7 +261,7 @@ export default function EditListingForm({
     titre: form.title.trim().length > 0,
     description: form.description.trim().length > 0,
     capacite: form.capacity >= 1,
-    chambres: roomsValid,
+    chambres: roomsHasBeds,
     equipements: form.amenities.length > 0,
     tarifs: form.price_on_request || form.price_low >= 50,
     localisation: locationValid,
@@ -238,6 +273,36 @@ export default function EditListingForm({
     .map(([id]) => id);
 
   const allRequiredComplete = incompleteSectionIds.length === 0;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const hasFutureBlocked = initialBlocked.some((b) => new Date(b.date) >= today);
+  const hasAvailability = !!(icalUrl?.trim()) || hasFutureBlocked;
+
+  const indicatorValid: Partial<Record<SectionId, boolean>> = {
+    ...sectionValid,
+    chambres: roomsHasBeds && roomsAllHavePhotos,
+    calendrier: hasAvailability,
+    promotions: promotionsHasActive,
+  };
+
+  const sidebarScore = scoreDbLoaded
+    ? computeScore({
+        photoCount: form.photos.length,
+        title: form.title,
+        description: form.description,
+        amenities: form.amenities,
+        nearbyActivities: form.nearby_activities,
+        citqNumber: form.citq_number,
+        icalUrl,
+        hasFutureBlocked,
+        roomsAllHavePhotos,
+        bioFilled: scoreDbData.bioFilled,
+        avatarFilled: scoreDbData.avatarFilled,
+        reviewCount: scoreDbData.reviewCount,
+        recentReviewCount: scoreDbData.recentReviewCount,
+      })
+    : null;
 
   // Title limit flash
   const [titleAtLimit, setTitleAtLimit] = useState(false);
@@ -451,31 +516,62 @@ export default function EditListingForm({
 
         {/* Mobile: horizontal scrollable tabs */}
         <div className="flex lg:hidden gap-1 overflow-x-auto pb-1 scrollbar-none">
-          {SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => { setActiveSection(s.id); setSaveError(""); setJustSaved(false); }}
-              className={[
-                "whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium transition-colors shrink-0",
-                activeSection === s.id
-                  ? "bg-primary text-white"
-                  : "bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50",
-              ].join(" ")}
-            >
-              {s.label}
-              {s.isComplete(form) && activeSection !== s.id && (
-                <span className="text-green-500 text-xs">✓</span>
-              )}
-            </button>
-          ))}
+          {SECTIONS.map((s) => {
+            const mobileActive = activeSection === s.id;
+            let mobileIndicator: React.ReactNode = null;
+            if (!mobileActive) {
+              if (s.id === "analyse") {
+                if (sidebarScore !== null) {
+                  const { color } = getScoreLevel(sidebarScore);
+                  mobileIndicator = <span className="ml-1 text-xs font-semibold tabular-nums" style={{ color }}>{sidebarScore}</span>;
+                }
+              } else if (INDICATOR_SECTION_IDS.has(s.id)) {
+                const valid = indicatorValid[s.id];
+                mobileIndicator = valid
+                  ? <span className="ml-1 text-green-500 text-xs">✓</span>
+                  : <span className="ml-1 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle" />;
+              }
+            }
+            return (
+              <button
+                key={s.id}
+                onClick={() => { setActiveSection(s.id); setSaveError(""); setJustSaved(false); }}
+                className={[
+                  "whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium transition-colors shrink-0 inline-flex items-center",
+                  mobileActive
+                    ? "bg-primary text-white"
+                    : "bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50",
+                ].join(" ")}
+              >
+                {s.label}
+                {mobileIndicator}
+              </button>
+            );
+          })}
         </div>
 
         {/* Desktop: vertical list */}
         <div className="hidden lg:flex flex-col gap-1">
           {SECTIONS.map((s) => {
             const active = activeSection === s.id;
-            const isRequired = REQUIRED_SECTION_IDS.has(s.id);
-            const valid = sectionValid[s.id];
+            let indicator: React.ReactNode = null;
+            if (!active) {
+              if (s.id === "analyse") {
+                if (sidebarScore !== null) {
+                  const { color } = getScoreLevel(sidebarScore);
+                  indicator = (
+                    <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color }}>
+                      {sidebarScore}
+                    </span>
+                  );
+                }
+              } else if (INDICATOR_SECTION_IDS.has(s.id)) {
+                const valid = indicatorValid[s.id];
+                indicator = valid
+                  ? <span className="text-green-500 text-xs shrink-0">✓</span>
+                  : <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />;
+              }
+            }
             return (
               <button
                 key={s.id}
@@ -488,11 +584,7 @@ export default function EditListingForm({
                 ].join(" ")}
               >
                 <span>{s.label}</span>
-                {!active && isRequired && (
-                  valid
-                    ? <span className="text-green-500 text-xs shrink-0">✓</span>
-                    : <span className="text-red-500 text-xs shrink-0">✗</span>
-                )}
+                {indicator}
               </button>
             );
           })}
