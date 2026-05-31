@@ -681,9 +681,6 @@ export default function EditListingForm({
           {/* Section: Photos */}
           {activeSection === "photos" && (
             <SectionShell title="Photos" emoji="📷">
-              <p className="text-sm font-medium text-charcoal-700 mb-3">
-                Photos
-              </p>
               <PhotoUpload
                 photos={form.photos}
                 userId={userId}
