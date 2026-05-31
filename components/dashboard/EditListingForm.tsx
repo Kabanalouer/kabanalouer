@@ -120,7 +120,7 @@ const FREE_LAUNCH_LIMIT = 50;
 
 const INDICATOR_SECTION_IDS = new Set<SectionId>([
   "photos", "titre", "description", "capacite", "chambres",
-  "equipements", "tarifs", "calendrier", "localisation", "infos", "promotions",
+  "equipements", "proximite", "tarifs", "calendrier", "localisation", "infos", "promotions",
 ]);
 const TITLE_MAX = 50;
 const DESC_MAX = 2500;
@@ -282,6 +282,7 @@ export default function EditListingForm({
   const indicatorValid: Partial<Record<SectionId, boolean>> = {
     ...sectionValid,
     chambres: roomsHasBeds && roomsAllHavePhotos,
+    proximite: form.nearby_activities.length > 0,
     calendrier: hasAvailability,
     promotions: promotionsHasActive,
   };
@@ -519,18 +520,16 @@ export default function EditListingForm({
           {SECTIONS.map((s) => {
             const mobileActive = activeSection === s.id;
             let mobileIndicator: React.ReactNode = null;
-            if (!mobileActive) {
-              if (s.id === "analyse") {
-                if (sidebarScore !== null) {
-                  const { color } = getScoreLevel(sidebarScore);
-                  mobileIndicator = <span className="ml-1 text-xs font-semibold tabular-nums" style={{ color }}>{sidebarScore}</span>;
-                }
-              } else if (INDICATOR_SECTION_IDS.has(s.id)) {
-                const valid = indicatorValid[s.id];
-                mobileIndicator = valid
-                  ? <span className="ml-1 text-green-500 text-xs">✓</span>
-                  : <span className="ml-1 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle" />;
+            if (s.id === "analyse") {
+              if (sidebarScore !== null) {
+                const { color } = getScoreLevel(sidebarScore);
+                mobileIndicator = <span className="ml-1 text-xs font-semibold tabular-nums" style={{ color }}>{sidebarScore}</span>;
               }
+            } else if (INDICATOR_SECTION_IDS.has(s.id)) {
+              const valid = indicatorValid[s.id];
+              mobileIndicator = valid
+                ? <span className="ml-1 text-green-500 text-xs">✓</span>
+                : <span className="ml-1 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle" />;
             }
             return (
               <button
@@ -555,22 +554,20 @@ export default function EditListingForm({
           {SECTIONS.map((s) => {
             const active = activeSection === s.id;
             let indicator: React.ReactNode = null;
-            if (!active) {
-              if (s.id === "analyse") {
-                if (sidebarScore !== null) {
-                  const { color } = getScoreLevel(sidebarScore);
-                  indicator = (
-                    <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color }}>
-                      {sidebarScore}
-                    </span>
-                  );
-                }
-              } else if (INDICATOR_SECTION_IDS.has(s.id)) {
-                const valid = indicatorValid[s.id];
-                indicator = valid
-                  ? <span className="text-green-500 text-xs shrink-0">✓</span>
-                  : <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />;
+            if (s.id === "analyse") {
+              if (sidebarScore !== null) {
+                const { color } = getScoreLevel(sidebarScore);
+                indicator = (
+                  <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color }}>
+                    {sidebarScore}
+                  </span>
+                );
               }
+            } else if (INDICATOR_SECTION_IDS.has(s.id)) {
+              const valid = indicatorValid[s.id];
+              indicator = valid
+                ? <span className="text-green-500 text-xs shrink-0">✓</span>
+                : <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />;
             }
             return (
               <button
