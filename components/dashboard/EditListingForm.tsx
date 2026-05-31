@@ -682,7 +682,7 @@ export default function EditListingForm({
           {activeSection === "photos" && (
             <SectionShell title="Photos" emoji="📷">
               <p className="text-sm font-medium text-charcoal-700 mb-3">
-                Photos <Req /> <span className="font-normal text-charcoal-400">(5 minimum)</span>
+                Photos
               </p>
               <PhotoUpload
                 photos={form.photos}
@@ -690,7 +690,6 @@ export default function EditListingForm({
                 listingId={listingId}
                 onChange={(photos) => set("photos", photos)}
               />
-              <RequiredNote />
             </SectionShell>
           )}
 
