@@ -591,7 +591,7 @@ function CaptionButton({
   return (
     <button
       type="button"
-      title="Générer une légende"
+      title="Générer une légende avec l'IA"
       onClick={onClick}
       disabled={generatingIdx !== null}
       className="shrink-0 p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-40"
