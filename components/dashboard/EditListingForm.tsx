@@ -205,8 +205,6 @@ export default function EditListingForm({
   const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
-  const [unpublishLoading, setUnpublishLoading] = useState(false);
-  const [unpublishError, setUnpublishError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -383,18 +381,6 @@ export default function EditListingForm({
       setSavedDescription(null);
       setShowDescRestoreButtons(false);
     }
-  };
-
-  const handleUnpublish = async () => {
-    setUnpublishLoading(true);
-    setUnpublishError("");
-    const { error } = await supabase
-      .from("listings")
-      .update({ is_published: false })
-      .eq("id", listingId);
-    setUnpublishLoading(false);
-    if (error) { setUnpublishError("Erreur lors de la dépublication."); return; }
-    setIsPublished(false);
   };
 
   const handleActivateFree = async () => {
