@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { firstPhotoUrl } from "@/lib/photo";
+import { getScoreLevel } from "@/lib/listingScore";
 
 type Listing = {
   id: string;
@@ -18,9 +19,10 @@ type ReviewInfo = { count: number; avg: number };
 interface Props {
   listings: Listing[];
   reviews: Record<string, ReviewInfo>;
+  scores: Record<string, number>;
 }
 
-export default function ListingsClient({ listings, reviews }: Props) {
+export default function ListingsClient({ listings, reviews, scores }: Props) {
   return (
     <div className="space-y-3">
       {listings.map((listing) => {
@@ -56,9 +58,9 @@ export default function ListingsClient({ listings, reviews }: Props) {
                   }`}>
                     {listing.is_published ? "Publié" : "Brouillon"}
                   </span>
-                  {(listing.price_low ?? 0) > 0 && (
-                    <span className="text-xs text-charcoal-500">À partir de {listing.price_low} $/nuit</span>
-                  )}
+                  {(() => { const s = scores[listing.id] ?? 0; return (
+                    <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>Score : {s}</span>
+                  ); })()}
                   {rev && (
                     <span className="text-xs text-charcoal-500 flex items-center gap-0.5">
                       <svg className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">

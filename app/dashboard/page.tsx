@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { firstPhotoUrl } from "@/lib/photo";
+import { computeScore, getScoreLevel } from "@/lib/listingScore";
 
 export const metadata = { title: "Tableau de bord — Kabanalouer" };
 
@@ -14,29 +15,66 @@ export default async function DashboardPage() {
 
   const userId = user.id;
 
-  const [
-    { data: profile },
-    { data: listings },
-  ] = await Promise.all([
-    supabase.from("users").select("name").eq("id", userId).single(),
-    supabase
-      .from("listings")
-      .select("id, title, region, is_published, price_low, photos, created_at")
-      .eq("host_id", userId)
-      .order("created_at", { ascending: false }),
+  const [{ data: profile }, { data: listings }] = await Promise.all([
+    supabase.from("users").select("name, bio, avatar_url").eq("id", userId).single(),
+    supabase.from("listings").select("*").eq("host_id", userId).order("created_at", { ascending: false }),
   ]);
 
-  // Per-listing review map (for listing cards)
-  const listingIds = (listings ?? []).map((l) => l.id);
-  const { data: reviews } = listingIds.length > 0
-    ? await supabase.from("reviews").select("listing_id, rating").in("listing_id", listingIds)
-    : { data: [] };
+  const listingIds = (listings ?? []).map((l) => l.id as string);
+  const today = new Date().toISOString().slice(0, 10);
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+  const [{ data: reviews }, { data: rooms }, { data: futureAvail }] = listingIds.length > 0
+    ? await Promise.all([
+        supabase.from("reviews").select("listing_id, rating, created_at").in("listing_id", listingIds),
+        supabase.from("rooms").select("listing_id, photos").in("listing_id", listingIds),
+        supabase.from("availability").select("listing_id").in("listing_id", listingIds).gte("date", today).eq("source", "manual"),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }];
+
+  // Per-listing review map (for listing cards + score)
   const reviewMap = new Map<string, { count: number; avg: number }>();
+  const reviewCounts = new Map<string, { total: number; recent: number }>();
   for (const r of (reviews ?? [])) {
     const prev = reviewMap.get(r.listing_id) ?? { count: 0, avg: 0 };
     const count = prev.count + 1;
     reviewMap.set(r.listing_id, { count, avg: (prev.avg * prev.count + r.rating) / count });
+    const pc = reviewCounts.get(r.listing_id) ?? { total: 0, recent: 0 };
+    reviewCounts.set(r.listing_id, { total: pc.total + 1, recent: pc.recent + (new Date(r.created_at) >= sixMonthsAgo ? 1 : 0) });
+  }
+
+  const roomsPerListing = new Map<string, { photos: unknown }[]>();
+  for (const room of (rooms ?? [])) {
+    const arr = roomsPerListing.get(room.listing_id) ?? [];
+    arr.push(room);
+    roomsPerListing.set(room.listing_id, arr);
+  }
+
+  const futureAvailSet = new Set((futureAvail ?? []).map((a) => a.listing_id as string));
+
+  const scoreMap = new Map<string, number>();
+  for (const listing of (listings ?? [])) {
+    const id = listing.id as string;
+    const photoList = Array.isArray(listing.photos) ? listing.photos as string[] : [];
+    const listingRooms = roomsPerListing.get(id) ?? [];
+    const roomsAllHavePhotos = listingRooms.length > 0 && listingRooms.every((r) => Array.isArray(r.photos) && (r.photos as string[]).length > 0);
+    const rc = reviewCounts.get(id) ?? { total: 0, recent: 0 };
+    scoreMap.set(id, computeScore({
+      photoCount: photoList.length,
+      title: (listing.title as string) ?? "",
+      description: (listing.description as string) ?? "",
+      amenities: Array.isArray(listing.amenities) ? listing.amenities as string[] : [],
+      nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
+      citqNumber: (listing.citq_number as string) ?? "",
+      icalUrl: (listing.ical_url as string | null) ?? null,
+      hasFutureBlocked: futureAvailSet.has(id),
+      roomsAllHavePhotos,
+      bioFilled: !!profile?.bio?.trim(),
+      avatarFilled: !!profile?.avatar_url?.trim(),
+      reviewCount: rc.total,
+      recentReviewCount: rc.recent,
+    }));
   }
 
   const firstName = profile?.name?.split(" ")[0] ?? "là";
@@ -105,9 +143,9 @@ export default async function DashboardPage() {
                     }`}>
                       {listing.is_published ? "Publié" : "Brouillon"}
                     </span>
-                    {(listing.price_low as number) > 0 && (
-                      <span className="text-xs text-charcoal-500">À partir de {listing.price_low} $/nuit</span>
-                    )}
+                    {(() => { const s = scoreMap.get(listing.id as string) ?? 0; return (
+                      <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>Score : {s}</span>
+                    ); })()}
                     {rev && (
                       <span className="text-xs text-charcoal-500 flex items-center gap-0.5">
                         <svg className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">

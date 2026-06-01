@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
+import { computeScore } from "@/lib/listingScore";
 
 export const metadata = { title: "Mes chalets — Kabanalouer" };
 
@@ -15,22 +16,67 @@ export default async function ListingsPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: listings } = await supabase
-    .from("listings")
-    .select("id, title, region, is_published, price_low, photos, created_at")
-    .eq("host_id", user.id)
-    .order("created_at", { ascending: false });
+  const [{ data: listings }, { data: profile }] = await Promise.all([
+    supabase.from("listings").select("*").eq("host_id", user.id).order("created_at", { ascending: false }),
+    supabase.from("users").select("bio, avatar_url").eq("id", user.id).single(),
+  ]);
 
-  const listingIds = (listings ?? []).map((l) => l.id);
-  const { data: reviews } = listingIds.length > 0
-    ? await supabase.from("reviews").select("listing_id, rating").in("listing_id", listingIds)
-    : { data: [] };
+  const listingIds = (listings ?? []).map((l) => l.id as string);
+  const today = new Date().toISOString().slice(0, 10);
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+  const [{ data: reviews }, { data: rooms }, { data: futureAvail }] = listingIds.length > 0
+    ? await Promise.all([
+        supabase.from("reviews").select("listing_id, rating, created_at").in("listing_id", listingIds),
+        supabase.from("rooms").select("listing_id, photos").in("listing_id", listingIds),
+        supabase.from("availability").select("listing_id").in("listing_id", listingIds).gte("date", today).eq("source", "manual"),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }];
+
+  // Review maps
   const reviewRecord: Record<string, { count: number; avg: number }> = {};
+  const reviewCounts: Record<string, { total: number; recent: number }> = {};
   for (const r of (reviews ?? [])) {
     const prev = reviewRecord[r.listing_id] ?? { count: 0, avg: 0 };
     const count = prev.count + 1;
     reviewRecord[r.listing_id] = { count, avg: (prev.avg * prev.count + r.rating) / count };
+    const pc = reviewCounts[r.listing_id] ?? { total: 0, recent: 0 };
+    reviewCounts[r.listing_id] = { total: pc.total + 1, recent: pc.recent + (new Date(r.created_at) >= sixMonthsAgo ? 1 : 0) };
+  }
+
+  // Rooms map: listing_id → allHavePhotos
+  const roomsPerListing: Record<string, { listing_id: string; photos: unknown }[]> = {};
+  for (const room of (rooms ?? [])) {
+    (roomsPerListing[room.listing_id] ??= []).push(room);
+  }
+
+  // Listings with future manual availability
+  const futureAvailSet = new Set((futureAvail ?? []).map((a) => a.listing_id as string));
+
+  // Compute score per listing
+  const scoreRecord: Record<string, number> = {};
+  for (const listing of (listings ?? [])) {
+    const id = listing.id as string;
+    const photoList = Array.isArray(listing.photos) ? listing.photos as string[] : [];
+    const listingRooms = roomsPerListing[id] ?? [];
+    const roomsAllHavePhotos = listingRooms.length > 0 && listingRooms.every((r) => Array.isArray(r.photos) && (r.photos as string[]).length > 0);
+    const rc = reviewCounts[id] ?? { total: 0, recent: 0 };
+    scoreRecord[id] = computeScore({
+      photoCount: photoList.length,
+      title: (listing.title as string) ?? "",
+      description: (listing.description as string) ?? "",
+      amenities: Array.isArray(listing.amenities) ? listing.amenities as string[] : [],
+      nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
+      citqNumber: (listing.citq_number as string) ?? "",
+      icalUrl: (listing.ical_url as string | null) ?? null,
+      hasFutureBlocked: futureAvailSet.has(id),
+      roomsAllHavePhotos,
+      bioFilled: !!profile?.bio?.trim(),
+      avatarFilled: !!profile?.avatar_url?.trim(),
+      reviewCount: rc.total,
+      recentReviewCount: rc.recent,
+    });
   }
 
   return (
@@ -62,7 +108,7 @@ export default async function ListingsPage({
       </div>
 
       {listings && listings.length > 0 ? (
-        <ListingsClient listings={listings} reviews={reviewRecord} />
+        <ListingsClient listings={listings} reviews={reviewRecord} scores={scoreRecord} />
       ) : (
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-12 text-center">
           <div className="w-16 h-16 rounded-full bg-charcoal-50 flex items-center justify-center mx-auto mb-4">
