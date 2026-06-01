@@ -1007,10 +1007,9 @@ export default function EditListingForm({
           {/* Section: Chambres */}
           {activeSection === "chambres" && (
             <SectionShell title="Chambres" emoji="🛏">
-              <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-1">
-                Au moins 1 chambre avec 1 lit <Req />
+              <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-5">
+                Ajoutez au moins 1 chambre avec lit <Req />
               </p>
-              <p className="text-sm text-charcoal-400 mb-5">L&apos;ajout de photos de vos chambres augmente beaucoup vos chances de louer votre chalet.</p>
               <RoomsSection userId={userId} listingId={listingId} />
               <RequiredNote />
             </SectionShell>
