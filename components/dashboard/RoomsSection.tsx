@@ -245,6 +245,7 @@ export default function RoomsSection({
       </div>
 
       {/* ── Save bar ──────────────────────────────────────────────────── */}
+      <p className="mt-6 text-xs text-charcoal-400">* Champs requis pour publier</p>
       <div className="pt-4 border-t border-[#ebebeb] flex items-center gap-3">
         <button
           onClick={handleSave}

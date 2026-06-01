@@ -1011,7 +1011,6 @@ export default function EditListingForm({
                 Ajoutez au moins 1 chambre avec lit <Req />
               </p>
               <RoomsSection userId={userId} listingId={listingId} />
-              <RequiredNote />
             </SectionShell>
           )}
 
@@ -1068,7 +1067,6 @@ export default function EditListingForm({
                 onRegionChange={(r) => set("region", r)}
                 onSaved={(hasPos) => setLocationValid(hasPos)}
               />
-              <RequiredNote />
             </SectionShell>
           )}
 
