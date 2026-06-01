@@ -82,7 +82,7 @@ const SECTIONS: Array<{
   { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
   { id: "titre",        label: "Titre",                emoji: "✏️", isComplete: (f) => f.title.trim().length > 0 },
   { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
-  { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 },
+  { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
   { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
   { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
   { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
@@ -260,7 +260,7 @@ export default function EditListingForm({
     photos: form.photos.length >= MIN_PHOTOS,
     titre: form.title.trim().length > 0,
     description: form.description.trim().length > 0,
-    capacite: form.capacity >= 1,
+    capacite: form.capacity >= 1 && form.bedrooms >= 1,
     chambres: roomsHasBeds,
     equipements: form.amenities.length > 0,
     tarifs: form.price_on_request || form.price_low >= 50,
@@ -931,7 +931,7 @@ export default function EditListingForm({
                 </div>
                 {/* Chambres */}
                 <div>
-                  <Label>Nombre de chambre(s)</Label>
+                  <Label>Nombre de chambre(s) <Req /></Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
