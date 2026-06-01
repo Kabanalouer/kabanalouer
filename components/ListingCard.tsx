@@ -40,6 +40,16 @@ export default function ListingCard({
   const [idx, setIdx] = useState(0);
   const searchParams = useSearchParams();
   const checkin = searchParams.get("checkin");
+  const checkout = searchParams.get("checkout");
+  const capacity = searchParams.get("capacity");
+  const listingHref = (() => {
+    const qs = new URLSearchParams();
+    if (checkin) qs.set("checkin", checkin);
+    if (checkout) qs.set("checkout", checkout);
+    if (capacity) qs.set("capacity", capacity);
+    const s = qs.toString();
+    return `/chalets/${listing.id}${s ? `?${s}` : ""}`;
+  })();
 
   const prev = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,7 +66,7 @@ export default function ListingCard({
   const location = listing.city?.trim() || listing.region;
 
   return (
-    <Link href={`/chalets/${listing.id}`} className="group block">
+    <Link href={listingHref} className="group block">
       {/* ── Photo ── */}
       <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
         {listing.photos.length > 0 ? (
