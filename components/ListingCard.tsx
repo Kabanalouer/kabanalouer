@@ -131,16 +131,12 @@ export default function ListingCard({
             </span>
           )}
           {listing.hasPromo && (
-            listing.promoData && (listing.promoData.type === "percent" || listing.promoData.type === "amount" || listing.promoData.type === "duration" || listing.promoData.type === "lastminute" || listing.promoData.type === "lastminute_amount")
-              ? (() => {
-                  const lines = formatPromoLines(listing.promoData);
-                  return (
-                    <div className="bg-[#f04e45] text-white text-[11px] px-2.5 py-1.5 rounded-xl shadow-sm leading-snug max-w-[170px]">
-                      <p className="font-semibold">{lines.line1}</p>
-                      {lines.line2 && <p className="font-normal opacity-90 mt-0.5">{lines.line2}</p>}
-                    </div>
-                  );
-                })()
+            listing.promoData
+              ? (
+                  <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+                    {formatPromoLines(listing.promoData).line1}
+                  </span>
+                )
               : <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">Promo</span>
           )}
           {listing.isNew && (
