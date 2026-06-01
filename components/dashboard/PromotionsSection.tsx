@@ -189,7 +189,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="font-semibold text-sm text-charcoal-800">Dernière minute</p>
-              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Rabais automatique si réservation proche</p>
+              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Dates libres, prix réduit</p>
             </button>
           </div>
 
@@ -257,11 +257,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 </div>
               </div>
               <div className="max-w-xs">
-                <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Jours avant l&apos;arrivée</label>
+                <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Jours avant l&apos;arrivée (7 à 21 jours)</label>
                 <div className="flex items-center gap-2">
                   <input
-                    type="number" min={1} value={lmDays}
-                    onChange={(e) => setLmDays(e.target.value)}
+                    type="number" min={7} max={21} value={lmDays}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value) || 7;
+                      setLmDays(String(Math.min(21, Math.max(7, v))));
+                    }}
                     className={inputCls} placeholder="ex. 7"
                   />
                   <span className="text-sm text-charcoal-500 shrink-0">jours</span>
