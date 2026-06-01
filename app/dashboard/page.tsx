@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Stats (client component with period filter) ──────────────────── */}
-      <DashboardStats />
+      <DashboardStats listings={(listings ?? []).map((l) => ({ id: l.id, title: l.title ?? "Sans titre" }))} />
 
       {/* ── Quick links ─────────────────────────────────────────────────────── */}
 

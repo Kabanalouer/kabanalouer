@@ -38,6 +38,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const period = (searchParams.get("period") ?? "all") as Period;
+  const listingIdFilter = searchParams.get("listingId") ?? null;
 
   const since = (() => {
     const now = new Date();
@@ -49,19 +50,22 @@ export async function GET(request: Request) {
 
   const userId = user.id;
 
-  const { data: listings } = await supabase
+  let listingsQuery = supabase
     .from("listings")
     .select("id, views_listing")
     .eq("host_id", userId);
+  if (listingIdFilter) listingsQuery = listingsQuery.eq("id", listingIdFilter);
+  const { data: listings } = await listingsQuery;
 
   const listingIds = (listings ?? []).map((l) => l.id);
 
-  // Messages filtered by period
+  // Messages filtered by period (and listing if specified)
   let messagesQuery = supabase
     .from("messages")
     .select("sender_id, receiver_id, created_at")
     .or(`receiver_id.eq.${userId},sender_id.eq.${userId}`)
     .order("created_at");
+  if (listingIdFilter) messagesQuery = messagesQuery.eq("listing_id", listingIdFilter);
   if (since) messagesQuery = messagesQuery.gte("created_at", since);
   const { data: messages } = await messagesQuery;
 
@@ -70,10 +74,11 @@ export async function GET(request: Request) {
     .from("messages")
     .select("id", { count: "exact", head: true })
     .eq("receiver_id", userId);
+  if (listingIdFilter) contactsQuery = contactsQuery.eq("listing_id", listingIdFilter);
   if (since) contactsQuery = contactsQuery.gte("created_at", since);
   const { count: totalContacts } = await contactsQuery;
 
-  // Reviews filtered by period
+  // Reviews filtered by period (and listing if specified)
   let reviews: { listing_id: string; rating: number }[] = [];
   if (listingIds.length > 0) {
     let reviewsQuery = supabase

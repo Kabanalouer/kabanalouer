@@ -74,28 +74,47 @@ const StarOutlineIcon = () => (
   </svg>
 );
 
-export default function DashboardStats() {
+export default function DashboardStats({ listings = [] }: { listings?: { id: string; title: string }[] }) {
   const [period, setPeriod] = useState<Period>("all");
+  const [selectedListingId, setSelectedListingId] = useState<string>("");
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = useCallback(async (p: Period) => {
+  const fetchStats = useCallback(async (p: Period, listingId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/dashboard/stats?period=${p}`);
+      const params = new URLSearchParams({ period: p });
+      if (listingId) params.set("listingId", listingId);
+      const res = await fetch(`/api/dashboard/stats?${params.toString()}`);
       if (res.ok) setStats(await res.json());
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void fetchStats(period); }, [period, fetchStats]);
+  useEffect(() => { void fetchStats(period, selectedListingId); }, [period, selectedListingId, fetchStats]);
 
   const viewsUnavailable = period !== "all";
   const avgRating = stats?.avgRating ?? null;
 
   return (
     <div className="mb-10">
+      {/* Listing filter — only shown when 2+ listings */}
+      {listings.length >= 2 && (
+        <div className="mb-4">
+          <select
+            value={selectedListingId}
+            onChange={(e) => setSelectedListingId(e.target.value)}
+            className="text-sm px-4 py-1.5 rounded-full font-medium border bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300 transition-colors appearance-none pr-8 cursor-pointer"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.6rem center", backgroundSize: "1rem" }}
+          >
+            <option value="">Tous mes chalets</option>
+            {listings.map((l) => (
+              <option key={l.id} value={l.id}>{l.title}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {/* Period filter */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {PERIODS.map((opt) => (
