@@ -20,6 +20,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
+import ViewTracker from "@/components/chalets/ViewTracker";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -344,6 +345,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
   return (
     <div className="flex flex-col min-h-screen">
+      <ViewTracker listingId={id} isOwner={isOwner} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(lodgingJsonLd) }}
