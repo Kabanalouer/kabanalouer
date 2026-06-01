@@ -1344,17 +1344,6 @@ export default function EditListingForm({
                           <p className="font-semibold text-charcoal-800">{viewsListing.toLocaleString("fr-CA")}</p>
                         </div>
                       </div>
-                      <a
-                        href={`/chalets/${listingId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 hover:underline"
-                      >
-                        Voir mon annonce
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                        </svg>
-                      </a>
                     </div>
 
                     {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
@@ -1371,17 +1360,6 @@ export default function EditListingForm({
                       </div>
                     )}
 
-                    {unpublishError && (
-                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{unpublishError}</p>
-                    )}
-
-                    <button
-                      onClick={() => void handleUnpublish()}
-                      disabled={unpublishLoading}
-                      className="text-sm font-medium text-[#f04e45] border border-[#f04e45]/30 hover:bg-[#f04e45]/5 px-5 py-2 rounded-full transition-colors disabled:opacity-50"
-                    >
-                      {unpublishLoading ? "Dépublication…" : "Dépublier mon annonce"}
-                    </button>
                   </div>
                 </SectionShell>
               );
