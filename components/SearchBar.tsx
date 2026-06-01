@@ -195,7 +195,6 @@ export default function SearchBar({
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
-  const [mobileCalTop, setMobileCalTop] = useState(0);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // ── Guests state ──
@@ -483,14 +482,7 @@ export default function SearchBar({
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
       <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex">
         <button
-          onClick={() => {
-            if (!calendarOpen && calendarRef.current) {
-              const r = calendarRef.current.getBoundingClientRect();
-              setMobileCalTop(Math.round(r.bottom) + 8);
-            }
-            setCalendarOpen((o) => !o);
-            setDestOpen(false);
-          }}
+          onClick={() => { setCalendarOpen((o) => !o); setDestOpen(false); }}
           className="flex-1 flex items-center gap-3 px-4 py-2 text-left"
         >
           <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -510,11 +502,15 @@ export default function SearchBar({
               onClick={() => { setCalendarOpen(false); setHoverDate(""); }}
             />
 
-            {/* Mobile: fixed panel, un seul mois */}
+            {/* Mobile: bottom sheet ancré en bas, safe-area iPhone */}
             <div
-              className="sm:hidden fixed left-4 right-4 rounded-2xl bg-white shadow-2xl border border-gray-100 p-4 z-[9999] max-h-[80vh] overflow-y-auto"
-              style={{ top: mobileCalTop }}
+              className="sm:hidden fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white shadow-2xl border-t border-gray-100 pt-4 px-4 z-[9999] max-h-[70vh] overflow-y-auto"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
             >
+              {/* Handle */}
+              <div className="flex justify-center mb-3">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
               <CalendarMonth
                 year={leftYear} month={leftMonth}
                 today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
