@@ -527,11 +527,6 @@ export default function EditListingForm({
 
   const hasSaveButton = SECTION_FIELDS[activeSection].length > 0;
 
-  // DEBUG — retirer après diagnostic
-  console.log("views_listing prop:", viewsListing, "| type:", typeof viewsListing);
-  console.log("uniqueContacts state:", uniqueContacts);
-  console.log("taux:", uniqueContacts > 0 && viewsListing > 0 ? ((uniqueContacts / viewsListing) * 100).toFixed(1) + " %" : "—");
-
   return (
     <>
     {previewOpen && (
