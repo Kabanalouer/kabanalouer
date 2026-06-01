@@ -1102,7 +1102,17 @@ export default function EditListingForm({
                       initialUrl={icalUrl}
                       initialLastSync={icalLastSync}
                     />
-                    <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} readOnly />
+                    {icalUrl ? (
+                      <AvailabilityCalendar
+                        listingId={listingId}
+                        initialBlocked={initialBlocked.filter((e) => e.source === "ical")}
+                        readOnly
+                      />
+                    ) : (
+                      <p className="text-sm text-charcoal-400 text-center py-6">
+                        Votre calendrier apparaîtra ici une fois votre URL iCal synchronisée.
+                      </p>
+                    )}
                   </>
                 )}
               </div>
