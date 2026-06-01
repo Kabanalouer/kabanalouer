@@ -17,7 +17,6 @@ interface Stats {
   avgResponseMs: number | null;
   totalReviews: number;
   avgRating: number | null;
-  totalImpressions: number | null;
   totalConsultations: number | null;
 }
 
@@ -110,13 +109,6 @@ export default function DashboardStats() {
 
       {/* Stats grid */}
       <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"}`}>
-        <StatCard
-          label="Impressions"
-          value={viewsUnavailable ? "N/D" : (stats?.totalImpressions ?? 0).toLocaleString("fr-CA")}
-          sub={viewsUnavailable ? "Non disponible par période" : "Apparitions dans la recherche"}
-          icon={<EyeIcon />}
-          unavailable={viewsUnavailable}
-        />
         <StatCard
           label="Consultations"
           value={viewsUnavailable ? "N/D" : (stats?.totalConsultations ?? 0).toLocaleString("fr-CA")}

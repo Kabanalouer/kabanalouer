@@ -148,7 +148,6 @@ export default function EditListingForm({
   icalUrl,
   icalLastSync,
   listingCreatedAt,
-  viewsSearch,
   viewsListing,
 }: {
   userId: string;
@@ -165,7 +164,6 @@ export default function EditListingForm({
   icalUrl: string | null;
   icalLastSync: string | null;
   listingCreatedAt: string;
-  viewsSearch: number;
   viewsListing: number;
 }) {
   const supabase = createClient();
@@ -1333,10 +1331,6 @@ export default function EditListingForm({
                             </p>
                           </div>
                         )}
-                        <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Vues dans la recherche</p>
-                          <p className="font-semibold text-charcoal-800">{viewsSearch.toLocaleString("fr-CA")}</p>
-                        </div>
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Vues sur la fiche</p>
                           <p className="font-semibold text-charcoal-800">{viewsListing.toLocaleString("fr-CA")}</p>

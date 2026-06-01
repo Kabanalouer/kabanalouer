@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
   const { data: listings } = await supabase
     .from("listings")
-    .select("id, views_search, views_listing")
+    .select("id, views_listing")
     .eq("host_id", userId);
 
   const listingIds = (listings ?? []).map((l) => l.id);
@@ -91,10 +91,6 @@ export async function GET(request: Request) {
     ? reviews.reduce((s, r) => s + r.rating, 0) / totalReviews
     : null;
 
-  // Views are global counters — only meaningful for "all" period
-  const totalImpressions = since === null
-    ? (listings ?? []).reduce((s, l) => s + ((l as Record<string, number>).views_search ?? 0), 0)
-    : null;
   const totalConsultations = since === null
     ? (listings ?? []).reduce((s, l) => s + ((l as Record<string, number>).views_listing ?? 0), 0)
     : null;
@@ -105,7 +101,6 @@ export async function GET(request: Request) {
     avgResponseMs,
     totalReviews,
     avgRating,
-    totalImpressions,
     totalConsultations,
   });
 }
