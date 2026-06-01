@@ -84,7 +84,7 @@ const SECTIONS: Array<{
   { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
   { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
   { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
-  { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length > 0 },
+  { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length >= 3 },
   { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
   { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low >= 50 },
   { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
@@ -262,7 +262,7 @@ export default function EditListingForm({
     description: form.description.trim().length > 0,
     capacite: form.capacity >= 1 && form.bedrooms >= 1,
     chambres: roomsHasBeds,
-    equipements: form.amenities.length > 0,
+    equipements: form.amenities.length >= 3,
     tarifs: form.price_on_request || form.price_low >= 50,
     localisation: locationValid,
     infos: form.citq_number.length === 6,
@@ -434,7 +434,7 @@ export default function EditListingForm({
     form.region.trim().length > 0,
     form.capacity > 0,
     form.bedrooms > 0,
-    form.amenities.length > 0,
+    form.amenities.length >= 3,
     form.nearby_activities.length > 0,
   ].filter(Boolean).length;
 
@@ -1018,7 +1018,7 @@ export default function EditListingForm({
           {activeSection === "equipements" && (
             <SectionShell title="Caractéristiques" emoji="✨">
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-4">
-                Sélectionnez au moins 1 caractéristique <Req />
+                Sélectionnez au moins 3 caractéristiques <Req />
               </p>
               <AmenitiesPicker
                 selected={form.amenities}
