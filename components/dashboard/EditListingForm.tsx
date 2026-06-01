@@ -147,6 +147,9 @@ export default function EditListingForm({
   initialBlocked,
   icalUrl,
   icalLastSync,
+  listingCreatedAt,
+  viewsSearch,
+  viewsListing,
 }: {
   userId: string;
   listingId: string;
@@ -161,6 +164,9 @@ export default function EditListingForm({
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
   icalLastSync: string | null;
+  listingCreatedAt: string;
+  viewsSearch: number;
+  viewsListing: number;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -199,6 +205,8 @@ export default function EditListingForm({
   const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
+  const [unpublishLoading, setUnpublishLoading] = useState(false);
+  const [unpublishError, setUnpublishError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -375,6 +383,18 @@ export default function EditListingForm({
       setSavedDescription(null);
       setShowDescRestoreButtons(false);
     }
+  };
+
+  const handleUnpublish = async () => {
+    setUnpublishLoading(true);
+    setUnpublishError("");
+    const { error } = await supabase
+      .from("listings")
+      .update({ is_published: false })
+      .eq("id", listingId);
+    setUnpublishLoading(false);
+    if (error) { setUnpublishError("Erreur lors de la dépublication."); return; }
+    setIsPublished(false);
   };
 
   const handleActivateFree = async () => {
@@ -1288,30 +1308,55 @@ export default function EditListingForm({
             oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
 
             if (isPublished && subStatus === "active") {
+              const publishedDate = new Date(listingCreatedAt + (listingCreatedAt.includes("T") ? "" : "T12:00:00"));
               return (
                 <SectionShell title="Publier mon annonce" emoji="🚀">
                   <div className="space-y-5 max-w-md">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1 text-xs font-semibold">
-                        ✓ Annonce en ligne
-                      </span>
+                    {/* Encadré vert annonce publiée */}
+                    <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-base font-bold text-green-700">Annonce publiée</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Publiée le</p>
+                          <p className="font-semibold text-charcoal-800">
+                            {publishedDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                          </p>
+                        </div>
+                        {expiryDate && (
+                          <div>
+                            <p className="text-charcoal-400 text-xs mb-0.5">Renouvellement le</p>
+                            <p className="font-semibold text-charcoal-800">
+                              {expiryDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                            </p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Vues dans la recherche</p>
+                          <p className="font-semibold text-charcoal-800">{viewsSearch.toLocaleString("fr-CA")}</p>
+                        </div>
+                        <div>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Vues sur la fiche</p>
+                          <p className="font-semibold text-charcoal-800">{viewsListing.toLocaleString("fr-CA")}</p>
+                        </div>
+                      </div>
+                      <a
+                        href={`/chalets/${listingId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 hover:underline"
+                      >
+                        Voir mon annonce
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                      </a>
                     </div>
-                    {expiryDate && (
-                      <p className="text-sm text-charcoal-500">
-                        Abonnement valide jusqu&apos;au{" "}
-                        <strong className="text-charcoal-800">
-                          {expiryDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
-                        </strong>
-                      </p>
-                    )}
-                    <button
-                      onClick={() => setPreviewOpen(true)}
-                      disabled={!canPreview}
-                      title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
-                      className={`inline-flex items-center gap-2 border px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${canPreview ? "border-primary text-primary hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-                    >
-                      Aperçu de mon annonce
-                    </button>
+
                     {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
                       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                         <p className="text-sm text-amber-800 font-medium mb-2">
@@ -1325,6 +1370,18 @@ export default function EditListingForm({
                         </Link>
                       </div>
                     )}
+
+                    {unpublishError && (
+                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{unpublishError}</p>
+                    )}
+
+                    <button
+                      onClick={() => void handleUnpublish()}
+                      disabled={unpublishLoading}
+                      className="text-sm font-medium text-[#f04e45] border border-[#f04e45]/30 hover:bg-[#f04e45]/5 px-5 py-2 rounded-full transition-colors disabled:opacity-50"
+                    >
+                      {unpublishLoading ? "Dépublication…" : "Dépublier mon annonce"}
+                    </button>
                   </div>
                 </SectionShell>
               );

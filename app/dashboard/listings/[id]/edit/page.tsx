@@ -69,6 +69,9 @@ export default async function EditListingPage({ params }: Props) {
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}
+        listingCreatedAt={(listing.created_at as string) ?? new Date().toISOString()}
+        viewsSearch={(listing.views_search as number) ?? 0}
+        viewsListing={(listing.views_listing as number) ?? 0}
         initialData={{
           title: listing.title ?? "",
           description: listing.description ?? "",
