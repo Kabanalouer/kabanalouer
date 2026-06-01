@@ -95,7 +95,7 @@ function SignupForm() {
             data="/logo-wordmark.svg"
             aria-hidden="true"
             className="pointer-events-none"
-            style={{ height: 40, width: "auto" }}
+            style={{ height: 60, width: "auto" }}
           />
         </Link>
 
