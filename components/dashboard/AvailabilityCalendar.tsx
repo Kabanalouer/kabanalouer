@@ -281,13 +281,17 @@ export default function AvailabilityCalendar({
       </div>
 
       {/* Legend */}
-      {/* Legend */}
       <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-gray-100 text-xs">
         <LegendItem type="available" label="Disponible" />
-        <LegendItem type="middle"    color={MANUAL_COLOR} label="Non disponible (manuel)" />
-        <LegendItem type="middle"    color={ICAL_COLOR}   label="Synchronisé iCal" />
-        <LegendItem type="start"     color={MANUAL_COLOR} label="Arrivée" />
-        <LegendItem type="end"       color={MANUAL_COLOR} label="Départ" />
+        {readOnly ? (
+          <LegendItem type="middle" color={ICAL_COLOR} label="Non disponible (iCal)" />
+        ) : (
+          <>
+            <LegendItem type="middle" color={MANUAL_COLOR} label="Non disponible (manuel)" />
+            <LegendItem type="start"  color={MANUAL_COLOR} label="Arrivée" />
+            <LegendItem type="end"    color={MANUAL_COLOR} label="Départ" />
+          </>
+        )}
       </div>
     </div>
   );
