@@ -209,6 +209,18 @@ export default function EditListingForm({
   const [scoreDbLoaded, setScoreDbLoaded] = useState(false);
   const [locationValid, setLocationValid] = useState(!!(initialLat && initialLng));
   const [showPublishErrors, setShowPublishErrors] = useState(false);
+  const [calendarMode, setCalendarMode] = useState<"manual" | "ical">(() => icalUrl ? "ical" : "manual");
+  const [showCalendarWarning, setShowCalendarWarning] = useState(false);
+
+  const switchCalendarMode = (mode: "manual" | "ical") => {
+    if (mode === calendarMode) return;
+    const hasManualDates = initialBlocked.some((e) => e.source === "manual");
+    const hasIcalUrl = !!icalUrl;
+    setShowCalendarWarning(
+      (mode === "ical" && hasManualDates) || (mode === "manual" && hasIcalUrl)
+    );
+    setCalendarMode(mode);
+  };
 
   useEffect(() => {
     supabase
@@ -1042,13 +1054,57 @@ export default function EditListingForm({
           {/* Section: Calendrier */}
           {activeSection === "calendrier" && (
             <SectionShell title="Calendrier" emoji="📅">
+              {/* Mode selector */}
+              <div className="flex gap-2 mb-6 -mt-1">
+                <button
+                  type="button"
+                  onClick={() => switchCalendarMode("manual")}
+                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
+                    calendarMode === "manual"
+                      ? "bg-primary text-white"
+                      : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
+                  }`}
+                >
+                  Bloquer des dates manuellement
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchCalendarMode("ical")}
+                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
+                    calendarMode === "ical"
+                      ? "bg-primary text-white"
+                      : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
+                  }`}
+                >
+                  Synchroniser avec un calendrier externe (iCal)
+                </button>
+              </div>
+
+              {/* Warning */}
+              {showCalendarWarning && (
+                <div className="mb-5 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                  <svg className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <p className="text-sm text-amber-800">
+                    Vos dates bloquées manuellement seront retirées si vous changez de méthode.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-8">
-                <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} />
-                <ICalSync
-                  listingId={listingId}
-                  initialUrl={icalUrl}
-                  initialLastSync={icalLastSync}
-                />
+                {calendarMode === "manual" ? (
+                  <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} />
+                ) : (
+                  <>
+                    <ICalSync
+                      listingId={listingId}
+                      initialUrl={icalUrl}
+                      initialLastSync={icalLastSync}
+                    />
+                    <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} readOnly />
+                  </>
+                )}
               </div>
             </SectionShell>
           )}

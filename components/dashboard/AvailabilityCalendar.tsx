@@ -75,9 +75,11 @@ function LegendItem({ type, color, label }: { type: "available" | "middle" | "st
 export default function AvailabilityCalendar({
   listingId,
   initialBlocked,
+  readOnly = false,
 }: {
   listingId: string;
   initialBlocked: BlockedEntry[];
+  readOnly?: boolean;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const now   = new Date();
@@ -173,31 +175,35 @@ export default function AvailabilityCalendar({
         <div>
           <h2 className="font-bold text-gray-900">Calendrier de disponibilités</h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            {rangeStart
+            {readOnly
+              ? "Lecture seule — dates importées depuis votre calendrier iCal"
+              : rangeStart
               ? "Cliquez une deuxième date pour sélectionner une plage"
               : "Cliquez une date pour la bloquer, ou sélectionnez une plage de deux clics"}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {savedAt && !isDirty && (
-            <span className="text-xs text-gray-400">Sauvegardé à {savedAt}</span>
-          )}
-          {rangeStart && (
+        {!readOnly && (
+          <div className="flex items-center gap-3">
+            {savedAt && !isDirty && (
+              <span className="text-xs text-gray-400">Sauvegardé à {savedAt}</span>
+            )}
+            {rangeStart && (
+              <button
+                onClick={() => { setRangeStart(null); setHoverDate(null); }}
+                className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5"
+              >
+                Annuler sélection ×
+              </button>
+            )}
             <button
-              onClick={() => { setRangeStart(null); setHoverDate(null); }}
-              className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5"
+              onClick={handleSave}
+              disabled={!isDirty || saving}
+              className="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-40"
             >
-              Annuler sélection ×
+              {saving ? "Sauvegarde…" : "Sauvegarder"}
             </button>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={!isDirty || saving}
-            className="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-40"
-          >
-            {saving ? "Sauvegarde…" : "Sauvegarder"}
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Month navigation */}
@@ -223,7 +229,7 @@ export default function AvailabilityCalendar({
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-1" onMouseLeave={() => rangeStart && setHoverDate(null)}>
+      <div className="grid grid-cols-7 gap-1" onMouseLeave={() => !readOnly && rangeStart && setHoverDate(null)}>
         {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`empty-${i}`} />)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day      = i + 1;
@@ -232,17 +238,17 @@ export default function AvailabilityCalendar({
           const isManual = manualBlocked.has(dateStr);
           const isIcal   = icalBlocked.has(dateStr) && !isManual;
           const isBlocked   = allBlocked.has(dateStr);
-          const isRangeStart = dateStr === rangeStart;
-          const inPreview    = inPreviewRange(dateStr);
+          const isRangeStart = !readOnly && dateStr === rangeStart;
+          const inPreview    = !readOnly && inPreviewRange(dateStr);
           const rangePos     = isBlocked ? getRangePos(dateStr, allBlocked) : null;
           const blockColor   = isManual ? MANUAL_COLOR : ICAL_COLOR;
 
           return (
             <button
               key={day}
-              onClick={() => !isPast && handleDayClick(dateStr)}
-              onMouseEnter={() => !isPast && handleDayHover(dateStr)}
-              disabled={isPast}
+              onClick={() => !isPast && !readOnly && handleDayClick(dateStr)}
+              onMouseEnter={() => !isPast && !readOnly && handleDayHover(dateStr)}
+              disabled={isPast || readOnly}
               className={[
                 "aspect-square rounded-xl text-sm flex items-center justify-center transition-colors relative",
                 isPast ? "cursor-not-allowed" : "cursor-pointer",
