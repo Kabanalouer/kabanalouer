@@ -18,7 +18,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
-import { formatPromoLines, type PromoDisplay } from "@/lib/promoLabel";
+import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
 
 const DEFAULT_PHOTO =
@@ -636,7 +636,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
           <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
             <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
               {/* Promo bandeau */}
-              {activePromo && (() => {
+              {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (() => {
                 const lines = formatPromoLines(activePromo);
                 return (
                   <div className="mb-4 flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
@@ -687,7 +687,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <span className="text-sm font-bold text-charcoal-800">Prix sur demande</span>
             ) : (
               <div>
-                {activePromo && (
+                {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (
                   <p className="text-[11px] font-medium text-primary leading-none mb-1 truncate max-w-[160px]">
                     {formatPromoLines(activePromo).line1}
                   </p>

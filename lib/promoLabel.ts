@@ -47,6 +47,16 @@ export function formatPromoLabel(promo: PromoDisplay): string {
   }
 }
 
+export function isLastminuteVisible(promo: PromoDisplay, checkinDate: string | null | undefined): boolean {
+  if (promo.type !== "lastminute" && promo.type !== "lastminute_amount") return true;
+  if (!checkinDate) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const checkin = new Date(checkinDate + "T00:00:00");
+  const daysUntil = Math.floor((checkin.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return daysUntil >= 0 && daysUntil <= (promo.days_before ?? 7);
+}
+
 export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: string } {
   const { type, value, min_nights, days_before, start_date, end_date } = promo;
   if (type === "percent") {

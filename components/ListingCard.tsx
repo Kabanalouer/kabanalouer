@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
-import { formatPromoLines, type PromoDisplay } from "@/lib/promoLabel";
+import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 
 export interface Listing {
   id: string;
@@ -37,6 +38,8 @@ export default function ListingCard({
       ? listing.photos
       : ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80"];
   const [idx, setIdx] = useState(0);
+  const searchParams = useSearchParams();
+  const checkin = searchParams.get("checkin");
 
   const prev = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -130,14 +133,10 @@ export default function ListingCard({
               Vedette
             </span>
           )}
-          {listing.hasPromo && (
-            listing.promoData
-              ? (
-                  <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
-                    {formatPromoLines(listing.promoData).line1}
-                  </span>
-                )
-              : <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">Promo</span>
+          {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
+            <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+              {formatPromoLines(listing.promoData).line1}
+            </span>
           )}
           {listing.isNew && (
             <span className="bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm">
