@@ -1349,7 +1349,7 @@ export default function EditListingForm({
                       <div className="grid grid-cols-3 gap-3 text-sm pt-1">
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Consultations</p>
-                          <p className="font-semibold text-charcoal-800">{viewsListing.toLocaleString("fr-CA")}</p>
+                          <p className="font-semibold text-charcoal-800">{(viewsListing ?? 0).toLocaleString("fr-CA")}</p>
                         </div>
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Contacts reçus</p>
@@ -1358,7 +1358,7 @@ export default function EditListingForm({
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Taux de conversion</p>
                           <p className="font-semibold text-charcoal-800">
-                            {viewsListing === 0 ? "—" : `${((uniqueContacts / viewsListing) * 100).toFixed(1)} %`}
+                            {viewsListing > 0 ? `${((uniqueContacts / viewsListing) * 100).toFixed(1)} %` : "—"}
                           </p>
                         </div>
                       </div>
