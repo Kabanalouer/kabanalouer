@@ -4,12 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPromoLabel, type PromoRow } from "@/lib/promoLabel";
 
-const DURATION_OPTIONS = [
-  { label: "3 nuits pour le prix de 2", minNights: 3, value: 2 },
-  { label: "4 nuits pour le prix de 3", minNights: 4, value: 3 },
-  { label: "7 nuits pour le prix de 5", minNights: 7, value: 5 },
-];
-
 type PromoFormType = "rabais" | "duree" | "lastminute";
 
 const inputCls =
@@ -49,7 +43,6 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [rabaisValue, setRabaisValue] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [durationIndex, setDurationIndex] = useState(0);
   const [lmPercent, setLmPercent] = useState("");
   const [lmDays, setLmDays] = useState("7");
 
@@ -104,9 +97,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       endDateVal = endDate;
     } else if (formType === "duree") {
       type = "duration";
-      const opt = DURATION_OPTIONS[durationIndex];
-      value = opt.value;
-      minNights = opt.minNights;
+      value = 1;
+      minNights = 2;
       if (!startDate || !endDate) { setError("Les dates sont obligatoires."); setSaving(false); return; }
       if (startDate >= endDate) { setError("La date de fin doit être après la date de début."); setSaving(false); return; }
       startDateVal = startDate;
@@ -184,8 +176,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
               <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
               </svg>
-              <p className="font-semibold text-sm text-charcoal-800">Durée</p>
-              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Offre de séjour prolongé</p>
+              <p className="font-semibold text-sm text-charcoal-800">Nuit gratuite</p>
+              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Prolongez le plaisir</p>
             </button>
 
             <button
@@ -236,23 +228,16 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </div>
           )}
 
-          {/* Durée fields */}
+          {/* Nuit gratuite fields */}
           {formType === "duree" && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-charcoal-700 mb-2">Type d&apos;offre</label>
-                <div className="space-y-2">
-                  {DURATION_OPTIONS.map((opt, i) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-[#ebebeb] hover:border-charcoal-300 transition-colors">
-                      <input
-                        type="radio" name="duration" checked={durationIndex === i}
-                        onChange={() => setDurationIndex(i)} className="accent-primary"
-                      />
-                      <span className="text-sm text-charcoal-700">{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
+                <p className="text-sm text-charcoal-600">
+                  Réservez un séjour de 2 nuits minimum et obtenez 1 nuit <span className="font-semibold text-primary">GRATUITE</span>.
+                </p>
               </div>
+              <p className="text-sm text-charcoal-400">Promo applicable pour les séjours entre le :</p>
               <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
             </div>
           )}
