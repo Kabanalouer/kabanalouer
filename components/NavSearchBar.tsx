@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import SearchBar from "./SearchBar";
+import { useRouter, useSearchParams } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -133,8 +132,6 @@ function CalendarMonth({
 function NavSearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const isChalesList = pathname === "/chalets";
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
@@ -167,8 +164,6 @@ function NavSearchBarInner() {
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
   const [cities, setCities] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<DestItem[]>([]);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -257,26 +252,6 @@ function NavSearchBarInner() {
 
   return (
     <>
-      {/* Mobile: loupe + filtres — masqué sur /chalets (ChaletsSearchSubBar gère ça) */}
-      <div className={`md:hidden flex items-center gap-1 ${isChalesList ? "hidden" : ""}`}>
-        <button
-          className="p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Rechercher"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-        <FiltersModal
-          currentParams={filtersCurrentParams}
-          initialMinBedrooms={initMinBedrooms}
-          initialMinBeds={initMinBeds}
-          initialMinBathrooms={initMinBathrooms}
-          initialAmenities={initAmenities}
-        />
-      </div>
-
       {/* Desktop: pill + filtres ──────────────────────────────────────── */}
       <div className="hidden md:flex items-center gap-3">
       <div
@@ -495,34 +470,6 @@ function NavSearchBarInner() {
       />
       </div>{/* end desktop wrapper */}
 
-      {/* Mobile full-screen overlay ──────────────────────────────────── */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[9999] bg-white flex flex-col md:hidden">
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-[#ebebeb] shrink-0">
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-1.5 text-charcoal-700 font-medium text-sm"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Retour
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center pt-8">
-            <SearchBar
-              initialRegion={destSelected?.type === "region" ? destSelected.value : undefined}
-              initialCity={destSelected?.type === "city" ? destSelected.value : undefined}
-              initialCheckin={checkin}
-              initialCheckout={checkout}
-              initialAdults={adults}
-              initialChildren={children}
-              initialBabies={babies}
-              initialPets={pets}
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }
