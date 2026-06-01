@@ -636,15 +636,21 @@ export default function EditListingForm({
                 Publier mon annonce
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
-              disabled={!isPublished}
-              title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
-              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-            >
-              Booster mon annonce
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
+                disabled={!isPublished}
+                className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+              >
+                Booster mon annonce
+              </button>
+              {!isPublished && (
+                <p className="text-xs text-charcoal-400 text-center mt-1.5">
+                  Publiez votre annonce pour activer cette option
+                </p>
+              )}
+            </div>
             <button
               onClick={() => setPreviewOpen(true)}
               disabled={!canPreview}
@@ -680,15 +686,21 @@ export default function EditListingForm({
               Publier mon annonce
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
-            disabled={!isPublished}
-            title={!isPublished ? "Publiez d'abord votre annonce" : undefined}
-            className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-          >
-            Booster mon annonce
-          </button>
+          <div>
+            <button
+              type="button"
+              onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
+              disabled={!isPublished}
+              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+            >
+              Booster mon annonce
+            </button>
+            {!isPublished && (
+              <p className="text-xs text-charcoal-400 text-center mt-1.5">
+                Publiez votre annonce pour activer cette option
+              </p>
+            )}
+          </div>
           <button
             onClick={() => setPreviewOpen(true)}
             disabled={!canPreview}
