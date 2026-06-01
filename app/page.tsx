@@ -99,12 +99,12 @@ export default async function HomePage() {
   const { data: activePromos } = featuredIds.length > 0
     ? await supabase
         .from("promotions")
-        .select("listing_id")
+        .select("listing_id, type, value, min_nights, days_before, start_date, end_date")
         .in("listing_id", featuredIds)
         .eq("is_active", true)
         .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`)
-    : { data: [] as { listing_id: string }[] };
-  const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
+    : { data: [] as { listing_id: string; type: string; value: number; min_nights: number | null; days_before: number | null; start_date: string | null; end_date: string | null }[] };
+  const promoMap = new Map((activePromos ?? []).map((p) => [p.listing_id as string, p]));
 
   const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({
     id: l.id,
@@ -117,7 +117,8 @@ export default async function HomePage() {
     bedrooms: (l.bedrooms as number) ?? 1,
     photos: normalizePhotos(l.photos).map((p) => p.url),
     tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
-    hasPromo: promoSet.has(l.id as string),
+    hasPromo: promoMap.has(l.id as string),
+    promoData: promoMap.get(l.id as string) ?? null,
   }));
 
   const websiteJsonLd = {

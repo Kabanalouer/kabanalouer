@@ -18,7 +18,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
-import { formatPromoLabel, type PromoDisplay } from "@/lib/promoLabel";
+import { formatPromoLines, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
 
 const DEFAULT_PHOTO =
@@ -636,16 +636,20 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
           <div className="w-80 shrink-0 sticky top-24 hidden lg:block">
             <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
               {/* Promo bandeau */}
-              {activePromo && (
-                <div className="mb-4 flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
-                  <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
-                  </svg>
-                  <p className="text-sm font-medium text-primary leading-snug">
-                    {formatPromoLabel(activePromo)}
-                  </p>
-                </div>
-              )}
+              {activePromo && (() => {
+                const lines = formatPromoLines(activePromo);
+                return (
+                  <div className="mb-4 flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
+                    <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold text-primary leading-snug">{lines.line1}</p>
+                      {lines.line2 && <p className="text-xs font-normal text-primary/80 leading-snug mt-0.5">{lines.line2}</p>}
+                    </div>
+                  </div>
+                );
+              })()}
               {/* CTA */}
               {isOwner ? (
                 <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
@@ -685,7 +689,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <div>
                 {activePromo && (
                   <p className="text-[11px] font-medium text-primary leading-none mb-1 truncate max-w-[160px]">
-                    {formatPromoLabel(activePromo)}
+                    {formatPromoLines(activePromo).line1}
                   </p>
                 )}
                 <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>

@@ -46,3 +46,24 @@ export function formatPromoLabel(promo: PromoDisplay): string {
       return "";
   }
 }
+
+export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: string } {
+  const { type, value, start_date, end_date } = promo;
+  if (type === "percent") {
+    return {
+      line1: `Promo -${value}%`,
+      line2: start_date && end_date
+        ? `Sur tous les séjours entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}`
+        : undefined,
+    };
+  }
+  if (type === "amount") {
+    return {
+      line1: `Promo -${value} $/nuit`,
+      line2: start_date && end_date
+        ? `Sur tous les séjours entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}`
+        : undefined,
+    };
+  }
+  return { line1: formatPromoLabel(promo) };
+}

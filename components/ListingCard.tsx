@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
+import { formatPromoLines, type PromoDisplay } from "@/lib/promoLabel";
 
 export interface Listing {
   id: string;
@@ -19,6 +20,7 @@ export interface Listing {
   isFavorite?: boolean;
   isNew?: boolean;
   hasPromo?: boolean;
+  promoData?: PromoDisplay | null;
   isFeatured?: boolean;
   tags: string[];
 }
@@ -129,9 +131,17 @@ export default function ListingCard({
             </span>
           )}
           {listing.hasPromo && (
-            <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
-              Promo
-            </span>
+            listing.promoData && (listing.promoData.type === "percent" || listing.promoData.type === "amount")
+              ? (() => {
+                  const lines = formatPromoLines(listing.promoData);
+                  return (
+                    <div className="bg-[#f04e45] text-white text-[11px] px-2.5 py-1.5 rounded-xl shadow-sm leading-snug max-w-[170px]">
+                      <p className="font-semibold">{lines.line1}</p>
+                      {lines.line2 && <p className="font-normal opacity-90 mt-0.5">{lines.line2}</p>}
+                    </div>
+                  );
+                })()
+              : <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">Promo</span>
           )}
           {listing.isNew && (
             <span className="bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm">
