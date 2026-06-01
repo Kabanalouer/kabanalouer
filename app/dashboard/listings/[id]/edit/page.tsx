@@ -89,7 +89,7 @@ export default async function EditListingPage({ params }: Props) {
           smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
           checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
-          price_on_request: (listing.price_on_request as boolean | null) ?? false,
+          price_on_request: (listing.price_on_request as boolean | null) ?? true,
           min_age: (listing.min_age as number | null) ?? 21,
         }}
       />
