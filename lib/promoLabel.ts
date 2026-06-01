@@ -48,7 +48,7 @@ export function formatPromoLabel(promo: PromoDisplay): string {
 }
 
 export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: string } {
-  const { type, value, min_nights, start_date, end_date } = promo;
+  const { type, value, min_nights, days_before, start_date, end_date } = promo;
   if (type === "percent") {
     return {
       line1: `Promo -${value}%`,
@@ -71,6 +71,18 @@ export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: 
       line2: start_date && end_date
         ? `Sur tous les séjours de ${min_nights ?? 2} nuits minimum entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}.`
         : undefined,
+    };
+  }
+  if (type === "lastminute") {
+    return {
+      line1: "Promo Dernière Minute",
+      line2: `-${value}% pour toute réservation faite moins de ${days_before} jours avant l'arrivée`,
+    };
+  }
+  if (type === "lastminute_amount") {
+    return {
+      line1: "Promo Dernière Minute",
+      line2: `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`,
     };
   }
   return { line1: formatPromoLabel(promo) };

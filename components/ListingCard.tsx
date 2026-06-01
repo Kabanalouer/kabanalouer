@@ -131,7 +131,7 @@ export default function ListingCard({
             </span>
           )}
           {listing.hasPromo && (
-            listing.promoData && (listing.promoData.type === "percent" || listing.promoData.type === "amount" || listing.promoData.type === "duration")
+            listing.promoData && (listing.promoData.type === "percent" || listing.promoData.type === "amount" || listing.promoData.type === "duration" || listing.promoData.type === "lastminute" || listing.promoData.type === "lastminute_amount")
               ? (() => {
                   const lines = formatPromoLines(listing.promoData);
                   return (
