@@ -158,11 +158,11 @@ export default async function TarifsPage() {
           <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
             {/* Header */}
             <div className="grid grid-cols-3 bg-charcoal-50 border-b border-[#ebebeb]">
-              <div className="px-6 py-4 text-xs font-semibold text-charcoal-400 uppercase tracking-wider" />
-              <div className="px-6 py-4 text-sm font-bold text-primary text-center">
+              <div className="px-3 sm:px-6 py-4 text-xs font-semibold text-charcoal-400 uppercase tracking-wider" />
+              <div className="px-3 sm:px-6 py-4 text-sm font-bold text-primary text-center">
                 Kabanalouer
               </div>
-              <div className="px-6 py-4 text-sm font-semibold text-charcoal-500 text-center">
+              <div className="px-3 sm:px-6 py-4 text-sm font-semibold text-charcoal-500 text-center">
                 Airbnb
               </div>
             </div>
@@ -171,17 +171,17 @@ export default async function TarifsPage() {
                 key={row.feature}
                 className={`grid grid-cols-3 border-b border-[#ebebeb] ${i % 2 === 0 ? "bg-white" : "bg-charcoal-50/50"}`}
               >
-                <div className="px-6 py-4 text-sm text-charcoal-700 font-medium">
+                <div className="px-3 sm:px-6 py-4 text-xs sm:text-sm text-charcoal-700 font-medium">
                   {row.feature}
                 </div>
-                <div className="px-6 py-4 text-center">
+                <div className="px-3 sm:px-6 py-4 text-center">
                   {row.kbl === true ? (
                     <span className="text-primary font-bold text-lg">✓</span>
                   ) : (
                     <span className="text-sm font-semibold text-primary">{row.kbl}</span>
                   )}
                 </div>
-                <div className="px-6 py-4 text-center">
+                <div className="px-3 sm:px-6 py-4 text-center">
                   {row.airbnb === true ? (
                     <span className="text-charcoal-400 text-lg">✓</span>
                   ) : row.airbnb === false ? (

@@ -37,7 +37,7 @@ export default function ContactForm() {
   return (
     <form action={formAction} className="space-y-5">
       {/* Prénom + Nom */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="first-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
             Prénom <span className="text-red-400">*</span>

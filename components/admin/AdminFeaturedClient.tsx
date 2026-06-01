@@ -364,7 +364,7 @@ export default function AdminFeaturedClient({
               <p className="text-sm text-red-600 mt-3">{modalError}</p>
             )}
 
-            <div className="flex gap-2 mt-5">
+            <div className="flex flex-col sm:flex-row gap-2 mt-5">
               <button
                 onClick={() => setModal(null)}
                 className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50 transition-colors"

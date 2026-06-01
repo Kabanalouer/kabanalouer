@@ -493,7 +493,7 @@ export default function PhotoUpload({
 
       {/* Processing slots */}
       {processing.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {processing.map(renderProcessingSlot)}
         </div>
       )}

@@ -17,7 +17,7 @@ function DateRangeFields({
 }) {
   const today = new Date().toISOString().split("T")[0];
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
         <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Date de début</label>
         <input type="date" value={start} min={today} onChange={(e) => onStart(e.target.value)} className={inputCls} />

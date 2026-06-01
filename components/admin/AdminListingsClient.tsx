@@ -97,7 +97,7 @@ export default function AdminListingsClient({
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         {/* Status pills */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(["all", "published", "draft"] as const).map((s) => (
             <button
               key={s}

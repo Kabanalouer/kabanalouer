@@ -178,8 +178,8 @@ export default function ListingForm({
 
         {/* Section 1: Localisation */}
         <FormSection title="Localisation & capacité" step={1}>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-1 sm:col-span-2">
               <Label>Région *</Label>
               <select
                 value={form.region}
@@ -193,7 +193,7 @@ export default function ListingForm({
                 ))}
               </select>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <Label>Adresse (optionnel — non affichée publiquement)</Label>
               <input
                 type="text"
@@ -276,7 +276,7 @@ export default function ListingForm({
 
         {/* Section 5: Tarifs */}
         <FormSection title="Tarifs ($ / nuit)" step={5}>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label>Basse saison</Label>
               <div className="relative">
@@ -324,7 +324,7 @@ export default function ListingForm({
                 placeholder="ex. 123456"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Heure du check-in</Label>
                 <select
@@ -354,7 +354,7 @@ export default function ListingForm({
               <Label>Type d&apos;arrivée</Label>
               <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Animaux acceptés</Label>
                 <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
@@ -371,7 +371,7 @@ export default function ListingForm({
         {saveError && (
           <div className="bg-red-50 text-red-600 rounded-xl px-4 py-3 text-sm">{saveError}</div>
         )}
-        <div className="flex gap-3 pb-8">
+        <div className="flex flex-col sm:flex-row gap-3 pb-8">
           <button
             type="button"
             onClick={() => handleSave(false)}
@@ -435,7 +435,7 @@ function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_perso
     { id: "in_person" as const,  emoji: "🤝", title: "Accueil sur place",  desc: "Remise des clés en personne à l'arrivée" },
   ];
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {options.map((o) => (
         <button key={o.id} type="button" onClick={() => onChange(o.id)}
           className={`text-left p-4 rounded-xl border-2 transition-colors ${value === o.id ? "border-primary bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>

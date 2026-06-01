@@ -403,7 +403,7 @@ function LivingRoomCard({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex items-center gap-3">
           <label className="text-sm text-charcoal-500 shrink-0">Divans-lits</label>
           <input

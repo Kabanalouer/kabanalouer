@@ -1170,7 +1170,7 @@ export default function EditListingForm({
           {activeSection === "tarifs" && (
             <SectionShell title="Tarifs" emoji="💰">
               {/* Pricing mode cards */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <button type="button" onClick={() => set("price_on_request", false)}
                   className={`text-left p-4 rounded-xl border-2 transition-colors ${!form.price_on_request ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
                   <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -1238,7 +1238,7 @@ export default function EditListingForm({
                     placeholder="ex. 123456"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-in <Req /></label>
                     <select
@@ -1268,7 +1268,7 @@ export default function EditListingForm({
                   <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Type d&apos;arrivée <Req /></label>
                   <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Animaux acceptés</label>
                     <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
@@ -1330,7 +1330,7 @@ export default function EditListingForm({
                         </svg>
                         <p className="text-base font-bold text-green-700">Annonce publiée</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Publiée le</p>
                           <p className="font-semibold text-charcoal-800">
@@ -1351,7 +1351,7 @@ export default function EditListingForm({
                     {/* Stats de performance */}
                     <div>
                       <p className="text-sm font-semibold text-charcoal-700 mb-3">Mes stats</p>
-                      <div className="grid grid-cols-3 gap-3 text-sm">
+                      <div className="grid grid-cols-3 gap-2 text-sm">
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Consultations</p>
                           <p className="font-semibold text-charcoal-800">{(viewsListing ?? 0).toLocaleString("fr-CA")}</p>
@@ -1632,7 +1632,7 @@ function Spinner() {
 
 function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <button type="button" onClick={() => onChange("autonomous")}
         className={`text-left p-4 rounded-xl border-2 transition-colors ${value === "autonomous" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
         <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
