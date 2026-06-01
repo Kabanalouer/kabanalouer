@@ -231,6 +231,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                   <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : "$/nuit"}</span>
                 </div>
               </div>
+              <p className="text-sm text-charcoal-400">Rabais applicable pour les séjours entre le :</p>
               <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
             </div>
           )}
