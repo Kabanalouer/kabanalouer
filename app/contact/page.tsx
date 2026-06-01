@@ -37,7 +37,7 @@ export default function ContactPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
             Contact
@@ -53,7 +53,7 @@ export default function ContactPage() {
       </section>
 
       {/* ── Form + Info ── */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
@@ -140,7 +140,7 @@ export default function ContactPage() {
       </section>
 
       {/* ── Quick FAQ ── */}
-      <section className="py-20 bg-[#F8FAF9] border-t border-[#ebebeb]">
+      <section className="py-12 md:py-20 bg-[#F8FAF9] border-t border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
             Questions fréquentes

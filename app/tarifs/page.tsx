@@ -80,7 +80,7 @@ export default async function TarifsPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
+      <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
             Tarif transparent
@@ -95,7 +95,7 @@ export default async function TarifsPage() {
       </section>
 
       {/* ── Pricing card ── */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-lg mx-auto px-4 sm:px-6">
           <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8">
             {/* Badge */}
@@ -150,19 +150,19 @@ export default async function TarifsPage() {
       </section>
 
       {/* ── Comparison table ── */}
-      <section className="py-20 bg-[#F8FAF9]">
+      <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
+          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-8 md:mb-10">
             Kabanalouer vs Airbnb
           </h2>
           <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
             {/* Header */}
             <div className="grid grid-cols-3 bg-charcoal-50 border-b border-[#ebebeb]">
-              <div className="px-3 sm:px-6 py-4 text-xs font-semibold text-charcoal-400 uppercase tracking-wider" />
-              <div className="px-3 sm:px-6 py-4 text-sm font-bold text-primary text-center">
+              <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-charcoal-400 uppercase tracking-wider" />
+              <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold text-primary text-center">
                 Kabanalouer
               </div>
-              <div className="px-3 sm:px-6 py-4 text-sm font-semibold text-charcoal-500 text-center">
+              <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-charcoal-500 text-center">
                 Airbnb
               </div>
             </div>
@@ -171,23 +171,23 @@ export default async function TarifsPage() {
                 key={row.feature}
                 className={`grid grid-cols-3 border-b border-[#ebebeb] ${i % 2 === 0 ? "bg-white" : "bg-charcoal-50/50"}`}
               >
-                <div className="px-3 sm:px-6 py-4 text-xs sm:text-sm text-charcoal-700 font-medium">
+                <div className="px-3 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-sm text-charcoal-700 font-medium leading-snug">
                   {row.feature}
                 </div>
-                <div className="px-3 sm:px-6 py-4 text-center">
+                <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   {row.kbl === true ? (
-                    <span className="text-primary font-bold text-lg">✓</span>
+                    <span className="text-primary font-bold text-base sm:text-lg">✓</span>
                   ) : (
-                    <span className="text-sm font-semibold text-primary">{row.kbl}</span>
+                    <span className="text-[11px] sm:text-sm font-semibold text-primary">{row.kbl}</span>
                   )}
                 </div>
-                <div className="px-3 sm:px-6 py-4 text-center">
+                <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   {row.airbnb === true ? (
-                    <span className="text-charcoal-400 text-lg">✓</span>
+                    <span className="text-charcoal-400 text-base sm:text-lg">✓</span>
                   ) : row.airbnb === false ? (
-                    <span className="text-red-400 text-lg font-bold">✗</span>
+                    <span className="text-red-400 text-base sm:text-lg font-bold">✗</span>
                   ) : (
-                    <span className="text-sm text-charcoal-500">{row.airbnb}</span>
+                    <span className="text-[11px] sm:text-sm text-charcoal-500">{row.airbnb}</span>
                   )}
                 </div>
               </div>
@@ -200,9 +200,9 @@ export default async function TarifsPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
+          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-8 md:mb-10">
             Questions sur les tarifs
           </h2>
           <div className="space-y-3">

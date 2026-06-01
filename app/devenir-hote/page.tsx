@@ -180,9 +180,9 @@ export default async function DevenirHotePage() {
       <CreationChoiceSection />
 
       {/* ── Why Kabanalouer ── */}
-      <section className="py-20 bg-[#F8FAF9]">
+      <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <h2 className="text-3xl font-bold text-charcoal-800">Pourquoi choisir Kabanalouer ?</h2>
             <p className="text-charcoal-500 mt-3 max-w-xl mx-auto">
               Une plateforme pensée pour les propriétaires de chalets québécois, pas pour les grandes plateformes internationales.
@@ -224,7 +224,7 @@ export default async function DevenirHotePage() {
       </section>
 
       {/* ── What's included ── */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -304,9 +304,9 @@ export default async function DevenirHotePage() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="py-20 bg-[#F8FAF9]">
+      <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <h2 className="text-3xl font-bold text-charcoal-800">Ils font confiance à Kabanalouer</h2>
             <p className="text-charcoal-500 mt-3">Des propriétaires de toutes les régions du Québec</p>
           </div>
@@ -334,7 +334,7 @@ export default async function DevenirHotePage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="bg-primary py-20">
+      <section className="bg-primary py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Prêt à rejoindre la communauté ?

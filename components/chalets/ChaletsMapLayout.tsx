@@ -158,8 +158,8 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         </div>
         {listGrid("grid-cols-1 sm:grid-cols-2")}
 
-        {/* Map below listings on mobile */}
-        <div className="mt-8">
+        {/* Carte masquée sur mobile pur (<sm), visible sm+ */}
+        <div className="hidden sm:block mt-8">
           {mapFrame("420px")}
         </div>
       </div>
