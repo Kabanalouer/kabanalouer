@@ -48,7 +48,7 @@ export function formatPromoLabel(promo: PromoDisplay): string {
 }
 
 export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: string } {
-  const { type, value, start_date, end_date } = promo;
+  const { type, value, min_nights, start_date, end_date } = promo;
   if (type === "percent") {
     return {
       line1: `Promo -${value}%`,
@@ -62,6 +62,14 @@ export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: 
       line1: `Promo -${value} $/nuit`,
       line2: start_date && end_date
         ? `Sur tous les séjours entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}`
+        : undefined,
+    };
+  }
+  if (type === "duration") {
+    return {
+      line1: "Nuitée GRATUITE",
+      line2: start_date && end_date
+        ? `Sur tous les séjours de ${min_nights ?? 2} nuits minimum entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}.`
         : undefined,
     };
   }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatPromoLabel, type PromoRow } from "@/lib/promoLabel";
+import { formatPromoLines, type PromoRow } from "@/lib/promoLabel";
 
 type PromoFormType = "rabais" | "duree" | "lastminute";
 
@@ -153,7 +153,15 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
         <div className="bg-charcoal-50 rounded-2xl border border-[#ebebeb] p-5">
           <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-2">Promotion active</p>
           <div className="flex items-start justify-between gap-4">
-            <p className="text-base font-semibold text-charcoal-800">{formatPromoLabel(activePromo)}</p>
+            {(() => {
+              const lines = formatPromoLines(activePromo);
+              return (
+                <div>
+                  <p className="text-base font-semibold text-charcoal-800">{lines.line1}</p>
+                  {lines.line2 && <p className="text-sm font-normal text-charcoal-500 mt-0.5">{lines.line2}</p>}
+                </div>
+              );
+            })()}
             <button
               onClick={handleDeactivate}
               disabled={deactivating}
