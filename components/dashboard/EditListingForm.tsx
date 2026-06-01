@@ -1346,7 +1346,12 @@ export default function EditListingForm({
                           </div>
                         )}
                       </div>
-                      <div className="grid grid-cols-3 gap-3 text-sm pt-1">
+                    </div>
+
+                    {/* Stats de performance */}
+                    <div>
+                      <p className="text-sm font-semibold text-charcoal-700 mb-3">Mes stats</p>
+                      <div className="grid grid-cols-3 gap-3 text-sm">
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">Consultations</p>
                           <p className="font-semibold text-charcoal-800">{(viewsListing ?? 0).toLocaleString("fr-CA")}</p>
