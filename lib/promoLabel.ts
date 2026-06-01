@@ -1,7 +1,7 @@
 export type PromoRow = {
   id: string;
   listing_id: string;
-  type: "percent" | "amount" | "duration" | "lastminute";
+  type: "percent" | "amount" | "duration" | "lastminute" | "lastminute_amount";
   value: number;
   min_nights: number | null;
   days_before: number | null;
@@ -40,6 +40,8 @@ export function formatPromoLabel(promo: PromoDisplay): string {
         : `${min_nights} nuits pour le prix de ${value}`;
     case "lastminute":
       return `-${value}% pour toute réservation faite moins de ${days_before} jours avant l'arrivée`;
+    case "lastminute_amount":
+      return `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`;
     default:
       return "";
   }

@@ -43,7 +43,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [rabaisValue, setRabaisValue] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [lmPercent, setLmPercent] = useState("");
+  const [lmUnit, setLmUnit] = useState<"percent" | "amount">("percent");
+  const [lmValue, setLmValue] = useState("");
   const [lmDays, setLmDays] = useState("7");
 
   const fetchPromo = useCallback(async () => {
@@ -104,11 +105,12 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       startDateVal = startDate;
       endDateVal = endDate;
     } else {
-      type = "lastminute";
-      value = parseInt(lmPercent) || 0;
+      type = lmUnit === "percent" ? "lastminute" : "lastminute_amount";
+      value = parseInt(lmValue) || 0;
       daysBefore = parseInt(lmDays) || 0;
-      if (value <= 0 || value > 100) { setError("Entrez un pourcentage entre 1 et 100."); setSaving(false); return; }
-      if (daysBefore <= 0) { setError("Entrez un nombre de jours valide."); setSaving(false); return; }
+      if (value <= 0) { setError("Entrez un montant valide."); setSaving(false); return; }
+      if (lmUnit === "percent" && value > 100) { setError("Le pourcentage ne peut pas dépasser 100."); setSaving(false); return; }
+      if (daysBefore < 7 || daysBefore > 21) { setError("Le nombre de jours doit être entre 7 et 21."); setSaving(false); return; }
     }
 
     const { error: err } = await supabase.from("promotions").insert({
@@ -245,15 +247,31 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
           {/* Dernière minute fields */}
           {formType === "lastminute" && (
             <div className="space-y-4">
-              <div className="max-w-xs">
-                <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Rabais (%)</label>
-                <div className="flex items-center gap-2">
+              <div>
+                <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
+                <div className="flex gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setLmUnit("percent")}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLmUnit("amount")}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                  >
+                    $
+                  </button>
+                </div>
+                <div className="max-w-xs flex items-center gap-2">
                   <input
-                    type="number" min={1} max={100} value={lmPercent}
-                    onChange={(e) => setLmPercent(e.target.value)}
-                    className={inputCls} placeholder="ex. 15"
+                    type="number" min={1} max={lmUnit === "percent" ? 100 : undefined}
+                    value={lmValue} onChange={(e) => setLmValue(e.target.value)}
+                    className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
                   />
-                  <span className="text-sm text-charcoal-500 shrink-0">%</span>
+                  <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : "$/nuit"}</span>
                 </div>
               </div>
               <div className="max-w-xs">
