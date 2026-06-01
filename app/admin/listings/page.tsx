@@ -5,7 +5,12 @@ import AdminListingsClient, { type ListingRow } from "@/components/admin/AdminLi
 
 export const metadata = { title: "Annonces — Administration" };
 
-export default async function AdminListingsPage() {
+export default async function AdminListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -91,7 +96,7 @@ export default async function AdminListingsPage() {
           <p className="text-sm text-charcoal-400 mt-0.5">{rows.length} annonce{rows.length !== 1 ? "s" : ""} au total</p>
         </div>
       </div>
-      <AdminListingsClient listings={rows} regions={regions} />
+      <AdminListingsClient listings={rows} regions={regions} defaultSearch={q ?? ""} />
     </div>
   );
 }

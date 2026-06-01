@@ -32,13 +32,15 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 export default function AdminListingsClient({
   listings,
   regions,
+  defaultSearch = "",
 }: {
   listings: ListingRow[];
   regions: string[];
+  defaultSearch?: string;
 }) {
   const [status, setStatus] = useState<"all" | "published" | "draft">("all");
   const [region, setRegion] = useState("");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(defaultSearch);
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
