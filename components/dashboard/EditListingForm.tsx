@@ -215,6 +215,7 @@ export default function EditListingForm({
   const [showPublishErrors, setShowPublishErrors] = useState(false);
   const [calendarMode, setCalendarMode] = useState<"manual" | "ical">(() => icalUrl ? "ical" : "manual");
   const [showCalendarWarning, setShowCalendarWarning] = useState(false);
+  const [uniqueContacts, setUniqueContacts] = useState<number>(0);
 
   const switchCalendarMode = (mode: "manual" | "ical") => {
     if (mode === calendarMode) return;
@@ -265,6 +266,19 @@ export default function EditListingForm({
       setPromotionsHasActive((promoRes.data?.length ?? 0) > 0);
       setScoreDbLoaded(true);
     });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    supabase
+      .from("messages")
+      .select("sender_id")
+      .eq("listing_id", listingId)
+      .eq("receiver_id", userId)
+      .then(({ data }) => {
+        if (!data) return;
+        const distinct = new Set(data.map((m) => m.sender_id as string)).size;
+        setUniqueContacts(distinct);
+      });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const REQUIRED_SECTION_IDS = new Set<SectionId>([
@@ -1331,9 +1345,21 @@ export default function EditListingForm({
                             </p>
                           </div>
                         )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-sm pt-1">
                         <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Vues sur la fiche</p>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Consultations</p>
                           <p className="font-semibold text-charcoal-800">{viewsListing.toLocaleString("fr-CA")}</p>
+                        </div>
+                        <div>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Contacts reçus</p>
+                          <p className="font-semibold text-charcoal-800">{uniqueContacts.toLocaleString("fr-CA")}</p>
+                        </div>
+                        <div>
+                          <p className="text-charcoal-400 text-xs mb-0.5">Taux de conversion</p>
+                          <p className="font-semibold text-charcoal-800">
+                            {viewsListing === 0 ? "—" : `${((uniqueContacts / viewsListing) * 100).toFixed(1)} %`}
+                          </p>
                         </div>
                       </div>
                     </div>
