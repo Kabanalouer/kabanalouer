@@ -347,6 +347,11 @@ export default function SearchBar({
   return (
     <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
 
+      {/* Mobile overlay — clicks here trigger the outside-click handler on calendarRef */}
+      {calendarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-[9998] sm:hidden" />
+      )}
+
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-1 min-w-[180px] flex">
         <div className="flex-1 flex items-center gap-3 px-4 py-2">
@@ -495,7 +500,11 @@ export default function SearchBar({
         </button>
 
         {calendarOpen && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 z-[9999] w-[min(calc(100vw-32px),580px)]">
+          <div className="fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85vh] overflow-y-auto sm:absolute sm:bottom-auto sm:top-full sm:left-0 sm:right-auto sm:translate-x-0 sm:rounded-2xl sm:w-[min(calc(100vw-32px),580px)] sm:max-h-none sm:overflow-visible bg-white shadow-2xl border border-gray-100 p-5 z-[9999] w-full mt-0 sm:mt-2">
+            {/* Drag handle — mobile only */}
+            <div className="flex justify-center mb-3 sm:hidden">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
             <div className="flex flex-col sm:flex-row gap-5">
               <CalendarMonth
                 year={leftYear} month={leftMonth}
