@@ -33,6 +33,7 @@ function DateRangeFields({
 export default function PromotionsSection({ listingId }: { listingId: string }) {
   const supabase = createClient();
   const [activePromo, setActivePromo] = useState<PromoRow | null>(null);
+  const [expiredDate, setExpiredDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
@@ -49,6 +50,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
 
   const fetchPromo = useCallback(async () => {
     setLoading(true);
+    setExpiredDate(null);
     const { data } = await supabase
       .from("promotions")
       .select("*")
@@ -57,7 +59,19 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    setActivePromo(data as PromoRow | null);
+    const promo = data as PromoRow | null;
+    if (
+      promo &&
+      ["percent", "amount", "duration"].includes(promo.type) &&
+      promo.end_date &&
+      promo.end_date < new Date().toISOString().split("T")[0]
+    ) {
+      await supabase.from("promotions").update({ is_active: false }).eq("id", promo.id);
+      setExpiredDate(promo.end_date);
+      setActivePromo(null);
+    } else {
+      setActivePromo(promo);
+    }
     setLoading(false);
   }, [listingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -152,9 +166,16 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
         </div>
       ) : (
         <div>
-          <p className="text-sm text-charcoal-400 mb-5">
-            Aucune promotion active. Choisissez un type et configurez votre offre.
-          </p>
+          {expiredDate ? (
+            <p className="text-sm text-charcoal-400 mb-5">
+              Cette promotion a expiré le{" "}
+              {new Date(expiredDate + "T12:00:00").toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })}.
+            </p>
+          ) : (
+            <p className="text-sm text-charcoal-400 mb-5">
+              Aucune promotion active. Choisissez un type et configurez votre offre.
+            </p>
+          )}
 
           {/* Type selection */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
