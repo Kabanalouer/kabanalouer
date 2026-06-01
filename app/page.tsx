@@ -143,23 +143,23 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] z-40 overflow-hidden">
-        {/* Photo */}
-        <div
-          className="absolute inset-0 bg-cover bg-center scale-[1.02]"
-          style={{
-            backgroundImage:
-              "url('/hero-chalet.webp')",
-          }}
-        />
-        {/* Overlay — léger en haut, dense en bas */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
+      {/* min-h sur mobile : le hero grandit pour contenir le contenu. sm+ : hauteur fixe viewport. */}
+      <section className="relative min-h-[calc(100svh-80px)] sm:h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] z-40">
+        {/* overflow-hidden uniquement sur le wrapper background pour clipper le scale-[1.02] */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center scale-[1.02]"
+            style={{ backgroundImage: "url('/hero-chalet.webp')" }}
+          />
+          {/* Overlay — léger en haut, dense en bas */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
+        </div>
 
-        {/* Content — flex column justify-between: top content + bottom stats */}
-        <div className="relative z-10 flex flex-col h-full text-white">
+        {/* Content */}
+        <div className="relative z-10 flex flex-col text-white">
 
           {/* Contenu : badge + titre + sous-titre + recherche + stats */}
-          <div className="flex flex-col items-center text-center px-4 pt-[12vh]">
+          <div className="flex flex-col items-center text-center px-4 pt-[12vh] pb-10 sm:pb-0">
             <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-6 max-w-[280px] sm:max-w-none leading-tight">
               La marketplace de la location de chalet au Québec
             </div>
@@ -172,7 +172,7 @@ export default async function HomePage() {
             <SearchBar />
 
             {/* Stats — directement sous la SearchBar */}
-            <div className="mt-32 flex flex-wrap justify-center gap-8 md:gap-20">
+            <div className="mt-8 sm:mt-32 flex flex-wrap justify-center gap-8 md:gap-20">
               <HeroStat value="0 $" label="Frais de service" />
               <HeroStat value="Direct" label="Contactez le proprio" />
               <HeroStat value="100 %" label="Chalets vérifiés" />
