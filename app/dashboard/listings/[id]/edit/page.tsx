@@ -53,7 +53,7 @@ export default async function EditListingPage({ params }: Props) {
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Modifier le chalet</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{listing.title ? "Modifier mon annonce" : "Créer mon annonce"}</h1>
         <p className="text-gray-500 text-sm mt-1 line-clamp-1">{listing.title}</p>
       </div>
       <EditListingForm
