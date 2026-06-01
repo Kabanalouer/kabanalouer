@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
+import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
 
 export interface ListingForMap extends Listing {
   lat: number | null;
@@ -121,6 +122,19 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
 
   return (
     <>
+      {/* Barre de recherche compacte mobile — sticky sous la navbar */}
+      <ChaletsSearchSubBar
+        region={filters.region}
+        city={filters.city}
+        checkin={filters.checkin}
+        checkout={filters.checkout}
+        capacity={filters.capacity}
+        minBedrooms={filters.minBedrooms}
+        minBeds={filters.minBeds}
+        minBathrooms={filters.minBathrooms}
+        amenities={filters.amenities}
+      />
+
       {/* ── DESKTOP: split layout ── */}
       <div className="hidden lg:flex gap-5 items-start">
 

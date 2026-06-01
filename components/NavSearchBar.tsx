@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import FiltersModal from "./chalets/FiltersModal";
 
@@ -133,6 +133,8 @@ function CalendarMonth({
 function NavSearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const isChalesList = pathname === "/chalets";
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
@@ -255,8 +257,8 @@ function NavSearchBarInner() {
 
   return (
     <>
-      {/* Mobile: loupe + filtres */}
-      <div className="md:hidden flex items-center gap-1">
+      {/* Mobile: loupe + filtres — masqué sur /chalets (ChaletsSearchSubBar gère ça) */}
+      <div className={`md:hidden flex items-center gap-1 ${isChalesList ? "hidden" : ""}`}>
         <button
           className="p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
           onClick={() => setMobileOpen(true)}
