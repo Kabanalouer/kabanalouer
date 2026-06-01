@@ -195,6 +195,7 @@ export default function SearchBar({
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
+  const [mobileCalTop, setMobileCalTop] = useState(0);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   // ── Guests state ──
@@ -347,11 +348,6 @@ export default function SearchBar({
   return (
     <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
 
-      {/* Mobile overlay — clicks here trigger the outside-click handler on calendarRef */}
-      {calendarOpen && (
-        <div className="fixed inset-0 bg-black/40 z-[9998] sm:hidden" />
-      )}
-
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-1 min-w-[180px] flex">
         <div className="flex-1 flex items-center gap-3 px-4 py-2">
@@ -487,7 +483,14 @@ export default function SearchBar({
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
       <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex">
         <button
-          onClick={() => { setCalendarOpen((o) => !o); setDestOpen(false); }}
+          onClick={() => {
+            if (!calendarOpen && calendarRef.current) {
+              const r = calendarRef.current.getBoundingClientRect();
+              setMobileCalTop(Math.round(r.bottom) + 8);
+            }
+            setCalendarOpen((o) => !o);
+            setDestOpen(false);
+          }}
           className="flex-1 flex items-center gap-3 px-4 py-2 text-left"
         >
           <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -500,39 +503,69 @@ export default function SearchBar({
         </button>
 
         {calendarOpen && (
-          <div className="fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85vh] overflow-y-auto sm:absolute sm:bottom-auto sm:top-full sm:left-0 sm:right-auto sm:translate-x-0 sm:rounded-2xl sm:w-[min(calc(100vw-32px),580px)] sm:max-h-none sm:overflow-visible bg-white shadow-2xl border border-gray-100 p-5 z-[9999] w-full mt-0 sm:mt-2">
-            {/* Drag handle — mobile only */}
-            <div className="flex justify-center mb-3 sm:hidden">
-              <div className="w-10 h-1 bg-gray-200 rounded-full" />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-5">
+          <>
+            {/* Mobile overlay — tap outside closes */}
+            <div
+              className="fixed inset-0 z-[9998] sm:hidden"
+              onClick={() => { setCalendarOpen(false); setHoverDate(""); }}
+            />
+
+            {/* Mobile: fixed panel, un seul mois */}
+            <div
+              className="sm:hidden fixed left-4 right-4 rounded-2xl bg-white shadow-2xl border border-gray-100 p-4 z-[9999] max-h-[80vh] overflow-y-auto"
+              style={{ top: mobileCalTop }}
+            >
               <CalendarMonth
                 year={leftYear} month={leftMonth}
                 today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                 onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
+                showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
               />
-              <div className="hidden sm:block w-px bg-gray-100" />
-              <CalendarMonth
-                year={rightYear} month={rightMonth}
-                today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                showPrev={false} showNext onPrev={goPrev} onNext={goNext}
-              />
+              {(checkin || checkout) && (
+                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-sm text-gray-500">
+                    {checkin && checkout
+                      ? `${formatShort(checkin)} → ${formatShort(checkout)}`
+                      : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
+                  </span>
+                  <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
+                    Effacer
+                  </button>
+                </div>
+              )}
             </div>
-            {(checkin || checkout) && (
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-sm text-gray-500">
-                  {checkin && checkout
-                    ? `${formatShort(checkin)} → ${formatShort(checkout)}`
-                    : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
-                </span>
-                <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
-                  Effacer
-                </button>
+
+            {/* Desktop: dropdown absolu, deux mois */}
+            <div className="hidden sm:block absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 z-[9999] w-[min(calc(100vw-32px),580px)]">
+              <div className="flex gap-5">
+                <CalendarMonth
+                  year={leftYear} month={leftMonth}
+                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                  showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
+                />
+                <div className="w-px bg-gray-100" />
+                <CalendarMonth
+                  year={rightYear} month={rightMonth}
+                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                  showPrev={false} showNext onPrev={goPrev} onNext={goNext}
+                />
               </div>
-            )}
-          </div>
+              {(checkin || checkout) && (
+                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-sm text-gray-500">
+                    {checkin && checkout
+                      ? `${formatShort(checkin)} → ${formatShort(checkout)}`
+                      : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
+                  </span>
+                  <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
+                    Effacer
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
