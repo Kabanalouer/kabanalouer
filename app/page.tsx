@@ -160,19 +160,19 @@ export default async function HomePage() {
 
           {/* Contenu : badge + titre + sous-titre + recherche + stats */}
           <div className="flex flex-col items-center text-center px-4 pt-[12vh] pb-10 sm:pb-0">
-            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-6 max-w-[280px] sm:max-w-none leading-tight">
+            <div className="hidden sm:inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-6 max-w-[280px] sm:max-w-none leading-tight">
               La marketplace de la location de chalet au Québec
             </div>
             <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
               Trouvez votre chalet au Québec en quelques clics.
             </h1>
-            <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
+            <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
               Payez moins cher en contactant le propriétaire directement.
             </p>
             <SearchBar />
 
             {/* Stats — directement sous la SearchBar */}
-            <div className="mt-8 sm:mt-32 flex flex-wrap justify-center gap-8 md:gap-20">
+            <div className="hidden sm:flex mt-8 sm:mt-32 flex-wrap justify-center gap-8 md:gap-20">
               <HeroStat value="0 $" label="Frais de service" />
               <HeroStat value="Direct" label="Contactez le proprio" />
               <HeroStat value="100 %" label="Chalets vérifiés" />
