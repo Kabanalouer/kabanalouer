@@ -298,7 +298,7 @@ export default function Navbar() {
                     <DropdownLink href="/dashboard/listings/new">Créer une annonce</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
-                      className="flex sm:hidden items-center gap-2 px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors w-full text-left"
+                      className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                     >
                       Mode voyageur
                     </button>
