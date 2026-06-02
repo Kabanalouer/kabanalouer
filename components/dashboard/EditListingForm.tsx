@@ -545,38 +545,30 @@ export default function EditListingForm({
       {/* ── Left nav ────────────────────────────────────────────────────── */}
       <aside className="w-full lg:w-56 shrink-0">
 
-        {/* Mobile: horizontal scrollable tabs */}
-        <div className="flex lg:hidden gap-1 overflow-x-auto pb-1 scrollbar-none">
-          {SECTIONS.map((s) => {
-            const mobileActive = activeSection === s.id;
-            let mobileIndicator: React.ReactNode = null;
-            if (s.id === "analyse") {
-              if (sidebarScore !== null) {
-                const { color } = getScoreLevel(sidebarScore);
-                mobileIndicator = <span className="ml-1 text-xs font-semibold tabular-nums" style={{ color }}>{sidebarScore}</span>;
+        {/* Mobile: section select */}
+        <div className="lg:hidden relative mb-1">
+          <select
+            value={activeSection}
+            onChange={(e) => { setActiveSection(e.target.value as SectionId); setSaveError(""); setJustSaved(false); }}
+            className="w-full border border-primary rounded-full text-primary px-4 py-2 pr-8 text-sm font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {SECTIONS.map((s) => {
+              let suffix = "";
+              if (s.id === "analyse") {
+                if (sidebarScore !== null) suffix = ` — ${sidebarScore}`;
+              } else if (INDICATOR_SECTION_IDS.has(s.id)) {
+                suffix = indicatorValid[s.id] ? " ✓" : " ●";
               }
-            } else if (INDICATOR_SECTION_IDS.has(s.id)) {
-              const valid = indicatorValid[s.id];
-              mobileIndicator = valid
-                ? <span className="ml-1 text-green-500 text-xs">✓</span>
-                : <span className="ml-1 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle" />;
-            }
-            return (
-              <button
-                key={s.id}
-                onClick={() => { setActiveSection(s.id); setSaveError(""); setJustSaved(false); }}
-                className={[
-                  "whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium transition-colors shrink-0 inline-flex items-center",
-                  mobileActive
-                    ? "bg-primary text-white"
-                    : "bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50",
-                ].join(" ")}
-              >
-                {s.label}
-                {mobileIndicator}
-              </button>
-            );
-          })}
+              return (
+                <option key={s.id} value={s.id}>{s.label}{suffix}</option>
+              );
+            })}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
 
         {/* Desktop: vertical list */}
