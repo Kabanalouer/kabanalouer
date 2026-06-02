@@ -272,14 +272,14 @@ export default function Navbar() {
               Mode voyageur
             </button>
 
-            {/* Avatar pill */}
+            {/* Avatar pill — hamburger visible desktop seulement */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-3 pr-1 hover:shadow-md transition-all"
+                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
                 aria-label="Menu utilisateur"
               >
-                <IconMenu open={menuOpen} />
+                <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
                 <Avatar profile={profile} size={32} />
               </button>
 
@@ -346,14 +346,14 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Avatar pill */}
+            {/* Avatar — hamburger visible desktop seulement, avatar seul sur mobile */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-3 pr-1 hover:shadow-md transition-all"
+                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
                 aria-label="Menu utilisateur"
               >
-                <IconMenu open={menuOpen} />
+                <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
                 <Avatar profile={profile} size={32} />
               </button>
 
@@ -380,7 +380,7 @@ export default function Navbar() {
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}
-                        className="sm:hidden w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
+                        className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                       >
                         Mode proprio
                       </button>
@@ -397,42 +397,8 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menu mobile"
-            >
-              <IconMenu open={mobileOpen} />
-            </button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-[#ebebeb] px-4 sm:px-6 py-4 flex flex-col gap-1 pb-5">
-            <MobileLink href="/chalets">Parcourir les chalets</MobileLink>
-            <MobileLink href="/devenir-hote">Devenir proprio</MobileLink>
-            <div className="border-t border-[#ebebeb] pt-3 mt-2 flex flex-col gap-1">
-              {isHost && voyageurMode && (
-                <button onClick={exitVoyageurMode} className="text-left px-3 py-2 text-sm font-medium text-primary">
-                  Mode proprio
-                </button>
-              )}
-              <MobileLink href="/dashboard/profile">Mon profil</MobileLink>
-              <MobileLink href="/favoris">Mes favoris</MobileLink>
-              <Link href="/messages" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-charcoal-700 rounded-xl hover:bg-charcoal-50">
-                Messages
-                {unreadCount > 0 && <UnreadDot />}
-              </Link>
-              <MobileLink href="/devenir-hote">Inscrire mon chalet</MobileLink>
-              <button onClick={handleSignOut} className="text-left px-3 py-2 text-sm text-charcoal-400">
-                Déconnexion
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
     );
   }
@@ -479,21 +445,21 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu — 2 CTAs uniquement */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-[#ebebeb] py-4 flex flex-col gap-1 pb-5">
-            <MobileLink href="/chalets">Parcourir les chalets</MobileLink>
-            <MobileLink href="/comment-ca-marche">Comment ça marche</MobileLink>
-            <MobileLink href="/devenir-hote">Devenir proprio</MobileLink>
-            <div className="border-t border-[#ebebeb] pt-3 mt-2 flex flex-col gap-2">
-              <MobileLink href="/devenir-hote">Inscrire mon chalet</MobileLink>
-              <Link
-                href="/signup"
-                className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
-              >
-                Créer un compte
-              </Link>
-            </div>
+          <div className="md:hidden border-t border-[#ebebeb] px-4 py-4 flex flex-col gap-3 pb-5">
+            <Link
+              href="/devenir-hote"
+              className="text-sm font-medium text-charcoal-700 px-3 py-2 rounded-xl hover:bg-charcoal-50 transition-colors"
+            >
+              Inscrire mon chalet
+            </Link>
+            <Link
+              href="/signup"
+              className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
+            >
+              Créer un compte
+            </Link>
           </div>
         )}
       </div>
