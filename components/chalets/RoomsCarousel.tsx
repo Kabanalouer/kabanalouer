@@ -20,12 +20,22 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
+  const [activeRoomIdx, setActiveRoomIdx] = useState(0);
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     setCanLeft(el.scrollLeft > 4);
     setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+    // With snap-start each card's left edge aligns with scrollLeft when snapped
+    const items = Array.from(el.children) as HTMLElement[];
+    let minDist = Infinity;
+    let idx = 0;
+    items.forEach((item, i) => {
+      const dist = Math.abs(item.offsetLeft - el.scrollLeft);
+      if (dist < minDist) { minDist = dist; idx = i; }
+    });
+    setActiveRoomIdx(idx);
   }, []);
 
   useEffect(() => {
@@ -86,6 +96,25 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             </svg>
           </button>
         </>
+      )}
+
+      {/* Mobile pagination dots — rooms */}
+      {rooms.length > 1 && (
+        <div className="md:hidden flex items-center justify-center gap-1 mt-3">
+          {rooms.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                const el = scrollRef.current;
+                if (!el) return;
+                const items = Array.from(el.children) as HTMLElement[];
+                if (items[i]) el.scrollTo({ left: items[i].offsetLeft, behavior: "smooth" });
+              }}
+              aria-label={`Chambre ${i + 1}`}
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeRoomIdx ? "bg-primary" : "bg-[#ebebeb]"}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
