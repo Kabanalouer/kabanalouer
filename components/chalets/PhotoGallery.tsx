@@ -50,34 +50,59 @@ export default function PhotoGallery({ photos, title }: Props) {
   return (
     <>
       {/* ── Gallery grid ── */}
-      <div className="relative mb-8">
+      <div className="mb-8">
+
+        {/* Mobile: photo de couverture uniquement */}
         <div
-          className="grid grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 overflow-hidden rounded-xl cursor-zoom-in"
+          className="md:hidden relative h-72 overflow-hidden rounded-xl cursor-zoom-in"
           onClick={() => { setIdx(0); setOpen(true); }}
         >
-          <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
-            <Image src={photos[0].url} alt={photos[0].caption || title} fill className="object-cover" sizes="(max-width:640px) 100vw, 50vw" priority />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
-          </div>
-          {photos.slice(1, 5).map((p, i) => (
-            <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
-              <Image src={p.url} alt={p.caption || `Chalet ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
-            </div>
-          ))}
+          <Image src={photos[0].url} alt={photos[0].caption || title} fill className="object-cover" sizes="100vw" priority />
+          <div className="absolute inset-0 bg-black/0 active:bg-black/10 transition-colors pointer-events-none" />
+          {photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setIdx(0); setOpen(true); }}
+              className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-charcoal-100 active:scale-[0.98] transition-all duration-150 border border-[#ebebeb]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Afficher toutes les photos ({photos.length})
+            </button>
+          )}
         </div>
 
-        {photos.length > 5 && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setIdx(0); setOpen(true); }}
-            className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-charcoal-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-150 border border-[#ebebeb]"
+        {/* Desktop: 1 grande + 4 miniatures */}
+        <div className="hidden md:block relative">
+          <div
+            className="grid grid-cols-4 grid-rows-2 gap-2 h-96 overflow-hidden rounded-xl cursor-zoom-in"
+            onClick={() => { setIdx(0); setOpen(true); }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Afficher toutes les photos ({photos.length})
-          </button>
-        )}
+            <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
+              <Image src={photos[0].url} alt={photos[0].caption || title} fill className="object-cover" sizes="50vw" priority />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
+            </div>
+            {photos.slice(1, 5).map((p, i) => (
+              <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
+                <Image src={p.url} alt={p.caption || `Chalet ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
+              </div>
+            ))}
+          </div>
+
+          {photos.length > 5 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setIdx(0); setOpen(true); }}
+              className="absolute bottom-3 right-3 flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg hover:bg-charcoal-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-150 border border-[#ebebeb]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Afficher toutes les photos ({photos.length})
+            </button>
+          )}
+        </div>
+
       </div>
 
       {/* ── Fullscreen carousel ── */}

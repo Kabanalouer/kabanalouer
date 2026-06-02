@@ -354,7 +354,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
-        <nav className="text-sm text-charcoal-400 mb-4">
+        <nav className="hidden md:block text-sm text-charcoal-400 mb-4">
           <Link href="/chalets" className="hover:text-primary transition-colors">Chalets</Link>
           <span className="mx-2">›</span>
           <Link href={`/chalets?region=${listing.region}`} className="hover:text-primary transition-colors">{listing.region}</Link>
@@ -372,7 +372,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               {subtitleParts.join(" · ")}
             </p>
           </div>
-          <div className="shrink-0 mt-1 flex items-center gap-2">
+          <div className="hidden md:flex shrink-0 mt-1 items-center gap-2">
             <ShareButton />
             <FavoriteButton
               listingId={listing.id}
