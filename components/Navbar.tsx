@@ -267,7 +267,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 ml-6">
             <button
               onClick={enterVoyageurMode}
-              className="hidden sm:flex items-center rounded-full py-2 px-4 text-[15px] font-medium text-charcoal-800 hover:bg-charcoal-100 transition-colors"
+              className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-[15px] font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
             >
               Mode voyageur
             </button>
@@ -340,7 +340,7 @@ export default function Navbar() {
             {isHost && voyageurMode && (
               <button
                 onClick={exitVoyageurMode}
-                className="hidden sm:flex items-center rounded-full py-2 px-4 text-[15px] font-medium text-charcoal-800 hover:bg-charcoal-100 transition-colors"
+                className="hidden sm:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-[15px] font-medium hover:bg-primary/5 transition-all"
               >
                 Mode proprio
               </button>
