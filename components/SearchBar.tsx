@@ -296,18 +296,27 @@ export default function SearchBar({
   };
   const clearDates = () => { setCheckin(""); setCheckout(""); setHoverDate(""); };
 
+  const recalcCalendarPos = () => {
+    const btnRect = datesButtonRef.current?.getBoundingClientRect();
+    const ctnRect = containerRef.current?.getBoundingClientRect();
+    if (btnRect && ctnRect) {
+      setCalendarFixedPos({ top: btnRect.bottom + 8, left: ctnRect.left, width: ctnRect.width });
+    }
+  };
+
   const handleCalendarToggle = () => {
     const willOpen = !calendarOpen;
     setCalendarOpen(willOpen);
     setDestOpen(false);
-    if (willOpen && typeof window !== "undefined" && window.innerWidth < 640) {
-      const btnRect = datesButtonRef.current?.getBoundingClientRect();
-      const ctnRect = containerRef.current?.getBoundingClientRect();
-      if (btnRect && ctnRect) {
-        setCalendarFixedPos({ top: btnRect.bottom + 8, left: ctnRect.left, width: ctnRect.width });
-      }
-    }
+    if (willOpen) recalcCalendarPos();
   };
+
+  // Update position on resize while calendar is open
+  useEffect(() => {
+    if (!calendarOpen) return;
+    window.addEventListener("resize", recalcCalendarPos);
+    return () => window.removeEventListener("resize", recalcCalendarPos);
+  }, [calendarOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const datesLabel = checkin
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
@@ -513,30 +522,48 @@ export default function SearchBar({
 
         {calendarOpen && (
           <>
-            {/* Mobile overlay — tap outside closes */}
+            {/* Overlay — tap outside closes */}
             <div
-              className="fixed inset-0 z-[9998] sm:hidden"
+              className="fixed inset-0 z-[9998]"
               onClick={() => { setCalendarOpen(false); setHoverDate(""); }}
             />
 
-            {/* Mobile: ancré sous le champ Dates via getBoundingClientRect */}
+            {/* Calendrier — fixed ancré sous le champ, toutes tailles d'écran */}
             {calendarFixedPos && (
               <div
-                className="sm:hidden fixed rounded-2xl bg-white shadow-2xl border border-gray-100 pt-4 px-4 z-[9999] overflow-y-auto"
+                className="fixed rounded-2xl bg-white shadow-2xl border border-gray-100 p-5 z-[9999] overflow-y-auto"
                 style={{
                   top: calendarFixedPos.top,
                   left: calendarFixedPos.left,
                   width: calendarFixedPos.width,
-                  maxHeight: "70vh",
-                  paddingBottom: 16,
+                  maxHeight: "80vh",
                 }}
               >
-                <CalendarMonth
-                  year={leftYear} month={leftMonth}
-                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                  showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
-                />
+                {/* Mobile : 1 mois */}
+                <div className="sm:hidden">
+                  <CalendarMonth
+                    year={leftYear} month={leftMonth}
+                    today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                    onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                    showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
+                  />
+                </div>
+                {/* Desktop : 2 mois côte à côte */}
+                <div className="hidden sm:flex gap-5">
+                  <CalendarMonth
+                    year={leftYear} month={leftMonth}
+                    today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                    onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                    showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
+                  />
+                  <div className="w-px bg-gray-100" />
+                  <CalendarMonth
+                    year={rightYear} month={rightMonth}
+                    today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                    onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                    showPrev={false} showNext onPrev={goPrev} onNext={goNext}
+                  />
+                </div>
                 {(checkin || checkout) && (
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                     <span className="text-sm text-gray-500">
@@ -551,37 +578,6 @@ export default function SearchBar({
                 )}
               </div>
             )}
-
-            {/* Desktop: dropdown absolu, deux mois */}
-            <div className="hidden sm:block absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 z-[9999] w-[min(calc(100vw-32px),580px)]">
-              <div className="flex gap-5">
-                <CalendarMonth
-                  year={leftYear} month={leftMonth}
-                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                  showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
-                />
-                <div className="w-px bg-gray-100" />
-                <CalendarMonth
-                  year={rightYear} month={rightMonth}
-                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                  showPrev={false} showNext onPrev={goPrev} onNext={goNext}
-                />
-              </div>
-              {(checkin || checkout) && (
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    {checkin && checkout
-                      ? `${formatShort(checkin)} → ${formatShort(checkout)}`
-                      : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
-                  </span>
-                  <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
-                    Effacer
-                  </button>
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>
