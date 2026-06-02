@@ -155,6 +155,22 @@ function RoomCard({ room }: { room: Room }) {
         )}
       </div>
 
+      {/* Mobile pagination dots */}
+      {hasMultiple && (
+        <div className="md:hidden flex items-center justify-center gap-1 py-2">
+          {photos.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setPhotoIdx(i)}
+              aria-label={`Photo ${i + 1}`}
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                i === photoIdx ? "bg-primary" : "bg-[#ebebeb]"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Info */}
       <div className="p-4 flex flex-col gap-1.5 flex-1">
         <p className="font-semibold text-charcoal-800 text-sm">{room.name}</p>
