@@ -389,7 +389,7 @@ export default function ProfileForm({
       </Section>
 
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
-      {role === "host" && (
+      {(role === "host" || role === "admin") && (
         <Section title="Présentation du propriétaire" description="Ces informations seront visibles dans la fiche de votre chalet.">
           <div>
             <div className="flex items-center justify-between mb-1.5">

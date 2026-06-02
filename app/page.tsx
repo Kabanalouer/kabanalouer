@@ -49,7 +49,7 @@ export default async function HomePage() {
         .select("role")
         .eq("id", user.id)
         .single();
-      if (profile?.role === "host") {
+      if (profile?.role === "host" || profile?.role === "admin") {
         redirect("/dashboard");
       }
     }

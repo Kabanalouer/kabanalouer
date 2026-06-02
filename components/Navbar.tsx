@@ -213,7 +213,7 @@ export default function Navbar() {
     window.location.href = "/";
   };
 
-  const isHost = profile?.role === "host";
+  const isHost = profile?.role === "host" || profile?.role === "admin";
   const isHome = pathname === "/";
 
   // Shared nav wrapper classes
