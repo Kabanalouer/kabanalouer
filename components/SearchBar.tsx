@@ -196,6 +196,9 @@ export default function SearchBar({
   const [leftYear, setLeftYear] = useState(now.getFullYear());
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
   const calendarRef = useRef<HTMLDivElement>(null);
+  const datesButtonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [calendarFixedPos, setCalendarFixedPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // ── Guests state ──
   const [adults, setAdults] = useState(initialAdults ?? 0);
@@ -293,6 +296,19 @@ export default function SearchBar({
   };
   const clearDates = () => { setCheckin(""); setCheckout(""); setHoverDate(""); };
 
+  const handleCalendarToggle = () => {
+    const willOpen = !calendarOpen;
+    setCalendarOpen(willOpen);
+    setDestOpen(false);
+    if (willOpen && typeof window !== "undefined" && window.innerWidth < 640) {
+      const btnRect = datesButtonRef.current?.getBoundingClientRect();
+      const ctnRect = containerRef.current?.getBoundingClientRect();
+      if (btnRect && ctnRect) {
+        setCalendarFixedPos({ top: btnRect.bottom + 8, left: ctnRect.left, width: ctnRect.width });
+      }
+    }
+  };
+
   const datesLabel = checkin
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
     : null;
@@ -345,7 +361,7 @@ export default function SearchBar({
   const showDropdown = destOpen && !calendarOpen;
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
+    <div ref={containerRef} className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-1 min-w-[180px] flex">
@@ -482,7 +498,8 @@ export default function SearchBar({
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
       <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex">
         <button
-          onClick={() => { setCalendarOpen((o) => !o); setDestOpen(false); }}
+          ref={datesButtonRef}
+          onClick={handleCalendarToggle}
           className="flex-1 flex items-center gap-3 px-4 py-2 text-left"
         >
           <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -502,34 +519,38 @@ export default function SearchBar({
               onClick={() => { setCalendarOpen(false); setHoverDate(""); }}
             />
 
-            {/* Mobile: bottom sheet ancré en bas, safe-area iPhone */}
-            <div
-              className="sm:hidden fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white shadow-2xl border-t border-gray-100 pt-4 px-4 z-[9999] max-h-[70vh] overflow-y-auto"
-              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
-            >
-              {/* Handle */}
-              <div className="flex justify-center mb-3">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            {/* Mobile: ancré sous le champ Dates via getBoundingClientRect */}
+            {calendarFixedPos && (
+              <div
+                className="sm:hidden fixed rounded-2xl bg-white shadow-2xl border border-gray-100 pt-4 px-4 z-[9999] overflow-y-auto"
+                style={{
+                  top: calendarFixedPos.top,
+                  left: calendarFixedPos.left,
+                  width: calendarFixedPos.width,
+                  maxHeight: "70vh",
+                  paddingBottom: 16,
+                }}
+              >
+                <CalendarMonth
+                  year={leftYear} month={leftMonth}
+                  today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+                  onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
+                  showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
+                />
+                {(checkin || checkout) && (
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {checkin && checkout
+                        ? `${formatShort(checkin)} → ${formatShort(checkout)}`
+                        : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
+                    </span>
+                    <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
+                      Effacer
+                    </button>
+                  </div>
+                )}
               </div>
-              <CalendarMonth
-                year={leftYear} month={leftMonth}
-                today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
-              />
-              {(checkin || checkout) && (
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    {checkin && checkout
-                      ? `${formatShort(checkin)} → ${formatShort(checkout)}`
-                      : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
-                  </span>
-                  <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
-                    Effacer
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Desktop: dropdown absolu, deux mois */}
             <div className="hidden sm:block absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 z-[9999] w-[min(calc(100vw-32px),580px)]">
