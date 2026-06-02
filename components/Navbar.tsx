@@ -241,8 +241,8 @@ export default function Navbar() {
             <Logo href="/dashboard" />
           </div>
 
-          {/* Tabs */}
-          <div className="flex-1 flex justify-center items-stretch">
+          {/* Tabs — desktop only */}
+          <div className="hidden md:flex flex-1 justify-center items-stretch">
             <Link href="/dashboard" className={tabCls("/dashboard", true)}>
               Tableau de bord
             </Link>
@@ -264,7 +264,7 @@ export default function Navbar() {
           </div>
 
           {/* Right */}
-          <div className="flex items-center gap-3 ml-6">
+          <div className="flex items-center gap-3 ml-auto">
             <button
               onClick={enterVoyageurMode}
               className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-[15px] font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
