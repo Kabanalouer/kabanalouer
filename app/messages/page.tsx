@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import MessagesClient from "@/components/messages/MessagesClient";
+import DashboardBottomNav from "@/components/dashboard/DashboardBottomNav";
 
 export const metadata = { title: "Messages — Kabanalouer" };
 
@@ -10,6 +11,14 @@ export default async function MessagesPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/login?next=/messages");
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const isHost = profile?.role === "host" || profile?.role === "admin";
 
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
@@ -82,6 +91,7 @@ export default async function MessagesPage() {
         currentUserId={user.id}
         initialConversations={conversations}
       />
+      {isHost && <DashboardBottomNav />}
     </>
   );
 }
