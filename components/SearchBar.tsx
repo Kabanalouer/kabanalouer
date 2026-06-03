@@ -196,9 +196,6 @@ export default function SearchBar({
   const [leftYear, setLeftYear] = useState(now.getFullYear());
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
   const calendarRef = useRef<HTMLDivElement>(null);
-  const datesButtonRef = useRef<HTMLButtonElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [calendarFixedPos, setCalendarFixedPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // ── Guests state ──
   const [adults, setAdults] = useState(initialAdults ?? 0);
@@ -296,27 +293,10 @@ export default function SearchBar({
   };
   const clearDates = () => { setCheckin(""); setCheckout(""); setHoverDate(""); };
 
-  const recalcCalendarPos = () => {
-    const btnRect = datesButtonRef.current?.getBoundingClientRect();
-    const ctnRect = containerRef.current?.getBoundingClientRect();
-    if (btnRect && ctnRect) {
-      setCalendarFixedPos({ top: btnRect.bottom + 8, left: ctnRect.left, width: ctnRect.width });
-    }
-  };
-
   const handleCalendarToggle = () => {
-    const willOpen = !calendarOpen;
-    setCalendarOpen(willOpen);
+    setCalendarOpen((o) => !o);
     setDestOpen(false);
-    if (willOpen) recalcCalendarPos();
   };
-
-  // Update position on resize while calendar is open
-  useEffect(() => {
-    if (!calendarOpen) return;
-    window.addEventListener("resize", recalcCalendarPos);
-    return () => window.removeEventListener("resize", recalcCalendarPos);
-  }, [calendarOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const datesLabel = checkin
     ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
@@ -370,7 +350,7 @@ export default function SearchBar({
   const showDropdown = destOpen && !calendarOpen;
 
   return (
-    <div ref={containerRef} className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
+    <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-1 min-w-[180px] flex">
@@ -507,7 +487,6 @@ export default function SearchBar({
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
       <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex">
         <button
-          ref={datesButtonRef}
           onClick={handleCalendarToggle}
           className="flex-1 flex items-center gap-3 px-4 py-2 text-left"
         >
@@ -528,17 +507,9 @@ export default function SearchBar({
               onClick={() => { setCalendarOpen(false); setHoverDate(""); }}
             />
 
-            {/* Calendrier — fixed ancré sous le champ, toutes tailles d'écran */}
-            {calendarFixedPos && (
-              <div
-                className="fixed rounded-2xl bg-white shadow-2xl border border-gray-100 p-5 z-[9999] overflow-y-auto"
-                style={{
-                  top: calendarFixedPos.top,
-                  left: calendarFixedPos.left,
-                  width: calendarFixedPos.width,
-                  maxHeight: "80vh",
-                }}
-              >
+            {/* Calendrier — absolute ancré sous le champ Dates */}
+            <div className="absolute top-full left-0 mt-2 rounded-2xl bg-white shadow-2xl border border-gray-100 p-5 z-[9999] overflow-y-auto max-h-[80vh]">
+
                 {/* Mobile : 1 mois */}
                 <div className="sm:hidden">
                   <CalendarMonth
@@ -577,7 +548,6 @@ export default function SearchBar({
                   </div>
                 )}
               </div>
-            )}
           </>
         )}
       </div>
