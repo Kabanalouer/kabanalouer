@@ -294,7 +294,6 @@ export default function Navbar() {
                   </div>
                   <div className="py-1">
                     <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
-                    <DropdownLink href="/dashboard/subscription">Abonnement</DropdownLink>
                     <DropdownLink href="/dashboard/listings/new">Créer une annonce</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
