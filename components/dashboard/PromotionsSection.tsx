@@ -185,161 +185,192 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </p>
           )}
 
-          {/* Type selection */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => setFormType("rabais")}
-              className={`text-left p-4 rounded-xl border-2 transition-colors ${formType === "rabais" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}
-            >
-              <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
-              </svg>
-              <p className="font-semibold text-sm text-charcoal-800">Rabais</p>
-              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Réduire le prix par nuit</p>
-            </button>
+          {/* Cartes type — empilées avec formulaire inline */}
+          <div className="flex flex-col gap-3">
 
-            <button
-              type="button"
-              onClick={() => setFormType("duree")}
-              className={`text-left p-4 rounded-xl border-2 transition-colors ${formType === "duree" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}
-            >
-              <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
-              </svg>
-              <p className="font-semibold text-sm text-charcoal-800">Nuit gratuite</p>
-              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Prolongez le plaisir</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFormType("lastminute")}
-              className={`text-left p-4 rounded-xl border-2 transition-colors ${formType === "lastminute" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}
-            >
-              <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="font-semibold text-sm text-charcoal-800">Dernière minute</p>
-              <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Dates libres, prix réduit</p>
-            </button>
-          </div>
-
-          {/* Rabais fields */}
-          {formType === "rabais" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
-                <div className="flex gap-2 mb-3">
-                  <button
-                    type="button"
-                    onClick={() => setRabaisUnit("percent")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
-                  >
-                    %
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRabaisUnit("amount")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
-                  >
-                    $
-                  </button>
-                </div>
-                <div className="max-w-xs flex items-center gap-2">
-                  <input
-                    type="number" min={1} max={rabaisUnit === "percent" ? 100 : undefined}
-                    value={rabaisValue} onChange={(e) => setRabaisValue(e.target.value)}
-                    className={inputCls} placeholder={rabaisUnit === "percent" ? "ex. 20" : "ex. 50"}
-                  />
-                  <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : "$/nuit"}</span>
-                </div>
-              </div>
-              <p className="text-sm text-charcoal-400">Rabais applicable pour les séjours entre le :</p>
-              <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
-            </div>
-          )}
-
-          {/* Nuit gratuite fields */}
-          {formType === "duree" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">Type d&apos;offre</label>
-                <p className="text-sm text-charcoal-600">
-                  Réservez un séjour de 2 nuits minimum et obtenez 1 nuit <span className="font-semibold text-primary">GRATUITE</span>.
-                </p>
-              </div>
-              <p className="text-sm text-charcoal-400">Promo applicable pour les séjours entre le :</p>
-              <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
-            </div>
-          )}
-
-          {/* Dernière minute fields */}
-          {formType === "lastminute" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
-                <div className="flex gap-2 mb-3">
-                  <button
-                    type="button"
-                    onClick={() => setLmUnit("percent")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
-                  >
-                    %
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLmUnit("amount")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
-                  >
-                    $
-                  </button>
-                </div>
-                <div className="max-w-xs flex items-center gap-2">
-                  <input
-                    type="number" min={1} max={lmUnit === "percent" ? 100 : undefined}
-                    value={lmValue} onChange={(e) => setLmValue(e.target.value)}
-                    className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
-                  />
-                  <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : "$/nuit"}</span>
-                </div>
-              </div>
-              <div className="max-w-xs">
-                <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Jours avant l&apos;arrivée (7 à 21 jours)</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number" min={7} max={21} value={lmDays}
-                    onChange={(e) => {
-                      const v = parseInt(e.target.value) || 7;
-                      setLmDays(String(Math.min(21, Math.max(7, v))));
-                    }}
-                    className={inputCls} placeholder="ex. 7"
-                  />
-                  <span className="text-sm text-charcoal-500 shrink-0">jours</span>
-                </div>
-              </div>
-              <p className="text-sm text-charcoal-400">
-                Ce rabais s&apos;applique en continu tant que la promotion est active.
-              </p>
-            </div>
-          )}
-
-          {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {saving && (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            {/* Card: Rabais */}
+            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "rabais" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+              <button
+                type="button"
+                onClick={() => { setFormType("rabais"); setError(""); }}
+                className={`w-full text-left p-4 transition-colors ${formType === "rabais" ? "bg-primary/5" : "bg-white"}`}
+              >
+                <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
                 </svg>
+                <p className="font-semibold text-sm text-charcoal-800">Rabais</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Réduire le prix par nuit</p>
+              </button>
+              {formType === "rabais" && (
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setRabaisUnit("percent")}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                      >
+                        %
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRabaisUnit("amount")}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                      >
+                        $
+                      </button>
+                    </div>
+                    <div className="max-w-xs flex items-center gap-2">
+                      <input
+                        type="number" min={1} max={rabaisUnit === "percent" ? 100 : undefined}
+                        value={rabaisValue} onChange={(e) => setRabaisValue(e.target.value)}
+                        className={inputCls} placeholder={rabaisUnit === "percent" ? "ex. 20" : "ex. 50"}
+                      />
+                      <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : "$/nuit"}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-charcoal-400">Rabais applicable pour les séjours entre le :</p>
+                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {saving && (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
+                    {saving ? "Activation…" : "Activer la promotion"}
+                  </button>
+                </div>
               )}
-              {saving ? "Activation…" : "Activer la promotion"}
-            </button>
+            </div>
+
+            {/* Card: Nuit gratuite */}
+            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "duree" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+              <button
+                type="button"
+                onClick={() => { setFormType("duree"); setError(""); }}
+                className={`w-full text-left p-4 transition-colors ${formType === "duree" ? "bg-primary/5" : "bg-white"}`}
+              >
+                <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
+                </svg>
+                <p className="font-semibold text-sm text-charcoal-800">Nuit gratuite</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Prolongez le plaisir</p>
+              </button>
+              {formType === "duree" && (
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Type d&apos;offre</label>
+                    <p className="text-sm text-charcoal-600">
+                      Réservez un séjour de 2 nuits minimum et obtenez 1 nuit <span className="font-semibold text-primary">GRATUITE</span>.
+                    </p>
+                  </div>
+                  <p className="text-sm text-charcoal-400">Promo applicable pour les séjours entre le :</p>
+                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {saving && (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
+                    {saving ? "Activation…" : "Activer la promotion"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Card: Dernière minute */}
+            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "lastminute" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+              <button
+                type="button"
+                onClick={() => { setFormType("lastminute"); setError(""); }}
+                className={`w-full text-left p-4 transition-colors ${formType === "lastminute" ? "bg-primary/5" : "bg-white"}`}
+              >
+                <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="font-semibold text-sm text-charcoal-800">Dernière minute</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Dates libres, prix réduit</p>
+              </button>
+              {formType === "lastminute" && (
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setLmUnit("percent")}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                      >
+                        %
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLmUnit("amount")}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                      >
+                        $
+                      </button>
+                    </div>
+                    <div className="max-w-xs flex items-center gap-2">
+                      <input
+                        type="number" min={1} max={lmUnit === "percent" ? 100 : undefined}
+                        value={lmValue} onChange={(e) => setLmValue(e.target.value)}
+                        className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
+                      />
+                      <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : "$/nuit"}</span>
+                    </div>
+                  </div>
+                  <div className="max-w-xs">
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Jours avant l&apos;arrivée (7 à 21 jours)</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number" min={7} max={21} value={lmDays}
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value) || 7;
+                          setLmDays(String(Math.min(21, Math.max(7, v))));
+                        }}
+                        className={inputCls} placeholder="ex. 7"
+                      />
+                      <span className="text-sm text-charcoal-500 shrink-0">jours</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-charcoal-400">
+                    Ce rabais s&apos;applique en continu tant que la promotion est active.
+                  </p>
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {saving && (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
+                    {saving ? "Activation…" : "Activer la promotion"}
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       )}
