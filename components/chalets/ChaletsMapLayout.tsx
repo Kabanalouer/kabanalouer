@@ -36,6 +36,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showMobileMap, setShowMobileMap] = useState(false);
 
   const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
     setIsLoading(true);
@@ -160,22 +161,61 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         </div>
       </div>
 
-      {/* ── MOBILE: listings then map ── */}
-      <div className="lg:hidden px-4 pt-5 pb-6">
-        <div className="mb-5">
-          <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
-          {!isLoading && listings.length > 0 && (
-            <span className="text-xs text-charcoal-400 mt-0.5 block">
-              {listings.length} résultat{listings.length !== 1 ? "s" : ""}
-            </span>
-          )}
+      {/* ── MOBILE: liste + bouton flottant + carte plein écran ── */}
+      <div className="lg:hidden">
+        <div className="px-4 pt-5 pb-28">
+          <div className="mb-5">
+            <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
+            {!isLoading && listings.length > 0 && (
+              <span className="text-xs text-charcoal-400 mt-0.5 block">
+                {listings.length} résultat{listings.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+          {listGrid("grid-cols-1 sm:grid-cols-2")}
         </div>
-        {listGrid("grid-cols-1 sm:grid-cols-2")}
 
-        {/* Carte masquée sur mobile pur (<sm), visible sm+ */}
-        <div className="hidden sm:block mt-8">
-          {mapFrame("420px")}
-        </div>
+        {/* Bouton flottant "Voir la carte" */}
+        {!showMobileMap && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+            <button
+              onClick={() => setShowMobileMap(true)}
+              className="flex items-center gap-2 bg-primary text-white font-semibold text-sm px-5 py-3 rounded-full"
+              style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.159.69.159 1.006 0z" />
+              </svg>
+              Voir la carte
+            </button>
+          </div>
+        )}
+
+        {/* Carte plein écran */}
+        {showMobileMap && (
+          <div className="fixed inset-0 z-50" style={{ height: "100dvh" }}>
+            <ChaletsMap
+              listings={listings}
+              hoveredId={hoveredId}
+              onHoverChange={setHoveredId}
+              onBoundsChange={handleBoundsChange}
+              isExpanded={false}
+              onToggleExpand={() => {}}
+            />
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+              <button
+                onClick={() => setShowMobileMap(false)}
+                className="flex items-center gap-2 bg-white text-charcoal-800 font-semibold text-sm px-5 py-3 rounded-full border border-[#ebebeb]"
+                style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.16)" }}
+              >
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                </svg>
+                Voir la liste
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
