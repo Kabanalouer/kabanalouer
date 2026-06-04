@@ -723,5 +723,31 @@
       "backToListing": "← Back to the cabin",
       "backToHome": "← Back to home"
     }
+  },
+  "footer": {
+    "brandDesc": "Pay less for your cabin rental by contacting owners directly — no commissions, no service fees.",
+    "travelers": {
+      "title": "Travelers",
+      "browse": "Browse cabins",
+      "regions": "All regions",
+      "howItWorks": "How it works"
+    },
+    "owners": {
+      "title": "Owners",
+      "listCabin": "List my cabin",
+      "whyChooseUs": "Why choose us?",
+      "pricing": "Pricing and subscription",
+      "faq": "Owner FAQ"
+    },
+    "legal": {
+      "title": "Legal",
+      "about": "About",
+      "terms": "Terms of use",
+      "privacy": "Privacy policy",
+      "contact": "Contact us"
+    },
+    "copyright": "© 2026 Kabanalouer · All rights reserved",
+    "madeWith": "Made with",
+    "inQuebec": "in Québec."
   }
 }

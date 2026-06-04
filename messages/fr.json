@@ -723,5 +723,31 @@
       "backToListing": "← Retourner à la fiche du chalet",
       "backToHome": "← Retour à l'accueil"
     }
+  },
+  "footer": {
+    "brandDesc": "Payez votre location de chalet moins cher en contactant les propriétaires directement, sans commissions, ni frais de service.",
+    "travelers": {
+      "title": "Voyageurs",
+      "browse": "Parcourir les chalets",
+      "regions": "Toutes les régions",
+      "howItWorks": "Comment ça marche"
+    },
+    "owners": {
+      "title": "Proprios",
+      "listCabin": "Inscrire mon chalet",
+      "whyChooseUs": "Pourquoi nous choisir ?",
+      "pricing": "Tarifs et abonnement",
+      "faq": "FAQ proprios"
+    },
+    "legal": {
+      "title": "Légal",
+      "about": "À propos",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité",
+      "contact": "Nous contacter"
+    },
+    "copyright": "© 2026 Kabanalouer · Tous droits réservés",
+    "madeWith": "Fait avec",
+    "inQuebec": "au Québec."
   }
 }
