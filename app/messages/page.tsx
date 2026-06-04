@@ -3,8 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import MessagesClient from "@/components/messages/MessagesClient";
 import DashboardBottomNav from "@/components/dashboard/DashboardBottomNav";
+import { getTranslations, getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Messages — Kabanalouer" };
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations("messages"), getLocale()]);
+  const isEn = locale === "en";
+  return {
+    title: t("title"),
+    alternates: {
+      canonical: isEn ? "/en/messages" : "/messages",
+      languages: { fr: "/messages", en: "/en/messages", "x-default": "/messages" },
+    },
+  };
+}
 
 export default async function MessagesPage() {
   const supabase = await createClient();

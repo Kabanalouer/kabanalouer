@@ -3,42 +3,51 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
 import { normalizePhotos } from "@/lib/photo";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
   const destination = city || region || null;
+  const [t, locale] = await Promise.all([getTranslations("chaletsPage"), getLocale()]);
+  const isEn = locale === "en";
+  const basePath = isEn ? "/en/chalets" : "/chalets";
 
   if (destination) {
     return {
-      title: `Location de chalet - ${destination}`,
-      description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
-      alternates: { canonical: "/chalets" },
+      title: t("metaTitleDestination", { destination }),
+      description: t("metaDescDestination", { destination }),
+      alternates: {
+        canonical: basePath,
+        languages: { fr: "/chalets", en: "/en/chalets", "x-default": "/chalets" },
+      },
       openGraph: {
-        title: `Chalets à louer à ${destination} | Kabanalouer`,
-        description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
-        url: "/chalets",
+        title: t("ogTitleDestination", { destination }),
+        description: t("ogDescDestination", { destination }),
+        url: basePath,
       },
       twitter: {
-        title: `Chalets à louer à ${destination} | Kabanalouer`,
-        description: `Trouvez et réservez les meilleurs chalets à louer à ${destination}. Contactez directement les propriétaires, sans commission.`,
+        title: t("ogTitleDestination", { destination }),
+        description: t("metaDescDestination", { destination }),
       },
     };
   }
 
   return {
-    title: "Location de chalet au Québec",
-    description:
-      "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
-    alternates: { canonical: "/chalets" },
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: {
+      canonical: basePath,
+      languages: { fr: "/chalets", en: "/en/chalets", "x-default": "/chalets" },
+    },
     openGraph: {
-      title: "Chalets à louer au Québec | Kabanalouer",
-      description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
-      url: "/chalets",
+      title: t("ogTitle"),
+      description: t("ogDesc"),
+      url: basePath,
     },
     twitter: {
-      title: "Chalets à louer au Québec | Kabanalouer",
-      description: "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements.",
+      title: t("ogTitle"),
+      description: t("metaDesc"),
     },
   };
 }

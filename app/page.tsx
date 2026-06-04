@@ -7,37 +7,48 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Kabanalouer — Location de chalets au Québec | Contact direct avec les propriétaires",
-  description:
-    "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Kabanalouer — Location de chalets au Québec",
-    description:
-      "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service.",
-    url: "/",
-    images: [
-      {
-        url: "https://kabanalouer.vercel.app/hero-chalet.webp",
-        width: 1200,
-        height: 630,
-        alt: "Chalet au bord du lac au Québec",
-      },
-    ],
-  },
-  twitter: {
-    title: "Kabanalouer — Location de chalets au Québec",
-    description:
-      "Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
-    images: ["https://kabanalouer.vercel.app/hero-chalet.webp"],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("home");
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonicalPath = isEn ? "/en" : "/";
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: {
+      canonical: canonicalPath,
+      languages: { fr: "/", en: "/en", "x-default": "/" },
+    },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDesc"),
+      url: canonicalPath,
+      images: [
+        {
+          url: "https://kabanalouer.vercel.app/hero-chalet.webp",
+          width: 1200,
+          height: 630,
+          alt: "Chalet au bord du lac au Québec",
+        },
+      ],
+    },
+    twitter: {
+      title: t("ogTitle"),
+      description: t("metaDesc"),
+      images: ["https://kabanalouer.vercel.app/hero-chalet.webp"],
+    },
+  };
+}
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  const [supabase, t, locale] = await Promise.all([
+    createClient(),
+    getTranslations("home"),
+    getLocale(),
+  ]);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
@@ -50,7 +61,7 @@ export default async function HomePage() {
         .eq("id", user.id)
         .single();
       if (profile?.role === "host" || profile?.role === "admin") {
-        redirect("/dashboard");
+        redirect(locale === "en" ? "/en/dashboard" : "/dashboard");
       }
     }
   }
@@ -161,13 +172,13 @@ export default async function HomePage() {
           {/* Contenu : badge + titre + sous-titre + recherche + stats */}
           <div className="flex flex-col items-center text-center px-4 pt-0 sm:pt-[12vh] pb-10 sm:pb-0">
             <div className="hidden sm:inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-6 max-w-[280px] sm:max-w-none leading-tight">
-              La marketplace de la location de chalet au Québec
+              {t("badge")}
             </div>
             <h1 className="text-[2.6rem] md:text-5xl lg:text-[3.75rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl mt-16 sm:mt-0">
-              Trouvez votre chalet au Québec en quelques clics.
+              {t("heroTitle")}
             </h1>
             <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
-              Payez moins cher en contactant le propriétaire directement.
+              {t("heroSubtitle")}
             </p>
             <div className="mt-8 sm:mt-0 w-full flex justify-center">
               <SearchBar />
@@ -179,10 +190,10 @@ export default async function HomePage() {
 
         {/* Stats footer — masquées en mobile */}
         <div className="hidden lg:flex absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm divide-x divide-white/20">
-          <HeroStat value="0 $" label="Frais de service" footer />
-          <HeroStat value="Direct" label="Contactez le proprio" footer />
-          <HeroStat value="100 %" label="Chalets vérifiés" footer />
-          <HeroStat value="Gratuit" label="Pour les voyageurs" footer />
+          <HeroStat value="0 $" label={t("statFeeLabel")} footer />
+          <HeroStat value="Direct" label={t("statDirectLabel")} footer />
+          <HeroStat value="100 %" label={t("statVerifiedLabel")} footer />
+          <HeroStat value={t("statFreeValue")} label={t("statFreeLabel")} footer />
         </div>
       </section>
 
@@ -190,7 +201,7 @@ export default async function HomePage() {
       {vedetteListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 w-full">
           <h2 className="text-2xl font-bold text-charcoal-800 mb-8 tracking-[-0.02em]">
-            Chalets en vedette
+            {t("featuredTitle")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
             {vedetteListings.map((listing) => (
@@ -206,17 +217,17 @@ export default async function HomePage() {
         <div className="flex items-end justify-between mb-10">
           <div>
             <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-2">
-              Coups de cœur · Été 2026
+              {t("pickLabel")}
             </p>
             <h2 className="text-3xl font-bold text-charcoal-800 tracking-[-0.03em] leading-snug">
-              Des chalets choisis avec soin.
+              {t("pickTitle")}
             </h2>
           </div>
           <Link
             href="/chalets"
             className="text-charcoal-800 font-medium text-sm underline underline-offset-4 hover:text-primary transition-colors hidden md:block"
           >
-            Tout voir →
+            {t("viewAll")}
           </Link>
         </div>
 
@@ -228,8 +239,8 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="text-center py-20 text-charcoal-400">
-            <p className="text-lg font-medium mb-2">Aucun chalet disponible pour l&apos;instant.</p>
-            <p className="text-sm">De nouveaux chalets arrivent bientôt.</p>
+            <p className="text-lg font-medium mb-2">{t("noListings")}</p>
+            <p className="text-sm">{t("noListingsSoon")}</p>
           </div>
         )}
 
@@ -238,7 +249,7 @@ export default async function HomePage() {
             href="/chalets"
             className="text-charcoal-800 font-medium text-sm underline underline-offset-4"
           >
-            Voir tous les chalets →
+            {t("viewAllMobile")}
           </Link>
         </div>
       </section>
@@ -248,28 +259,28 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-3">
-              Notre différence
+              {t("whyLabel")}
             </p>
             <h2 className="text-3xl font-bold text-charcoal-800 tracking-[-0.03em]">
-              Pourquoi choisir Kabanalouer ?
+              {t("whyTitle")}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <WhyCard
               icon={<IconUsers />}
-              title="Contact direct"
-              description="Parlez directement aux propriétaires. Posez vos questions, négociez les dates, aucun intermédiaire entre vous."
+              title={t("why1Title")}
+              description={t("why1Desc")}
             />
             <WhyCard
               icon={<IconShieldCheck />}
-              title="Propriétaires vérifiés"
-              description="Tous nos propriétaires détiennent un numéro CITQ valide. Profils complets et photos authentiques pour vous guider."
+              title={t("why2Title")}
+              description={t("why2Desc")}
             />
             <WhyCard
               icon={<IconPercent />}
-              title="Zéro frais de service"
-              description="Aucune commission cachée pour les voyageurs. Le prix affiché est le prix que vous payez, point final."
+              title={t("why3Title")}
+              description={t("why3Desc")}
             />
           </div>
         </div>
@@ -279,24 +290,24 @@ export default async function HomePage() {
       <section className="bg-primary py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
           <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/60 mb-4">
-            Pour les propriétaires
+            {t("ctaLabel")}
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-5 tracking-[-0.03em] leading-tight">
-            Vous êtes propriétaire de chalet ?
+            {t("ctaTitle")}
           </h2>
           <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Rejoignez des centaines de propriétaires qui font confiance à Kabanalouer.
-            Abonnement annuel à seulement{" "}
-            <strong className="text-white font-semibold">299 $/an</strong> par chalet.
+            {t("ctaDescPre")}{" "}
+            <strong className="text-white font-semibold">{t("ctaPrice")}</strong>{" "}
+            {t("ctaDescPost")}
           </p>
           <Link
             href="/devenir-hote"
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-base"
           >
-            Inscrire mon chalet →
+            {t("ctaButton")}
           </Link>
           <p className="text-white/50 text-xs mt-5 tracking-wide">
-            Offre gratuite pour les 50 premiers propriétaires · Aucune carte requise
+            {t("ctaNote")}
           </p>
         </div>
       </section>

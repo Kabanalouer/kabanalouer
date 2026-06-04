@@ -21,6 +21,7 @@ import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
 import ViewTracker from "@/components/chalets/ViewTracker";
+import { getTranslations, getLocale } from "next-intl/server";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -36,6 +37,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
+  const locale = await getLocale();
+  const isEn = locale === "en";
 
   // Region landing page
   const region = getRegionBySlug(id);
@@ -45,11 +48,14 @@ export async function generateMetadata({ params }: Props) {
     return {
       title,
       description,
-      alternates: { canonical: `/chalets/${id}` },
+      alternates: {
+        canonical: `/chalets/${id}`,
+        languages: { fr: `/chalets/${id}`, en: `/en/chalets/${id}`, "x-default": `/chalets/${id}` },
+      },
       openGraph: {
         title,
         description,
-        url: `/chalets/${id}`,
+        url: isEn ? `/en/chalets/${id}` : `/chalets/${id}`,
         images: [{ url: region.heroImage, width: 1920, height: 1080, alt: `Chalet ${region.locative}` }],
       },
       twitter: { title, description, images: [region.heroImage] },
@@ -59,28 +65,34 @@ export async function generateMetadata({ params }: Props) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("listings")
-    .select("title, region, city, description, photos")
+    .select("title, title_en, region, city, description, description_en, photos")
     .eq("id", id)
     .eq("is_published", true)
     .single();
   if (!data) return {};
 
+  const rawTitle = (isEn && (data as { title_en?: string | null }).title_en) ? (data as { title_en: string }).title_en : data.title;
+  const rawDesc = (isEn && (data as { description_en?: string | null }).description_en) ? (data as { description_en: string }).description_en : data.description;
+
   const location = [data.city, data.region].filter(Boolean).join(", ");
-  const title = location ? `${data.title} | ${location}` : data.title;
-  const description = (data.description as string | null)?.slice(0, 160) ?? "";
+  const title = location ? `${rawTitle} | ${location}` : rawTitle;
+  const description = (rawDesc as string | null)?.slice(0, 160) ?? "";
   const photos = normalizePhotos(data.photos);
   const ogImage = photos[0]?.url ?? DEFAULT_PHOTO;
 
   return {
     title,
     description,
-    alternates: { canonical: `/chalets/${id}` },
+    alternates: {
+      canonical: `/chalets/${id}`,
+      languages: { fr: `/chalets/${id}`, en: `/en/chalets/${id}`, "x-default": `/chalets/${id}` },
+    },
     openGraph: {
       title,
       description,
-      url: `/chalets/${id}`,
+      url: isEn ? `/en/chalets/${id}` : `/chalets/${id}`,
       type: "article",
-      images: [{ url: ogImage, width: 1200, height: 630, alt: data.title }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: rawTitle }],
     },
     twitter: {
       title,
@@ -96,6 +108,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   // Region landing page — check before any DB query
   const regionConfig = getRegionBySlug(id);
   if (regionConfig) return <RegionLanding regionConfig={regionConfig} />;
+
+  const [t, locale] = await Promise.all([getTranslations("listing"), getLocale()]);
+  const isEn = locale === "en";
 
   const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
   const supabase = await createClient();
@@ -176,6 +191,21 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
   const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
   const nearbyActivities: string[] = Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [];
+
+  // Locale-aware title and description
+  const displayTitle = (isEn && (listing as { title_en?: string | null }).title_en)
+    ? (listing as { title_en: string }).title_en
+    : (listing.title as string);
+  const displayDescription = (isEn && (listing as { description_en?: string | null }).description_en)
+    ? (listing as { description_en: string }).description_en
+    : (listing.description as string | null);
+
+  // Nearby category labels mapped to translated keys
+  const NEARBY_CATEGORY_LABELS: Record<string, string> = {
+    "Été": t("nearbySummer"),
+    "Hiver": t("nearbyWinter"),
+    "4 saisons": t("nearbyAllSeason"),
+  };
 
   const NEARBY_CATEGORIES: Record<string, string[]> = {
     "Été": [
@@ -337,10 +367,10 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
   const subtitleParts = [
     city ? `${city}, ${listing.region}` : listing.region,
-    `${listing.capacity} personne${listing.capacity > 1 ? "s" : ""}`,
-    `${bedroomCount} chambre${bedroomCount > 1 ? "s" : ""}`,
-    totalBeds !== null && totalBeds > 0 ? `${totalBeds} lit${totalBeds > 1 ? "s" : ""}` : null,
-    `${listing.bathrooms} salle${listing.bathrooms > 1 ? "s" : ""} de bain`,
+    t("personCount", { count: listing.capacity as number }),
+    t("bedroomCount", { count: bedroomCount as number }),
+    totalBeds !== null && totalBeds > 0 ? t("bedCount", { count: totalBeds }) : null,
+    t("bathroomCount", { count: listing.bathrooms as number }),
   ].filter(Boolean);
 
   return (
@@ -355,18 +385,18 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
         <nav className="hidden md:block text-sm text-charcoal-400 mb-4">
-          <Link href="/chalets" className="hover:text-primary transition-colors">Chalets</Link>
+          <Link href={isEn ? "/en/chalets" : "/chalets"} className="hover:text-primary transition-colors">{t("breadcrumbCabins")}</Link>
           <span className="mx-2">›</span>
-          <Link href={`/chalets?region=${listing.region}`} className="hover:text-primary transition-colors">{listing.region}</Link>
+          <Link href={`${isEn ? "/en" : ""}/chalets?region=${listing.region}`} className="hover:text-primary transition-colors">{listing.region}</Link>
           <span className="mx-2">›</span>
-          <span className="text-charcoal-600 truncate">{listing.title}</span>
+          <span className="text-charcoal-600 truncate">{displayTitle}</span>
         </nav>
 
         {/* ── Title + subtitle ── */}
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800 leading-tight mb-2">
-              {listing.title}
+              {displayTitle}
             </h1>
             <p className="text-sm text-charcoal-400">
               {subtitleParts.join(" · ")}
@@ -396,10 +426,10 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             <hr className="border-[#ebebeb]" />
 
             {/* Description */}
-            {listing.description && (
+            {displayDescription && (
               <div>
-                <h2 className="font-semibold text-charcoal-800 mb-3">Description du chalet</h2>
-                <ExpandableText text={listing.description} />
+                <h2 className="font-semibold text-charcoal-800 mb-3">{t("descriptionTitle")}</h2>
+                <ExpandableText text={displayDescription} />
               </div>
             )}
 
@@ -408,7 +438,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <>
                 <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-charcoal-800 mb-4">Où vous dormirez</h2>
+                  <h2 className="font-semibold text-charcoal-800 mb-4">{t("roomsTitle")}</h2>
                   <RoomsCarousel
                     rooms={rooms.map((r) => ({
                       id: r.id,
@@ -426,7 +456,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             {/* Availability */}
             <hr className="border-[#ebebeb]" />
             <div>
-              <h2 className="font-semibold text-charcoal-800 mb-4">Disponibilités</h2>
+              <h2 className="font-semibold text-charcoal-800 mb-4">{t("availabilityTitle")}</h2>
               <AvailabilityView
                 blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
               />
@@ -437,7 +467,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <>
                 <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-charcoal-800 mb-4">Où se situe le chalet ?</h2>
+                  <h2 className="font-semibold text-charcoal-800 mb-4">{t("mapTitle")}</h2>
                   <ListingMap lat={listing.latitude as number} lng={listing.longitude as number} />
                 </div>
               </>
@@ -448,15 +478,15 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               <>
                 <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="font-semibold text-charcoal-800 mb-1">Quoi faire à proximité ?</h2>
-                  <p className="text-sm text-charcoal-400 mb-4">À moins de 30 minutes du chalet</p>
+                  <h2 className="font-semibold text-charcoal-800 mb-1">{t("nearbyTitle")}</h2>
+                  <p className="text-sm text-charcoal-400 mb-4">{t("nearbySubtitle")}</p>
                   <div className="space-y-5">
                     {Object.entries(NEARBY_CATEGORIES).map(([cat, items]) => {
                       const catItems = items.filter((i) => nearbyActivities.includes(i));
                       if (catItems.length === 0) return null;
                       return (
                         <div key={cat}>
-                          <h3 className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-2">{cat}</h3>
+                          <h3 className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-2">{NEARBY_CATEGORY_LABELS[cat] ?? cat}</h3>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {catItems.map((a) => (
                               <div key={a} className="flex items-center gap-2 text-sm text-charcoal-700">
@@ -478,7 +508,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             <div>
               <div className="flex items-center gap-3 mb-5">
                 <h2 className="font-semibold text-charcoal-800">
-                  Avis des voyageurs {reviews && reviews.length > 0 && `(${reviews.length})`}
+                  {t("reviewsTitle")} {reviews && reviews.length > 0 && `(${reviews.length})`}
                 </h2>
                 {avgRating > 0 && (
                   <div className="flex items-center gap-1">
@@ -495,9 +525,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                 <div className="bg-ai-light rounded-2xl p-4 mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-bold text-ai bg-white px-2.5 py-1 rounded-full">
-                      Résumé IA
+                      {t("aiSummaryBadge")}
                     </span>
-                    <span className="text-xs text-ai/60">Synthèse de {reviews!.length} avis</span>
+                    <span className="text-xs text-ai/60">{t("aiSummarySub", { count: reviews!.length })}</span>
                   </div>
                   <p className="text-sm text-charcoal-700 leading-relaxed">{aiSummary}</p>
                 </div>
@@ -544,7 +574,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                         )}
                         {hostReply && (
                           <div className="pl-4 border-l-2 border-[#ebebeb] mt-2">
-                            <p className="text-xs font-semibold text-charcoal-600 mb-1">Réponse du propriétaire :</p>
+                            <p className="text-xs font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
                             <p className="text-sm text-charcoal-500 leading-relaxed">{hostReply}</p>
                           </div>
                         )}
@@ -553,14 +583,14 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                   })}
                 </div>
               ) : (
-                <p className="text-charcoal-400 text-sm">Nouveau chalet : soyez les premiers à laisser votre avis.</p>
+                <p className="text-charcoal-400 text-sm">{t("noReviews")}</p>
               )}
 
               {/* Review form — visible if eligible */}
               {canReview && <ReviewForm listingId={listing.id} />}
               {user && !isOwner && !canReview && !hasMessaged && (
                 <p className="text-sm text-charcoal-400 mt-6 px-4 py-3 bg-charcoal-50 rounded-xl">
-                  Contactez le propriétaire pour pouvoir laisser un avis après votre séjour.
+                  {t("contactMeToReview")}
                 </p>
               )}
             </div>
@@ -569,46 +599,46 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
             <>
               <hr className="border-[#ebebeb]" />
               <div>
-                <h2 className="font-semibold text-charcoal-800 mb-4">Informations pratiques</h2>
+                <h2 className="font-semibold text-charcoal-800 mb-4">{t("practicalInfo")}</h2>
                 <div className="space-y-2.5 text-sm text-charcoal-700">
                   {listing.checkin_time && (
                     <div className="flex items-center gap-2.5">
                       <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
-                      <span>Arrivée : à partir de {(listing.checkin_time as string).replace(":", "h")}</span>
+                      <span>{t("checkinFrom", { time: (listing.checkin_time as string).replace(":", "h") })}</span>
                     </div>
                   )}
                   {listing.checkout_time && (
                     <div className="flex items-center gap-2.5">
                       <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
-                      <span>Départ : avant {(listing.checkout_time as string).replace(":", "h")}</span>
+                      <span>{t("checkoutBefore", { time: (listing.checkout_time as string).replace(":", "h") })}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2.5">
                     <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                     <span>
                       {listing.checkin_type === "in_person"
-                        ? "Accueil sur place — Remise des clés en personne à l'arrivée"
-                        : "Arrivée autonome — Accès par code numérique ou boîte à clés"}
+                        ? t("checkinInPerson")
+                        : t("checkinAutonomous")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    <span>{listing.pets_allowed ? "Animaux acceptés" : "Animaux non acceptés"}</span>
+                    <span>{listing.pets_allowed ? t("petsAllowed") : t("petsNotAllowed")}</span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    <span>{listing.smoking_allowed ? "Fumeurs acceptés" : "Fumeurs non acceptés"}</span>
+                    <span>{listing.smoking_allowed ? t("smokingAllowed") : t("smokingNotAllowed")}</span>
                   </div>
                   {listing.min_age && (listing.min_age as number) > 0 && (
                     <div className="flex items-center gap-2.5">
                       <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                      <span>Âge minimum : {listing.min_age as number} ans</span>
+                      <span>{t("minAge", { age: listing.min_age as number })}</span>
                     </div>
                   )}
                   {listing.citq_number && (
                     <div className="flex items-center gap-2.5">
                       <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                      <span>Numéro CITQ : {listing.citq_number as string}</span>
+                      <span>{t("citqNumber", { number: listing.citq_number as string })}</span>
                     </div>
                   )}
                 </div>
@@ -655,7 +685,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               {/* CTA */}
               {isOwner ? (
                 <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
-                  C&apos;est votre chalet
+                  {t("isYourCabin")}
                 </button>
               ) : (
                 <>
@@ -674,7 +704,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                     priceOnRequest={!!(listing.price_on_request)}
                   />
                   <p className="text-xs text-charcoal-400 text-center mt-3">
-                    Contact direct · Zéro frais de service
+                    {t("contactDirect")}
                   </p>
                 </>
               )}
@@ -686,7 +716,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
         {!isOwner && (
           <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 py-3 z-40 flex items-center justify-between gap-4">
             {listing.price_on_request || listing.price_low === 0 ? (
-              <span className="text-sm font-bold text-charcoal-800">Prix sur demande</span>
+              <span className="text-sm font-bold text-charcoal-800">{t("priceOnRequest")}</span>
             ) : (
               <div>
                 {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (
@@ -695,7 +725,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                   </p>
                 )}
                 <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
-                <span className="text-xs text-charcoal-400"> /nuit</span>
+                <span className="text-xs text-charcoal-400"> {t("perNight")}</span>
               </div>
             )}
             {user ? (
@@ -703,14 +733,14 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                 href="#contact-form"
                 className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
-                Contacter le propriétaire
+                {t("mobileContactCta")}
               </a>
             ) : (
               <a
-                href={`/login?next=/chalets/${listing.id}`}
+                href={`${isEn ? "/en" : ""}/login?next=${isEn ? "/en" : ""}/chalets/${listing.id}`}
                 className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
-                Contacter le propriétaire
+                {t("mobileContactCta")}
               </a>
             )}
           </div>

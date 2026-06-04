@@ -5,13 +5,24 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import { normalizePhotos } from "@/lib/photo";
+import { getTranslations, getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Mes favoris — Kabanalouer",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("favoris");
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  return {
+    title: t("metaTitle"),
+    alternates: {
+      canonical: isEn ? "/en/favoris" : "/favoris",
+      languages: { fr: "/favoris", en: "/en/favoris", "x-default": "/favoris" },
+    },
+  };
+}
 
 export default async function FavorisPage() {
-  const supabase = await createClient();
+  const [supabase, t] = await Promise.all([createClient(), getTranslations("favoris")]);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
@@ -96,22 +107,26 @@ export default async function FavorisPage() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
-        <h1 className="text-xl font-bold text-gray-900 mb-6">Mes favoris</h1>
+        <h1 className="text-xl font-bold text-charcoal-800 mb-6">{t("title")}</h1>
 
         {listings.length === 0 ? (
           <div className="py-24 text-center">
-            <p className="text-5xl mb-4">🤍</p>
-            <p className="text-gray-700 font-medium mb-2">
-              Vous n&apos;avez pas encore de favoris.
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </div>
+            <p className="text-charcoal-700 font-medium mb-2">
+              {t("empty")}
             </p>
-            <p className="text-gray-500 text-sm mb-6">
-              Explorez nos chalets et cliquez sur ❤️ pour les sauvegarder.
+            <p className="text-charcoal-400 text-sm mb-6">
+              {t("emptyHint")}
             </p>
             <Link
               href="/chalets"
-              className="inline-block bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
+              className="inline-block bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
-              Explorer les chalets
+              {t("exploreCta")}
             </Link>
           </div>
         ) : (
