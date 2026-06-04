@@ -18,24 +18,26 @@ export default function FooterLangToggle() {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-[#ebebeb] p-0.5">
+    <div className="flex items-center gap-2">
       <button
         onClick={() => switchTo("fr")}
-        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+        className={`px-4 py-1.5 rounded-full font-medium transition-colors border ${
           !isEn
-            ? "bg-primary/10 text-primary"
-            : "text-charcoal-400 hover:text-charcoal-600"
+            ? "bg-primary text-white border-primary"
+            : "bg-transparent text-charcoal-400 border-[#ebebeb] hover:text-charcoal-600"
         }`}
+        style={{ fontSize: 13 }}
       >
         FR
       </button>
       <button
         onClick={() => switchTo("en")}
-        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+        className={`px-4 py-1.5 rounded-full font-medium transition-colors border ${
           isEn
-            ? "bg-primary/10 text-primary"
-            : "text-charcoal-400 hover:text-charcoal-600"
+            ? "bg-primary text-white border-primary"
+            : "bg-transparent text-charcoal-400 border-[#ebebeb] hover:text-charcoal-600"
         }`}
+        style={{ fontSize: 13 }}
       >
         EN
       </button>
