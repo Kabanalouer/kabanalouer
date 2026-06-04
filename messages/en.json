@@ -614,6 +614,71 @@
     "emptyHint": "Explore our cabins and click the heart icon to save them.",
     "exploreCta": "Explore cabins"
   },
+  "searchBar": {
+    "destinationPlaceholder": "Destination",
+    "datesLabel": "Dates",
+    "guestsPlaceholder": "Travelers",
+    "searchAriaLabel": "Search",
+    "searchButton": "Search",
+    "recentSearches": "Recent searches",
+    "recentLabel": "Recent",
+    "popularRegions": "Popular regions",
+    "regionsGroup": "Regions",
+    "citiesGroup": "Cities",
+    "noDestination": "No destination found",
+    "typeRegion": "Region",
+    "typeCity": "City",
+    "clearDates": "Clear",
+    "clearDatesLong": "Clear dates",
+    "departurePlaceholder": "Check-out",
+    "arrivalInfo": "Check-in: {date} · Choose check-out",
+    "guestsCount": "{count, plural, one {{count} traveler} other {{count} travelers}}",
+    "guestsCountShort": "{count} guests",
+    "adults": "Adults",
+    "adultsSub": "Ages 13 and up",
+    "children": "Children",
+    "childrenSub": "Ages 2–12",
+    "babies": "Infants",
+    "babiesSub": "Under 2",
+    "pets": "Pets",
+    "petsSub": "Dogs, cats, etc."
+  },
+  "searchSubBar": {
+    "searchCabin": "Search for a cabin",
+    "back": "Back"
+  },
+  "chaletsMap": {
+    "titleAll": "Cabins in Quebec",
+    "titleDestination": "Cabins · {destination}",
+    "resultCount": "{count, plural, one {{count} result} other {{count} results}}",
+    "noResults": "No cabins found",
+    "noResultsHint": "Try different filters or move the map.",
+    "showMap": "View map",
+    "showList": "View list"
+  },
+  "listingCard": {
+    "travelers": "{count, plural, one {{count} traveler} other {{count} travelers}}",
+    "bedrooms": "{count, plural, one {{count} bedroom} other {{count} bedrooms}}",
+    "beds": "{count, plural, one {{count} bed} other {{count} beds}}",
+    "priceOnRequest": "On request",
+    "perNight": "/night",
+    "featured": "Featured",
+    "isNew": "New",
+    "prevPhoto": "Previous photo",
+    "nextPhoto": "Next photo"
+  },
+  "filtersModal": {
+    "button": "Filters",
+    "title": "Filters",
+    "bedroomsAndBeds": "Bedrooms and beds",
+    "bedrooms": "Bedrooms",
+    "beds": "Beds",
+    "bathrooms": "Bathrooms",
+    "amenities": "Amenities",
+    "any": "Any",
+    "clearAll": "Clear all",
+    "showResults": "Show results"
+  },
   "auth": {
     "login": {
       "title": "Welcome back!",

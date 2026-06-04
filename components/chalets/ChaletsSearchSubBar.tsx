@@ -4,12 +4,11 @@ import { useState, useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import FiltersModal from "./FiltersModal";
+import { useTranslations, useLocale } from "next-intl";
 
-const MONTHS_SHORT = ["jan","fév","mar","avr","mai","jun","jul","aoû","sep","oct","nov","déc"];
-
-function formatShort(iso: string) {
-  const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS_SHORT[m - 1]}`;
+function formatShort(iso: string, intlLocale: string): string {
+  const [year, m, d] = iso.split("-").map(Number);
+  return new Date(year, m - 1, d).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }
 
 interface Props {
@@ -25,6 +24,9 @@ interface Props {
 }
 
 function Inner(props: Props) {
+  const t = useTranslations("searchSubBar");
+  const locale = useLocale();
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
   const { region, city, checkin, checkout, capacity, minBedrooms, minBeds, minBathrooms, amenities } = props;
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -35,11 +37,11 @@ function Inner(props: Props) {
 
   const dest = city || region || "";
   const datesLabel = checkin
-    ? `${formatShort(checkin)}${checkout ? ` – ${formatShort(checkout)}` : ""}`
+    ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}`
     : "";
-  const guestsLabel = capacity ? `${capacity} voy.` : "";
+  const guestsLabel = capacity ? `${capacity} ${locale === "en" ? "guests" : "voy."}` : "";
   const parts = [dest, datesLabel, guestsLabel].filter(Boolean);
-  const summary = parts.length > 0 ? parts.join(" · ") : "Rechercher un chalet";
+  const summary = parts.length > 0 ? parts.join(" · ") : t("searchCabin");
   const hasSearch = parts.length > 0;
 
   return (
@@ -84,7 +86,7 @@ function Inner(props: Props) {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Retour
+              {t("back")}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 pt-8 pb-6 flex flex-col items-center">

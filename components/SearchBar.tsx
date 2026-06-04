@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 
 // ── Static data ──────────────────────────────────────────────────────────────
 
@@ -39,12 +40,6 @@ const REGION_SLUG_MAP: Record<string, string> = {
   "Chaudière-Appalaches": "chaudiere-appalaches",
 };
 
-const MONTHS_FR = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
-const MONTHS_SHORT = ["jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc"];
-const DAYS_FR = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
 
@@ -68,9 +63,9 @@ function saveRecent(item: DestItem) {
 function toISO(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
-function formatShort(iso: string) {
-  const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS_SHORT[m - 1]}`;
+function formatShort(iso: string, intlLocale: string): string {
+  const [year, m, d] = iso.split("-").map(Number);
+  return new Date(year, m - 1, d).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }
 function getMonthGrid(year: number, month: number): (number | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
@@ -83,13 +78,19 @@ function getMonthGrid(year: number, month: number): (number | null)[] {
 function CalendarMonth({
   year, month, today, checkin, checkout, hoverDate,
   onDayClick, onDayEnter, onDayLeave,
-  showPrev, showNext, onPrev, onNext,
+  showPrev, showNext, onPrev, onNext, locale,
 }: {
   year: number; month: number; today: string;
   checkin: string; checkout: string; hoverDate: string;
   onDayClick: (d: string) => void; onDayEnter: (d: string) => void; onDayLeave: () => void;
   showPrev: boolean; showNext: boolean; onPrev: () => void; onNext: () => void;
+  locale: string;
 }) {
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  const monthHeader = new Date(year, month, 1).toLocaleDateString(intlLocale, { month: "long", year: "numeric" });
+  const dayNames = Array.from({ length: 7 }, (_, i) =>
+    new Date(2025, 0, 5 + i).toLocaleDateString(intlLocale, { weekday: "short" }).replace(".", "")
+  );
   const days = getMonthGrid(year, month);
   const effectiveEnd = checkout || (checkin && hoverDate > checkin ? hoverDate : "");
 
@@ -99,13 +100,13 @@ function CalendarMonth({
         <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-gray-900">{MONTHS_FR[month]} {year}</p>
+        <p className="flex-1 text-center text-sm font-semibold text-gray-900 capitalize">{monthHeader}</p>
         <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {DAYS_FR.map((d) => (
+        {dayNames.map((d) => (
           <div key={d} className="h-8 flex items-center justify-center text-[11px] font-medium text-gray-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
@@ -170,6 +171,9 @@ export default function SearchBar({
   iconOnly = false,
   preserveParams,
 }: SearchBarProps = {}) {
+  const t = useTranslations("searchBar");
+  const locale = useLocale();
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
   const router = useRouter();
   const now = new Date();
   const today = now.toISOString().split("T")[0];
@@ -299,13 +303,11 @@ export default function SearchBar({
   };
 
   const datesLabel = checkin
-    ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
+    ? `${formatShort(checkin, intlLocale)} → ${checkout ? formatShort(checkout, intlLocale) : t("departurePlaceholder")}`
     : null;
 
   const guestTotal = adults + children + babies;
-  const guestsLabel = guestTotal > 0
-    ? `${guestTotal} voyageur${guestTotal > 1 ? "s" : ""}`
-    : null;
+  const guestsLabel = guestTotal > 0 ? t("guestsCount", { count: guestTotal }) : null;
 
   const handleSearch = () => {
     // Destination: if user typed but didn't click a suggestion, try to match
@@ -363,7 +365,7 @@ export default function SearchBar({
           </svg>
           <input
             type="text"
-            placeholder="Destination"
+            placeholder={t("destinationPlaceholder")}
             value={destQuery}
             onFocus={() => setDestOpen(true)}
             onChange={(e) => {
@@ -390,7 +392,7 @@ export default function SearchBar({
               recentSearches.length > 0 ? (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Recherches récentes</p>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("recentSearches")}</p>
                   </div>
                   {recentSearches.map((item, i) => (
                     <button
@@ -403,7 +405,7 @@ export default function SearchBar({
                       </svg>
                       <div className="min-w-0">
                         <p className="text-sm text-gray-800 truncate">{item.label}</p>
-                        <p className="text-xs text-gray-400">{item.type === "region" ? "Région" : "Ville"}</p>
+                        <p className="text-xs text-gray-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                       </div>
                     </button>
                   ))}
@@ -411,7 +413,7 @@ export default function SearchBar({
               ) : (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Régions populaires</p>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("popularRegions")}</p>
                   </div>
                   {popularRegions.map((item) => (
                     <button
@@ -436,7 +438,7 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "region").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Régions</p>
+                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("regionsGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "region").map((item) => (
                         <button
@@ -456,7 +458,7 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "city").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Villes</p>
+                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("citiesGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "city").map((item) => (
                         <button
@@ -475,7 +477,7 @@ export default function SearchBar({
                   )}
                 </>
               ) : (
-                <div className="px-4 py-5 text-center text-sm text-gray-400">Aucune destination trouvée</div>
+                <div className="px-4 py-5 text-center text-sm text-gray-400">{t("noDestination")}</div>
               )
             )}
           </div>
@@ -495,7 +497,7 @@ export default function SearchBar({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span className={`text-sm ${datesLabel ? "text-gray-700" : "text-gray-400"}`}>
-            {datesLabel ?? "Dates"}
+            {datesLabel ?? t("datesLabel")}
           </span>
         </button>
 
@@ -517,6 +519,7 @@ export default function SearchBar({
                     today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                     onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
                     showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
+                    locale={locale}
                   />
                 </div>
                 {/* Desktop : 2 mois côte à côte */}
@@ -526,6 +529,7 @@ export default function SearchBar({
                     today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                     onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
                     showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
+                    locale={locale}
                   />
                   <div className="w-px bg-gray-100" />
                   <CalendarMonth
@@ -533,17 +537,18 @@ export default function SearchBar({
                     today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                     onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
                     showPrev={false} showNext onPrev={goPrev} onNext={goNext}
+                    locale={locale}
                   />
                 </div>
                 {(checkin || checkout) && (
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                     <span className="text-sm text-gray-500">
                       {checkin && checkout
-                        ? `${formatShort(checkin)} → ${formatShort(checkout)}`
-                        : checkin ? `Arrivée : ${formatShort(checkin)} · Choisissez le départ` : ""}
+                        ? `${formatShort(checkin, intlLocale)} → ${formatShort(checkout, intlLocale)}`
+                        : checkin ? t("arrivalInfo", { date: formatShort(checkin, intlLocale) }) : ""}
                     </span>
                     <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
-                      Effacer
+                      {t("clearDates")}
                     </button>
                   </div>
                 )}
@@ -564,32 +569,32 @@ export default function SearchBar({
           onClick={() => { setGuestsOpen((o) => !o); setDestOpen(false); setCalendarOpen(false); }}
           className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer truncate ${guestsLabel ? "text-gray-700" : "text-gray-400"}`}
         >
-          {guestsLabel ?? "Voyageurs"}
+          {guestsLabel ?? t("guestsPlaceholder")}
         </button>
 
         {guestsOpen && (
           <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-[9999] w-[300px]">
             {([
-              { label: "Adultes", sub: "13 ans et plus", val: adults,
+              { label: t("adults"), sub: t("adultsSub"), val: adults,
                 onDecr: () => setAdults((v) => Math.max(0, v - 1)),
                 onIncr: () => setAdults((v) => v + 1),
                 decrDis: adults === 0 || (adults === 1 && children + babies > 0),
                 incrDis: guestTotal >= 40 },
-              { label: "Enfants", sub: "De 2 à 12 ans", val: children,
+              { label: t("children"), sub: t("childrenSub"), val: children,
                 onDecr: () => setChildren((v) => Math.max(0, v - 1)),
                 onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
                 decrDis: children === 0,
                 incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-              { label: "Bébés", sub: "Moins de 2 ans", val: babies,
+              { label: t("babies"), sub: t("babiesSub"), val: babies,
                 onDecr: () => setBabies((v) => Math.max(0, v - 1)),
                 onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
                 decrDis: babies === 0,
                 incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-              { label: "Animaux", sub: "Chiens, chats, etc.", val: pets,
+              { label: t("pets"), sub: t("petsSub"), val: pets,
                 onDecr: () => setPets((v) => Math.max(0, v - 1)),
                 onIncr: () => setPets((v) => v + 1),
                 decrDis: pets === 0, incrDis: pets >= 5 },
-            ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx, arr) => (
+            ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx: number, arr) => (
               <div key={label}>
                 <div className="flex items-center justify-between px-5 py-4">
                   <div>
@@ -626,13 +631,13 @@ export default function SearchBar({
       {/* ── Search button ─────────────────────────────────────────────────── */}
       <button
         onClick={handleSearch}
-        aria-label="Rechercher"
+        aria-label={t("searchAriaLabel")}
         className={`bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center shrink-0 ml-4 ${iconOnly ? "p-3.5" : "px-5 py-3 gap-2 font-semibold"}`}
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        {!iconOnly && <span>Rechercher</span>}
+        {!iconOnly && <span>{t("searchButton")}</span>}
       </button>
     </div>
   );

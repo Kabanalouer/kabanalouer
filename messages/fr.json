@@ -614,6 +614,71 @@
     "emptyHint": "Explorez nos chalets et cliquez sur le cœur pour les sauvegarder.",
     "exploreCta": "Explorer les chalets"
   },
+  "searchBar": {
+    "destinationPlaceholder": "Destination",
+    "datesLabel": "Dates",
+    "guestsPlaceholder": "Voyageurs",
+    "searchAriaLabel": "Rechercher",
+    "searchButton": "Rechercher",
+    "recentSearches": "Recherches récentes",
+    "recentLabel": "Récents",
+    "popularRegions": "Régions populaires",
+    "regionsGroup": "Régions",
+    "citiesGroup": "Villes",
+    "noDestination": "Aucune destination trouvée",
+    "typeRegion": "Région",
+    "typeCity": "Ville",
+    "clearDates": "Effacer",
+    "clearDatesLong": "Effacer les dates",
+    "departurePlaceholder": "Départ",
+    "arrivalInfo": "Arrivée : {date} · Choisissez le départ",
+    "guestsCount": "{count, plural, one {{count} voyageur} other {{count} voyageurs}}",
+    "guestsCountShort": "{count} voy.",
+    "adults": "Adultes",
+    "adultsSub": "13 ans et plus",
+    "children": "Enfants",
+    "childrenSub": "De 2 à 12 ans",
+    "babies": "Bébés",
+    "babiesSub": "Moins de 2 ans",
+    "pets": "Animaux",
+    "petsSub": "Chiens, chats, etc."
+  },
+  "searchSubBar": {
+    "searchCabin": "Rechercher un chalet",
+    "back": "Retour"
+  },
+  "chaletsMap": {
+    "titleAll": "Chalets au Québec",
+    "titleDestination": "Chalets · {destination}",
+    "resultCount": "{count, plural, one {{count} résultat} other {{count} résultats}}",
+    "noResults": "Aucun chalet trouvé",
+    "noResultsHint": "Essayez d'autres filtres ou déplacez la carte.",
+    "showMap": "Voir la carte",
+    "showList": "Voir la liste"
+  },
+  "listingCard": {
+    "travelers": "{count, plural, one {{count} voyageur} other {{count} voyageurs}}",
+    "bedrooms": "{count, plural, one {{count} chambre} other {{count} chambres}}",
+    "beds": "{count, plural, one {{count} lit} other {{count} lits}}",
+    "priceOnRequest": "Sur demande",
+    "perNight": "/nuit",
+    "featured": "Vedette",
+    "isNew": "Nouveau",
+    "prevPhoto": "Photo précédente",
+    "nextPhoto": "Photo suivante"
+  },
+  "filtersModal": {
+    "button": "Filtres",
+    "title": "Filtres",
+    "bedroomsAndBeds": "Chambres et lits",
+    "bedrooms": "Chambres",
+    "beds": "Lits",
+    "bathrooms": "Salles de bain",
+    "amenities": "Caractéristiques",
+    "any": "Tout",
+    "clearAll": "Tout effacer",
+    "showResults": "Afficher les résultats"
+  },
   "auth": {
     "login": {
       "title": "Bon retour !",

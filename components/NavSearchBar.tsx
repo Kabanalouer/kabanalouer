@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
+import { useTranslations, useLocale } from "next-intl";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -29,9 +30,6 @@ const REGION_SLUG_MAP: Record<string, string> = {
   "Chaudière-Appalaches": "chaudiere-appalaches",
 };
 
-const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const MONTHS_SHORT = ["jan","fév","mar","avr","mai","jun","jul","aoû","sep","oct","nov","déc"];
-const DAYS_FR = ["dim","lun","mar","mer","jeu","ven","sam"];
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
 const RECENT_KEY = "kbl_recent_dest";
@@ -53,9 +51,9 @@ function saveRecent(item: DestItem) {
 function toISO(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
-function formatShort(iso: string) {
-  const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS_SHORT[m - 1]}`;
+function formatShort(iso: string, intlLocale: string): string {
+  const [year, m, d] = iso.split("-").map(Number);
+  return new Date(year, m - 1, d).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }
 function getMonthGrid(year: number, month: number): (number | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
@@ -68,13 +66,19 @@ function getMonthGrid(year: number, month: number): (number | null)[] {
 function CalendarMonth({
   year, month, today, checkin, checkout, hoverDate,
   onDayClick, onDayEnter, onDayLeave,
-  showPrev, showNext, onPrev, onNext,
+  showPrev, showNext, onPrev, onNext, locale,
 }: {
   year: number; month: number; today: string;
   checkin: string; checkout: string; hoverDate: string;
   onDayClick: (d: string) => void; onDayEnter: (d: string) => void; onDayLeave: () => void;
   showPrev: boolean; showNext: boolean; onPrev: () => void; onNext: () => void;
+  locale: string;
 }) {
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  const monthHeader = new Date(year, month, 1).toLocaleDateString(intlLocale, { month: "long", year: "numeric" });
+  const dayNames = Array.from({ length: 7 }, (_, i) =>
+    new Date(2025, 0, 5 + i).toLocaleDateString(intlLocale, { weekday: "short" }).replace(".", "")
+  );
   const days = getMonthGrid(year, month);
   const effectiveEnd = checkout || (checkin && hoverDate > checkin ? hoverDate : "");
   return (
@@ -83,13 +87,13 @@ function CalendarMonth({
         <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-charcoal-800">{MONTHS_FR[month]} {year}</p>
+        <p className="flex-1 text-center text-sm font-semibold text-charcoal-800 capitalize">{monthHeader}</p>
         <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {DAYS_FR.map((d) => (
+        {dayNames.map((d) => (
           <div key={d} className="h-8 flex items-center justify-center text-[11px] font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
@@ -130,6 +134,9 @@ function CalendarMonth({
 // ── NavSearchBarInner ─────────────────────────────────────────────────────────
 
 function NavSearchBarInner() {
+  const t = useTranslations("searchBar");
+  const locale = useLocale();
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
   const router = useRouter();
   const searchParams = useSearchParams();
   const now = new Date();
@@ -237,9 +244,9 @@ function NavSearchBarInner() {
   };
 
   const destLabel = destSelected?.label ?? null;
-  const datesLabel = checkin ? `${formatShort(checkin)}${checkout ? ` – ${formatShort(checkout)}` : ""}` : null;
+  const datesLabel = checkin ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}` : null;
   const totalGuests = adults + children + babies;
-  const guestsLabel = totalGuests > 0 ? `${totalGuests} voy.` : null;
+  const guestsLabel = totalGuests > 0 ? t("guestsCount", { count: totalGuests }) : null;
   const popularRegions: DestItem[] = REGIONS.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
 
   const filtersCurrentParams = {
@@ -265,7 +272,7 @@ function NavSearchBarInner() {
             className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[130px] ${activeField === "dest" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
             <span className={`text-sm font-medium leading-none truncate max-w-[120px] ${destLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
-              {destLabel ?? "Destination"}
+              {destLabel ?? t("destinationPlaceholder")}
             </span>
           </button>
 
@@ -286,7 +293,7 @@ function NavSearchBarInner() {
                   <>
                     <div className="px-4 pt-3 pb-1">
                       <p className="text-[11px] font-semibold text-charcoal-400 uppercase tracking-wide">
-                        {recentSearches.length > 0 ? "Récents" : "Régions populaires"}
+                        {recentSearches.length > 0 ? t("recentLabel") : t("popularRegions")}
                       </p>
                     </div>
                     {(recentSearches.length > 0 ? recentSearches : popularRegions).map((item, i) => (
@@ -303,7 +310,7 @@ function NavSearchBarInner() {
                         </svg>
                         <div className="min-w-0">
                           <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
-                          <p className="text-xs text-charcoal-400">{item.type === "region" ? "Région" : "Ville"}</p>
+                          <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                         </div>
                       </button>
                     ))}
@@ -321,12 +328,12 @@ function NavSearchBarInner() {
                       </svg>
                       <div className="min-w-0">
                         <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
-                        <p className="text-xs text-charcoal-400">{item.type === "region" ? "Région" : "Ville"}</p>
+                        <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                       </div>
                     </button>
                   ))
                 ) : (
-                  <p className="px-4 py-5 text-sm text-charcoal-400 text-center">Aucune destination trouvée</p>
+                  <p className="px-4 py-5 text-sm text-charcoal-400 text-center">{t("noDestination")}</p>
                 )}
               </div>
             </div>
@@ -343,7 +350,7 @@ function NavSearchBarInner() {
             className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[120px] ${activeField === "dates" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
             <span className={`text-sm font-medium leading-none ${datesLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
-              {datesLabel ?? "Dates"}
+              {datesLabel ?? t("datesLabel")}
             </span>
           </button>
 
@@ -355,6 +362,7 @@ function NavSearchBarInner() {
                   checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                   onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
                   showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
+                  locale={locale}
                 />
                 <div className="w-px bg-[#ebebeb]" />
                 <CalendarMonth
@@ -362,6 +370,7 @@ function NavSearchBarInner() {
                   checkin={checkin} checkout={checkout} hoverDate={hoverDate}
                   onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
                   showPrev={false} showNext onPrev={goPrev} onNext={goNext}
+                  locale={locale}
                 />
               </div>
               {(checkin || checkout) && (
@@ -370,7 +379,7 @@ function NavSearchBarInner() {
                     onClick={() => { setCheckin(""); setCheckout(""); setHoverDate(""); }}
                     className="text-sm text-charcoal-500 hover:text-charcoal-800 underline underline-offset-2 transition-colors"
                   >
-                    Effacer les dates
+                    {t("clearDatesLong")}
                   </button>
                 </div>
               )}
@@ -388,29 +397,29 @@ function NavSearchBarInner() {
             className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[110px] ${activeField === "guests" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
             <span className={`text-sm font-medium leading-none ${guestsLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
-              {guestsLabel ?? "Voyageurs"}
+              {guestsLabel ?? t("guestsPlaceholder")}
             </span>
           </button>
 
           {activeField === "guests" && (
             <div className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-xl border border-[#ebebeb] z-[9999] w-[300px]">
               {([
-                { label: "Adultes", sub: "13 ans et plus", val: adults,
+                { label: t("adults"), sub: t("adultsSub"), val: adults,
                   onDecr: () => setAdults((v) => Math.max(0, v - 1)),
                   onIncr: () => setAdults((v) => v + 1),
                   decrDis: adults === 0 || (adults === 1 && children + babies > 0),
                   incrDis: totalGuests >= 40 },
-                { label: "Enfants", sub: "De 2 à 12 ans", val: children,
+                { label: t("children"), sub: t("childrenSub"), val: children,
                   onDecr: () => setChildren((v) => Math.max(0, v - 1)),
                   onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
                   decrDis: children === 0,
                   incrDis: adults === 0 ? totalGuests >= 39 : totalGuests >= 40 },
-                { label: "Bébés", sub: "Moins de 2 ans", val: babies,
+                { label: t("babies"), sub: t("babiesSub"), val: babies,
                   onDecr: () => setBabies((v) => Math.max(0, v - 1)),
                   onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
                   decrDis: babies === 0,
                   incrDis: adults === 0 ? totalGuests >= 39 : totalGuests >= 40 },
-                { label: "Animaux", sub: "Chiens, chats, etc.", val: pets,
+                { label: t("pets"), sub: t("petsSub"), val: pets,
                   onDecr: () => setPets((v) => Math.max(0, v - 1)),
                   onIncr: () => setPets((v) => v + 1),
                   decrDis: pets === 0, incrDis: pets >= 5 },

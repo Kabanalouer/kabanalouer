@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
+import { useTranslations } from "next-intl";
 
 export interface Listing {
   id: string;
@@ -33,6 +34,7 @@ export default function ListingCard({
   listing: Listing;
   currentUserId?: string | null;
 }) {
+  const t = useTranslations("listingCard");
   const photos =
     listing.photos.length > 0
       ? listing.photos
@@ -140,7 +142,7 @@ export default function ListingCard({
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {listing.isFeatured && (
             <span className="bg-[#636e40] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
-              Vedette
+              {t("featured")}
             </span>
           )}
           {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
@@ -150,7 +152,7 @@ export default function ListingCard({
           )}
           {listing.isNew && (
             <span className="bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm">
-              Nouveau
+              {t("isNew")}
             </span>
           )}
         </div>
@@ -176,20 +178,20 @@ export default function ListingCard({
         <p className="text-[13px] text-charcoal-400 mb-2">
           {location}
           {" · "}
-          {listing.capacity} voyageur{listing.capacity > 1 ? "s" : ""}
+          {t("travelers", { count: listing.capacity })}
           {" · "}
-          {listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}
+          {t("bedrooms", { count: listing.bedrooms })}
           {listing.beds != null && (
-            <>{" · "}{listing.beds} lit{listing.beds > 1 ? "s" : ""}</>
+            <>{" · "}{t("beds", { count: listing.beds })}</>
           )}
         </p>
 
         {/* Price */}
         {listing.priceOnRequest ? (
-          <p className="text-[14px] text-charcoal-800 font-semibold">Sur demande</p>
+          <p className="text-[14px] text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
         ) : listing.price > 0 ? (
           <p className="text-[14px] font-semibold text-charcoal-800">
-            {listing.price} $ <span className="text-charcoal-400">/nuit</span>
+            {listing.price} $ <span className="text-charcoal-400">{t("perNight")}</span>
           </p>
         ) : null}
       </div>

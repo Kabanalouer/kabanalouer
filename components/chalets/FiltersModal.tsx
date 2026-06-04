@@ -4,17 +4,19 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AMENITIES } from "@/lib/amenities";
+import { useTranslations } from "next-intl";
 
-function CounterRow({ label, value, onChange, max = 8 }: {
+function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   max?: number;
+  anyLabel: string;
 }) {
   const num = value ? parseInt(value) : 0;
   const atMin = num === 0;
   const atMax = num >= max;
-  const display = num === 0 ? "Tout" : `${num}+`;
+  const display = num === 0 ? anyLabel : `${num}+`;
 
   return (
     <div className="flex items-center justify-between py-4">
@@ -73,6 +75,7 @@ export default function FiltersModal({
   initialMinBathrooms,
   initialAmenities,
 }: FiltersModalProps) {
+  const t = useTranslations("filtersModal");
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [minBedrooms, setMinBedrooms] = useState(initialMinBedrooms ?? "");
@@ -130,7 +133,7 @@ export default function FiltersModal({
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
         </svg>
-        Filtres
+        {t("button")}
         {activeCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}
@@ -146,7 +149,7 @@ export default function FiltersModal({
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] shrink-0">
-              <h2 className="text-base font-bold text-charcoal-800">Filtres</h2>
+              <h2 className="text-base font-bold text-charcoal-800">{t("title")}</h2>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-full hover:bg-charcoal-50 transition-colors"
@@ -162,19 +165,19 @@ export default function FiltersModal({
 
               {/* Chambres et lits */}
               <div>
-                <h3 className="text-sm font-bold text-charcoal-800 mb-1">Chambres et lits</h3>
-                <CounterRow label="Chambres" value={minBedrooms} onChange={setMinBedrooms} />
+                <h3 className="text-sm font-bold text-charcoal-800 mb-1">{t("bedroomsAndBeds")}</h3>
+                <CounterRow label={t("bedrooms")} value={minBedrooms} onChange={setMinBedrooms} anyLabel={t("any")} />
                 <div className="h-px bg-[#ebebeb]" />
-                <CounterRow label="Lits" value={minBeds} onChange={setMinBeds} />
+                <CounterRow label={t("beds")} value={minBeds} onChange={setMinBeds} anyLabel={t("any")} />
                 <div className="h-px bg-[#ebebeb]" />
-                <CounterRow label="Salles de bain" value={minBathrooms} onChange={setMinBathrooms} />
+                <CounterRow label={t("bathrooms")} value={minBathrooms} onChange={setMinBathrooms} anyLabel={t("any")} />
               </div>
 
               <div className="h-px bg-[#ebebeb]" />
 
               {/* Caractéristiques */}
               <div>
-                <h3 className="text-sm font-bold text-charcoal-800 mb-4">Caractéristiques</h3>
+                <h3 className="text-sm font-bold text-charcoal-800 mb-4">{t("amenities")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {AMENITIES.map((amenity) => {
                     const active = selectedAmenities.includes(amenity);
@@ -218,13 +221,13 @@ export default function FiltersModal({
                 onClick={clearAll}
                 className="text-sm text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2 transition-colors"
               >
-                Tout effacer
+                {t("clearAll")}
               </button>
               <button
                 onClick={apply}
                 className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
               >
-                Afficher les résultats
+                {t("showResults")}
               </button>
             </div>
 

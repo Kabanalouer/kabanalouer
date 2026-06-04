@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
+import { useTranslations } from "next-intl";
 
 export interface ListingForMap extends Listing {
   lat: number | null;
@@ -30,8 +31,9 @@ interface Props {
 }
 
 export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
+  const t = useTranslations("chaletsMap");
   const destination = filters.city || filters.region || null;
-  const pageTitle = destination ? `Chalets · ${destination}` : "Chalets au Québec";
+  const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,8 +72,8 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
         </svg>
       </div>
-      <p className="font-semibold text-charcoal-800 mb-1">Aucun chalet trouvé</p>
-      <p className="text-charcoal-400 text-sm">Essayez d&apos;autres filtres ou déplacez la carte.</p>
+      <p className="font-semibold text-charcoal-800 mb-1">{t("noResults")}</p>
+      <p className="text-charcoal-400 text-sm">{t("noResultsHint")}</p>
     </div>
   );
 
@@ -145,7 +147,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
             <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
             {!isLoading && (
               <span className="text-xs text-charcoal-400 mt-0.5 block">
-                {listings.length} résultat{listings.length !== 1 ? "s" : ""}
+                {t("resultCount", { count: listings.length })}
               </span>
             )}
           </div>
@@ -168,7 +170,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
             <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
             {!isLoading && listings.length > 0 && (
               <span className="text-xs text-charcoal-400 mt-0.5 block">
-                {listings.length} résultat{listings.length !== 1 ? "s" : ""}
+                {t("resultCount", { count: listings.length })}
               </span>
             )}
           </div>
@@ -186,7 +188,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.159.69.159 1.006 0z" />
               </svg>
-              Voir la carte
+              {t("showMap")}
             </button>
           </div>
         )}
@@ -211,7 +213,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
                 </svg>
-                Voir la liste
+                {t("showList")}
               </button>
             </div>
           </div>
