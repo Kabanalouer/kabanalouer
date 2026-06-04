@@ -2,18 +2,20 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Role = "traveler" | "host";
 
 function SignupForm() {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const next = (() => {
     const n = searchParams.get("next") ?? "/";
     return n.startsWith("/") ? n : "/";
   })();
 
+  const locale = pathname.startsWith("/en") ? "en" : "fr";
   const roleParam = searchParams.get("role") === "host" ? "host" : null;
 
   const [firstName, setFirstName] = useState("");
@@ -34,7 +36,7 @@ function SignupForm() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName, name: `${firstName} ${lastName}`, role } },
+      options: { data: { first_name: firstName, last_name: lastName, name: `${firstName} ${lastName}`, role, preferred_language: locale } },
     });
 
     if (error) {
@@ -47,7 +49,11 @@ function SignupForm() {
   };
 
   const handleGoogleSignup = async () => {
-    const callbackUrl = `${window.location.origin}/auth/callback${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
+    const params = new URLSearchParams();
+    if (next !== "/") params.set("next", next);
+    if (locale !== "fr") params.set("locale", locale);
+    const qs = params.toString();
+    const callbackUrl = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl, queryParams: { role } },

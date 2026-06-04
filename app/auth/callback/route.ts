@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
+  const localeParam = searchParams.get("locale");
 
   if (code) {
     const cookieStore = await cookies();
@@ -28,10 +29,18 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Redirect hosts to their dashboard by default (unless a specific `next` was set)
-      if (next === "/") {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Sauvegarde de la langue préférée (email signup via metadata, Google OAuth via query param)
+        const lang =
+          (user.user_metadata?.preferred_language as string | undefined) ??
+          (localeParam === "en" ? "en" : undefined);
+        if (lang === "fr" || lang === "en") {
+          await supabase.from("users").update({ preferred_language: lang }).eq("id", user.id);
+        }
+
+        // Redirect hosts to their dashboard by default (unless a specific `next` was set)
+        if (next === "/") {
           const { data: profile } = await supabase
             .from("users")
             .select("role")
