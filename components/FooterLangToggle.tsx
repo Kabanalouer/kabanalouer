@@ -10,34 +10,38 @@ export default function FooterLangToggle() {
   const basePath = isEn ? pathname.slice(3) || "/" : pathname;
 
   function switchTo(locale: "fr" | "en") {
-    if (locale === "en") {
-      router.push(`/en${basePath}`);
-    } else {
-      router.push(basePath);
-    }
+    router.push(locale === "en" ? `/en${basePath}` : basePath);
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div
+      className="relative flex rounded-full"
+      style={{ backgroundColor: "#e8ebdc", width: 90, height: 32, padding: 3 }}
+    >
+      {/* Sliding thumb */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          backgroundColor: "#636e40",
+          width: 42,
+          height: 26,
+          top: 3,
+          left: 3,
+          transform: isEn ? "translateX(42px)" : "translateX(0)",
+          transition: "transform 200ms ease",
+        }}
+      />
       <button
         onClick={() => switchTo("fr")}
-        className={`px-4 py-1.5 rounded-full font-medium transition-colors border ${
-          !isEn
-            ? "bg-primary text-white border-primary"
-            : "bg-transparent text-charcoal-400 border-[#ebebeb] hover:text-charcoal-600"
-        }`}
-        style={{ fontSize: 13 }}
+        className="relative z-10 flex-1 flex items-center justify-center font-medium"
+        style={{ fontSize: 13, color: !isEn ? "white" : "#9ca3af" }}
       >
         FR
       </button>
       <button
         onClick={() => switchTo("en")}
-        className={`px-4 py-1.5 rounded-full font-medium transition-colors border ${
-          isEn
-            ? "bg-primary text-white border-primary"
-            : "bg-transparent text-charcoal-400 border-[#ebebeb] hover:text-charcoal-600"
-        }`}
-        style={{ fontSize: 13 }}
+        className="relative z-10 flex-1 flex items-center justify-center font-medium"
+        style={{ fontSize: 13, color: isEn ? "white" : "#9ca3af" }}
       >
         EN
       </button>
