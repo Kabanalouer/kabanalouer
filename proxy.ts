@@ -1,8 +1,25 @@
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const intlMiddleware = createMiddleware(routing);
+
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  // next-intl: locale detection, redirects (e.g. /fr/dashboard → /dashboard)
+  const intlResponse = intlMiddleware(request);
+
+  // If next-intl returns a redirect, pass it through immediately
+  if (intlResponse.status >= 300 && intlResponse.status < 400) {
+    return intlResponse;
+  }
+
+  // Pass-through: build a fresh response that forwards the updated request to Next.js,
+  // then copy next-intl locale headers onto it before returning.
+  let finalResponse = NextResponse.next({ request });
+  intlResponse.headers.forEach((value, key) => {
+    finalResponse.headers.set(key, value);
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,19 +33,22 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({ request });
+          // Recreate the response with updated request cookies, then re-apply locale headers
+          finalResponse = NextResponse.next({ request });
+          intlResponse.headers.forEach((value, key) => {
+            finalResponse.headers.set(key, value);
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            finalResponse.cookies.set(name, value, options)
           );
         },
       },
     }
   );
 
-  // Refresh session so it doesn't expire on the user
   await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return finalResponse;
 }
 
 export const config = {
