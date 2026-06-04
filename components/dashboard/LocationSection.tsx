@@ -8,6 +8,7 @@ import {
   useMapsLibrary,
   useMap,
 } from "@vis.gl/react-google-maps";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 const REGIONS = [
@@ -62,6 +63,8 @@ function LocationForm({
   onRegionChange: (region: string) => void;
   onSaved?: (hasPosition: boolean) => void;
 }) {
+  const t = useTranslations("listings.location");
+  const tCommon = useTranslations("common");
   const supabase = createClient();
   const placesLib = useMapsLibrary("places");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +139,7 @@ function LocationForm({
       .eq("host_id", userId);
     setSaving(false);
     if (error) {
-      setSaveError("Erreur lors de l'enregistrement. Réessayez.");
+      setSaveError(t("saveError"));
     } else {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
@@ -145,14 +148,14 @@ function LocationForm({
   };
 
   const inputCls =
-    "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+    "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
   return (
     <div className="space-y-5">
       {/* Address autocomplete */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          Adresse (non affichée publiquement) <span className="text-[#636e40] font-medium">*</span>
+        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+          {t("addressLabel")} <span className="text-[#636e40] font-medium">*</span>
         </label>
         <input
           ref={inputRef}
@@ -160,36 +163,38 @@ function LocationForm({
           defaultValue={address}
           onChange={(e) => setAddress(e.target.value)}
           className={inputCls}
-          placeholder="Commencez à taper l'adresse du chalet…"
+          placeholder={t("addressPlaceholder")}
         />
-        <p className="text-xs text-gray-400 mt-1">
-          Sélectionnez une suggestion pour remplir automatiquement les champs ci-dessous.
+        <p className="text-xs text-charcoal-400 mt-1">
+          {t("addressHint")}
         </p>
       </div>
 
       {/* City + Region auto-filled */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Ville</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("cityLabel")}</label>
           <input
             type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className={inputCls}
-            placeholder="Détectée automatiquement"
+            placeholder={t("cityPlaceholder")}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Région <span className="text-[#636e40] font-medium">*</span></label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+            {t("regionLabel")} <span className="text-[#636e40] font-medium">*</span>
+          </label>
           <input
             type="text"
             value={region}
             readOnly
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-500 cursor-default focus:outline-none"
-            placeholder="Détectée automatiquement"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm bg-charcoal-50 text-charcoal-500 cursor-default focus:outline-none"
+            placeholder={t("regionPlaceholder")}
           />
-          <p className="text-xs text-gray-400 mt-1">
-            La région est détectée automatiquement selon votre adresse.
+          <p className="text-xs text-charcoal-400 mt-1">
+            {t("regionHint")}
           </p>
         </div>
       </div>
@@ -197,39 +202,39 @@ function LocationForm({
       {/* Map */}
       {position ? (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Position sur la carte
-            <span className="text-xs font-normal text-gray-400 ml-2">
-              Déplacez le marqueur pour ajuster
+          <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            {t("mapLabel")}
+            <span className="text-xs font-normal text-charcoal-400 ml-2">
+              {t("mapAdjust")}
             </span>
           </label>
-          <div className="h-64 rounded-2xl overflow-hidden border border-gray-200">
+          <div className="h-64 rounded-2xl overflow-hidden border border-[#ebebeb]">
             <MapView
               position={position}
               onDragEnd={handleDragEnd}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-charcoal-400 mt-1.5">
             Lat {position.lat.toFixed(5)}, Lng {position.lng.toFixed(5)}
           </p>
         </div>
       ) : (
-        <div className="h-48 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-          <p className="text-sm text-gray-400 text-center">
-            Sélectionnez une adresse pour afficher la carte
+        <div className="h-48 rounded-2xl border-2 border-dashed border-[#ebebeb] flex items-center justify-center">
+          <p className="text-sm text-charcoal-400 text-center">
+            {t("mapNoAddress")}
           </p>
         </div>
       )}
 
       {/* Save */}
-      <p className="mt-6 text-xs text-charcoal-400">* Champs requis pour publier</p>
+      <p className="mt-6 text-xs text-charcoal-400">{t("requiredFields")}</p>
       <div className="pt-2 flex items-center gap-3">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+          className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
-          {saving ? "Enregistrement…" : justSaved ? "Enregistré ✓" : "Enregistrer"}
+          {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>
         {saveError && <p className="text-sm text-red-500">{saveError}</p>}
       </div>
@@ -246,6 +251,8 @@ function MapView({
   position: { lat: number; lng: number };
   onDragEnd: (e: google.maps.MapMouseEvent) => void;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _map = useMap();
   return (
     <Map
       defaultCenter={position}
@@ -259,7 +266,6 @@ function MapView({
         position={position}
         draggable
         onDragEnd={onDragEnd}
-        title="Déplacez pour ajuster la position"
       />
     </Map>
   );
@@ -288,13 +294,18 @@ export default function LocationSection({
   onRegionChange: (region: string) => void;
   onSaved?: (hasPosition: boolean) => void;
 }) {
+  const t = useTranslations("listings.location");
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   if (!apiKey) {
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-        <p className="font-medium mb-1">Clé API Google Maps manquante</p>
-        <p>Ajoutez <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> dans vos variables d&apos;environnement Vercel.</p>
+        <p className="font-medium mb-1">{t("apiMissingTitle")}</p>
+        <p>
+          Ajoutez{" "}
+          <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
+          dans vos variables d&apos;environnement Vercel.
+        </p>
       </div>
     );
   }

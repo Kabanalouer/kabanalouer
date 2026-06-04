@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RoomPhotoManager from "./RoomPhotoManager";
 
@@ -17,13 +18,6 @@ type RoomLocal = {
   beds: BedEntry[];
   sofa_count: number;
   photos: string[];
-};
-
-const BED_LABELS: Record<BedType, string> = {
-  simple: "Lit simple",
-  double: "Lit double",
-  queen:  "Lit queen",
-  king:   "Lit king",
 };
 
 function uid() {
@@ -57,6 +51,8 @@ export default function RoomsSection({
   userId: string;
   listingId: string;
 }) {
+  const t = useTranslations("listings.rooms");
+  const tCommon = useTranslations("common");
   const supabase = createClient();
 
   const [rooms, setRooms] = useState<RoomLocal[]>([]);
@@ -88,14 +84,14 @@ export default function RoomsSection({
     setRooms((prev) => [
       ...prev,
       { localId: uid(), serverId: null, type: "bedroom",
-        name: `Chambre ${bedrooms.length + 1}`, capacity: 2, beds: [], sofa_count: 0, photos: [] },
+        name: t("bedroomDefault", { n: bedrooms.length + 1 }), capacity: 2, beds: [], sofa_count: 0, photos: [] },
     ]);
 
   const addLivingRoom = () =>
     setRooms((prev) => [
       ...prev,
       { localId: uid(), serverId: null, type: "living_room",
-        name: `Salon ${livingRooms.length + 1}`, capacity: 2, beds: [], sofa_count: 0, photos: [] },
+        name: t("livingroomDefault", { n: livingRooms.length + 1 }), capacity: 2, beds: [], sofa_count: 0, photos: [] },
     ]);
 
   const removeRoom   = (id: string) => setRooms((prev) => prev.filter((r) => r.localId !== id));
@@ -170,7 +166,7 @@ export default function RoomsSection({
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-charcoal-400 text-sm">Chargement…</div>;
+    return <div className="py-8 text-center text-charcoal-400 text-sm">{tCommon("loading")}</div>;
   }
 
   return (
@@ -179,16 +175,16 @@ export default function RoomsSection({
       {/* Value-add message */}
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
         <p className="text-sm text-charcoal-700">
-          Les chalets avec photos de chambres reçoivent 3× plus de demandes de la part des voyageurs.
+          {t("proTip")}
         </p>
       </div>
 
       {/* ── Chambres ──────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-charcoal-800 mb-4">Chambres</h3>
+        <h3 className="font-semibold text-charcoal-800 mb-4">{t("bedroomsTitle")}</h3>
 
         {bedrooms.length === 0 && (
-          <p className="text-sm text-charcoal-400 mb-4">Aucune chambre ajoutée.</p>
+          <p className="text-sm text-charcoal-400 mb-4">{t("bedroomsEmpty")}</p>
         )}
 
         <div className="space-y-4">
@@ -197,6 +193,7 @@ export default function RoomsSection({
               key={room.localId}
               room={room}
               userId={userId}
+              t={t}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
               onAddBed={() => addBed(room.localId)}
@@ -210,7 +207,7 @@ export default function RoomsSection({
           onClick={addBedroom}
           className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
         >
-          <span className="text-base font-bold">+</span> Ajouter une chambre
+          <span className="text-base font-bold">+</span> {t("addBedroom").replace("+ ", "")}
         </button>
       </div>
 
@@ -218,10 +215,10 @@ export default function RoomsSection({
 
       {/* ── Salons ────────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-charcoal-800 mb-4">Salons / espaces de couchage</h3>
+        <h3 className="font-semibold text-charcoal-800 mb-4">{t("livingroomsTitle")}</h3>
 
         {livingRooms.length === 0 && (
-          <p className="text-sm text-charcoal-400 mb-4">Aucun salon ajouté.</p>
+          <p className="text-sm text-charcoal-400 mb-4">{t("livingroomsEmpty")}</p>
         )}
 
         <div className="space-y-4">
@@ -230,6 +227,7 @@ export default function RoomsSection({
               key={room.localId}
               room={room}
               userId={userId}
+              t={t}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
             />
@@ -240,19 +238,19 @@ export default function RoomsSection({
           onClick={addLivingRoom}
           className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
         >
-          <span className="text-base font-bold">+</span> Ajouter un salon
+          <span className="text-base font-bold">+</span> {t("addLivingroom").replace("+ ", "")}
         </button>
       </div>
 
       {/* ── Save bar ──────────────────────────────────────────────────── */}
-      <p className="mt-6 text-xs text-charcoal-400">* Champs requis pour publier</p>
+      <p className="mt-6 text-xs text-charcoal-400">{t("requiredNote")}</p>
       <div className="pt-4 border-t border-[#ebebeb] flex items-center gap-3">
         <button
           onClick={handleSave}
           disabled={saving}
           className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
-          {saving ? "Enregistrement…" : justSaved ? "Enregistré ✓" : "Enregistrer"}
+          {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
@@ -260,20 +258,29 @@ export default function RoomsSection({
   );
 }
 
+type TRooms = ReturnType<typeof useTranslations>;
+
 // ── Bedroom card ─────────────────────────────────────────────────────────────
 
 function BedroomCard({
-  room, userId,
+  room, userId, t,
   onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
+  t: TRooms;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   onAddBed: () => void;
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
+  const BED_LABELS: Record<BedType, string> = {
+    simple: t("bedSingle"),
+    double: t("bedDouble"),
+    queen:  t("bedQueen"),
+    king:   t("bedKing"),
+  };
 
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
@@ -286,7 +293,7 @@ function BedroomCard({
         />
         {room.photos.length === 0 && (
           <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
-            Aucune photo
+            {t("noPhotos")}
           </span>
         )}
         <button
@@ -302,7 +309,7 @@ function BedroomCard({
 
       {/* Capacity */}
       <div className="flex items-center gap-3">
-        <label className="text-sm text-charcoal-500 w-36 shrink-0">Capacité (personnes)</label>
+        <label className="text-sm text-charcoal-500 w-36 shrink-0">{t("capacity")}</label>
         <input
           type="number" min={1} max={20}
           value={room.capacity}
@@ -313,9 +320,9 @@ function BedroomCard({
 
       {/* Beds */}
       <div>
-        <span className="text-sm text-charcoal-500 block mb-2">Lits</span>
+        <span className="text-sm text-charcoal-500 block mb-2">{t("beds")}</span>
         {room.beds.length === 0 && (
-          <p className="text-xs text-charcoal-300 mb-2">Aucun lit configuré.</p>
+          <p className="text-xs text-charcoal-300 mb-2">{t("bedsEmpty")}</p>
         )}
         <div className="space-y-2">
           {room.beds.map((bed, i) => (
@@ -325,8 +332,8 @@ function BedroomCard({
                 onChange={(e) => onUpdateBed(i, { type: e.target.value as BedType })}
                 className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
-                {(Object.keys(BED_LABELS) as BedType[]).map((t) => (
-                  <option key={t} value={t}>{BED_LABELS[t]}</option>
+                {(Object.keys(BED_LABELS) as BedType[]).map((k) => (
+                  <option key={k} value={k}>{BED_LABELS[k]}</option>
                 ))}
               </select>
               <input
@@ -350,13 +357,13 @@ function BedroomCard({
           onClick={onAddBed}
           className="mt-2 text-xs text-primary font-medium hover:text-primary-dark transition-colors"
         >
-          + Ajouter un lit
+          {t("addBed")}
         </button>
       </div>
 
       {/* Photos */}
       <div>
-        <span className="text-sm font-semibold text-charcoal-700 block mb-2">Photos de la chambre</span>
+        <span className="text-sm font-semibold text-charcoal-700 block mb-2">{t("bedroomPhotos")}</span>
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}
@@ -370,10 +377,11 @@ function BedroomCard({
 // ── Living room card ──────────────────────────────────────────────────────────
 
 function LivingRoomCard({
-  room, userId, onUpdate, onRemove,
+  room, userId, t, onUpdate, onRemove,
 }: {
   room: RoomLocal;
   userId: string;
+  t: TRooms;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
 }) {
@@ -389,7 +397,7 @@ function LivingRoomCard({
         />
         {room.photos.length === 0 && (
           <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
-            Aucune photo
+            {t("noPhotos")}
           </span>
         )}
         <button
@@ -405,7 +413,7 @@ function LivingRoomCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex items-center gap-3">
-          <label className="text-sm text-charcoal-500 shrink-0">Divans-lits</label>
+          <label className="text-sm text-charcoal-500 shrink-0">{t("sofaBeds")}</label>
           <input
             type="number" min={0} max={10}
             value={room.sofa_count}
@@ -414,7 +422,7 @@ function LivingRoomCard({
           />
         </div>
         <div className="flex items-center gap-3">
-          <label className="text-sm text-charcoal-500 shrink-0">Capacité</label>
+          <label className="text-sm text-charcoal-500 shrink-0">{t("livingroomCapacity")}</label>
           <input
             type="number" min={1} max={10}
             value={room.capacity}
@@ -426,7 +434,7 @@ function LivingRoomCard({
 
       {/* Photos */}
       <div>
-        <span className="text-sm font-semibold text-charcoal-700 block mb-2">Photos du salon</span>
+        <span className="text-sm font-semibold text-charcoal-700 block mb-2">{t("livingroomPhotos")}</span>
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}

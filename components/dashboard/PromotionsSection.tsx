@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { formatPromoLines, type PromoRow } from "@/lib/promoLabel";
 
@@ -11,19 +12,21 @@ const inputCls =
 
 function DateRangeFields({
   start, end, onStart, onEnd,
+  t,
 }: {
   start: string; end: string;
   onStart: (v: string) => void; onEnd: (v: string) => void;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const today = new Date().toISOString().split("T")[0];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
-        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Date de début</label>
+        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("dateStart")}</label>
         <input type="date" value={start} min={today} onChange={(e) => onStart(e.target.value)} className={inputCls} />
       </div>
       <div>
-        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Date de fin</label>
+        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("dateEnd")}</label>
         <input type="date" value={end} min={start || today} onChange={(e) => onEnd(e.target.value)} className={inputCls} />
       </div>
     </div>
@@ -31,6 +34,7 @@ function DateRangeFields({
 }
 
 export default function PromotionsSection({ listingId }: { listingId: string }) {
+  const t = useTranslations("listings.promotions");
   const supabase = createClient();
   const [activePromo, setActivePromo] = useState<PromoRow | null>(null);
   const [expiredDate, setExpiredDate] = useState<string | null>(null);
@@ -86,7 +90,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       .update({ is_active: false })
       .eq("id", activePromo.id);
     setDeactivating(false);
-    if (err) { setError("Erreur lors de la désactivation."); return; }
+    if (err) { setError(t("deactivateError")); return; }
     setActivePromo(null);
   };
 
@@ -104,27 +108,27 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     if (formType === "rabais") {
       type = rabaisUnit;
       value = parseInt(rabaisValue) || 0;
-      if (value <= 0) { setError("Entrez un montant valide."); setSaving(false); return; }
-      if (rabaisUnit === "percent" && value > 100) { setError("Le pourcentage ne peut pas dépasser 100."); setSaving(false); return; }
-      if (!startDate || !endDate) { setError("Les dates sont obligatoires."); setSaving(false); return; }
-      if (startDate >= endDate) { setError("La date de fin doit être après la date de début."); setSaving(false); return; }
+      if (value <= 0) { setError(t("errors.invalidAmount")); setSaving(false); return; }
+      if (rabaisUnit === "percent" && value > 100) { setError(t("errors.percentTooHigh")); setSaving(false); return; }
+      if (!startDate || !endDate) { setError(t("errors.datesRequired")); setSaving(false); return; }
+      if (startDate >= endDate) { setError(t("errors.dateOrder")); setSaving(false); return; }
       startDateVal = startDate;
       endDateVal = endDate;
     } else if (formType === "duree") {
       type = "duration";
       value = 1;
       minNights = 2;
-      if (!startDate || !endDate) { setError("Les dates sont obligatoires."); setSaving(false); return; }
-      if (startDate >= endDate) { setError("La date de fin doit être après la date de début."); setSaving(false); return; }
+      if (!startDate || !endDate) { setError(t("errors.datesRequired")); setSaving(false); return; }
+      if (startDate >= endDate) { setError(t("errors.dateOrder")); setSaving(false); return; }
       startDateVal = startDate;
       endDateVal = endDate;
     } else {
       type = lmUnit === "percent" ? "lastminute" : "lastminute_amount";
       value = parseInt(lmValue) || 0;
       daysBefore = parseInt(lmDays) || 0;
-      if (value <= 0) { setError("Entrez un montant valide."); setSaving(false); return; }
-      if (lmUnit === "percent" && value > 100) { setError("Le pourcentage ne peut pas dépasser 100."); setSaving(false); return; }
-      if (daysBefore < 7 || daysBefore > 21) { setError("Le nombre de jours doit être entre 7 et 21."); setSaving(false); return; }
+      if (value <= 0) { setError(t("errors.invalidAmount")); setSaving(false); return; }
+      if (lmUnit === "percent" && value > 100) { setError(t("errors.percentTooHigh")); setSaving(false); return; }
+      if (daysBefore < 7 || daysBefore > 21) { setError(t("errors.daysRange")); setSaving(false); return; }
     }
 
     const { error: err } = await supabase.from("promotions").insert({
@@ -139,19 +143,19 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     });
 
     setSaving(false);
-    if (err) { setError("Erreur lors de la sauvegarde. Réessayez."); return; }
+    if (err) { setError(t("errors.saveError")); return; }
     await fetchPromo();
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-charcoal-400 text-sm">Chargement…</div>;
+    return <div className="py-8 text-center text-charcoal-400 text-sm">{t("loading")}</div>;
   }
 
   return (
     <div className="max-w-xl">
       {activePromo ? (
         <div className="bg-charcoal-50 rounded-2xl border border-[#ebebeb] p-5">
-          <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-2">Promotion active</p>
+          <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-2">{t("activeLabel")}</p>
           <div className="flex items-start justify-between gap-4">
             {(() => {
               const lines = formatPromoLines(activePromo);
@@ -167,7 +171,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
               disabled={deactivating}
               className="shrink-0 text-sm text-charcoal-500 hover:text-charcoal-800 border border-[#ebebeb] bg-white rounded-full px-4 py-1.5 transition-colors disabled:opacity-50"
             >
-              {deactivating ? "Désactivation…" : "Désactiver"}
+              {deactivating ? t("deactivating") : t("deactivate")}
             </button>
           </div>
           {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
@@ -176,16 +180,16 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
         <div>
           {expiredDate ? (
             <p className="text-sm text-charcoal-400 mb-5">
-              Cette promotion a expiré le{" "}
-              {new Date(expiredDate + "T12:00:00").toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })}.
+              {t("expired", {
+                date: new Date(expiredDate + "T12:00:00").toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })
+              })}
             </p>
           ) : (
             <p className="text-sm text-charcoal-400 mb-5">
-              Aucune promotion active. Choisissez un type et configurez votre offre.
+              {t("noPromo")}
             </p>
           )}
 
-          {/* Cartes type — empilées avec formulaire inline */}
           <div className="flex flex-col gap-3">
 
             {/* Card: Rabais */}
@@ -198,13 +202,13 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">Rabais</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Réduire le prix par nuit</p>
+                <p className="font-semibold text-sm text-charcoal-800">{t("discountTitle")}</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("discountDesc")}</p>
               </button>
               {formType === "rabais" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("discountAmountLabel")}</label>
                     <div className="flex gap-2 mb-3">
                       <button
                         type="button"
@@ -227,11 +231,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         value={rabaisValue} onChange={(e) => setRabaisValue(e.target.value)}
                         className={inputCls} placeholder={rabaisUnit === "percent" ? "ex. 20" : "ex. 50"}
                       />
-                      <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : "$/nuit"}</span>
+                      <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
                   </div>
-                  <p className="text-sm text-charcoal-400">Rabais applicable pour les séjours entre le :</p>
-                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
+                  <p className="text-sm text-charcoal-400">{t("discountApplicable")}</p>
+                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} t={t} />
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <button
                     type="button"
@@ -245,7 +249,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                     )}
-                    {saving ? "Activation…" : "Activer la promotion"}
+                    {saving ? t("activating") : t("activate")}
                   </button>
                 </div>
               )}
@@ -261,19 +265,19 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">Nuit gratuite</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Prolongez le plaisir</p>
+                <p className="font-semibold text-sm text-charcoal-800">{t("freeNightTitle")}</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("freeNightDesc")}</p>
               </button>
               {formType === "duree" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Type d&apos;offre</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("freeNightOfferLabel")}</label>
                     <p className="text-sm text-charcoal-600">
-                      Réservez un séjour de 2 nuits minimum et obtenez 1 nuit <span className="font-semibold text-primary">GRATUITE</span>.
+                      {t("freeNightOffer")}
                     </p>
                   </div>
-                  <p className="text-sm text-charcoal-400">Promo applicable pour les séjours entre le :</p>
-                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} />
+                  <p className="text-sm text-charcoal-400">{t("freeNightApplicable")}</p>
+                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} t={t} />
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <button
                     type="button"
@@ -287,7 +291,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                     )}
-                    {saving ? "Activation…" : "Activer la promotion"}
+                    {saving ? t("activating") : t("activate")}
                   </button>
                 </div>
               )}
@@ -303,13 +307,13 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">Dernière minute</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Dates libres, prix réduit</p>
+                <p className="font-semibold text-sm text-charcoal-800">{t("lastMinuteTitle")}</p>
+                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("lastMinuteDesc")}</p>
               </button>
               {formType === "lastminute" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-2">Montant du rabais</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("discountAmountLabel")}</label>
                     <div className="flex gap-2 mb-3">
                       <button
                         type="button"
@@ -332,11 +336,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         value={lmValue} onChange={(e) => setLmValue(e.target.value)}
                         className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
                       />
-                      <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : "$/nuit"}</span>
+                      <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
                   </div>
                   <div className="max-w-xs">
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Jours avant l&apos;arrivée (7 à 21 jours)</label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("lastMinuteDaysLabel")}</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="number" min={7} max={21} value={lmDays}
@@ -346,11 +350,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         }}
                         className={inputCls} placeholder="ex. 7"
                       />
-                      <span className="text-sm text-charcoal-500 shrink-0">jours</span>
+                      <span className="text-sm text-charcoal-500 shrink-0">{t("days")}</span>
                     </div>
                   </div>
                   <p className="text-sm text-charcoal-400">
-                    Ce rabais s&apos;applique en continu tant que la promotion est active.
+                    {t("lastMinuteNote")}
                   </p>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <button
@@ -365,7 +369,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                     )}
-                    {saving ? "Activation…" : "Activer la promotion"}
+                    {saving ? t("activating") : t("activate")}
                   </button>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import PreviewModal from "./PreviewModal";
 import DeleteListingModal from "./DeleteListingModal";
 import { createClient } from "@/lib/supabase/client";
@@ -75,23 +76,22 @@ type SectionId =
 
 const SECTIONS: Array<{
   id: SectionId;
-  label: string;
-  emoji: string;
+  sectionKey: string;
   isComplete: (f: FormState) => boolean;
 }> = [
-  { id: "photos",       label: "Photos",               emoji: "📷", isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
-  { id: "titre",        label: "Titre",                emoji: "✏️", isComplete: (f) => f.title.trim().length > 0 },
-  { id: "description",  label: "Description",          emoji: "📝", isComplete: (f) => f.description.trim().length > 0 },
-  { id: "capacite",     label: "Nombre de voyageurs",  emoji: "👥", isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
-  { id: "chambres",     label: "Chambres",             emoji: "🛏", isComplete: () => true },
-  { id: "equipements",  label: "Caractéristiques",     emoji: "✨", isComplete: (f) => f.amenities.length >= 3 },
-  { id: "proximite",    label: "À proximité",          emoji: "🗺️", isComplete: () => true },
-  { id: "tarifs",       label: "Tarifs",               emoji: "💰", isComplete: (f) => f.price_on_request || f.price_low >= 50 },
-  { id: "calendrier",   label: "Calendrier",           emoji: "📅", isComplete: () => true },
-  { id: "localisation", label: "Localisation",         emoji: "📍", isComplete: (f) => f.region.trim().length > 0 },
-  { id: "infos",        label: "Infos générales",      emoji: "ℹ️",  isComplete: (f) => f.citq_number.length === 6 },
-  { id: "promotions",   label: "Promotions",           emoji: "",   isComplete: () => true },
-  { id: "analyse",      label: "Analyse de mon annonce", emoji: "", isComplete: () => true },
+  { id: "photos",       sectionKey: "photos",    isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
+  { id: "titre",        sectionKey: "title",     isComplete: (f) => f.title.trim().length > 0 },
+  { id: "description",  sectionKey: "description", isComplete: (f) => f.description.trim().length > 0 },
+  { id: "capacite",     sectionKey: "capacity",  isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
+  { id: "chambres",     sectionKey: "rooms",     isComplete: () => true },
+  { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
+  { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
+  { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
+  { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
+  { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
+  { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
+  { id: "promotions",   sectionKey: "promotions", isComplete: () => true },
+  { id: "analyse",      sectionKey: "analysis",  isComplete: () => true },
 ];
 
 // Fields saved per section
@@ -124,14 +124,6 @@ const INDICATOR_SECTION_IDS = new Set<SectionId>([
 ]);
 const TITLE_MAX = 50;
 const DESC_MAX = 2500;
-const PUBLISH_FEATURES = [
-  "Annonce visible sur Kabanalouer",
-  "Messagerie avec les voyageurs",
-  "Calendrier de disponibilités",
-  "Synchronisation iCal",
-  "Tableau de bord et statistiques",
-  "Accès illimité pendant 1 an",
-];
 
 export default function EditListingForm({
   userId,
@@ -166,6 +158,10 @@ export default function EditListingForm({
   listingCreatedAt: string;
   viewsListing: number;
 }) {
+  const t = useTranslations("listings");
+  const tEdit = useTranslations("listings.edit");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const supabase = createClient();
   const router = useRouter();
 
@@ -335,22 +331,18 @@ export default function EditListingForm({
       })
     : null;
 
-  // Title limit flash
   const [titleAtLimit, setTitleAtLimit] = useState(false);
   const titleLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Description limit flash
   const [descAtLimit, setDescAtLimit] = useState(false);
   const descLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Title AI
   const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
   const [titleGenerating, setTitleGenerating] = useState(false);
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
 
-  // Description AI
   const [descGenerating, setDescGenerating] = useState(false);
   const [descGenError, setDescGenError] = useState("");
   const [showDescContextWarning, setShowDescContextWarning] = useState(false);
@@ -365,7 +357,7 @@ export default function EditListingForm({
     if (!fields.length) return;
 
     if (activeSection === "infos" && form.citq_number.length !== 6) {
-      setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
+      setSaveError(tEdit("citqError"));
       return;
     }
 
@@ -385,7 +377,7 @@ export default function EditListingForm({
 
     setSaving(false);
     if (error) {
-      setSaveError("Erreur lors de l'enregistrement. Réessayez.");
+      setSaveError(tEdit("saveError"));
     } else {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
@@ -405,7 +397,7 @@ export default function EditListingForm({
     });
     if (!res.ok) {
       const data = await res.json();
-      setPublishError(data.error ?? "Une erreur s'est produite.");
+      setPublishError(data.error ?? tEdit("activateError"));
       setPublishLoading(false);
       return;
     }
@@ -426,14 +418,14 @@ export default function EditListingForm({
       body: JSON.stringify({ listingId }),
     });
     if (!res.ok) {
-      setPublishError("Impossible de démarrer le paiement. Réessayez.");
+      setPublishError(tEdit("stripeError"));
       setPublishLoading(false);
       return;
     }
     const { url } = await res.json();
     if (url) window.location.href = url;
     else {
-      setPublishError("URL de paiement manquante.");
+      setPublishError(tEdit("stripeUrlMissing"));
       setPublishLoading(false);
     }
   };
@@ -487,12 +479,13 @@ export default function EditListingForm({
           current_title: form.title, region: form.region, city: initialCity,
           capacity: form.capacity, bedrooms: form.bedrooms, amenities: form.amenities,
           nearby_activities: form.nearby_activities,
+          locale,
         }),
       });
       const data = await res.json();
-      if (!res.ok) setTitleGenError(data.error ?? "Erreur lors de la génération.");
+      if (!res.ok) setTitleGenError(data.error ?? tEdit("aiError"));
       else setTitleSuggestions(data.suggestions ?? []);
-    } catch { setTitleGenError("Erreur lors de la génération."); }
+    } catch { setTitleGenError(tEdit("aiError")); }
     setTitleGenerating(false);
   };
 
@@ -510,22 +503,51 @@ export default function EditListingForm({
           capacity: form.capacity, bedrooms: form.bedrooms, bathrooms: form.bathrooms,
           amenities: form.amenities, nearby_activities: form.nearby_activities,
           price_low: form.price_low, price_on_request: form.price_on_request,
+          locale,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setDescGenError(data.error ?? "Erreur lors de la génération.");
+        setDescGenError(data.error ?? tEdit("aiError"));
       } else {
         const hadOriginal = form.description.trim().length > 0;
         if (hadOriginal) setSavedDescription(form.description);
         handleDescriptionChange(data.description ?? "");
         if (hadOriginal) setShowDescRestoreButtons(true);
       }
-    } catch { setDescGenError("Erreur lors de la génération."); }
+    } catch { setDescGenError(tEdit("aiError")); }
     setDescGenerating(false);
   };
 
   const hasSaveButton = SECTION_FIELDS[activeSection].length > 0;
+
+  const getSectionLabel = (id: string): string => {
+    const map: Partial<Record<string, string>> = {
+      photos:       t("sections.photos"),
+      titre:        t("sections.title"),
+      description:  t("sections.description"),
+      capacite:     t("sections.capacity"),
+      chambres:     t("sections.rooms"),
+      equipements:  t("sections.amenities"),
+      proximite:    t("sections.nearby"),
+      tarifs:       t("sections.pricing"),
+      calendrier:   t("sections.calendar"),
+      localisation: t("sections.location"),
+      infos:        t("sections.general"),
+      promotions:   t("sections.promotions"),
+      analyse:      t("sections.analysis"),
+    };
+    return map[id] ?? id;
+  };
+
+  const PUBLISH_FEATURES = [
+    t("publish.feature1"),
+    t("publish.feature2"),
+    t("publish.feature3"),
+    t("publish.feature4"),
+    t("publish.feature5"),
+    t("publish.feature6"),
+  ];
 
   return (
     <>
@@ -560,7 +582,7 @@ export default function EditListingForm({
                 suffix = indicatorValid[s.id] ? " ✓" : " ●";
               }
               return (
-                <option key={s.id} value={s.id}>{s.label}{suffix}</option>
+                <option key={s.id} value={s.id}>{getSectionLabel(s.id)}{suffix}</option>
               );
             })}
           </select>
@@ -602,7 +624,7 @@ export default function EditListingForm({
                     : "pl-4 font-medium text-charcoal-600 hover:text-charcoal-800",
                 ].join(" ")}
               >
-                <span>{s.label}</span>
+                <span>{getSectionLabel(s.id)}</span>
                 {indicator}
               </button>
             );
@@ -610,20 +632,19 @@ export default function EditListingForm({
 
           {/* Bottom actions */}
           <div className="mt-4 pt-4 border-t border-[#ebebeb] space-y-2">
-            {/* Publish button */}
             {isPublished && subStatus === "active" ? (
               <button
                 onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
                 className="w-full py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
               >
-                Annonce publiée <span className="text-green-600">✓</span>
+                {tEdit("publishedButton")} <span className="text-green-600">✓</span>
               </button>
             ) : (
               <button
                 onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
                 className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
               >
-                Publier mon annonce
+                {tEdit("publishButton")}
               </button>
             )}
             <div>
@@ -633,47 +654,46 @@ export default function EditListingForm({
                 disabled={!isPublished}
                 className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
               >
-                Booster mon annonce
+                {tEdit("boostButton")}
               </button>
               {!isPublished && (
                 <p className="text-xs text-charcoal-400 text-center mt-1.5">
-                  Publiez votre annonce pour activer cette option
+                  {tEdit("boostDisabled")}
                 </p>
               )}
             </div>
             <button
               onClick={() => setPreviewOpen(true)}
               disabled={!canPreview}
-              title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
+              title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
               className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
-              Aperçu de mon annonce
+              {tEdit("previewButton")}
             </button>
             <button
               onClick={() => setDeleteModalOpen(true)}
               className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
             >
-              Supprimer mon annonce
+              {tEdit("deleteButton")}
             </button>
           </div>
         </div>
 
         {/* Mobile bottom actions */}
         <div className="flex lg:hidden flex-col gap-2 mt-3">
-          {/* Publish button */}
           {isPublished && subStatus === "active" ? (
             <button
               onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
               className="w-full py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
             >
-              Annonce publiée <span className="text-green-600">✓</span>
+              {tEdit("publishedButton")} <span className="text-green-600">✓</span>
             </button>
           ) : (
             <button
               onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
               className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
             >
-              Publier mon annonce
+              {tEdit("publishButton")}
             </button>
           )}
           <div>
@@ -683,27 +703,27 @@ export default function EditListingForm({
               disabled={!isPublished}
               className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
-              Booster mon annonce
+              {tEdit("boostButton")}
             </button>
             {!isPublished && (
               <p className="text-xs text-charcoal-400 text-center mt-1.5">
-                Publiez votre annonce pour activer cette option
+                {tEdit("boostDisabled")}
               </p>
             )}
           </div>
           <button
             onClick={() => setPreviewOpen(true)}
             disabled={!canPreview}
-            title={!canPreview ? "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce." : undefined}
+            title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
             className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
           >
-            Aperçu de mon annonce
+            {tEdit("previewButton")}
           </button>
           <button
             onClick={() => setDeleteModalOpen(true)}
             className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
           >
-            Supprimer mon annonce
+            {tEdit("deleteButton")}
           </button>
         </div>
       </aside>
@@ -714,7 +734,7 @@ export default function EditListingForm({
 
           {/* Section: Photos */}
           {activeSection === "photos" && (
-            <SectionShell title="Photos" emoji="📷">
+            <SectionShell title={t("sections.photos")}>
               <PhotoUpload
                 photos={form.photos}
                 userId={userId}
@@ -726,10 +746,9 @@ export default function EditListingForm({
 
           {/* Section: Titre */}
           {activeSection === "titre" && (
-            <SectionShell title="Titre" emoji="✏️">
-              <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {TITLE_MAX} caractères.</p>
+            <SectionShell title={t("sections.title")}>
+              <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("titleMaxChars", { count: TITLE_MAX })}</p>
 
-              {/* AI generate button */}
               <div className="mb-4">
                 <button
                   type="button"
@@ -747,26 +766,26 @@ export default function EditListingForm({
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                     </svg>
                   )}
-                  {titleGenerating ? "Génération en cours…" : "Générer avec l'IA"}
+                  {titleGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
                 </button>
 
                 {showTitleContextWarning && !titleGenerating && (
                   <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <p className="text-sm text-amber-800 mb-3">Pour un meilleur résultat, complétez d&apos;abord les sections Caractéristiques, Région et Capacité, puis revenez ici.</p>
+                    <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => void handleGenerateTitles(true)}
                         className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
                       >
-                        Générer quand même
+                        {tEdit("aiGenerateAnyway")}
                       </button>
                       <button
                         type="button"
                         onClick={() => { setShowTitleContextWarning(false); goToNextIncompleteSection(); }}
                         className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
                       >
-                        Continuer la fiche
+                        {tEdit("continueForm")}
                       </button>
                     </div>
                   </div>
@@ -776,23 +795,22 @@ export default function EditListingForm({
               </div>
 
               <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                Titre <Req />
+                {t("sections.title")} <Req />
               </label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => { if (savedTitle !== null) setSavedTitle(null); handleTitleChange(e.target.value); }}
                 className={inputCls}
-                placeholder="ex. Chalet rustique au bord du lac, Laurentides"
+                placeholder={tEdit("titlePlaceholder")}
               />
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.title.length}/{TITLE_MAX}
               </p>
 
-              {/* Suggestions */}
               {titleSuggestions.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <p className="text-xs font-medium text-charcoal-400">Cliquez pour utiliser :</p>
+                  <p className="text-xs font-medium text-charcoal-400">{tEdit("titleClickToUse")}</p>
                   <div className="flex flex-col gap-2">
                     {titleSuggestions.map((s, i) => (
                       <button
@@ -812,7 +830,6 @@ export default function EditListingForm({
                 </div>
               )}
 
-              {/* Restore original title */}
               {savedTitle !== null && titleSuggestions.length === 0 && (
                 <div className="mt-3">
                   <button
@@ -820,20 +837,19 @@ export default function EditListingForm({
                     onClick={() => { handleTitleChange(savedTitle); setSavedTitle(null); }}
                     className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
                   >
-                    Restaurer le titre original
+                    {tEdit("titleRestore")}
                   </button>
                 </div>
               )}
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
           {/* Section: Description */}
           {activeSection === "description" && (
-            <SectionShell title="Description" emoji="📝">
-              <p className="text-sm text-charcoal-400 -mt-3 mb-4">Maximum de {DESC_MAX} caractères.</p>
+            <SectionShell title={t("sections.description")}>
+              <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("descMaxChars", { count: DESC_MAX })}</p>
 
-              {/* AI generate button */}
               <div className="mb-4">
                 <button
                   type="button"
@@ -851,26 +867,26 @@ export default function EditListingForm({
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                     </svg>
                   )}
-                  {descGenerating ? "Génération en cours…" : "Générer avec l'IA"}
+                  {descGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
                 </button>
 
                 {showDescContextWarning && !descGenerating && (
                   <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <p className="text-sm text-amber-800 mb-3">Pour un meilleur résultat, complétez d&apos;abord les sections Caractéristiques, Région et Capacité, puis revenez ici.</p>
+                    <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => void handleGenerateDescription(true)}
                         className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
                       >
-                        Générer quand même
+                        {tEdit("aiGenerateAnyway")}
                       </button>
                       <button
                         type="button"
                         onClick={() => { setShowDescContextWarning(false); goToNextIncompleteSection(); }}
                         className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
                       >
-                        Continuer la fiche
+                        {tEdit("continueForm")}
                       </button>
                     </div>
                   </div>
@@ -880,7 +896,7 @@ export default function EditListingForm({
               </div>
 
               <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                Description <Req />
+                {t("sections.description")} <Req />
               </label>
               <textarea
                 value={form.description}
@@ -890,13 +906,12 @@ export default function EditListingForm({
                 }}
                 className={`${inputCls} resize-none`}
                 rows={32}
-                placeholder="Décrivez l'atmosphère, les points forts, les activités à proximité…"
+                placeholder={tEdit("descPlaceholder")}
               />
               <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                 {form.description.length}/{DESC_MAX}
               </p>
 
-              {/* Restore original description */}
               {showDescRestoreButtons && savedDescription !== null && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
@@ -904,7 +919,7 @@ export default function EditListingForm({
                     onClick={() => { setShowDescRestoreButtons(false); setSavedDescription(null); }}
                     className="text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-full px-5 py-2.5 transition-colors"
                   >
-                    Utiliser cette description
+                    {tEdit("descUseNew")}
                   </button>
                   <button
                     type="button"
@@ -915,21 +930,21 @@ export default function EditListingForm({
                     }}
                     className="text-sm font-medium text-charcoal-600 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-5 py-2.5 transition-colors"
                   >
-                    Restaurer l&apos;original
+                    {tEdit("descRestoreOriginal")}
                   </button>
                 </div>
               )}
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
           {/* Section: Capacité */}
           {activeSection === "capacite" && (
-            <SectionShell title="Nombre de voyageurs" emoji="👥">
+            <SectionShell title={t("sections.capacity")}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {/* Voyageurs */}
                 <div>
-                  <Label>Capacité maximale (personnes) <Req /></Label>
+                  <Label>{tEdit("capacityLabel")} <Req /></Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -965,7 +980,7 @@ export default function EditListingForm({
                 </div>
                 {/* Chambres */}
                 <div>
-                  <Label>Nombre de chambre(s) <Req /></Label>
+                  <Label>{tEdit("bedroomsLabel")} <Req /></Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -1000,7 +1015,7 @@ export default function EditListingForm({
                 </div>
                 {/* Salles de bain */}
                 <div>
-                  <Label>Nombre de salle de bain</Label>
+                  <Label>{tEdit("bathroomsLabel")}</Label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -1034,15 +1049,15 @@ export default function EditListingForm({
                   </div>
                 </div>
               </div>
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
           {/* Section: Chambres */}
           {activeSection === "chambres" && (
-            <SectionShell title="Chambres" emoji="🛏">
+            <SectionShell title={t("sections.rooms")}>
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-5">
-                Ajoutez au moins 1 chambre avec lit <Req />
+                {tEdit("roomsAtLeastOne")} <Req />
               </p>
               <RoomsSection userId={userId} listingId={listingId} />
             </SectionShell>
@@ -1050,22 +1065,22 @@ export default function EditListingForm({
 
           {/* Section: Équipements */}
           {activeSection === "equipements" && (
-            <SectionShell title="Caractéristiques" emoji="✨">
+            <SectionShell title={t("sections.amenities")}>
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-4">
-                Sélectionnez au moins 3 caractéristiques <Req />
+                {tEdit("amenitiesAtLeast")} <Req />
               </p>
               <AmenitiesPicker
                 selected={form.amenities}
                 onChange={(amenities) => set("amenities", amenities)}
               />
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
           {/* Section: À proximité */}
           {activeSection === "proximite" && (
-            <SectionShell title="À proximité" emoji="🗺️">
-              <p className="text-sm text-charcoal-400 mb-5">À moins de 30 minutes du chalet</p>
+            <SectionShell title={t("sections.nearby")}>
+              <p className="text-sm text-charcoal-400 mb-5">{tEdit("nearbyWithin30")}</p>
               <NearbyActivitiesPicker
                 selected={form.nearby_activities}
                 onChange={(activities) => set("nearby_activities", activities)}
@@ -1075,8 +1090,7 @@ export default function EditListingForm({
 
           {/* Section: Calendrier */}
           {activeSection === "calendrier" && (
-            <SectionShell title="Calendrier" emoji="📅">
-              {/* Mode selector */}
+            <SectionShell title={t("sections.calendar")}>
               <div className="flex gap-2 mb-6 -mt-1">
                 <button
                   type="button"
@@ -1087,7 +1101,7 @@ export default function EditListingForm({
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
                   }`}
                 >
-                  Bloquer des dates manuellement
+                  {tEdit("calendarManual")}
                 </button>
                 <button
                   type="button"
@@ -1098,18 +1112,17 @@ export default function EditListingForm({
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
                   }`}
                 >
-                  Synchroniser avec un calendrier externe (iCal)
+                  {tEdit("calendarIcal")}
                 </button>
               </div>
 
-              {/* Warning */}
               {showCalendarWarning && (
                 <div className="mb-5 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
                   <svg className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
                   <p className="text-sm text-amber-800">
-                    Vos dates bloquées manuellement seront retirées si vous changez de méthode.
+                    {tEdit("calendarSwitchWarning")}
                   </p>
                 </div>
               )}
@@ -1132,7 +1145,7 @@ export default function EditListingForm({
                       />
                     ) : (
                       <p className="text-sm text-charcoal-400 text-center py-6">
-                        Votre calendrier apparaîtra ici une fois votre URL iCal synchronisée.
+                        {tEdit("calendarNoIcal")}
                       </p>
                     )}
                   </>
@@ -1143,7 +1156,7 @@ export default function EditListingForm({
 
           {/* Section: Localisation */}
           {activeSection === "localisation" && (
-            <SectionShell title="Localisation" emoji="📍">
+            <SectionShell title={t("sections.location")}>
               <LocationSection
                 listingId={listingId}
                 userId={userId}
@@ -1160,7 +1173,7 @@ export default function EditListingForm({
 
           {/* Section: Tarifs */}
           {activeSection === "tarifs" && (
-            <SectionShell title="Tarifs" emoji="💰">
+            <SectionShell title={t("sections.pricing")}>
               <div className="flex flex-col gap-3 mb-6">
 
                 {/* Card: À partir de */}
@@ -1173,12 +1186,12 @@ export default function EditListingForm({
                     <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="font-semibold text-sm text-charcoal-800">À partir de</p>
-                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Affichez un prix de base sur votre fiche et générez des demandes de devis de la part des voyageurs pour leur donner le vrai prix selon les dates de leur séjour.</p>
+                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingFromTitle")}</p>
+                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingFromDesc")}</p>
                   </button>
                   {!form.price_on_request && (
                     <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
-                      <Label>Prix à partir de ($/nuit) <Req /> <span className="font-normal text-charcoal-400 text-xs">(minimum 50 $)</span></Label>
+                      <Label>{tEdit("pricingFromLabel")} <Req /> <span className="font-normal text-charcoal-400 text-xs">{tEdit("pricingFromMin")}</span></Label>
                       <div className="relative max-w-xs">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
                         <input
@@ -1191,11 +1204,12 @@ export default function EditListingForm({
                         />
                       </div>
                       <p className="text-sm text-charcoal-400 mt-3 leading-relaxed">
-                        Ce prix sera affiché sur votre fiche publique. Vous communiquez le prix final directement avec le voyageur.
+                        {tEdit("pricingFromNote")}
                       </p>
                       {form.price_low > 0 && (
                         <div className="mt-4 bg-white rounded-xl px-4 py-3 text-sm text-charcoal-600 border border-[#e8ead8]">
-                          Aperçu : <span className="font-semibold text-charcoal-800">À partir de {form.price_low} $/nuit</span>
+                          {tEdit("pricingPreviewLabel")}{" "}
+                          <span className="font-semibold text-charcoal-800">{tEdit("pricingPreviewValue", { price: form.price_low })}</span>
                         </div>
                       )}
                     </div>
@@ -1212,30 +1226,29 @@ export default function EditListingForm({
                     <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                     </svg>
-                    <p className="font-semibold text-sm text-charcoal-800">Sur demande</p>
-                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Aucun prix affiché sur votre fiche. Les voyageurs vous contactent pour obtenir une soumission personnalisée.</p>
+                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingRequestTitle")}</p>
+                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingRequestDesc")}</p>
                   </button>
                   {form.price_on_request && (
                     <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
                       <p className="text-sm text-charcoal-600 leading-relaxed">
-                        Votre fiche affichera :{" "}
-                        <span className="font-semibold text-charcoal-800">«&nbsp;Prix sur demande — Contactez le propriétaire&nbsp;»</span>
+                        {tEdit("pricingRequestDisplay")}
                       </p>
                     </div>
                   )}
                 </div>
 
               </div>
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
           {/* Section: Infos générales */}
           {activeSection === "infos" && (
-            <SectionShell title="Informations générales" emoji="ℹ️">
+            <SectionShell title={t("sections.general")}>
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Numéro CITQ <Req /></label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("citqLabel")} <Req /></label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -1247,46 +1260,46 @@ export default function EditListingForm({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-in <Req /></label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinLabel")} <Req /></label>
                     <select
                       value={form.checkin_time}
                       onChange={(e) => set("checkin_time", e.target.value)}
                       className={inputCls}
                     >
-                      {CHECKIN_SLOTS.map((t) => (
-                        <option key={t} value={t}>{t.replace(":", "h")}</option>
+                      {CHECKIN_SLOTS.map((slot) => (
+                        <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Heure du check-out <Req /></label>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkoutLabel")} <Req /></label>
                     <select
                       value={form.checkout_time}
                       onChange={(e) => set("checkout_time", e.target.value)}
                       className={inputCls}
                     >
-                      {CHECKOUT_SLOTS.map((t) => (
-                        <option key={t} value={t}>{t.replace(":", "h")}</option>
+                      {CHECKOUT_SLOTS.map((slot) => (
+                        <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
                       ))}
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Type d&apos;arrivée <Req /></label>
-                  <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} />
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinTypeLabel")} <Req /></label>
+                  <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} tEdit={tEdit} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Animaux acceptés</label>
-                    <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} />
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("petsLabel")}</label>
+                    <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} tEdit={tEdit} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Fumeur accepté</label>
-                    <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} />
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
+                    <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Âge minimum requis pour louer le chalet</label>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("minAgeLabel")}</label>
                   <div className="flex items-center gap-3 mt-2">
                     <button
                       type="button"
@@ -1296,7 +1309,7 @@ export default function EditListingForm({
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
                     </button>
-                    <span className="w-20 text-center text-sm font-semibold text-charcoal-800">{form.min_age} ans</span>
+                    <span className="w-20 text-center text-sm font-semibold text-charcoal-800">{form.min_age} {tEdit("minAgeUnit")}</span>
                     <button
                       type="button"
                       onClick={() => set("min_age", Math.min(30, form.min_age + 1))}
@@ -1308,7 +1321,7 @@ export default function EditListingForm({
                   </div>
                 </div>
               </div>
-              <RequiredNote />
+              <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}
 
@@ -1327,48 +1340,46 @@ export default function EditListingForm({
             if (isPublished && subStatus === "active") {
               const publishedDate = new Date(listingCreatedAt + (listingCreatedAt.includes("T") ? "" : "T12:00:00"));
               return (
-                <SectionShell title="Publier mon annonce" emoji="🚀">
+                <SectionShell title={t("publish.headingActive")}>
                   <div className="space-y-5 max-w-md">
-                    {/* Encadré vert annonce publiée */}
                     <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center gap-2">
                         <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p className="text-base font-bold text-green-700">Annonce publiée</p>
+                        <p className="text-base font-bold text-green-700">{tEdit("publishedLabel")}</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Publiée le</p>
+                          <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("publishedOn")}</p>
                           <p className="font-semibold text-charcoal-800">
-                            {publishedDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                            {publishedDate.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })}
                           </p>
                         </div>
                         {expiryDate && (
                           <div>
-                            <p className="text-charcoal-400 text-xs mb-0.5">Renouvellement le</p>
+                            <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("renewalOn")}</p>
                             <p className="font-semibold text-charcoal-800">
-                              {expiryDate.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                              {expiryDate.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })}
                             </p>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Stats de performance */}
                     <div>
-                      <p className="text-sm font-semibold text-charcoal-700 mb-3">Mes stats</p>
+                      <p className="text-sm font-semibold text-charcoal-700 mb-3">{tEdit("myStats")}</p>
                       <div className="grid grid-cols-3 gap-2 text-sm">
                         <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Consultations</p>
-                          <p className="font-semibold text-charcoal-800">{(viewsListing ?? 0).toLocaleString("fr-CA")}</p>
+                          <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("statsViews")}</p>
+                          <p className="font-semibold text-charcoal-800">{(viewsListing ?? 0).toLocaleString(locale === "en" ? "en-CA" : "fr-CA")}</p>
                         </div>
                         <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Contacts reçus</p>
-                          <p className="font-semibold text-charcoal-800">{uniqueContacts.toLocaleString("fr-CA")}</p>
+                          <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("statsContacts")}</p>
+                          <p className="font-semibold text-charcoal-800">{uniqueContacts.toLocaleString(locale === "en" ? "en-CA" : "fr-CA")}</p>
                         </div>
                         <div>
-                          <p className="text-charcoal-400 text-xs mb-0.5">Taux de conversion</p>
+                          <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("statsConversion")}</p>
                           <p className="font-semibold text-charcoal-800">
                             {viewsListing > 0 ? `${((uniqueContacts / viewsListing) * 100).toFixed(1)} %` : "—"}
                           </p>
@@ -1379,13 +1390,13 @@ export default function EditListingForm({
                     {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
                       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                         <p className="text-sm text-amber-800 font-medium mb-2">
-                          Votre abonnement expire dans {daysUntilExpiry} jour{daysUntilExpiry > 1 ? "s" : ""}
+                          {tEdit(daysUntilExpiry === 1 ? "expiringWarningDay" : "expiringWarningDays", { days: daysUntilExpiry })}
                         </p>
                         <Link
                           href="/dashboard/subscription"
                           className="text-sm text-amber-700 font-semibold hover:underline"
                         >
-                          Renouveler maintenant →
+                          {tEdit("renewNow")}
                         </Link>
                       </div>
                     )}
@@ -1396,29 +1407,31 @@ export default function EditListingForm({
             }
 
             return (
-              <SectionShell title="Publier mon annonce" emoji="🚀">
+              <SectionShell title={isFree ? t("publish.headingFree") : t("publish.headingPaid")}>
                 <div className="max-w-md space-y-5">
                   {showPublishErrors && !canPublish && (
                     <PublishErrorBox
                       incompleteSectionIds={incompleteSectionIds}
                       onNavigate={(id) => { setActiveSection(id as SectionId); setShowPublishErrors(false); }}
+                      getSectionLabel={getSectionLabel}
+                      tEdit={tEdit}
                     />
                   )}
 
                   {isFree ? (
                     <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
-                      Offre de lancement
+                      {t("publish.launchOffer")}
                     </div>
                   ) : null}
 
                   <div>
                     <h3 className="text-base font-bold text-charcoal-800 mb-1">
-                      {isFree ? "Publiez votre chalet gratuitement" : "Publiez votre chalet"}
+                      {isFree ? t("publish.headingFree") : t("publish.headingPaid")}
                     </h3>
                     {isFree && (
                       <>
                         <div className="flex items-center justify-between mb-1 mt-3">
-                          <span className="text-xs text-charcoal-600">Places gratuites restantes</span>
+                          <span className="text-xs text-charcoal-600">{t("publish.slotsLeft")}</span>
                           <span className="text-xs font-bold text-primary">{slotsLeft} / {FREE_LAUNCH_LIMIT}</span>
                         </div>
                         <div className="w-full bg-charcoal-100 rounded-full h-1.5">
@@ -1428,7 +1441,9 @@ export default function EditListingForm({
                           />
                         </div>
                         <p className="text-xs text-charcoal-400 mt-1">
-                          Il reste <strong className="text-charcoal-700">{slotsLeft} place{slotsLeft > 1 ? "s" : ""} gratuite{slotsLeft > 1 ? "s" : ""}</strong> sur {FREE_LAUNCH_LIMIT}
+                          <strong className="text-charcoal-700">
+                            {tEdit(slotsLeft === 1 ? "slotsInfoOne" : "slotsInfoMany", { count: slotsLeft, total: FREE_LAUNCH_LIMIT })}
+                          </strong>
                         </p>
                       </>
                     )}
@@ -1448,13 +1463,13 @@ export default function EditListingForm({
                   <div>
                     {isFree ? (
                       <>
-                        <p className="text-sm text-charcoal-400 line-through mb-0.5">299 $/an</p>
-                        <p className="text-2xl font-extrabold text-primary mb-1">GRATUIT</p>
+                        <p className="text-sm text-charcoal-400 line-through mb-0.5">{t("publish.oldPrice")}</p>
+                        <p className="text-2xl font-extrabold text-primary mb-1">{t("publish.free")}</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">299 $</p>
-                        <p className="text-sm text-charcoal-400 mb-1">par année</p>
+                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice")}</p>
+                        <p className="text-sm text-charcoal-400 mb-1">{t("publish.perYear")}</p>
                       </>
                     )}
                   </div>
@@ -1473,11 +1488,12 @@ export default function EditListingForm({
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
-                        {publishLoading ? "Activation…" : "Activer mon annonce gratuitement"}
+                        {publishLoading ? t("publish.activating") : t("publish.activateFree")}
                       </button>
                       <p className="text-xs text-charcoal-400">
-                        Valide jusqu&apos;au{" "}
-                        {oneYearFromNow.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}
+                        {tEdit("validUntil", {
+                          date: oneYearFromNow.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })
+                        })}
                       </p>
                     </>
                   ) : (
@@ -1490,9 +1506,9 @@ export default function EditListingForm({
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
-                        {publishLoading ? "Redirection vers le paiement…" : "Payer et publier — 299 $/an"}
+                        {publishLoading ? t("publish.redirecting") : t("publish.payAndPublish")}
                       </button>
-                      <p className="text-xs text-charcoal-400">Paiement sécurisé par Stripe · Annulable à tout moment</p>
+                      <p className="text-xs text-charcoal-400">{t("publish.securePayment")}</p>
                     </>
                   )}
                 </div>
@@ -1502,21 +1518,21 @@ export default function EditListingForm({
 
           {/* Section: Vedette */}
           {activeSection === "vedette" && (
-            <SectionShell title="Annonce vedette">
+            <SectionShell title={tEdit("featuredSectionTitle")}>
               <FeaturedListingSection listingId={listingId} region={form.region} />
             </SectionShell>
           )}
 
           {/* Section: Promotions */}
           {activeSection === "promotions" && (
-            <SectionShell title="Promotions">
+            <SectionShell title={t("sections.promotions")}>
               <PromotionsSection listingId={listingId} />
             </SectionShell>
           )}
 
           {/* Section: Analyse */}
           {activeSection === "analyse" && (
-            <SectionShell title="Analyse de mon annonce">
+            <SectionShell title={t("sections.analysis")}>
               <AnalyseSection
                 userId={userId}
                 listingId={listingId}
@@ -1531,6 +1547,7 @@ export default function EditListingForm({
                 region={form.region}
                 capacity={form.capacity}
                 onNavigate={(s) => { setActiveSection(s as SectionId); setSaveError(""); setJustSaved(false); }}
+                locale={locale}
               />
             </SectionShell>
           )}
@@ -1544,11 +1561,11 @@ export default function EditListingForm({
                 className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {saving ? (
-                  <><Spinner />Enregistrement…</>
+                  <><Spinner />{tCommon("saving")}</>
                 ) : justSaved ? (
-                  "Enregistré ✓"
+                  tCommon("saved")
                 ) : (
-                  "Enregistrer"
+                  tCommon("save")
                 )}
               </button>
               {saveError && <p className="text-sm text-red-500">{saveError}</p>}
@@ -1566,33 +1583,25 @@ function Req() {
   return <span className="text-[#636e40] font-medium">*</span>;
 }
 
-function RequiredNote() {
-  return <p className="mt-6 text-xs text-charcoal-400">* Champs requis pour publier</p>;
+function RequiredNote({ tEdit }: { tEdit: ReturnType<typeof useTranslations> }) {
+  return <p className="mt-6 text-xs text-charcoal-400">{tEdit("requiredFields")}</p>;
 }
-
-const SECTION_LABELS: Partial<Record<string, string>> = {
-  photos: "Photos",
-  titre: "Titre",
-  description: "Description",
-  capacite: "Nombre de voyageurs",
-  chambres: "Chambres",
-  equipements: "Caractéristiques",
-  tarifs: "Tarifs",
-  localisation: "Localisation",
-  infos: "Infos générales",
-};
 
 function PublishErrorBox({
   incompleteSectionIds,
   onNavigate,
+  getSectionLabel,
+  tEdit,
 }: {
   incompleteSectionIds: string[];
   onNavigate: (id: string) => void;
+  getSectionLabel: (id: string) => string;
+  tEdit: ReturnType<typeof useTranslations>;
 }) {
   return (
     <div className="border border-red-200 bg-red-50 rounded-xl p-4 space-y-2">
       <p className="text-sm font-semibold text-red-700">
-        Complétez ces sections avant de publier :
+        {tEdit("completeBeforePublish")}
       </p>
       <ul className="space-y-1">
         {incompleteSectionIds.map((id) => (
@@ -1602,7 +1611,7 @@ function PublishErrorBox({
               onClick={() => onNavigate(id)}
               className="text-sm text-red-600 hover:text-red-800 hover:underline text-left"
             >
-              → {SECTION_LABELS[id] ?? id}
+              → {getSectionLabel(id)}
             </button>
           </li>
         ))}
@@ -1611,7 +1620,7 @@ function PublishErrorBox({
   );
 }
 
-function SectionShell({ title, emoji: _emoji, children }: { title: string; emoji?: string; children: React.ReactNode }) {
+function SectionShell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
@@ -1637,7 +1646,9 @@ function Spinner() {
   );
 }
 
-function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void }) {
+type TEditFn = ReturnType<typeof useTranslations>;
+
+function CheckinTypeField({ value, onChange, tEdit }: { value: "autonomous" | "in_person"; onChange: (v: "autonomous" | "in_person") => void; tEdit: TEditFn }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <button type="button" onClick={() => onChange("autonomous")}
@@ -1645,31 +1656,31 @@ function CheckinTypeField({ value, onChange }: { value: "autonomous" | "in_perso
         <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
         </svg>
-        <p className="font-semibold text-sm text-charcoal-800">Arrivée autonome</p>
-        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Accès par code numérique ou boîte à clés</p>
+        <p className="font-semibold text-sm text-charcoal-800">{tEdit("checkinAutonomousTitle")}</p>
+        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinAutonomousDesc")}</p>
       </button>
       <button type="button" onClick={() => onChange("in_person")}
         className={`text-left p-4 rounded-xl border-2 transition-colors ${value === "in_person" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
         <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
         </svg>
-        <p className="font-semibold text-sm text-charcoal-800">Accueil sur place</p>
-        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">Remise des clés en personne à l&apos;arrivée</p>
+        <p className="font-semibold text-sm text-charcoal-800">{tEdit("checkinInPersonTitle")}</p>
+        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinInPersonDesc")}</p>
       </button>
     </div>
   );
 }
 
-function ToggleField({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function ToggleField({ value, onChange, tEdit }: { value: boolean; onChange: (v: boolean) => void; tEdit: TEditFn }) {
   return (
     <div className="flex rounded-xl border border-[#ebebeb] overflow-hidden text-sm w-fit">
       <button type="button" onClick={() => onChange(false)}
         className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
-        Non
+        {tEdit("no")}
       </button>
       <button type="button" onClick={() => onChange(true)}
         className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
-        Oui
+        {tEdit("yes")}
       </button>
     </div>
   );

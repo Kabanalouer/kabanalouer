@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
@@ -28,6 +29,7 @@ type Props = {
   region: string;
   capacity: number;
   onNavigate: (section: string) => void;
+  locale: string;
 };
 
 const R = 50;
@@ -38,8 +40,9 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
 export default function AnalyseSection({
   userId, listingId, photoCount, title, description, amenities,
   nearbyActivities, citqNumber,
-  icalUrl, initialBlocked, region, capacity, onNavigate,
+  icalUrl, initialBlocked, region, capacity, onNavigate, locale,
 }: Props) {
+  const t = useTranslations("listings.analyse");
   const [dbData, setDbData] = useState<DbData | null>(null);
   const [adviceLoading, setAdviceLoading] = useState(false);
   const [advice, setAdvice] = useState<string[]>([]);
@@ -78,7 +81,7 @@ export default function AnalyseSection({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!dbData) {
-    return <div className="py-12 text-center text-charcoal-400 text-sm">Calcul du score…</div>;
+    return <div className="py-12 text-center text-charcoal-400 text-sm">{t("calculating")}</div>;
   }
 
   const today = new Date();
@@ -102,7 +105,35 @@ export default function AnalyseSection({
   });
 
   const score = criteria.reduce((sum, c) => sum + (c.achieved ? c.points : 0), 0);
-  const { color, label } = getScoreLevel(score);
+  const { color } = getScoreLevel(score);
+
+  const getScoreLabel = (s: number): string => {
+    if (s <= 30) return t("scoreLevels.incomplete");
+    if (s <= 50) return t("scoreLevels.improve");
+    if (s <= 70) return t("scoreLevels.good");
+    if (s <= 84) return t("scoreLevels.veryGood");
+    return t("scoreLevels.optimized");
+  };
+
+  const getCriterionLabel = (key: string, fallback: string): string => {
+    const criteriaKeys: Record<string, string> = {
+      photos5: t("criteria.photos5"),
+      photos25: t("criteria.photos25"),
+      roomPhotos: t("criteria.roomPhotos"),
+      bio: t("criteria.bio"),
+      avatar: t("criteria.avatar"),
+      title40: t("criteria.title40"),
+      desc500: t("criteria.desc500"),
+      desc1500: t("criteria.desc1500"),
+      amenities: t("criteria.amenities"),
+      nearby: t("criteria.nearby"),
+      avail: t("criteria.avail"),
+      citq: t("criteria.citq"),
+      review1: t("criteria.review1"),
+      review6mo: t("criteria.review6mo"),
+    };
+    return criteriaKeys[key] ?? fallback;
+  };
 
   const priorityMissing = criteria.filter((c) => !c.achieved && c.priority);
   const regularMissing = criteria
@@ -128,13 +159,14 @@ export default function AnalyseSection({
           score,
           bio_filled: dbData.bioFilled,
           avatar_filled: dbData.avatarFilled,
+          locale,
         }),
       });
       const json = await res.json() as { conseils?: string[]; error?: string };
-      if (!res.ok) setAdviceError(json.error ?? "Erreur lors de la génération.");
+      if (!res.ok) setAdviceError(json.error ?? t("adviceError"));
       else setAdvice(json.conseils ?? []);
     } catch {
-      setAdviceError("Erreur lors de la génération.");
+      setAdviceError(t("adviceError"));
     }
     setAdviceLoading(false);
   };
@@ -145,7 +177,7 @@ export default function AnalyseSection({
       {/* Key message */}
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
         <p className="text-sm text-charcoal-700">
-          Plus votre score est élevé, plus votre annonce apparaît en tête des résultats de recherche.
+          {t("keyMessage")}
         </p>
       </div>
 
@@ -171,14 +203,14 @@ export default function AnalyseSection({
             /100
           </text>
         </svg>
-        <p className="text-sm font-semibold" style={{ color }}>{label}</p>
+        <p className="text-sm font-semibold" style={{ color }}>{getScoreLabel(score)}</p>
       </div>
 
       {/* Priority missing (profile) */}
       {priorityMissing.length > 0 && (
         <div className="border border-amber-200 bg-amber-50 rounded-2xl p-4 space-y-3">
           <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-            À compléter en priorité
+            {t("priorityTitle")}
           </p>
           {priorityMissing.map((c) => (
             <div key={c.key} className="flex items-center justify-between gap-3">
@@ -186,7 +218,7 @@ export default function AnalyseSection({
                 <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <span className="text-sm text-charcoal-700">{c.label}</span>
+                <span className="text-sm text-charcoal-700">{getCriterionLabel(c.key, c.label)}</span>
               </div>
               <span className="text-xs font-semibold text-amber-700 bg-amber-100 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
                 +{c.points} pts
@@ -197,7 +229,7 @@ export default function AnalyseSection({
             href="/dashboard/profile"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors mt-1"
           >
-            Compléter mon profil
+            {t("completeProfile")}
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
@@ -208,7 +240,7 @@ export default function AnalyseSection({
       {/* Regular missing */}
       {regularMissing.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">À améliorer</h3>
+          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">{t("improveTitle")}</h3>
           <div className="divide-y divide-[#ebebeb]">
             {regularMissing.map((c) => (
               <div key={c.key} className="flex items-center justify-between gap-3 py-2.5">
@@ -216,7 +248,7 @@ export default function AnalyseSection({
                   <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  <span className="text-sm text-charcoal-700 leading-snug">{c.label}</span>
+                  <span className="text-sm text-charcoal-700 leading-snug">{getCriterionLabel(c.key, c.label)}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs font-semibold text-[#636e40] bg-[#f5f6ec] border border-[#636e40]/20 rounded-full px-2 py-0.5 whitespace-nowrap">
@@ -228,7 +260,7 @@ export default function AnalyseSection({
                       onClick={() => onNavigate(c.section!)}
                       className="text-xs font-medium text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                     >
-                      Compléter →
+                      {t("complete")}
                     </button>
                   )}
                 </div>
@@ -241,14 +273,14 @@ export default function AnalyseSection({
       {/* Achieved */}
       {achieved.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">Critères atteints</h3>
+          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">{t("achievedTitle")}</h3>
           <div className="divide-y divide-[#ebebeb]">
             {achieved.map((c) => (
               <div key={c.key} className="flex items-center gap-2 py-2">
                 <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-sm text-charcoal-600">{c.label}</span>
+                <span className="text-sm text-charcoal-600">{getCriterionLabel(c.key, c.label)}</span>
               </div>
             ))}
           </div>
@@ -269,14 +301,14 @@ export default function AnalyseSection({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Génération en cours…
+              {t("generating")}
             </>
           ) : (
             <>
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
-              Obtenir des conseils personnalisés
+              {t("getAdvice")}
             </>
           )}
         </button>

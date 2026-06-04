@@ -1,27 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
-function getNextMonths(n: number) {
+function getNextMonths(n: number, locale: string) {
   const months: { label: string; value: string }[] = [];
   const now = new Date();
+  const localeCode = locale === "en" ? "en-CA" : "fr-CA";
   for (let i = 1; i <= n; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
-    const raw = d.toLocaleDateString("fr-CA", { month: "long", year: "numeric" });
+    const raw = d.toLocaleDateString(localeCode, { month: "long", year: "numeric" });
     months.push({ label: raw.charAt(0).toUpperCase() + raw.slice(1), value });
   }
   return months;
 }
 
-function fmtMonth(monthStr: string) {
-  const raw = new Date(monthStr + "T12:00:00").toLocaleDateString("fr-CA", { month: "long", year: "numeric" });
+function fmtMonth(monthStr: string, locale: string) {
+  const localeCode = locale === "en" ? "en-CA" : "fr-CA";
+  const raw = new Date(monthStr + "T12:00:00").toLocaleDateString(localeCode, { month: "long", year: "numeric" });
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
 const MAX_SLOTS = 3;
-const MONTHS = getNextMonths(6);
 
 type ExistingFeatured = {
   id: string;
@@ -31,13 +33,13 @@ type ExistingFeatured = {
   status: string;
 };
 
-function AvailBadge({ count }: { count: number | null }) {
-  if (count === null) return <span className="text-xs text-charcoal-400">Chargement…</span>;
+function AvailBadge({ count, t }: { count: number | null; t: ReturnType<typeof useTranslations> }) {
+  if (count === null) return <span className="text-xs text-charcoal-400">{t("availLoading")}</span>;
   const avail = MAX_SLOTS - count;
-  if (avail <= 0) return <span className="text-xs font-semibold text-red-500">Complet</span>;
+  if (avail <= 0) return <span className="text-xs font-semibold text-red-500">{t("availFull")}</span>;
   return (
     <span className="text-xs font-semibold text-green-600">
-      {avail} place{avail > 1 ? "s" : ""} disponible{avail > 1 ? "s" : ""}
+      {avail === 1 ? t("availOne", { count: avail }) : t("availMany", { count: avail })}
     </span>
   );
 }
@@ -52,6 +54,9 @@ export default function FeaturedListingSection({
   listingId: string;
   region: string;
 }) {
+  const t = useTranslations("listings.featured");
+  const locale = useLocale();
+  const MONTHS = getNextMonths(6, locale);
   const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
@@ -62,7 +67,6 @@ export default function FeaturedListingSection({
   const [homeCount, setHomeCount] = useState<number | null>(null);
   const [regionCount, setRegionCount] = useState<number | null>(null);
 
-  // Fetch existing vedette placements for this listing
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
@@ -78,7 +82,6 @@ export default function FeaturedListingSection({
     void fetch();
   }, [listingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Home availability
   useEffect(() => {
     const fetch = async () => {
       setHomeCount(null);
@@ -93,7 +96,6 @@ export default function FeaturedListingSection({
     void fetch();
   }, [homeIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Region availability
   useEffect(() => {
     if (!region) return;
     const fetch = async () => {
@@ -111,7 +113,7 @@ export default function FeaturedListingSection({
   }, [regionIdx, region]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
-    return <div className="py-8 text-center text-charcoal-400 text-sm">Chargement…</div>;
+    return <div className="py-8 text-center text-charcoal-400 text-sm">{t("loading")}</div>;
   }
 
   const homeAvail = homeCount !== null ? MAX_SLOTS - homeCount : null;
@@ -124,9 +126,9 @@ export default function FeaturedListingSection({
         <div className="mb-6 bg-[#636e40]/5 border border-[#636e40]/20 rounded-xl p-4 space-y-1">
           {existing.map((f) => (
             <p key={f.id} className="text-sm font-medium text-[#636e40]">
-              Votre annonce est en vedette{" "}
-              {f.type === "region" ? `dans la région ${f.region}` : "sur la page d'accueil"}{" "}
-              pour le mois de {fmtMonth(f.month)}.
+              {f.type === "region"
+                ? t("existingRegion", { region: f.region ?? "", month: fmtMonth(f.month, locale) })
+                : t("existingHome", { month: fmtMonth(f.month, locale) })}
             </p>
           ))}
         </div>
@@ -137,39 +139,39 @@ export default function FeaturedListingSection({
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-5 flex flex-col gap-4">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="font-semibold text-charcoal-800">Vedette région</p>
+              <p className="font-semibold text-charcoal-800">{t("regionTitle")}</p>
               <span className="text-base font-bold text-charcoal-800">
-                49 $<span className="text-sm font-normal text-charcoal-400">/mois</span>
+                49 $<span className="text-sm font-normal text-charcoal-400">{t("perMonth")}</span>
               </span>
             </div>
             <p className="text-xs text-charcoal-500 leading-snug">
-              Votre chalet apparaît en tête des résultats dans votre région.
+              {t("regionDesc")}
             </p>
             {region && (
               <p className="text-xs text-charcoal-400 mt-1.5">
-                Région : <span className="font-medium text-charcoal-600">{region}</span>
+                {t("regionLabel")} <span className="font-medium text-charcoal-600">{region}</span>
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-charcoal-700 mb-1.5">Mois</label>
+            <label className="block text-xs font-medium text-charcoal-700 mb-1.5">{t("monthLabel")}</label>
             <select value={regionIdx} onChange={(e) => setRegionIdx(Number(e.target.value))} className={selectCls}>
               {MONTHS.map((m, i) => <option key={m.value} value={i}>{m.label}</option>)}
             </select>
           </div>
 
-          <AvailBadge count={regionCount} />
+          <AvailBadge count={regionCount} t={t} />
 
           <div>
             <button
               disabled
               className="w-full py-2.5 rounded-full text-sm font-semibold bg-charcoal-100 text-charcoal-400 cursor-not-allowed"
             >
-              {regionAvail !== null && regionAvail <= 0 ? "Complet" : "Disponible bientôt"}
+              {regionAvail !== null && regionAvail <= 0 ? t("availFull") : t("comingSoon")}
             </button>
             <p className="text-xs text-charcoal-400 text-center mt-2 leading-snug">
-              Le paiement en ligne sera disponible prochainement.
+              {t("comingSoonNote")}
             </p>
           </div>
         </div>
@@ -178,34 +180,34 @@ export default function FeaturedListingSection({
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-5 flex flex-col gap-4">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="font-semibold text-charcoal-800">Vedette page d&apos;accueil</p>
+              <p className="font-semibold text-charcoal-800">{t("homeTitle")}</p>
               <span className="text-base font-bold text-charcoal-800">
-                99 $<span className="text-sm font-normal text-charcoal-400">/mois</span>
+                99 $<span className="text-sm font-normal text-charcoal-400">{t("perMonth")}</span>
               </span>
             </div>
             <p className="text-xs text-charcoal-500 leading-snug">
-              Votre chalet apparaît dans la section vedette de la page d&apos;accueil, vue par tous les visiteurs.
+              {t("homeDesc")}
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-charcoal-700 mb-1.5">Mois</label>
+            <label className="block text-xs font-medium text-charcoal-700 mb-1.5">{t("monthLabel")}</label>
             <select value={homeIdx} onChange={(e) => setHomeIdx(Number(e.target.value))} className={selectCls}>
               {MONTHS.map((m, i) => <option key={m.value} value={i}>{m.label}</option>)}
             </select>
           </div>
 
-          <AvailBadge count={homeCount} />
+          <AvailBadge count={homeCount} t={t} />
 
           <div>
             <button
               disabled
               className="w-full py-2.5 rounded-full text-sm font-semibold bg-charcoal-100 text-charcoal-400 cursor-not-allowed"
             >
-              {homeAvail !== null && homeAvail <= 0 ? "Complet" : "Disponible bientôt"}
+              {homeAvail !== null && homeAvail <= 0 ? t("availFull") : t("comingSoon")}
             </button>
             <p className="text-xs text-charcoal-400 text-center mt-2 leading-snug">
-              Le paiement en ligne sera disponible prochainement.
+              {t("comingSoonNote")}
             </p>
           </div>
         </div>
