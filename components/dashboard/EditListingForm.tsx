@@ -540,7 +540,7 @@ export default function EditListingForm({
         onDeleted={() => router.push("/dashboard/listings?deleted=1")}
       />
     )}
-    <div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
 
       {/* ── Left nav ────────────────────────────────────────────────────── */}
       <aside className="w-full lg:w-56 shrink-0">
