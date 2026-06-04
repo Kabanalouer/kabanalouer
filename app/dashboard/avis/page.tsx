@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ReviewReplyForm from "@/components/dashboard/ReviewReplyForm";
 
@@ -21,26 +22,31 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function formatRelativeDate(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Aujourd'hui";
-  if (diffDays === 1) return "Hier";
-  if (diffDays < 7) return `Il y a ${diffDays} jours`;
-  if (diffDays < 14) return "Il y a 1 semaine";
-  if (diffDays < 30) return `Il y a ${Math.floor(diffDays / 7)} semaines`;
-  if (diffDays < 60) return "Il y a 1 mois";
-  if (diffDays < 365) return `Il y a ${Math.floor(diffDays / 30)} mois`;
-  return date.toLocaleDateString("fr-CA", { month: "long", year: "numeric" });
-}
-
 export default async function MesAvisPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/dashboard/avis");
+
+  const [t, locale] = await Promise.all([
+    getTranslations("reviews"),
+    getLocale(),
+  ]);
+
+  const formatRelativeDate = (dateStr: string): string => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return t("today");
+    if (diffDays === 1) return t("yesterday");
+    if (diffDays < 7) return t("daysAgo", { count: diffDays });
+    if (diffDays < 14) return t("weekAgo");
+    if (diffDays < 30) return t("weeksAgo", { count: Math.floor(diffDays / 7) });
+    if (diffDays < 60) return t("monthAgo");
+    if (diffDays < 365) return t("monthsAgo", { count: Math.floor(diffDays / 30) });
+    return date.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { month: "long", year: "numeric" });
+  };
 
   const { data: listings } = await supabase
     .from("listings")
@@ -80,7 +86,7 @@ export default async function MesAvisPage() {
     <div className="max-w-3xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl font-bold text-charcoal-800">Mes avis</h1>
+          <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
           {unansweredCount > 0 && (
             <span className="bg-primary text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
               {unansweredCount}
@@ -88,7 +94,7 @@ export default async function MesAvisPage() {
           )}
         </div>
         {reviews.length > 0 && (
-          <p className="text-charcoal-400 text-sm">{reviews.length} avis reçus</p>
+          <p className="text-charcoal-400 text-sm">{t("count", { count: reviews.length })}</p>
         )}
       </div>
 
@@ -99,16 +105,16 @@ export default async function MesAvisPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-charcoal-800 mb-2">Aucun avis pour l&apos;instant</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h3>
           <p className="text-charcoal-400 text-sm max-w-sm mx-auto">
-            Les voyageurs qui vous ont contacté pourront laisser un avis après leur séjour.
+            {t("emptyDescription")}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {reviews.map((review) => {
             const author = review.author;
-            const authorName = author?.name ?? "Voyageur";
+            const authorName = author?.name ?? t("defaultAuthor");
             const authorFirstName = authorName.split(" ")[0];
             const initial = authorFirstName[0]?.toUpperCase() ?? "V";
             const listingTitle = listingMap.get(review.listing_id) ?? "";

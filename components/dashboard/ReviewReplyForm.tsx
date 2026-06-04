@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface Props {
   reviewId: string;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = true }: Props) {
   const router = useRouter();
+  const t = useTranslations("reviews");
   const [reply, setReply] = useState(existingReply ?? "");
   const [open, setOpen] = useState(!existingReply);
   const [saving, setSaving] = useState(false);
@@ -26,7 +28,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Erreur lors de la sauvegarde.");
+      setError(data.error ?? t("errorSaving"));
       setSaving(false);
       return;
     }
@@ -38,14 +40,14 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
   if (!open && existingReply) {
     return (
       <div className="mt-3 pl-4 border-l-2 border-[#ebebeb]">
-        <p className="text-xs font-semibold text-charcoal-600 mb-1">Votre réponse :</p>
+        <p className="text-xs font-semibold text-charcoal-600 mb-1">{t("replyLabel")}</p>
         <p className="text-sm text-charcoal-500 leading-relaxed">{existingReply}</p>
         {allowEdit && (
           <button
             onClick={() => setOpen(true)}
             className="mt-2 text-xs text-primary hover:underline"
           >
-            Modifier la réponse
+            {t("replyEdit")}
           </button>
         )}
       </div>
@@ -58,7 +60,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
         value={reply}
         onChange={(e) => setReply(e.target.value)}
         rows={3}
-        placeholder="Répondre à cet avis…"
+        placeholder={t("replyPlaceholder")}
         className="w-full border border-[#ebebeb] rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
       />
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
@@ -68,11 +70,11 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
           disabled={saving || !reply.trim()}
           className="bg-primary text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {saving ? "Enregistrement…" : "Répondre"}
+          {saving ? t("replySaving") : t("replySave")}
         </button>
         {allowEdit && existingReply && (
           <button onClick={() => { setOpen(false); setReply(existingReply); }} className="text-xs text-charcoal-400 hover:text-charcoal-600">
-            Annuler
+            {t("replyCancel")}
           </button>
         )}
       </div>

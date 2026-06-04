@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { firstPhotoUrl } from "@/lib/photo";
 import { getScoreLevel } from "@/lib/listingScore";
 
@@ -23,12 +24,14 @@ interface Props {
 }
 
 export default function ListingsClient({ listings, reviews, scores }: Props) {
+  const t = useTranslations("listings");
+
   return (
     <div className="space-y-3">
       {listings.map((listing) => {
           const rev = reviews[listing.id];
           const photo = firstPhotoUrl(listing.photos);
-          const title = listing.title || "Sans titre";
+          const title = listing.title || t("untitled");
 
           return (
             <div
@@ -56,10 +59,10 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                     listing.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                   }`}>
-                    {listing.is_published ? "Publié" : "Brouillon"}
+                    {listing.is_published ? t("published") : t("draft")}
                   </span>
                   {(() => { const s = scores[listing.id] ?? 0; return (
-                    <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>Score : {s}</span>
+                    <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>{t("score", { score: s })}</span>
                   ); })()}
                   {rev && (
                     <span className="text-xs text-charcoal-500 flex items-center gap-0.5">
@@ -80,7 +83,7 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
                     target="_blank"
                     className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors hidden sm:block"
                   >
-                    Voir la fiche ↗
+                    {t("viewListing")}
                   </Link>
                 )}
 
@@ -88,7 +91,7 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
                   href={`/dashboard/listings/${listing.id}/edit`}
                   className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
                 >
-                  Modifier
+                  {t("edit")}
                 </Link>
               </div>
             </div>

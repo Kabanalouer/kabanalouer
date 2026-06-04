@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
 import { computeScore } from "@/lib/listingScore";
@@ -15,6 +16,8 @@ export default async function ListingsPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const t = await getTranslations("listings");
 
   const [{ data: listings }, { data: profile }] = await Promise.all([
     supabase.from("listings").select("*").eq("host_id", user.id).order("created_at", { ascending: false }),
@@ -34,7 +37,6 @@ export default async function ListingsPage({
       ])
     : [{ data: [] }, { data: [] }, { data: [] }];
 
-  // Review maps
   const reviewRecord: Record<string, { count: number; avg: number }> = {};
   const reviewCounts: Record<string, { total: number; recent: number }> = {};
   for (const r of (reviews ?? [])) {
@@ -45,16 +47,13 @@ export default async function ListingsPage({
     reviewCounts[r.listing_id] = { total: pc.total + 1, recent: pc.recent + (new Date(r.created_at) >= sixMonthsAgo ? 1 : 0) };
   }
 
-  // Rooms map: listing_id → allHavePhotos
   const roomsPerListing: Record<string, { listing_id: string; photos: unknown }[]> = {};
   for (const room of (rooms ?? [])) {
     (roomsPerListing[room.listing_id] ??= []).push(room);
   }
 
-  // Listings with future manual availability
   const futureAvailSet = new Set((futureAvail ?? []).map((a) => a.listing_id as string));
 
-  // Compute score per listing
   const scoreRecord: Record<string, number> = {};
   for (const listing of (listings ?? [])) {
     const id = listing.id as string;
@@ -79,6 +78,8 @@ export default async function ListingsPage({
     });
   }
 
+  const count = listings?.length ?? 0;
+
   return (
     <div className="max-w-5xl">
       {deleted === "1" && (
@@ -86,14 +87,14 @@ export default async function ListingsPage({
           <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
-          <p className="text-sm text-green-800 font-medium">Votre annonce a été supprimée.</p>
+          <p className="text-sm text-green-800 font-medium">{t("deleted")}</p>
         </div>
       )}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-charcoal-800">Mes chalets</h1>
+          <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
           <p className="text-charcoal-500 text-sm mt-1">
-            {listings?.length ?? 0} chalet{(listings?.length ?? 0) !== 1 ? "s" : ""}
+            {count === 1 ? t("count", { count }) : t("countPlural", { count })}
           </p>
         </div>
         <Link
@@ -103,7 +104,7 @@ export default async function ListingsPage({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Créer une annonce
+          {t("createListing")}
         </Link>
       </div>
 
@@ -116,15 +117,15 @@ export default async function ListingsPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
           </div>
-          <h3 className="font-semibold text-charcoal-800 mb-2">Aucune annonce pour l&apos;instant</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h3>
           <p className="text-charcoal-400 text-sm mb-6 max-w-sm mx-auto">
-            Créez votre première annonce et rejoignez notre communauté de propriétaires !
+            {t("emptyDescription")}
           </p>
           <Link
             href="/dashboard/listings/new"
             className="inline-block bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
           >
-            + Créer une annonce
+            {t("emptyCta")}
           </Link>
         </div>
       )}

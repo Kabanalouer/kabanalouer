@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 type Period = "7d" | "30d" | "year" | "all";
-
-const PERIODS: { value: Period; label: string }[] = [
-  { value: "7d", label: "7 derniers jours" },
-  { value: "30d", label: "30 derniers jours" },
-  { value: "year", label: "Cette année" },
-  { value: "all", label: "Depuis le début" },
-];
 
 interface Stats {
   totalContacts: number;
@@ -18,17 +12,6 @@ interface Stats {
   totalReviews: number;
   avgRating: number | null;
   totalConsultations: number | null;
-}
-
-function formatResponseTime(ms: number | null): string {
-  if (ms === null) return "—";
-  const h = ms / 3_600_000;
-  if (h < 1) return "Répond en moins d'1h";
-  if (h < 2) return "Répond en moins de 2h";
-  if (h < 4) return "Répond en moins de 4h";
-  if (h < 24) return "Répond en moins d'un jour";
-  const d = Math.round(h / 24);
-  return `Répond en ${d} jour${d > 1 ? "s" : ""}`;
 }
 
 const EyeIcon = () => (
@@ -75,10 +58,29 @@ const StarOutlineIcon = () => (
 );
 
 export default function DashboardStats({ listings = [] }: { listings?: { id: string; title: string }[] }) {
+  const t = useTranslations("dashboard.stats");
   const [period, setPeriod] = useState<Period>("all");
   const [selectedListingId, setSelectedListingId] = useState<string>("");
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const PERIODS: { value: Period; label: string }[] = [
+    { value: "7d", label: t("period7days") },
+    { value: "30d", label: t("period30days") },
+    { value: "year", label: t("periodThisYear") },
+    { value: "all", label: t("periodAllTime") },
+  ];
+
+  const formatResponseTime = useCallback((ms: number | null): string => {
+    if (ms === null) return "—";
+    const h = ms / 3_600_000;
+    if (h < 1) return t("responseUnderHour");
+    if (h < 2) return t("responseUnder2h");
+    if (h < 4) return t("responseUnder4h");
+    if (h < 24) return t("responseUnderDay");
+    const d = Math.round(h / 24);
+    return d === 1 ? t("responseInDay", { days: d }) : t("responseInDays", { days: d });
+  }, [t]);
 
   const fetchStats = useCallback(async (p: Period, listingId: string) => {
     setLoading(true);
@@ -108,7 +110,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
             className="text-sm px-4 py-1.5 rounded-full font-medium border bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300 transition-colors appearance-none pr-8 cursor-pointer"
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.6rem center", backgroundSize: "1rem" }}
           >
-            <option value="">Tous mes chalets</option>
+            <option value="">{t("allListings")}</option>
             {listings.map((l) => (
               <option key={l.id} value={l.id}>{l.title}</option>
             ))}
@@ -135,20 +137,20 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
       {/* Stats grid */}
       <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"}`}>
         <StatCard
-          label="Consultations"
+          label={t("views")}
           value={viewsUnavailable ? "N/D" : (stats?.totalConsultations ?? 0).toLocaleString("fr-CA")}
-          sub={viewsUnavailable ? "Non disponible par période" : "Visites de vos fiches"}
+          sub={viewsUnavailable ? t("unavailable") : t("viewsSub")}
           icon={<DocIcon />}
           unavailable={viewsUnavailable}
         />
         <StatCard
-          label="Contacts reçus"
+          label={t("contacts")}
           value={(stats?.totalContacts ?? 0).toLocaleString("fr-CA")}
-          sub="Messages de voyageurs"
+          sub={t("contactsSub")}
           icon={<ChatIcon />}
         />
         <StatCard
-          label="Taux de conversion"
+          label={t("conversionRate")}
           value={
             viewsUnavailable
               ? "N/D"
@@ -156,28 +158,28 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
                 ? "—"
                 : `${(((stats?.totalContacts ?? 0) / (stats?.totalConsultations ?? 1)) * 100).toFixed(1)} %`
           }
-          sub={viewsUnavailable ? "Non disponible par période" : "Contacts / consultations"}
+          sub={viewsUnavailable ? t("unavailable") : t("conversionRateSub")}
           icon={<TrendingIcon />}
           unavailable={viewsUnavailable}
         />
         <StatCard
-          label="Taux de réponse"
+          label={t("responseRate")}
           value={stats?.responseRate != null ? `${stats.responseRate} %` : "—"}
-          sub="Messages avec réponse"
+          sub={t("responseRateSub")}
           icon={<CheckCircleIcon />}
         />
         <StatCard
-          label="Rapidité"
+          label={t("speed")}
           value={formatResponseTime(stats?.avgResponseMs ?? null)}
           small
-          sub="Temps moyen de réponse"
+          sub={t("speedSub")}
           icon={<ClockIcon />}
         />
 
         {/* Reviews card */}
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Avis</span>
+            <span className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("reviewsLabel")}</span>
             <StarOutlineIcon />
           </div>
           {avgRating !== null ? (
@@ -197,12 +199,12 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
                   </svg>
                 ))}
               </div>
-              <p className="text-xs text-charcoal-400">{stats?.totalReviews} avis</p>
+              <p className="text-xs text-charcoal-400">{t("reviewsCount", { count: stats?.totalReviews ?? 0 })}</p>
             </>
           ) : (
             <>
               <div className="text-2xl font-bold text-charcoal-300 mb-1">—</div>
-              <p className="text-xs text-charcoal-400">Aucun avis pour l&apos;instant</p>
+              <p className="text-xs text-charcoal-400">{t("unavailable")}</p>
             </>
           )}
         </div>

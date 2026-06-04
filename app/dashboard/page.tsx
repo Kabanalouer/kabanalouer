@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { firstPhotoUrl } from "@/lib/photo";
@@ -14,6 +15,11 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const userId = user.id;
+
+  const [t, locale] = await Promise.all([
+    getTranslations("dashboard"),
+    getLocale(),
+  ]);
 
   const [{ data: profile }, { data: listings }] = await Promise.all([
     supabase.from("users").select("name, bio, avatar_url").eq("id", userId).single(),
@@ -33,7 +39,6 @@ export default async function DashboardPage() {
       ])
     : [{ data: [] }, { data: [] }, { data: [] }];
 
-  // Per-listing review map (for listing cards + score)
   const reviewMap = new Map<string, { count: number; avg: number }>();
   const reviewCounts = new Map<string, { total: number; recent: number }>();
   for (const r of (reviews ?? [])) {
@@ -78,7 +83,8 @@ export default async function DashboardPage() {
   }
 
   const firstName = profile?.name?.split(" ")[0] ?? "là";
-  const dateDisplay = new Date().toLocaleDateString("fr-CA", {
+  const dateLocale = locale === "en" ? "en-CA" : "fr-CA";
+  const dateDisplay = new Date().toLocaleDateString(dateLocale, {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   }).replace(/^./, (c) => c.toUpperCase());
 
@@ -87,18 +93,16 @@ export default async function DashboardPage() {
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">Bonjour {firstName} !</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t("greeting", { firstName })}</h1>
         <p className="text-charcoal-400 mt-1 text-sm">{dateDisplay}</p>
       </div>
 
       {/* ── Stats (client component with period filter) ──────────────────── */}
-      <DashboardStats listings={(listings ?? []).map((l) => ({ id: l.id, title: l.title ?? "Sans titre" }))} />
-
-      {/* ── Quick links ─────────────────────────────────────────────────────── */}
+      <DashboardStats listings={(listings ?? []).map((l) => ({ id: l.id, title: l.title ?? t("untitled") }))} />
 
       {/* ── Listings ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-charcoal-800 text-lg">Mes annonces</h2>
+        <h2 className="font-semibold text-charcoal-800 text-lg">{t("myListings")}</h2>
         <Link
           href="/dashboard/listings/new"
           className="flex items-center gap-1.5 bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
@@ -106,7 +110,7 @@ export default async function DashboardPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Créer une annonce
+          {t("createListing")}
         </Link>
       </div>
 
@@ -135,16 +139,16 @@ export default async function DashboardPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-charcoal-800 truncate">{listing.title || "Sans titre"}</p>
+                  <p className="font-semibold text-charcoal-800 truncate">{listing.title || t("untitled")}</p>
                   <p className="text-xs text-charcoal-400 mt-0.5">{listing.region}</p>
                   <div className="flex items-center flex-wrap gap-2 mt-1.5">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                       listing.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                     }`}>
-                      {listing.is_published ? "Publié" : "Brouillon"}
+                      {listing.is_published ? t("published") : t("draft")}
                     </span>
                     {(() => { const s = scoreMap.get(listing.id as string) ?? 0; return (
-                      <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>Score : {s}</span>
+                      <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>{t("score", { score: s })}</span>
                     ); })()}
                     {rev && (
                       <span className="text-xs text-charcoal-500 flex items-center gap-0.5">
@@ -165,14 +169,14 @@ export default async function DashboardPage() {
                       target="_blank"
                       className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors hidden sm:block"
                     >
-                      Voir la fiche ↗
+                      {t("viewListing")}
                     </Link>
                   )}
                   <Link
                     href={`/dashboard/listings/${listing.id}/edit`}
                     className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
                   >
-                    Modifier
+                    {t("edit")}
                   </Link>
                 </div>
               </div>
@@ -186,15 +190,15 @@ export default async function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
           </div>
-          <h3 className="font-semibold text-charcoal-800 mb-2">Aucune annonce pour l&apos;instant</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h3>
           <p className="text-charcoal-400 text-sm mb-6 max-w-sm mx-auto">
-            Créez votre première annonce et rejoignez notre communauté de propriétaires !
+            {t("emptyDescription")}
           </p>
           <Link
             href="/dashboard/listings/new"
             className="inline-block bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
           >
-            + Créer une annonce
+            {t("emptyCta")}
           </Link>
         </div>
       )}

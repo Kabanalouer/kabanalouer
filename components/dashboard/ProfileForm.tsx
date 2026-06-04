@@ -2,12 +2,20 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
-function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+function SaveButton({ saving, saved, onClick, tSave, tSaving, tSaved }: {
+  saving: boolean;
+  saved: boolean;
+  onClick: () => void;
+  tSave: string;
+  tSaving: string;
+  tSaved: string;
+}) {
   return (
     <button
       type="button"
@@ -15,7 +23,7 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
       disabled={saving}
       className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
     >
-      {saving ? "Enregistrement…" : saved ? "Enregistré ✓" : "Enregistrer"}
+      {saving ? tSaving : saved ? tSaved : tSave}
     </button>
   );
 }
@@ -86,10 +94,14 @@ function PasswordInput({
   value,
   onChange,
   autoComplete,
+  showLabel,
+  hideLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   autoComplete?: string;
+  showLabel: string;
+  hideLabel: string;
 }) {
   const [show, setShow] = useState(false);
   return (
@@ -106,7 +118,7 @@ function PasswordInput({
         onClick={() => setShow((s) => !s)}
         className="absolute inset-y-0 right-3 flex items-center text-charcoal-400 hover:text-charcoal-600 transition-colors"
         tabIndex={-1}
-        aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+        aria-label={show ? hideLabel : showLabel}
       >
         <EyeIcon open={show} />
       </button>
@@ -134,6 +146,8 @@ export default function ProfileForm({
   initialBio: string;
 }) {
   const supabase = createClient();
+  const t = useTranslations("profile");
+  const tc = useTranslations("common");
 
   // ── Personal info ────────────────────────────────────────────────────────────
   const nameParts = initialName.trim().split(/\s+/);
@@ -148,7 +162,7 @@ export default function ProfileForm({
 
   const uploadAvatar = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    if (file.size > 5 * 1024 * 1024) { setInfoError("L'image dépasse 5 Mo."); return; }
+    if (file.size > 5 * 1024 * 1024) { setInfoError(t("errorImageSize")); return; }
     setAvatarUploading(true);
     setInfoError("");
     const ext = file.name.split(".").pop() ?? "jpg";
@@ -158,7 +172,7 @@ export default function ProfileForm({
       .upload(path, file, { cacheControl: "3600", upsert: true });
     if (error) {
       console.error("[avatar upload]", error);
-      setInfoError(`Erreur upload : ${error.message}`);
+      setInfoError(t("errorUpload", { message: error.message }));
       setAvatarUploading(false);
       return;
     }
@@ -184,7 +198,7 @@ export default function ProfileForm({
     const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
     const { error } = await supabase.from("users").update({ name }).eq("id", userId);
     setInfoSaving(false);
-    if (error) setInfoError("Erreur lors de l'enregistrement.");
+    if (error) setInfoError(t("errorSaving"));
     else { setInfoSaved(true); setTimeout(() => setInfoSaved(false), 2500); }
   };
 
@@ -200,7 +214,7 @@ export default function ProfileForm({
     setBioError("");
     const { error } = await supabase.from("users").update({ bio: bio.trim() || null }).eq("id", userId);
     setBioSaving(false);
-    if (error) setBioError("Erreur lors de l'enregistrement.");
+    if (error) setBioError(t("errorSaving"));
     else { setBioSaved(true); setTimeout(() => setBioSaved(false), 2500); }
   };
 
@@ -214,10 +228,10 @@ export default function ProfileForm({
         body: JSON.stringify({ firstName: firstName.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur API");
+      if (!res.ok) throw new Error(data.error ?? t("errorBioGeneration"));
       setBio(data.bio.slice(0, 300));
     } catch (e) {
-      setBioError(e instanceof Error ? e.message : "Erreur lors de la génération.");
+      setBioError(e instanceof Error ? e.message : t("errorBioGeneration"));
     } finally {
       setBioGenerating(false);
     }
@@ -234,7 +248,7 @@ export default function ProfileForm({
     setContactError("");
     const { error } = await supabase.from("users").update({ phone: phone.trim() || null }).eq("id", userId);
     setContactSaving(false);
-    if (error) setContactError("Erreur lors de l'enregistrement.");
+    if (error) setContactError(t("errorSaving"));
     else { setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); }
   };
 
@@ -248,12 +262,12 @@ export default function ProfileForm({
 
   const changePassword = async () => {
     setPwdError("");
-    if (!currentPassword) { setPwdError("Entrez votre mot de passe actuel."); return; }
-    if (newPassword.length < 8) { setPwdError("Le nouveau mot de passe doit faire au moins 8 caractères."); return; }
-    if (newPassword !== confirmPassword) { setPwdError("Les mots de passe ne correspondent pas."); return; }
+    if (!currentPassword) { setPwdError(t("errorEnterCurrentPassword")); return; }
+    if (newPassword.length < 8) { setPwdError(t("errorPasswordLength")); return; }
+    if (newPassword !== confirmPassword) { setPwdError(t("errorPasswordMismatch")); return; }
     setPwdSaving(true);
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
-    if (signInError) { setPwdError("Mot de passe actuel incorrect."); setPwdSaving(false); return; }
+    if (signInError) { setPwdError(t("errorCurrentPasswordWrong")); setPwdSaving(false); return; }
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setPwdSaving(false);
     if (error) setPwdError(error.message);
@@ -304,14 +318,14 @@ export default function ProfileForm({
     <div className="space-y-6">
 
       {/* ── Informations personnelles ──────────────────────────────────────── */}
-      <Section title="Informations personnelles" description="Ces informations seront visibles dans la fiche de votre chalet.">
+      <Section title={t("personalInfo")} description={t("personalInfoDesc")}>
         {/* Avatar */}
         <div className="flex items-center gap-5">
           <div className="relative w-20 h-20 shrink-0">
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
-                alt="Photo de profil"
+                alt={t("avatarAlt")}
                 fill
                 className="rounded-full object-cover"
                 sizes="80px"
@@ -337,7 +351,7 @@ export default function ProfileForm({
               disabled={avatarUploading}
               className="text-sm font-medium text-primary hover:text-primary-dark transition-colors disabled:opacity-50"
             >
-              {avatarUrl ? "Changer la photo" : "Ajouter une photo"}
+              {avatarUrl ? t("changePhoto") : t("addPhoto")}
             </button>
             {avatarUrl && (
               <button
@@ -345,10 +359,10 @@ export default function ProfileForm({
                 onClick={deleteAvatar}
                 className="text-sm text-charcoal-400 hover:text-red-500 transition-colors"
               >
-                Supprimer la photo
+                {t("deletePhoto")}
               </button>
             )}
-            <p className="text-xs text-charcoal-400">JPG, PNG, WebP · Max 5 Mo</p>
+            <p className="text-xs text-charcoal-400">{t("photoFormats")}</p>
           </div>
           <input
             ref={avatarInputRef}
@@ -361,7 +375,7 @@ export default function ProfileForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Prénom</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("firstName")}</label>
             <input
               type="text"
               value={firstName}
@@ -371,7 +385,7 @@ export default function ProfileForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nom</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("lastName")}</label>
             <input
               type="text"
               value={lastName}
@@ -383,17 +397,17 @@ export default function ProfileForm({
         </div>
 
         <div className="flex items-center gap-3">
-          <SaveButton saving={infoSaving} saved={infoSaved} onClick={saveInfo} />
+          <SaveButton saving={infoSaving} saved={infoSaved} onClick={saveInfo} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
           <ErrorMsg msg={infoError} />
         </div>
       </Section>
 
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
       {(role === "host" || role === "admin") && (
-        <Section title="Présentation du propriétaire" description="Ces informations seront visibles dans la fiche de votre chalet.">
+        <Section title={t("ownerPresentation")} description={t("ownerPresentationDesc")}>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-charcoal-700">Bio</label>
+              <label className="text-sm font-medium text-charcoal-700">{t("bio")}</label>
               <button
                 type="button"
                 onClick={generateBio}
@@ -406,14 +420,14 @@ export default function ProfileForm({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Génération…
+                    {t("bioGenerating")}
                   </>
                 ) : (
                   <>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                     </svg>
-                    Générer avec l&apos;IA
+                    {t("bioGenerate")}
                   </>
                 )}
               </button>
@@ -423,7 +437,7 @@ export default function ProfileForm({
                 value={bio}
                 onChange={(e) => setBio(e.target.value.slice(0, 300))}
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
-                placeholder="Bonjour ! Je m'appelle…"
+                placeholder={t("bioPlaceholder")}
                 maxLength={300}
               />
               <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
@@ -432,27 +446,27 @@ export default function ProfileForm({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} />
+            <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
             <ErrorMsg msg={bioError} />
           </div>
         </Section>
       )}
 
       {/* ── Coordonnées ───────────────────────────────────────────────────── */}
-      <Section title="Coordonnées" description="Ces informations ne seront pas publiques.">
+      <Section title={t("contact")} description={t("contactDesc")}>
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Adresse email</label>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
           <input
             type="email"
             value={email}
             readOnly
             className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
           />
-          <p className="text-xs text-charcoal-400 mt-1">L'adresse email ne peut pas être modifiée ici.</p>
+          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-            Numéro de téléphone <span className="text-charcoal-400 font-normal">(optionnel)</span>
+            {t("phone")} <span className="text-charcoal-400 font-normal">{t("optional")}</span>
           </label>
           <input
             type="tel"
@@ -463,25 +477,25 @@ export default function ProfileForm({
           />
         </div>
         <div className="flex items-center gap-3">
-          <SaveButton saving={contactSaving} saved={contactSaved} onClick={saveContact} />
+          <SaveButton saving={contactSaving} saved={contactSaved} onClick={saveContact} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
           <ErrorMsg msg={contactError} />
         </div>
       </Section>
 
       {/* ── Sécurité ──────────────────────────────────────────────────────── */}
-      <Section title="Sécurité">
+      <Section title={t("security")}>
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Mot de passe actuel</label>
-          <PasswordInput value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("currentPassword")}</label>
+          <PasswordInput value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" showLabel={t("showPassword")} hideLabel={t("hidePassword")} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nouveau mot de passe</label>
-          <PasswordInput value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
-          <p className="text-xs text-charcoal-400 mt-1">Minimum 8 caractères.</p>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("newPassword")}</label>
+          <PasswordInput value={newPassword} onChange={setNewPassword} autoComplete="new-password" showLabel={t("showPassword")} hideLabel={t("hidePassword")} />
+          <p className="text-xs text-charcoal-400 mt-1">{t("passwordMinLength")}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Confirmer le nouveau mot de passe</label>
-          <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("confirmPassword")}</label>
+          <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" showLabel={t("showPassword")} hideLabel={t("hidePassword")} />
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -490,49 +504,49 @@ export default function ProfileForm({
             disabled={pwdSaving}
             className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
           >
-            {pwdSaving ? "Modification…" : pwdSaved ? "Mot de passe modifié ✓" : "Modifier le mot de passe"}
+            {pwdSaving ? t("changingPassword") : pwdSaved ? t("passwordChanged") : t("changePassword")}
           </button>
           <ErrorMsg msg={pwdError} />
         </div>
       </Section>
 
       {/* ── Préférences de notification ────────────────────────────────────── */}
-      <Section title="Préférences de notification">
+      <Section title={t("notifications")}>
         <div className="space-y-5">
           <Toggle
             checked={notifMessages}
             onChange={setNotifMessages}
-            label="Nouveaux messages"
-            description="Recevoir un email quand un voyageur vous envoie un message"
+            label={t("notifMessages")}
+            description={t("notifMessagesDesc")}
           />
           <Toggle
             checked={notifFavorites}
             onChange={setNotifFavorites}
-            label="Ajouts en favori"
-            description="Recevoir un email quand un voyageur ajoute votre chalet en favori"
+            label={t("notifFavorites")}
+            description={t("notifFavoritesDesc")}
           />
           <Toggle
             checked={notifMonthly}
             onChange={setNotifMonthly}
-            label="Rapport mensuel"
-            description="Recevoir un résumé mensuel de l'activité de vos annonces"
+            label={t("notifMonthly")}
+            description={t("notifMonthlyDesc")}
           />
         </div>
         <div className="pt-2">
-          <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} />
+          <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
         </div>
       </Section>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-red-100 p-6">
-        <h2 className="text-base font-semibold text-charcoal-800 mb-1">Zone de danger</h2>
+        <h2 className="text-base font-semibold text-charcoal-800 mb-1">{t("dangerZone")}</h2>
         <p className="text-sm text-charcoal-500 mb-5">
-          Ces actions sont irréversibles. Agissez avec précaution.
+          {t("dangerZoneDesc")}
         </p>
 
         {deactivated ? (
           <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700 font-medium">
-            Tous vos chalets ont été dépubliés. Contactez-nous pour réactiver votre compte.
+            {t("deactivated")}
           </div>
         ) : !showDeactivateConfirm ? (
           <button
@@ -540,13 +554,13 @@ export default function ProfileForm({
             onClick={() => setShowDeactivateConfirm(true)}
             className="border border-red-300 text-red-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-50 transition-colors"
           >
-            Désactiver mon compte
+            {t("deactivate")}
           </button>
         ) : (
           <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-semibold text-red-700">Confirmer la désactivation ?</p>
+            <p className="text-sm font-semibold text-red-700">{t("deactivateConfirm")}</p>
             <p className="text-sm text-red-600">
-              Tous vos chalets seront dépubliés immédiatement et n&apos;apparaîtront plus dans les résultats de recherche.
+              {t("deactivateWarning")}
             </p>
             <div className="flex gap-3">
               <button
@@ -555,14 +569,14 @@ export default function ProfileForm({
                 disabled={deactivating}
                 className="bg-red-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                {deactivating ? "En cours…" : "Oui, désactiver"}
+                {deactivating ? t("deactivating") : t("deactivateYes")}
               </button>
               <button
                 type="button"
                 onClick={() => setShowDeactivateConfirm(false)}
                 className="border border-[#ebebeb] text-charcoal-600 px-5 py-2 rounded-full text-sm font-medium hover:bg-charcoal-50 transition-colors"
               >
-                Annuler
+                {tc("cancel")}
               </button>
             </div>
           </div>
