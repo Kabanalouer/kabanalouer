@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
@@ -87,6 +88,7 @@ function UnreadDot() {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Navbar() {
+  const t = useTranslations("nav");
   const supabase = createClient();
   const pathname = usePathname();
 
@@ -244,17 +246,17 @@ export default function Navbar() {
           {/* Tabs — desktop only */}
           <div className="hidden md:flex flex-1 justify-center items-stretch">
             <Link href="/dashboard" className={tabCls("/dashboard", true)}>
-              Tableau de bord
+              {t("dashboard")}
             </Link>
             <Link href="/dashboard/listings" className={tabCls("/dashboard/listings")}>
-              Mes chalets
+              {t("myListings")}
             </Link>
             <Link href="/messages" className={tabCls("/messages")}>
-              Messages
+              {t("messages")}
               {unreadCount > 0 && <UnreadDot />}
             </Link>
             <Link href="/dashboard/avis" className={tabCls("/dashboard/avis")}>
-              Mes avis
+              {t("myReviews")}
               {unansweredReviewsCount > 0 && (
                 <span className="bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
                   {unansweredReviewsCount > 9 ? "9+" : unansweredReviewsCount}
@@ -269,7 +271,7 @@ export default function Navbar() {
               onClick={enterVoyageurMode}
               className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-[15px] font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
             >
-              Mode voyageur
+              {t("travelerMode")}
             </button>
 
             {/* Avatar pill — hamburger visible desktop seulement */}
@@ -277,7 +279,7 @@ export default function Navbar() {
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
-                aria-label="Menu utilisateur"
+                aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
                 <Avatar profile={profile} size={32} />
@@ -289,17 +291,17 @@ export default function Navbar() {
                     <Avatar profile={profile} size={36} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-charcoal-800 truncate">{profile.name}</p>
-                      <p className="text-xs text-primary font-medium">Proprio</p>
+                      <p className="text-xs text-primary font-medium">{t("roleProprio")}</p>
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
-                    <DropdownLink href="/dashboard/listings/new">Créer une annonce</DropdownLink>
+                    <DropdownLink href="/dashboard/profile">{t("myProfile")}</DropdownLink>
+                    <DropdownLink href="/dashboard/listings/new">{t("createListing")}</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
                       className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                     >
-                      Mode voyageur
+                      {t("travelerMode")}
                     </button>
                   </div>
                   <div className="border-t border-[#ebebeb] py-1">
@@ -307,7 +309,7 @@ export default function Navbar() {
                       onClick={handleSignOut}
                       className="w-full text-left px-4 py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
                     >
-                      Déconnexion
+                      {t("signOut")}
                     </button>
                   </div>
                 </div>
@@ -341,7 +343,7 @@ export default function Navbar() {
                 onClick={exitVoyageurMode}
                 className="hidden sm:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-[15px] font-medium hover:bg-primary/5 transition-all"
               >
-                Mode proprio
+                {t("ownerMode")}
               </button>
             )}
 
@@ -350,7 +352,7 @@ export default function Navbar() {
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
-                aria-label="Menu utilisateur"
+                aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
                 <Avatar profile={profile} size={32} />
@@ -362,26 +364,26 @@ export default function Navbar() {
                     <Avatar profile={profile} size={36} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-charcoal-800 truncate">{profile.name}</p>
-                      <p className="text-xs text-charcoal-400 font-medium">Voyageur</p>
+                      <p className="text-xs text-charcoal-400 font-medium">{t("roleVoyageur")}</p>
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard/profile">Mon profil</DropdownLink>
-                    <DropdownLink href="/favoris">Mes favoris</DropdownLink>
+                    <DropdownLink href="/dashboard/profile">{t("myProfile")}</DropdownLink>
+                    <DropdownLink href="/favoris">{t("myFavorites")}</DropdownLink>
                     <Link
                       href="/messages"
                       className="flex items-center justify-between px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
                     >
-                      Messages
+                      {t("messages")}
                       {unreadCount > 0 && <UnreadDot />}
                     </Link>
-                    <DropdownLink href="/devenir-hote">Inscrire mon chalet</DropdownLink>
+                    <DropdownLink href="/devenir-hote">{t("registerCabin")}</DropdownLink>
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}
                         className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                       >
-                        Mode proprio
+                        {t("ownerMode")}
                       </button>
                     )}
                   </div>
@@ -390,7 +392,7 @@ export default function Navbar() {
                       onClick={handleSignOut}
                       className="w-full text-left px-4 py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
                     >
-                      Déconnexion
+                      {t("signOut")}
                     </button>
                   </div>
                 </div>
@@ -422,13 +424,13 @@ export default function Navbar() {
               href="/devenir-hote"
               className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
             >
-              Inscrire mon chalet
+              {t("registerCabin")}
             </Link>
             <Link
               href="/signup"
               className="bg-primary text-white text-[15px] px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
-              Créer un compte
+              {t("createAccount")}
             </Link>
           </div>
 
@@ -437,7 +439,7 @@ export default function Navbar() {
             <button
               className="p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menu"
+              aria-label={t("menu")}
             >
               <IconMenu open={mobileOpen} />
             </button>
@@ -451,13 +453,13 @@ export default function Navbar() {
               href="/devenir-hote"
               className="text-sm font-medium text-charcoal-700 px-3 py-2 rounded-xl hover:bg-charcoal-50 transition-colors"
             >
-              Inscrire mon chalet
+              {t("registerCabin")}
             </Link>
             <Link
               href="/signup"
               className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
             >
-              Créer un compte
+              {t("createAccount")}
             </Link>
           </div>
         )}
