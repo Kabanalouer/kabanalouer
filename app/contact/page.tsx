@@ -1,37 +1,41 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "./ContactForm";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Nous contacter",
-  description:
-    "Contactez l'équipe Kabanalouer. Nous sommes là pour vous aider, que vous soyez voyageur ou propriétaire de chalet.",
-  alternates: { canonical: "/contact" },
-  openGraph: {
-    title: "Nous contacter | Kabanalouer",
-    description:
-      "Contactez l'équipe Kabanalouer. Nous sommes là pour vous aider, que vous soyez voyageur ou propriétaire de chalet.",
-    url: "/contact",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/contact" : "/contact";
+  const title = isEn ? "Contact us — Kabanalouer" : "Nous contacter — Kabanalouer";
+  const description = isEn
+    ? "Contact the Kabanalouer team. We're here to help, whether you're a traveler or a cabin owner."
+    : "Contactez l'équipe Kabanalouer. Nous sommes là pour vous aider, que vous soyez voyageur ou propriétaire de chalet.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/contact", en: "/en/contact", "x-default": "/contact" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+    },
+  };
+}
 
-const FAQ = [
-  {
-    q: "Je suis voyageur, comment contacter un propriétaire ?",
-    a: "Utilisez la messagerie intégrée sur la fiche du chalet. Créez un compte gratuit pour envoyer un message directement au propriétaire.",
-  },
-  {
-    q: "J'ai un problème avec mon annonce ?",
-    a: "Connectez-vous à votre tableau de bord et vérifiez les différentes sections de votre annonce. Si le problème persiste, écrivez-nous via ce formulaire.",
-  },
-  {
-    q: "Comment annuler mon abonnement ?",
-    a: "Contactez-nous via ce formulaire avec votre courriel d'inscription et nous traiterons votre demande dans les 24 heures ouvrables.",
-  },
-];
+export default async function ContactPage() {
+  const t = await getTranslations("contact");
 
-export default function ContactPage() {
+  const FAQ = [
+    { q: t("faq1Q"), a: t("faq1A") },
+    { q: t("faq2Q"), a: t("faq2A") },
+    { q: t("faq3Q"), a: t("faq3A") },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -40,14 +44,14 @@ export default function ContactPage() {
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            Contact
+            {t("heroBadge")}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
-            Contactez-nous
+            {t("heroH1")}
           </h1>
           <p className="text-lg text-charcoal-500 max-w-md mx-auto">
-            Notre équipe est là pour vous aider. Nous répondons généralement dans les{" "}
-            <strong className="text-charcoal-700">24 heures ouvrables</strong>.
+            {t("heroSubtitlePre")}{" "}
+            <strong className="text-charcoal-700">{t("heroSubtitleStrong")}</strong>.
           </p>
         </div>
       </section>
@@ -60,7 +64,7 @@ export default function ContactPage() {
             {/* Left — Form */}
             <div className="lg:col-span-3">
               <h2 className="text-xl font-bold text-charcoal-800 mb-6">
-                Envoyez-nous un message
+                {t("formSectionTitle")}
               </h2>
               <ContactForm />
             </div>
@@ -75,7 +79,7 @@ export default function ContactPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                     </svg>
                   </div>
-                  <h3 className="font-semibold text-charcoal-800">Courriel</h3>
+                  <h3 className="font-semibold text-charcoal-800">{t("infoEmailLabel")}</h3>
                 </div>
                 <a
                   href="mailto:info@kabanalouer.ca"
@@ -92,11 +96,11 @@ export default function ContactPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
                     </svg>
                   </div>
-                  <h3 className="font-semibold text-charcoal-800">Heures de réponse</h3>
+                  <h3 className="font-semibold text-charcoal-800">{t("infoHoursLabel")}</h3>
                 </div>
                 <p className="text-sm text-charcoal-600 leading-relaxed">
-                  Lundi au vendredi<br />
-                  9h00 à 17h00
+                  {t("infoHoursLine1")}<br />
+                  {t("infoHoursLine2")}
                 </p>
               </div>
 
@@ -107,7 +111,7 @@ export default function ContactPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.96 8.96 0 01.284-2.253" />
                     </svg>
                   </div>
-                  <h3 className="font-semibold text-charcoal-800">Réseaux sociaux</h3>
+                  <h3 className="font-semibold text-charcoal-800">{t("infoSocialLabel")}</h3>
                 </div>
                 <div className="flex gap-3">
                   {/* Facebook */}
@@ -131,7 +135,7 @@ export default function ContactPage() {
                     </svg>
                   </span>
                 </div>
-                <p className="text-xs text-charcoal-400 mt-2">Bientôt disponibles</p>
+                <p className="text-xs text-charcoal-400 mt-2">{t("infoSocialSoon")}</p>
               </div>
 
             </div>
@@ -143,7 +147,7 @@ export default function ContactPage() {
       <section className="py-12 md:py-20 bg-[#F8FAF9] border-t border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
-            Questions fréquentes
+            {t("faqTitle")}
           </h2>
           <div className="space-y-3">
             {FAQ.map(({ q, a }) => (
