@@ -10,31 +10,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Static pages FR + EN ─────────────────────────────────────────────────────
   const staticPages: MetadataRoute.Sitemap = [
-    { url: `${BASE}/`,                    lastModified: now, changeFrequency: "daily",   priority: 1.0 },
-    { url: `${BASE}/en`,                  lastModified: now, changeFrequency: "daily",   priority: 1.0 },
-    { url: `${BASE}/chalets`,             lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE}/en/chalets`,          lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE}/regions`,             lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
-    { url: `${BASE}/en/regions`,          lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
-    { url: `${BASE}/devenir-hote`,        lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/en/devenir-hote`,     lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/tarifs`,              lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/tarifs`,           lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/comment-ca-marche`,   lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/comment-ca-marche`,lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/faq-hotes`,           lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/faq-hotes`,        lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/a-propos`,            lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/a-propos`,         lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/contact`,             lastModified: now, changeFrequency: "yearly",  priority: 0.5 },
-    { url: `${BASE}/conditions`,          lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
-    { url: `${BASE}/confidentialite`,     lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/`,                  lastModified: now, changeFrequency: "daily",   priority: 1.0 },
+    { url: `${BASE}/en`,                lastModified: now, changeFrequency: "daily",   priority: 1.0 },
+    { url: `${BASE}/chalets`,           lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
+    { url: `${BASE}/en/cabins`,         lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
+    { url: `${BASE}/regions`,           lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
+    { url: `${BASE}/en/regions`,        lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
+    { url: `${BASE}/devenir-hote`,      lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/en/become-a-host`,  lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/tarifs`,            lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/pricing`,        lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/comment-ca-marche`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/how-it-works`,   lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/faq-hotes`,         lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/owner-faq`,      lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/a-propos`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/about`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/contact`,           lastModified: now, changeFrequency: "yearly",  priority: 0.5 },
+    { url: `${BASE}/en/contact`,        lastModified: now, changeFrequency: "yearly",  priority: 0.5 },
+    { url: `${BASE}/conditions`,        lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/en/terms`,          lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/confidentialite`,   lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/en/privacy`,        lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
   ];
 
   // ── Region pages FR + EN ─────────────────────────────────────────────────────
   const regionPages: MetadataRoute.Sitemap = getRegionSlugs().flatMap((slug) => [
     { url: `${BASE}/chalets/${slug}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
-    { url: `${BASE}/en/chalets/${slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+    { url: `${BASE}/en/cabins/${slug}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
   ]);
 
   let listingPages: MetadataRoute.Sitemap = [];
