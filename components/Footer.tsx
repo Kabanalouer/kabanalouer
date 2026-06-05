@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import FooterLangToggle from "./FooterLangToggle";
 
 function FooterLogo() {
@@ -14,8 +14,12 @@ function FooterLogo() {
   );
 }
 
+function localePath(path: string, locale: string): string {
+  return locale === "en" ? `/en${path}` : path;
+}
+
 export default async function Footer() {
-  const t = await getTranslations("footer");
+  const [t, locale] = await Promise.all([getTranslations("footer"), getLocale()]);
 
   return (
     <footer className="w-full block bg-charcoal-50 border-t border-[#ebebeb]">
@@ -41,9 +45,9 @@ export default async function Footer() {
               {t("travelers.title")}
             </h3>
             <ul className="space-y-3 text-sm">
-              <FooterLink href="/chalets" label={t("travelers.browse")} />
-              <FooterLink href="/regions" label={t("travelers.regions")} />
-              <FooterLink href="/comment-ca-marche" label={t("travelers.howItWorks")} />
+              <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
+              <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />
+              <FooterLink href={localePath("/comment-ca-marche", locale)} label={t("travelers.howItWorks")} />
             </ul>
           </div>
 
@@ -53,10 +57,10 @@ export default async function Footer() {
               {t("owners.title")}
             </h3>
             <ul className="space-y-3 text-sm">
-              <FooterLink href="/devenir-hote" label={t("owners.listCabin")} />
-              <FooterLink href="/devenir-hote" label={t("owners.whyChooseUs")} />
-              <FooterLink href="/tarifs" label={t("owners.pricing")} />
-              <FooterLink href="/faq-hotes" label={t("owners.faq")} />
+              <FooterLink href={localePath("/devenir-hote", locale)} label={t("owners.listCabin")} />
+              <FooterLink href={localePath("/devenir-hote", locale)} label={t("owners.whyChooseUs")} />
+              <FooterLink href={localePath("/tarifs", locale)} label={t("owners.pricing")} />
+              <FooterLink href={localePath("/faq-hotes", locale)} label={t("owners.faq")} />
             </ul>
           </div>
 
@@ -66,10 +70,10 @@ export default async function Footer() {
               {t("legal.title")}
             </h3>
             <ul className="space-y-3 text-sm">
-              <FooterLink href="/a-propos" label={t("legal.about")} />
-              <FooterLink href="/conditions" label={t("legal.terms")} />
-              <FooterLink href="/confidentialite" label={t("legal.privacy")} />
-              <FooterLink href="/contact" label={t("legal.contact")} />
+              <FooterLink href={localePath("/a-propos", locale)} label={t("legal.about")} />
+              <FooterLink href={localePath("/conditions", locale)} label={t("legal.terms")} />
+              <FooterLink href={localePath("/confidentialite", locale)} label={t("legal.privacy")} />
+              <FooterLink href={localePath("/contact", locale)} label={t("legal.contact")} />
             </ul>
           </div>
         </div>
