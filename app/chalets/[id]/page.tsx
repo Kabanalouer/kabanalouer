@@ -3,6 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+
+// cookies() is used via createClient() → force dynamic to avoid DYNAMIC_SERVER_USAGE in production
+export const dynamic = "force-dynamic";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/chalets/ContactForm";
