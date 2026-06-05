@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OwnerCTA from "@/components/OwnerCTA";
@@ -61,16 +60,11 @@ export default async function RegionsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
           {/* ── Banner ── */}
-          <div
-            className="relative overflow-hidden rounded-2xl mb-12"
-            style={{ height: 280 }}
-          >
-            <Image
-              src="/images/cover-regions.jpg"
+          <div className="relative overflow-hidden rounded-2xl h-[280px] mb-12">
+            <img
+              src="/images/cover-region.jpg"
               alt=""
-              fill
-              className="object-cover object-center"
-              priority
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-14">
