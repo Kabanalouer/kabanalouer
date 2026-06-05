@@ -21,6 +21,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
+import { getRegionContent } from "@/lib/regionsContent";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
 import ViewTracker from "@/components/chalets/ViewTracker";
@@ -46,8 +47,13 @@ export async function generateMetadata({ params }: Props) {
   // Region landing page
   const region = getRegionBySlug(slug);
   if (region) {
-    const title = `Chalets à louer ${region.locative}`;
-    const description = `Découvrez nos chalets à louer ${region.locative}, Québec. Contact direct avec les propriétaires, aucun frais de service. Réservez votre escapade dès aujourd'hui.`;
+    const rc = getRegionContent(slug);
+    const title = isEn
+      ? (rc?.meta_title_en ?? `Cabin Rentals ${rc?.locative_en ?? `in ${region.name}`}, Quebec`)
+      : (rc?.meta_title_fr ?? `Chalets à louer ${region.locative}`);
+    const description = isEn
+      ? (rc?.meta_description_en ?? `Find cabin rentals ${rc?.locative_en ?? `in ${region.name}`}, Quebec. Direct contact with local owners. No service fees.`)
+      : (rc?.meta_description_fr ?? `Découvrez nos chalets à louer ${region.locative}, Québec. Contact direct avec les propriétaires, aucun frais de service.`);
     return {
       title,
       description,
@@ -59,7 +65,7 @@ export async function generateMetadata({ params }: Props) {
         title,
         description,
         url: isEn ? `/en/chalets/${slug}` : `/chalets/${slug}`,
-        images: [{ url: region.heroImage, width: 1920, height: 1080, alt: `Chalet ${region.locative}` }],
+        images: [{ url: region.heroImage, width: 1920, height: 1080, alt: isEn ? `Cabin rental ${rc?.locative_en ?? `in ${region.name}`}` : `Chalet ${region.locative}` }],
       },
       twitter: { title, description, images: [region.heroImage] },
     };

@@ -6,9 +6,13 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { REGIONS, type RegionConfig } from "@/lib/regions";
+import { getRegionContent } from "@/lib/regionsContent";
+import { getLocale } from "next-intl/server";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
-  const supabase = await createClient();
+  const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
+  const isEn = locale === "en";
+  const content = getRegionContent(regionConfig.slug);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -114,6 +118,19 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
   const listingCount = listings.length;
 
+  const faqItems = isEn ? (content?.faq_en ?? []) : (content?.faq_fr ?? []);
+  const faqJsonLd = faqItems.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: { "@type": "Answer", text: item.answer },
+        })),
+      }
+    : null;
+
   return (
     <div className="flex flex-col min-h-screen">
       <script
@@ -124,6 +141,12 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      )}
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
       <Navbar />
@@ -150,12 +173,18 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             <span className="text-white/90">{regionConfig.name}</span>
           </nav>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 max-w-3xl leading-tight">
-            Chalets à louer {regionConfig.locative}
+            {isEn
+              ? `Cabin Rentals ${content?.locative_en ?? "in Quebec"}`
+              : `Chalets à louer ${regionConfig.locative}`}
           </h1>
           <p className="text-lg text-white/85 mb-8 max-w-lg">
-            Trouvez votre chalet idéal {regionConfig.locative}.
+            {isEn
+              ? `Find your perfect cabin ${content?.locative_en ?? "in Quebec"}.`
+              : `Trouvez votre chalet idéal ${regionConfig.locative}.`}
             <br />
-            Contact direct avec les propriétaires québécois.
+            {isEn
+              ? "Direct contact with local owners. No service fees."
+              : "Contact direct avec les propriétaires québécois."}
           </p>
           <SearchBar initialRegion={regionConfig.dbValue} />
         </div>
@@ -222,21 +251,74 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         )}
       </section>
 
-      {/* ── SEO Text ── */}
-      <section className="bg-[#F8FAF9] py-16">
+      {/* ── Highlights ── */}
+      {content && (
+        <section className="bg-charcoal-50 py-14">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-xl font-bold text-charcoal-800 mb-8">
+              {isEn
+                ? `Why choose ${content.region_en}?`
+                : `Pourquoi louer un chalet ${regionConfig.locative} ?`}
+            </h2>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4">
+              {(isEn ? content.highlights_en : content.highlights_fr).map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <svg
+                    className="w-5 h-5 text-primary shrink-0 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-charcoal-700 text-sm leading-snug">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* ── Description ── */}
+      <section className="bg-white py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Location de chalet {regionConfig.locative}
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-6">
+            {isEn
+              ? `Discover ${content?.region_en ?? regionConfig.name}`
+              : `Découvrez ${content?.region_fr ?? regionConfig.name}`}
           </h2>
           <div className="space-y-4">
-            {regionConfig.seoText.map((paragraph, i) => (
-              <p key={i} className="text-gray-600 leading-relaxed">
+            {(isEn && content?.description_en
+              ? content.description_en
+              : regionConfig.seoText
+            ).map((paragraph, i) => (
+              <p key={i} className="text-charcoal-500 leading-relaxed">
                 {paragraph}
               </p>
             ))}
           </div>
         </div>
       </section>
+
+      {/* ── FAQ ── */}
+      {faqItems.length > 0 && (
+        <section className="bg-charcoal-50 py-16">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-xl font-bold text-charcoal-800 mb-8">
+              {isEn ? "Frequently asked questions" : "Questions fréquentes"}
+            </h2>
+            <div className="space-y-6">
+              {faqItems.map((item, i) => (
+                <div key={i}>
+                  <h3 className="font-semibold text-charcoal-800 mb-2">{item.question}</h3>
+                  <p className="text-charcoal-500 text-sm leading-relaxed">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Other regions ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
