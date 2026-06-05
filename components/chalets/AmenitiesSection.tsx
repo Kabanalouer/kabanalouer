@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AMENITIES } from "@/lib/amenities";
+import { AMENITIES, getAmenityLabel, AMENITY_DESC_EN } from "@/lib/amenities";
+import { useTranslations, useLocale } from "next-intl";
 
 type AmenityConfig = { icon: React.ReactNode; description: string };
 
@@ -321,14 +322,15 @@ const DEFAULT_CONFIG: AmenityConfig = {
   description: "Disponible dans ce chalet",
 };
 
-function AmenityRow({ amenity }: { amenity: string }) {
+function AmenityRow({ amenity, locale, defaultDesc }: { amenity: string; locale: string; defaultDesc: string }) {
   const config = AMENITY_CONFIG[amenity] ?? DEFAULT_CONFIG;
+  const desc = locale === "en" ? (AMENITY_DESC_EN[amenity] ?? defaultDesc) : config.description;
   return (
     <div className="flex items-start gap-4 py-4">
       <div className="shrink-0 text-charcoal-800 mt-0.5">{config.icon}</div>
       <div>
-        <p className="font-semibold text-charcoal-800 text-sm">{amenity}</p>
-        <p className="text-sm text-charcoal-400 mt-0.5">{config.description}</p>
+        <p className="font-semibold text-charcoal-800 text-sm">{getAmenityLabel(amenity, locale)}</p>
+        <p className="text-sm text-charcoal-400 mt-0.5">{desc}</p>
       </div>
     </div>
   );
@@ -336,6 +338,8 @@ function AmenityRow({ amenity }: { amenity: string }) {
 
 export default function AmenitiesSection({ amenities }: { amenities: string[] }) {
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("amenitiesSection");
+  const locale = useLocale();
 
   const sorted = amenities
     .filter((a) => (AMENITIES as readonly string[]).includes(a))
@@ -346,11 +350,11 @@ export default function AmenitiesSection({ amenities }: { amenities: string[] })
 
   return (
     <div>
-      <h2 className="font-semibold text-charcoal-800 mb-1">Points forts du chalet</h2>
+      <h2 className="font-semibold text-charcoal-800 mb-1">{t("heading")}</h2>
 
       <div className="divide-y divide-[#ebebeb]">
         {(expanded ? sorted : top3).map((a) => (
-          <AmenityRow key={a} amenity={a} />
+          <AmenityRow key={a} amenity={a} locale={locale} defaultDesc={t("defaultDesc")} />
         ))}
       </div>
 
@@ -359,9 +363,7 @@ export default function AmenitiesSection({ amenities }: { amenities: string[] })
           onClick={() => setExpanded(!expanded)}
           className="mt-3 text-sm font-medium text-primary border border-primary/30 px-4 py-2 rounded-full hover:bg-primary/5 transition-colors"
         >
-          {expanded
-            ? "Réduire ↑"
-            : `Voir toutes les caractéristiques (${sorted.length}) →`}
+          {expanded ? t("showLess") : t("showAll", { count: sorted.length })}
         </button>
       )}
     </div>

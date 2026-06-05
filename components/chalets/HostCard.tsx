@@ -1,21 +1,6 @@
 import Image from "next/image";
 import ContactButton from "./ContactButton";
-
-function responseSpeedLabel(avgMs: number): string {
-  if (avgMs < 3_600_000) return "Répond dans l'heure";
-  if (avgMs < 14_400_000) return "Répond en quelques heures";
-  return "Répond en 1 jour";
-}
-
-function seniority(createdAt: string): string {
-  const months =
-    (new Date().getFullYear() - new Date(createdAt).getFullYear()) * 12 +
-    (new Date().getMonth() - new Date(createdAt).getMonth());
-  if (months < 1) return "Nouveau";
-  if (months < 12) return `${months} mois en tant que propriétaire`;
-  const y = Math.floor(months / 12);
-  return `${y} an${y > 1 ? "s" : ""} en tant que propriétaire`;
-}
+import { getTranslations, getLocale } from "next-intl/server";
 
 interface Props {
   host: { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null };
@@ -29,13 +14,31 @@ interface Props {
   isOwner?: boolean;
 }
 
-export default function HostCard({
+export default async function HostCard({
   host, reviewCount, avgRating, responseRate, avgResponseMs,
   listingId, listingTitle, currentUserId, isOwner,
 }: Props) {
+  const [t, locale] = await Promise.all([getTranslations("hostCard"), getLocale()]);
+
+  function responseSpeedLabel(avgMs: number): string {
+    if (avgMs < 3_600_000) return t("responseSpeedHour");
+    if (avgMs < 14_400_000) return t("responseSpeedHours");
+    return t("responseSpeedDay");
+  }
+
+  function seniority(): string {
+    const months =
+      (new Date().getFullYear() - new Date(host.created_at).getFullYear()) * 12 +
+      (new Date().getMonth() - new Date(host.created_at).getMonth());
+    if (months < 1) return t("seniorityNew");
+    if (months < 12) return t("seniorityMonths", { months });
+    const y = Math.floor(months / 12);
+    return y === 1 ? t("seniorityYear") : t("seniorityYears", { y });
+  }
+
   return (
     <div>
-      <h2 className="font-semibold text-charcoal-800 mb-5">Faites connaissance avec votre propriétaire</h2>
+      <h2 className="font-semibold text-charcoal-800 mb-5">{t("heading")}</h2>
 
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Left: host card ── */}
@@ -57,19 +60,19 @@ export default function HostCard({
           </div>
 
           <p className="font-bold text-xl text-charcoal-800 leading-tight">
-            {host.name?.split(" ")[0] ?? "Proprio"}
+            {host.name?.split(" ")[0] ?? t("ownerLabel")}
           </p>
-          <p className="text-sm text-charcoal-400 mb-5">Proprio</p>
+          <p className="text-sm text-charcoal-400 mb-5">{t("ownerLabel")}</p>
 
           {/* Stats */}
           <div className="w-full border-t border-[#ebebeb] pt-4 space-y-2.5">
             {reviewCount > 0 ? (
               <div className="text-sm text-charcoal-700">
                 <span className="font-bold text-charcoal-800 text-base">{reviewCount}</span>
-                <span className="text-charcoal-400 ml-1">avis</span>
+                <span className="text-charcoal-400 ml-1">{t("reviews")}</span>
               </div>
             ) : (
-              <div className="text-sm text-charcoal-400">Aucun avis</div>
+              <div className="text-sm text-charcoal-400">{t("noReviews")}</div>
             )}
             {avgRating > 0 && (
               <div className="flex items-center justify-center gap-1 text-sm text-charcoal-700">
@@ -80,13 +83,13 @@ export default function HostCard({
                 <span className="text-charcoal-400">/ 5</span>
               </div>
             )}
-            <div className="text-sm text-charcoal-500">{seniority(host.created_at)}</div>
+            <div className="text-sm text-charcoal-500">{seniority()}</div>
           </div>
         </div>
 
         {/* ── Right: info + contact ── */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-charcoal-800 mb-4">Présentation du propriétaire</h3>
+          <h3 className="font-semibold text-charcoal-800 mb-4">{t("presentation")}</h3>
           {host.bio && (
             <p className="text-sm text-charcoal-600 leading-relaxed mb-4">{host.bio}</p>
           )}
@@ -97,7 +100,7 @@ export default function HostCard({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <span>
-                  Taux de réponse :{" "}
+                  {t("responseRateLabel")} :{" "}
                   <span className="font-semibold">{responseRate}&nbsp;%</span>
                 </span>
               </div>
@@ -113,13 +116,13 @@ export default function HostCard({
           </div>
           {isOwner ? (
             <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
-              C&apos;est votre chalet
+              {locale === "en" ? "This is your cabin" : "C'est votre chalet"}
             </button>
           ) : (
             <ContactButton
               listingId={listingId}
               hostId={host.id}
-              hostName={host.name ?? "le propriétaire"}
+              hostName={host.name ?? (locale === "en" ? "the owner" : "le propriétaire")}
               listingTitle={listingTitle}
               currentUserId={currentUserId}
             />

@@ -640,7 +640,8 @@
     "babies": "Infants",
     "babiesSub": "Under 2",
     "pets": "Pets",
-    "petsSub": "Dogs, cats, etc."
+    "petsSub": "Dogs, cats, etc.",
+    "regionOrCity": "Region or city..."
   },
   "searchSubBar": {
     "searchCabin": "Search for a cabin",
@@ -653,7 +654,10 @@
     "noResults": "No cabins found",
     "noResultsHint": "Try different filters or move the map.",
     "showMap": "View map",
-    "showList": "View list"
+    "showList": "View list",
+    "priceOnRequest": "On request",
+    "priceFrom": "From {price} $/night",
+    "viewCabin": "View cabin →"
   },
   "listingCard": {
     "travelers": "{count, plural, one {{count} traveler} other {{count} travelers}}",
@@ -977,5 +981,47 @@
     "ctaSubtitle": "Whether you're looking for a cabin for your next getaway or want to list your property, Kabanalouer is made for you.",
     "ctaExploreCabins": "Explore cabins →",
     "ctaListCabin": "List my cabin →"
+  },
+  "hostCard": {
+    "heading": "Meet your owner",
+    "ownerLabel": "Owner",
+    "noReviews": "No reviews",
+    "reviews": "reviews",
+    "seniorityNew": "New",
+    "seniorityMonths": "{months}-month owner",
+    "seniorityYear": "1-year owner",
+    "seniorityYears": "{y}-year owner",
+    "responseRateLabel": "Response rate",
+    "responseSpeedHour": "Responds within the hour",
+    "responseSpeedHours": "Responds within a few hours",
+    "responseSpeedDay": "Responds within 1 day",
+    "presentation": "About the owner"
+  },
+  "amenitiesSection": {
+    "heading": "Cabin highlights",
+    "showAll": "Show all amenities ({count}) →",
+    "showLess": "Show less ↑",
+    "defaultDesc": "Available at this cabin"
+  },
+  "availabilityView": {
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "checkin": "Check-in",
+    "checkout": "Check-out",
+    "allAvailable": "This cabin is available for all dates — contact the owner to confirm."
+  },
+  "reviewForm": {
+    "title": "Leave a review",
+    "veryBad": "Very poor",
+    "bad": "Poor",
+    "average": "Average",
+    "good": "Good",
+    "excellent": "Excellent",
+    "placeholder": "Describe your experience (optional)",
+    "submit": "Publish my review",
+    "submitting": "Sending…",
+    "successTitle": "Thank you for your review!",
+    "successSub": "It will appear shortly.",
+    "errorSend": "Error sending review."
   }
 }

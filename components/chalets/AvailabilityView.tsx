@@ -1,12 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 
-const MONTH_NAMES = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
-const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+function getMonthNames(locale: string): string[] {
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  return Array.from({ length: 12 }, (_, i) =>
+    new Date(2024, i, 1).toLocaleDateString(intlLocale, { month: "long" })
+      .replace(/^./, (c) => c.toUpperCase())
+  );
+}
+
+function getDayNames(locale: string): string[] {
+  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  return Array.from({ length: 7 }, (_, i) =>
+    new Date(2025, 0, 5 + i).toLocaleDateString(intlLocale, { weekday: "short" })
+      .replace(".", "").slice(0, 3)
+      .replace(/^./, (c) => c.toUpperCase())
+  );
+}
 const MAX_OFFSET = 17;
 
 const BLOCKED_COLOR = "#FECACA"; // red-200
@@ -51,11 +63,15 @@ function MonthGrid({
   month,
   allBlocked,
   today,
+  monthNames,
+  dayNames,
 }: {
   year: number;
   month: number;
   allBlocked: Set<string>;
   today: string;
+  monthNames: string[];
+  dayNames: string[];
 }) {
   const daysInMonth    = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
@@ -63,11 +79,11 @@ function MonthGrid({
   return (
     <div className="flex-1 min-w-0">
       <h3 className="text-sm font-semibold text-charcoal-700 text-center mb-3 capitalize">
-        {MONTH_NAMES[month]} {year}
+        {monthNames[month]} {year}
       </h3>
 
       <div className="grid grid-cols-7 mb-1">
-        {DAY_NAMES.map((d) => (
+        {dayNames.map((d) => (
           <div key={d} className="text-center text-[10px] font-semibold text-charcoal-200 py-0.5">{d}</div>
         ))}
       </div>
@@ -104,6 +120,10 @@ function MonthGrid({
 }
 
 export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] }) {
+  const t = useTranslations("availabilityView");
+  const locale = useLocale();
+  const monthNames = getMonthNames(locale);
+  const dayNames = getDayNames(locale);
   const today = new Date().toISOString().slice(0, 10);
   const now   = new Date();
 
@@ -162,6 +182,8 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
             month={month}
             allBlocked={allBlocked}
             today={today}
+            monthNames={monthNames}
+            dayNames={dayNames}
           />
         ))}
       </div>
@@ -170,31 +192,31 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-xs text-charcoal-400">
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded border border-[#ebebeb] overflow-hidden bg-white shrink-0" />
-          Disponible
+          {t("available")}
         </div>
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
             <div className="absolute inset-0" style={{ background: BLOCKED_COLOR }} />
           </div>
-          Non disponible
+          {t("unavailable")}
         </div>
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
             <div className="absolute inset-y-0 right-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
           </div>
-          Arrivée
+          {t("checkin")}
         </div>
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
             <div className="absolute inset-y-0 left-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
           </div>
-          Départ
+          {t("checkout")}
         </div>
       </div>
 
       {blocked.length === 0 && (
         <p className="text-xs text-primary mt-3 font-medium">
-          Ce chalet est disponible pour toutes les dates — contactez le propriétaire pour confirmer.
+          {t("allAvailable")}
         </p>
       )}
     </div>

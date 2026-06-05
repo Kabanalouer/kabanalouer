@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { AMENITIES } from "@/lib/amenities";
-import { useTranslations } from "next-intl";
+import { AMENITIES, getAmenityLabel } from "@/lib/amenities";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
   label: string;
@@ -76,6 +77,7 @@ export default function FiltersModal({
   initialAmenities,
 }: FiltersModalProps) {
   const t = useTranslations("filtersModal");
+  const locale = useLocale();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [minBedrooms, setMinBedrooms] = useState(initialMinBedrooms ?? "");
@@ -109,7 +111,7 @@ export default function FiltersModal({
     if (minBeds) params.set("minBeds", minBeds);
     if (minBathrooms) params.set("minBathrooms", minBathrooms);
     if (selectedAmenities.length > 0) params.set("amenities", selectedAmenities.join(","));
-    router.push(`/chalets${params.toString() ? `?${params.toString()}` : ""}`);
+    router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
     setIsOpen(false);
   };
 
@@ -207,7 +209,7 @@ export default function FiltersModal({
                             </svg>
                           )}
                         </span>
-                        <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>{amenity}</span>
+                        <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>{getAmenityLabel(amenity, locale)}</span>
                       </label>
                     );
                   })}

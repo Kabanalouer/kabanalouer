@@ -640,7 +640,8 @@
     "babies": "Bébés",
     "babiesSub": "Moins de 2 ans",
     "pets": "Animaux",
-    "petsSub": "Chiens, chats, etc."
+    "petsSub": "Chiens, chats, etc.",
+    "regionOrCity": "Région ou ville..."
   },
   "searchSubBar": {
     "searchCabin": "Rechercher un chalet",
@@ -653,7 +654,10 @@
     "noResults": "Aucun chalet trouvé",
     "noResultsHint": "Essayez d'autres filtres ou déplacez la carte.",
     "showMap": "Voir la carte",
-    "showList": "Voir la liste"
+    "showList": "Voir la liste",
+    "priceOnRequest": "Sur demande",
+    "priceFrom": "À partir de {price} $/nuit",
+    "viewCabin": "Voir le chalet →"
   },
   "listingCard": {
     "travelers": "{count, plural, one {{count} voyageur} other {{count} voyageurs}}",
@@ -977,5 +981,47 @@
     "ctaSubtitle": "Que vous cherchiez un chalet pour votre prochaine escapade ou que vous souhaitiez afficher votre propriété, Kabanalouer est fait pour vous.",
     "ctaExploreCabins": "Explorer les chalets →",
     "ctaListCabin": "Afficher mon chalet →"
+  },
+  "hostCard": {
+    "heading": "Faites connaissance avec votre propriétaire",
+    "ownerLabel": "Proprio",
+    "noReviews": "Aucun avis",
+    "reviews": "avis",
+    "seniorityNew": "Nouveau",
+    "seniorityMonths": "{months} mois en tant que proprio",
+    "seniorityYear": "1 an en tant que proprio",
+    "seniorityYears": "{y} ans en tant que proprio",
+    "responseRateLabel": "Taux de réponse",
+    "responseSpeedHour": "Répond dans l'heure",
+    "responseSpeedHours": "Répond en quelques heures",
+    "responseSpeedDay": "Répond en 1 jour",
+    "presentation": "Présentation du propriétaire"
+  },
+  "amenitiesSection": {
+    "heading": "Points forts du chalet",
+    "showAll": "Voir toutes les caractéristiques ({count}) →",
+    "showLess": "Réduire ↑",
+    "defaultDesc": "Disponible dans ce chalet"
+  },
+  "availabilityView": {
+    "available": "Disponible",
+    "unavailable": "Non disponible",
+    "checkin": "Arrivée",
+    "checkout": "Départ",
+    "allAvailable": "Ce chalet est disponible pour toutes les dates — contactez le propriétaire pour confirmer."
+  },
+  "reviewForm": {
+    "title": "Laisser un avis",
+    "veryBad": "Très mauvais",
+    "bad": "Mauvais",
+    "average": "Moyen",
+    "good": "Bien",
+    "excellent": "Excellent",
+    "placeholder": "Décrivez votre expérience (optionnel)",
+    "submit": "Publier mon avis",
+    "submitting": "Envoi…",
+    "successTitle": "Merci pour votre avis !",
+    "successSub": "Il apparaîtra dans quelques instants.",
+    "errorSend": "Erreur lors de l'envoi."
   }
 }

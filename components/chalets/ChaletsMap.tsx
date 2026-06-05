@@ -3,6 +3,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import type { ListingForMap } from "./ChaletsMapLayout";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
 
@@ -68,6 +70,8 @@ function MapContent({
   onMapReady: (m: google.maps.Map) => void;
   onMapStateChange: (s: { zoom: number; lat: number }) => void;
 }) {
+  const tMap = useTranslations("chaletsMap");
+  const locale = useLocale();
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isFirstIdle = useRef(true);
@@ -162,13 +166,13 @@ function MapContent({
               {selected.city ? `${selected.city}, ${selected.region}` : selected.region}
             </p>
             <p className="text-sm font-bold text-gray-900 mb-3">
-              {selected.priceOnRequest ? "Sur demande" : `À partir de ${selected.price} $ / nuit`}
+              {selected.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: selected.price })}
             </p>
             <a
-              href={`/chalets/${selected.id}`}
+              href={localePath(`/chalets/${selected.id}`, locale)}
               className="block text-center text-xs bg-primary text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
-              Voir le chalet →
+              {tMap("viewCabin")}
             </a>
           </div>
         </InfoWindow>

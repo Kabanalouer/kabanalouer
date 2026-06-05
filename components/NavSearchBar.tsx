@@ -284,7 +284,7 @@ function NavSearchBarInner() {
                   type="text"
                   value={destInput}
                   onChange={(e) => { setDestInput(e.target.value); setDestSelected(null); }}
-                  placeholder="Région ou ville..."
+                  placeholder={t("regionOrCity")}
                   autoFocus
                   className="w-full text-sm outline-none text-charcoal-700 placeholder-charcoal-400"
                 />

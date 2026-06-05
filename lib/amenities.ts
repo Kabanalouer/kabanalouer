@@ -31,6 +31,78 @@ export const AMENITIES = [
   "Borne de recharge pour véhicule électrique",
 ] as const;
 
+export const AMENITIES_EN = [
+  "Waterfront",
+  "Indoor pool",
+  "Outdoor pool",
+  "Ski in / Ski out",
+  "Resort location",
+  "Spa",
+  "Sauna",
+  "Log cabin",
+  "Indoor wood fireplace",
+  "Outdoor firepit",
+  "BBQ",
+  "Pool table",
+  "Foosball",
+  "Ping-pong table",
+  "Arcade games",
+  "Board games",
+  "Books & magazines",
+  "Gym",
+  "Wifi",
+  "Dedicated workspace (remote work)",
+  "Air conditioning",
+  "Cable TV",
+  "Smart TV",
+  "Sound system",
+  "Fully equipped kitchen",
+  "Bedding and towels included",
+  "Laundry",
+  "Terrace / deck",
+  "Children's play area",
+  "EV charging station",
+] as const;
+
+export const AMENITY_DESC_EN: Record<string, string> = {
+  "Bord de l'eau": "Direct waterfront access from the cabin",
+  "Piscine intérieure": "Heated indoor pool on site",
+  "Piscine extérieure": "Outdoor pool on site",
+  "Ski in / Ski out": "Direct ski slope access from the cabin",
+  "Situé sur un resort": "Cabin within a resort with on-site services",
+  "Spa": "Private spa for ultimate relaxation",
+  "Sauna": "Sauna to unwind after your activities",
+  "Chalet en bois rond": "Traditional log cabin construction",
+  "Foyer intérieur au bois": "Indoor wood-burning fireplace",
+  "Foyer extérieur (firepit)": "Outdoor firepit",
+  "BBQ": "BBQ for outdoor grilling",
+  "Table de billard": "Pool table",
+  "Babyfoot": "Foosball table",
+  "Table de ping-pong": "Ping-pong table",
+  "Arcades": "Arcade games",
+  "Jeux de société": "Board games collection",
+  "Livres et Revues": "Books and magazines",
+  "Gym": "Fitness equipment",
+  "Wifi": "High-speed Wifi",
+  "Espace de travail dédié (télétravail)": "Dedicated workspace for remote work",
+  "Climatisation": "Air conditioning",
+  "Télévision avec câble": "Cable TV",
+  "Télévision intelligente": "Smart TV with streaming",
+  "Système audio (musique)": "Sound system",
+  "Cuisine complète avec vaisselle et chaudrons": "Fully equipped kitchen with cookware",
+  "Literie et serviettes incluses": "Bedding and towels included",
+  "Buanderie": "In-cabin laundry",
+  "Terrasse": "Outdoor terrace or deck",
+  "Module de jeux pour enfant": "Children's outdoor play structure",
+  "Borne de recharge pour véhicule électrique": "EV charging station",
+};
+
+export function getAmenityLabel(amenity: string, locale: string): string {
+  if (locale !== "en") return amenity;
+  const idx = (AMENITIES as readonly string[]).indexOf(amenity);
+  return idx >= 0 ? (AMENITIES_EN[idx] ?? amenity) : amenity;
+}
+
 export const AMENITY_EMOJI: Record<string, string> = {
   "Bord de l'eau":                              "🌊",
   "Piscine intérieure":                         "🏊",
