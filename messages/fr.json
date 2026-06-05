@@ -749,5 +749,11 @@
     "copyright": "© 2026 Kabanalouer · Tous droits réservés",
     "madeWith": "Fait avec",
     "inQuebec": "au Québec."
+  },
+  "regions": {
+    "bannerTitle": "Explorez les régions du Québec",
+    "bannerSubtitle": "Des chalets dans les plus beaux coins de la province",
+    "comingSoon": "Bientôt disponible",
+    "cabinCount": "{count, plural, one {# chalet} other {# chalets}}"
   }
 }

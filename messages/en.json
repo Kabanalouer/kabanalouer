@@ -749,5 +749,11 @@
     "copyright": "© 2026 Kabanalouer · All rights reserved",
     "madeWith": "Made with",
     "inQuebec": "in Québec."
+  },
+  "regions": {
+    "bannerTitle": "Explore Quebec's regions",
+    "bannerSubtitle": "Cabins in the most beautiful corners of the province",
+    "comingSoon": "Coming soon",
+    "cabinCount": "{count, plural, one {# cabin} other {# cabins}}"
   }
 }

@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ const breadcrumbJsonLd = {
 };
 
 export default async function RegionsPage() {
-  const supabase = await createClient();
+  const [supabase, t] = await Promise.all([createClient(), getTranslations("regions")]);
 
   const { data } = await supabase
     .from("listings")
@@ -72,10 +73,10 @@ export default async function RegionsPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-14">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 max-w-md leading-tight">
-                Explorez les régions du Québec
+                {t("bannerTitle")}
               </h1>
               <p className="text-white/80 text-base md:text-lg max-w-sm">
-                Des chalets dans les plus beaux coins de la province
+                {t("bannerSubtitle")}
               </p>
             </div>
           </div>
@@ -101,10 +102,10 @@ export default async function RegionsPage() {
                     </p>
                     {count > 0 ? (
                       <p className="text-sm text-charcoal-400 mt-0.5">
-                        {count} chalet{count > 1 ? "s" : ""}
+                        {t("cabinCount", { count })}
                       </p>
                     ) : (
-                      <p className="text-sm text-charcoal-400 mt-0.5">Bientôt disponible</p>
+                      <p className="text-sm text-charcoal-400 mt-0.5">{t("comingSoon")}</p>
                     )}
                   </div>
                   <svg
