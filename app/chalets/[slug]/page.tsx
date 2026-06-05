@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Anthropic from "@anthropic-ai/sdk";
@@ -30,21 +30,21 @@ const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string }>;
 }
 
 export async function generateStaticParams() {
-  return getRegionSlugs().map((slug) => ({ id: slug }));
+  return getRegionSlugs().map((s) => ({ slug: s }));
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
   const locale = await getLocale();
   const isEn = locale === "en";
 
   // Region landing page
-  const region = getRegionBySlug(id);
+  const region = getRegionBySlug(slug);
   if (region) {
     const title = `Chalets à louer ${region.locative}`;
     const description = `Découvrez nos chalets à louer ${region.locative}, Québec. Contact direct avec les propriétaires, aucun frais de service. Réservez votre escapade dès aujourd'hui.`;
@@ -52,13 +52,13 @@ export async function generateMetadata({ params }: Props) {
       title,
       description,
       alternates: {
-        canonical: `/chalets/${id}`,
-        languages: { fr: `/chalets/${id}`, en: `/en/chalets/${id}`, "x-default": `/chalets/${id}` },
+        canonical: `/chalets/${slug}`,
+        languages: { fr: `/chalets/${slug}`, en: `/en/chalets/${slug}`, "x-default": `/chalets/${slug}` },
       },
       openGraph: {
         title,
         description,
-        url: isEn ? `/en/chalets/${id}` : `/chalets/${id}`,
+        url: isEn ? `/en/chalets/${slug}` : `/chalets/${slug}`,
         images: [{ url: region.heroImage, width: 1920, height: 1080, alt: `Chalet ${region.locative}` }],
       },
       twitter: { title, description, images: [region.heroImage] },
@@ -66,34 +66,53 @@ export async function generateMetadata({ params }: Props) {
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // Try by slug first, then fall back to UUID
+  const { data: bySlug } = await supabase
     .from("listings")
-    .select("title, title_en, region, city, description, description_en, photos")
-    .eq("id", id)
+    .select("title, title_en, region, city, description, description_en, photos, slug_fr, slug_en")
+    .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
     .eq("is_published", true)
-    .single();
+    .maybeSingle();
+
+  const data = bySlug ?? (await supabase
+    .from("listings")
+    .select("title, title_en, region, city, description, description_en, photos, slug_fr, slug_en")
+    .eq("id", slug)
+    .eq("is_published", true)
+    .maybeSingle()).data;
+
   if (!data) return {};
 
-  const rawTitle = (isEn && (data as { title_en?: string | null }).title_en) ? (data as { title_en: string }).title_en : data.title;
-  const rawDesc = (isEn && (data as { description_en?: string | null }).description_en) ? (data as { description_en: string }).description_en : data.description;
+  type MetaListing = { title: string; title_en?: string | null; region: string; city?: string | null; description?: string | null; description_en?: string | null; photos: unknown; slug_fr?: string | null; slug_en?: string | null };
+  const d = data as MetaListing;
 
-  const location = [data.city, data.region].filter(Boolean).join(", ");
+  const rawTitle = (isEn && d.title_en) ? d.title_en : d.title;
+  const rawDesc = (isEn && d.description_en) ? d.description_en : d.description;
+
+  const location = [d.city, d.region].filter(Boolean).join(", ");
   const title = location ? `${rawTitle} | ${location}` : rawTitle;
   const description = (rawDesc as string | null)?.slice(0, 160) ?? "";
-  const photos = normalizePhotos(data.photos);
+  const photos = normalizePhotos(d.photos);
   const ogImage = photos[0]?.url ?? DEFAULT_PHOTO;
+
+  const canonicalSlug = (isEn ? d.slug_en : d.slug_fr) ?? d.slug_fr ?? slug;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `/chalets/${id}`,
-      languages: { fr: `/chalets/${id}`, en: `/en/chalets/${id}`, "x-default": `/chalets/${id}` },
+      canonical: `/chalets/${canonicalSlug}`,
+      languages: {
+        fr: `/chalets/${d.slug_fr ?? slug}`,
+        en: d.slug_en ? `/en/cabins/${d.slug_en}` : `/en/chalets/${slug}`,
+        "x-default": `/chalets/${d.slug_fr ?? slug}`,
+      },
     },
     openGraph: {
       title,
       description,
-      url: isEn ? `/en/chalets/${id}` : `/chalets/${id}`,
+      url: isEn ? `/en/chalets/${canonicalSlug}` : `/chalets/${canonicalSlug}`,
       type: "article",
       images: [{ url: ogImage, width: 1200, height: 630, alt: rawTitle }],
     },
@@ -106,10 +125,10 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function ListingOrRegionPage({ params, searchParams }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
 
   // Region landing page — check before any DB query
-  const regionConfig = getRegionBySlug(id);
+  const regionConfig = getRegionBySlug(slug);
   if (regionConfig) return <RegionLanding regionConfig={regionConfig} />;
 
   const [t, locale] = await Promise.all([getTranslations("listing"), getLocale()]);
@@ -118,17 +137,42 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  // Try slug-based lookup first, then fall back to UUID (backward compat)
+  const [{ data: listingBySlug }, { data: { user } }] = await Promise.all([
     supabase
       .from("listings")
       .select("*")
-      .eq("id", id)
+      .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
       .eq("is_published", true)
-      .single(),
+      .maybeSingle(),
     supabase.auth.getUser(),
   ]);
 
+  let listing = listingBySlug;
+
+  if (!listing) {
+    const { data: byId } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("id", slug)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (byId) {
+      // Redirect to canonical slug URL if available
+      type ByIdListing = { slug_fr?: string | null; slug_en?: string | null };
+      const l = byId as ByIdListing;
+      const targetSlug = (isEn ? (l.slug_en ?? l.slug_fr) : l.slug_fr);
+      if (targetSlug) {
+        permanentRedirect(`${isEn ? "/en" : ""}/chalets/${targetSlug}`);
+      }
+      listing = byId;
+    }
+  }
+
   if (!listing) notFound();
+
+  const id = listing.id as string; // UUID for all sub-queries
 
   // Fetch host profile directly from public.users (avoids Supabase join ambiguity)
   const { data: hostProfile } = await supabase
