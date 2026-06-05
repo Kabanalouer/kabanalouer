@@ -722,9 +722,11 @@
       "termsNote": "En créant un compte, vous acceptez nos",
       "termsLink": "conditions d'utilisation",
       "checkEmailTitle": "Vérifiez vos courriels !",
-      "checkEmailDesc": "On a envoyé un lien de confirmation à <email>{email}</email>. Cliquez dessus pour activer votre compte.",
+      "checkEmailDesc": "On a envoyé un lien de confirmation à <strong>{email}</strong>. Cliquez dessus pour activer votre compte.",
       "backToListing": "← Retourner à la fiche du chalet",
-      "backToHome": "← Retour à l'accueil"
+      "backToHome": "← Retour à l'accueil",
+      "firstNamePlaceholder": "Marie",
+      "lastNamePlaceholder": "Tremblay"
     }
   },
   "footer": {

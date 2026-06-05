@@ -2,20 +2,22 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 type Role = "traveler" | "host";
 
 function SignupForm() {
+  const t = useTranslations("auth.signup");
+  const locale = useLocale();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const defaultHome = localePath("/", locale);
   const next = (() => {
-    const n = searchParams.get("next") ?? "/";
-    return n.startsWith("/") ? n : "/";
+    const n = searchParams.get("next") ?? defaultHome;
+    return n.startsWith("/") ? n : defaultHome;
   })();
-
-  const locale = pathname.startsWith("/en") ? "en" : "fr";
   const roleParam = searchParams.get("role") === "host" ? "host" : null;
 
   const [firstName, setFirstName] = useState("");
@@ -32,25 +34,30 @@ function SignupForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName, name: `${firstName} ${lastName}`, role, preferred_language: locale } },
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          name: `${firstName} ${lastName}`,
+          role,
+          preferred_language: locale,
+        },
+      },
     });
-
     if (error) {
       setError(error.message);
       setLoading(false);
       return;
     }
-
     setSuccess(true);
   };
 
   const handleGoogleSignup = async () => {
     const params = new URLSearchParams();
-    if (next !== "/") params.set("next", next);
+    if (next !== defaultHome) params.set("next", next);
     if (locale !== "fr") params.set("locale", locale);
     const qs = params.toString();
     const callbackUrl = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
@@ -59,6 +66,8 @@ function SignupForm() {
       options: { redirectTo: callbackUrl, queryParams: { role } },
     });
   };
+
+  const loginHref = `${localePath("/login", locale)}${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
 
   if (success) {
     return (
@@ -69,22 +78,22 @@ function SignupForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-charcoal-800 mb-3">Vérifiez vos courriels !</h2>
+          <h2 className="text-2xl font-bold text-charcoal-800 mb-3">{t("checkEmailTitle")}</h2>
           <p className="text-charcoal-500 text-sm leading-relaxed">
-            On a envoyé un lien de confirmation à{" "}
-            <strong className="text-charcoal-800">{email}</strong>.{" "}
-            Cliquez dessus pour activer votre compte.
+            {t.rich("checkEmailDesc", {
+              email,
+              strong: (chunks) => (
+                <strong className="text-charcoal-800">{chunks}</strong>
+              ),
+            })}
           </p>
-          {next !== "/" ? (
-            <Link
-              href={next}
-              className="mt-6 inline-block text-primary font-semibold text-sm hover:underline"
-            >
-              ← Retourner à la fiche du chalet
+          {next !== defaultHome ? (
+            <Link href={next} className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+              {t("backToListing")}
             </Link>
           ) : (
-            <Link href="/" className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
-              ← Retour à l&apos;accueil
+            <Link href={defaultHome} className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+              {t("backToHome")}
             </Link>
           )}
         </div>
@@ -95,7 +104,7 @@ function SignupForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoal-50 py-12 px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center mb-8" aria-label="Kabanalouer — accueil">
+        <Link href={defaultHome} className="flex items-center justify-center mb-8" aria-label="Kabanalouer">
           <object
             type="image/svg+xml"
             data="/logo-wordmark.svg"
@@ -105,31 +114,29 @@ function SignupForm() {
           />
         </Link>
 
-        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Créer un compte</h1>
+        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
         <p className="text-charcoal-500 text-sm mb-6">
-          {roleParam === "host"
-            ? "Rejoignez la communauté Kabanalouer en tant que propriétaire"
-            : "Rejoignez la communauté Kabanalouer"}
+          {roleParam === "host" ? t("subtitleHost") : t("subtitleDefault")}
         </p>
 
-        {/* Role selection — hidden when role is pre-set via URL */}
+        {/* Role selection */}
         {!roleParam && (
           <div className="mb-6 mt-6">
-            <p className="text-sm font-medium text-charcoal-700 mb-3">Je suis…</p>
+            <p className="text-sm font-medium text-charcoal-700 mb-3">{t("iAm")}</p>
             <div className="grid grid-cols-2 gap-3">
               <RoleButton
                 selected={role === "traveler"}
                 onClick={() => setRole("traveler")}
                 icon={<LuggageIcon />}
-                title="Voyageur"
-                subtitle="Je cherche un chalet"
+                title={t("travelerTitle")}
+                subtitle={t("travelerSubtitle")}
               />
               <RoleButton
                 selected={role === "host"}
                 onClick={() => setRole("host")}
                 icon={<HomeIcon />}
-                title="Proprio"
-                subtitle="Je loue mon chalet"
+                title={t("ownerTitle")}
+                subtitle={t("ownerSubtitle")}
               />
             </div>
           </div>
@@ -137,8 +144,9 @@ function SignupForm() {
 
         {role === "host" && !roleParam && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 leading-relaxed">
-            Un abonnement de <strong>299 $/an</strong> est requis pour les propriétaires.
-            Vous pourrez vous abonner une fois votre compte créé.
+            {t.rich("hostSubscriptionNote", {
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </div>
         )}
 
@@ -148,10 +156,10 @@ function SignupForm() {
           className="w-full flex items-center justify-center gap-3 border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors mb-6 font-medium text-charcoal-700 text-sm"
         >
           <GoogleIcon />
-          Continuer avec Google
+          {t("continueGoogle")}
         </button>
 
-        <Divider />
+        <Divider label={t("or")} />
 
         <form onSubmit={handleSignup} className="space-y-4">
           {error && (
@@ -160,49 +168,49 @@ function SignupForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Prénom</label>
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("firstNameLabel")}</label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder="Marie"
+                placeholder={t("firstNamePlaceholder")}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Nom</label>
+              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("lastNameLabel")}</label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder="Tremblay"
+                placeholder={t("lastNamePlaceholder")}
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Adresse courriel</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("emailLabel")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="vous@exemple.com"
+              placeholder={t("emailPlaceholder")}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">Mot de passe</label>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("passwordLabel")}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="Minimum 8 caractères"
+              placeholder={t("passwordPlaceholder")}
               minLength={8}
               required
             />
@@ -213,23 +221,20 @@ function SignupForm() {
             disabled={loading}
             className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
           >
-            {loading ? "Création…" : "Créer mon compte"}
+            {loading ? t("submitting") : t("submit")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-charcoal-500">
-          Déjà un compte ?{" "}
-          <Link
-            href={`/login${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
-            className="text-primary font-semibold hover:underline"
-          >
-            Se connecter
+          {t("alreadyAccount")}{" "}
+          <Link href={loginHref} className="text-primary font-semibold hover:underline">
+            {t("loginLink")}
           </Link>
         </p>
         <p className="mt-3 text-center text-xs text-charcoal-400">
-          En créant un compte, vous acceptez nos{" "}
-          <Link href="/conditions" className="underline hover:text-charcoal-600">
-            conditions d&apos;utilisation
+          {t("termsNote")}{" "}
+          <Link href={localePath("/conditions", locale)} className="underline hover:text-charcoal-600">
+            {t("termsLink")}
           </Link>
           .
         </p>
@@ -264,11 +269,11 @@ function RoleButton({ selected, onClick, icon, title, subtitle }: {
   );
 }
 
-function Divider() {
+function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4 mb-6">
       <div className="flex-1 h-px bg-charcoal-200" />
-      <span className="text-xs text-charcoal-400">ou</span>
+      <span className="text-xs text-charcoal-400">{label}</span>
       <div className="flex-1 h-px bg-charcoal-200" />
     </div>
   );

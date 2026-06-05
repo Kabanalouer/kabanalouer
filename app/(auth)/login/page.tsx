@@ -4,12 +4,17 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 function LoginForm() {
+  const t = useTranslations("auth.login");
+  const locale = useLocale();
   const searchParams = useSearchParams();
+  const defaultHome = localePath("/", locale);
   const next = (() => {
-    const n = searchParams.get("next") ?? "/";
-    return n.startsWith("/") ? n : "/";
+    const n = searchParams.get("next") ?? defaultHome;
+    return n.startsWith("/") ? n : defaultHome;
   })();
 
   const [email, setEmail] = useState("");
@@ -23,31 +28,30 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-
     if (error) {
-      setError("Courriel ou mot de passe invalide.");
+      setError(t("invalidCredentials"));
       setLoading(false);
       return;
     }
-
     router.push(next);
     router.refresh();
   };
 
   const handleGoogleLogin = async () => {
-    const callbackUrl = `${window.location.origin}/auth/callback${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
+    const callbackUrl = `${window.location.origin}/auth/callback${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl },
     });
   };
 
+  const signupHref = `${localePath("/signup", locale)}${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoal-50 py-12 px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center mb-8" aria-label="Kabanalouer — accueil">
+        <Link href={localePath("/", locale)} className="flex items-center justify-center mb-8" aria-label="Kabanalouer">
           <object
             type="image/svg+xml"
             data="/logo-wordmark.svg"
@@ -57,44 +61,41 @@ function LoginForm() {
           />
         </Link>
 
-        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">Bon retour !</h1>
-        <p className="text-charcoal-500 mb-8 text-sm">Connectez-vous à votre compte.</p>
+        <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
+        <p className="text-charcoal-500 mb-8 text-sm">{t("subtitle")}</p>
 
-        {/* Google */}
         <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors mb-6 font-medium text-charcoal-700 text-sm"
         >
           <GoogleIcon />
-          Continuer avec Google
+          {t("continueGoogle")}
         </button>
 
-        <Divider />
+        <Divider label={t("or")} />
 
         <form onSubmit={handleLogin} className="space-y-4">
           {error && (
-            <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">
-              {error}
-            </div>
+            <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">{error}</div>
           )}
 
           <div>
             <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-              Adresse courriel
+              {t("emailLabel")}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="vous@exemple.com"
+              placeholder={t("emailPlaceholder")}
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-              Mot de passe
+              {t("passwordLabel")}
             </label>
             <input
               type="password"
@@ -111,17 +112,14 @@ function LoginForm() {
             disabled={loading}
             className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
           >
-            {loading ? "Connexion…" : "Se connecter"}
+            {loading ? t("submitting") : t("submit")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-charcoal-500">
-          Pas encore de compte ?{" "}
-          <Link
-            href={`/signup${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`}
-            className="text-primary font-semibold hover:underline"
-          >
-            S&apos;inscrire gratuitement
+          {t("noAccount")}{" "}
+          <Link href={signupHref} className="text-primary font-semibold hover:underline">
+            {t("signupLink")}
           </Link>
         </p>
       </div>
@@ -137,11 +135,11 @@ export default function LoginPage() {
   );
 }
 
-function Divider() {
+function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4 mb-6">
       <div className="flex-1 h-px bg-charcoal-200" />
-      <span className="text-xs text-charcoal-400">ou</span>
+      <span className="text-xs text-charcoal-400">{label}</span>
       <div className="flex-1 h-px bg-charcoal-200" />
     </div>
   );
