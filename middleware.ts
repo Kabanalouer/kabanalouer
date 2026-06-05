@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const intlMiddleware = createMiddleware(routing);
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // next-intl: locale detection, redirects (e.g. /fr/dashboard → /dashboard)
   const intlResponse = intlMiddleware(request);
 
@@ -53,6 +53,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|ico)$).*)",
   ],
 };
