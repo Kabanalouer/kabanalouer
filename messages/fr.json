@@ -740,7 +740,6 @@
     "owners": {
       "title": "Proprios",
       "listCabin": "Inscrire mon chalet",
-      "whyChooseUs": "Pourquoi nous choisir ?",
       "pricing": "Tarifs et abonnement",
       "faq": "FAQ proprios"
     },
@@ -839,6 +838,26 @@
     "finalCtaBtn": "Commencer gratuitement →",
     "finalCtaOfferNote": "{remaining, plural, one {Offre gratuite pour la # place disponible} other {Offre gratuite pour les # places disponibles}}",
     "finalCtaNoOfferNote": "Abonnement annuel · 299 $/an · Aucune commission"
+  },
+  "creationChoice": {
+    "title": "Comment voulez-vous créer votre annonce ?",
+    "subtitle": "Choisissez l'option qui vous convient le mieux.",
+    "card1Title": "Je crée mon annonce moi-même",
+    "card1Desc": "Créez votre annonce en quelques minutes avec nos outils guidés. Photos, description, disponibilités — tout en un seul endroit.",
+    "card1Btn": "Créer mon annonce →",
+    "card2Title": "J'ai déjà une annonce Airbnb ou Chalets.com",
+    "card2Desc": "Envoyez-nous le lien de votre annonce existante et on s'occupe de tout. Votre annonce sera prête dans 24h.",
+    "card2Btn": "Importer mon annonce →",
+    "successMsg": "On s'occupe de tout — vous recevrez votre annonce par email dans 24h.",
+    "formName": "Nom",
+    "formNamePlaceholder": "Marie Tremblay",
+    "formEmail": "Courriel",
+    "formEmailPlaceholder": "marie@exemple.com",
+    "formUrl": "Lien de votre annonce",
+    "formUrlPlaceholder": "https://www.airbnb.ca/rooms/...",
+    "formSending": "Envoi en cours…",
+    "formSend": "Envoyer →",
+    "formCancel": "Annuler"
   },
   "tarifs": {
     "badge": "Tarif transparent",

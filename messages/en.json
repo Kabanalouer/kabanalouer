@@ -740,7 +740,6 @@
     "owners": {
       "title": "Owners",
       "listCabin": "List my cabin",
-      "whyChooseUs": "Why choose us?",
       "pricing": "Pricing and subscription",
       "faq": "Owner FAQ"
     },
@@ -839,6 +838,26 @@
     "finalCtaBtn": "Get started for free →",
     "finalCtaOfferNote": "{remaining, plural, one {Free offer for # available spot} other {Free offer for # available spots}}",
     "finalCtaNoOfferNote": "Annual subscription · 299 $/year · No commission"
+  },
+  "creationChoice": {
+    "title": "How do you want to create your listing?",
+    "subtitle": "Choose the option that works best for you.",
+    "card1Title": "I'll create my listing myself",
+    "card1Desc": "Create your listing in just a few minutes with our guided tools. Photos, description, availability — all in one place.",
+    "card1Btn": "Create my listing →",
+    "card2Title": "I already have an Airbnb or Chalets.com listing",
+    "card2Desc": "Send us the link to your existing listing and we'll take care of everything. Your listing will be ready within 24h.",
+    "card2Btn": "Import my listing →",
+    "successMsg": "We'll take care of everything — you'll receive your listing by email within 24h.",
+    "formName": "Name",
+    "formNamePlaceholder": "Marie Tremblay",
+    "formEmail": "Email",
+    "formEmailPlaceholder": "marie@example.com",
+    "formUrl": "Link to your listing",
+    "formUrlPlaceholder": "https://www.airbnb.ca/rooms/...",
+    "formSending": "Sending…",
+    "formSend": "Send →",
+    "formCancel": "Cancel"
   },
   "tarifs": {
     "badge": "Transparent pricing",

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { submitImportRequest, type ImportRequestState } from "@/app/devenir-hote/actions";
 
 const initialState: ImportRequestState = { status: "idle" };
@@ -11,6 +12,7 @@ const inputCls =
   "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
 
 export default function CreationChoiceSection() {
+  const t = useTranslations("creationChoice");
   const [formOpen, setFormOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitImportRequest, initialState);
 
@@ -19,10 +21,10 @@ export default function CreationChoiceSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-charcoal-800">
-            Comment voulez-vous créer votre annonce ?
+            {t("title")}
           </h2>
           <p className="text-charcoal-500 mt-3">
-            Choisissez l&apos;option qui vous convient le mieux.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -34,16 +36,16 @@ export default function CreationChoiceSection() {
               <PencilIcon />
             </div>
             <h3 className="text-xl font-bold text-charcoal-800 mb-3">
-              Je crée mon annonce moi-même
+              {t("card1Title")}
             </h3>
             <p className="text-charcoal-500 text-sm leading-relaxed mb-8 flex-1">
-              Créez votre annonce en quelques minutes avec nos outils guidés. Photos, description, disponibilités — tout en un seul endroit.
+              {t("card1Desc")}
             </p>
             <Link
               href="/signup?role=host"
               className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
             >
-              Créer mon annonce →
+              {t("card1Btn")}
             </Link>
           </div>
 
@@ -53,10 +55,10 @@ export default function CreationChoiceSection() {
               <LinkIcon />
             </div>
             <h3 className="text-xl font-bold text-charcoal-800 mb-3">
-              J&apos;ai déjà une annonce Airbnb ou Chalets.com
+              {t("card2Title")}
             </h3>
             <p className="text-charcoal-500 text-sm leading-relaxed mb-8">
-              Envoyez-nous le lien de votre annonce existante et on s&apos;occupe de tout. Votre annonce sera prête dans 24h.
+              {t("card2Desc")}
             </p>
 
             {state.status === "success" ? (
@@ -67,7 +69,7 @@ export default function CreationChoiceSection() {
                   </svg>
                 </div>
                 <p className="text-sm text-green-800 font-medium leading-snug">
-                  On s&apos;occupe de tout — vous recevrez votre annonce par email dans 24h.
+                  {t("successMsg")}
                 </p>
               </div>
             ) : !formOpen ? (
@@ -75,13 +77,13 @@ export default function CreationChoiceSection() {
                 onClick={() => setFormOpen(true)}
                 className="inline-flex items-center justify-center gap-2 border border-primary text-primary font-bold px-6 py-3.5 rounded-full hover:bg-primary/5 transition-colors text-sm"
               >
-                Importer mon annonce →
+                {t("card2Btn")}
               </button>
             ) : (
               <form action={formAction} className="space-y-4">
                 <div>
                   <label htmlFor="import-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                    Nom
+                    {t("formName")}
                   </label>
                   <input
                     id="import-name"
@@ -89,13 +91,13 @@ export default function CreationChoiceSection() {
                     type="text"
                     required
                     autoComplete="name"
-                    placeholder="Marie Tremblay"
+                    placeholder={t("formNamePlaceholder")}
                     className={inputCls}
                   />
                 </div>
                 <div>
                   <label htmlFor="import-email" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                    Courriel
+                    {t("formEmail")}
                   </label>
                   <input
                     id="import-email"
@@ -103,20 +105,20 @@ export default function CreationChoiceSection() {
                     type="email"
                     required
                     autoComplete="email"
-                    placeholder="marie@exemple.com"
+                    placeholder={t("formEmailPlaceholder")}
                     className={inputCls}
                   />
                 </div>
                 <div>
                   <label htmlFor="import-url" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                    Lien de votre annonce
+                    {t("formUrl")}
                   </label>
                   <input
                     id="import-url"
                     name="listing_url"
                     type="url"
                     required
-                    placeholder="https://www.airbnb.ca/rooms/..."
+                    placeholder={t("formUrlPlaceholder")}
                     className={inputCls}
                   />
                 </div>
@@ -133,14 +135,14 @@ export default function CreationChoiceSection() {
                     disabled={isPending}
                     className="flex-1 inline-flex items-center justify-center bg-primary text-white font-bold py-3 rounded-full hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
                   >
-                    {isPending ? "Envoi en cours…" : "Envoyer →"}
+                    {isPending ? t("formSending") : t("formSend")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormOpen(false)}
                     className="px-5 py-3 text-sm text-charcoal-400 hover:text-charcoal-600 transition-colors rounded-full hover:bg-charcoal-50"
                   >
-                    Annuler
+                    {t("formCancel")}
                   </button>
                 </div>
               </form>
