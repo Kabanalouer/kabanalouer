@@ -192,3 +192,54 @@ RESEND_API_KEY
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.vercel.app
 NEXT_PUBLIC_VERCEL_URL             # https://kabanalouer.vercel.app
 ```
+
+---
+
+## 11. Dernière session — 2026-06-05
+
+### Fonctionnalités complétées
+
+**Internationalisation (i18n) — pages et composants traduits en anglais**
+
+- **`CreationChoiceSection`** (`components/devenir-hote/CreationChoiceSection.tsx`) — section "Comment voulez-vous créer votre annonce ?" traduite avec `useTranslations("creationChoice")`. Namespace `creationChoice` ajouté dans `fr.json` et `en.json` (37 clés : titres, descriptions, formulaire d'import complet).
+- **Footer** (`components/Footer.tsx`) — lien "Pourquoi nous choisir ?" retiré de la colonne Proprios/Owners (FR et EN). Clé `owners.whyChooseUs` supprimée des deux fichiers JSON.
+- **Page contact** (`app/contact/page.tsx`, `app/contact/ContactForm.tsx`) — entièrement traduite. `metadata` statique remplacé par `generateMetadata()` avec `getLocale()`. `ContactForm` passe de textes hardcodés à `useTranslations("contact")` (sujets du select, labels, messages). Namespace `contact` ajouté (37 clés). `app/[locale]/contact/page.tsx` mis à jour pour re-exporter `generateMetadata` au lieu de `metadata`.
+
+**Contenu page d'accueil**
+
+- **H1** (`messages/fr.json`, `messages/en.json`, clé `home.heroTitle`) — nouveau texte SEO : "Payez moins cher pour votre location de chalet au Québec." / "Pay less for your Quebec cabin rental."
+- **Taille responsive H1** (`app/page.tsx`) — passage de `text-[2.6rem] md:text-5xl lg:text-[3.75rem]` (4 lignes sur mobile !) à `text-2xl sm:text-4xl lg:text-[3.25rem]` (2 lignes garanties sur tous les écrans, testé par Playwright sur 375–1440px).
+- **Sous-titre** (`home.heroSubtitle`) — simplifié : "Contactez les propriétaires directement." / "Contact owners directly."
+
+**Bugs UI corrigés**
+
+- **Alignement vertical labels dropdown voyageurs** (`SearchBar.tsx`, `NavSearchBar.tsx`) — `self-start` ajouté sur le bloc label+sous-titre pour ancrer le texte en haut de la ligne (au lieu de le centrer verticalement avec les boutons +/−).
+- **Alignement horizontal labels dropdown voyageurs** (`SearchBar.tsx`, `NavSearchBar.tsx`) — `text-left` ajouté sur le même bloc. Cause racine : `text-align: center` hérité du parent `.text-center` du hero de `page.tsx`, qui cascadait dans le dropdown. Les labels (plus courts que leurs sous-titres) se retrouvaient centrés dans la largeur du sous-titre → décalage visible de 9 à 23px selon la ligne.
+
+### Fichiers modifiés
+
+| Fichier | Changement |
+|---|---|
+| `app/page.tsx` | H1 : nouvelle classe responsive `text-2xl sm:text-4xl lg:text-[3.25rem]` |
+| `app/contact/page.tsx` | `metadata` → `generateMetadata()`, tous les textes via `getTranslations("contact")` |
+| `app/contact/ContactForm.tsx` | `useTranslations("contact")`, sujets et labels traduits |
+| `app/[locale]/contact/page.tsx` | Re-export `generateMetadata` (au lieu de `metadata`) |
+| `components/Footer.tsx` | Lien `owners.whyChooseUs` retiré |
+| `components/devenir-hote/CreationChoiceSection.tsx` | `useTranslations("creationChoice")`, tous textes traduits |
+| `components/SearchBar.tsx` | `self-start text-left` sur le leftDiv du dropdown voyageurs |
+| `components/NavSearchBar.tsx` | `self-start text-left` sur le leftDiv du dropdown voyageurs |
+| `messages/fr.json` | Namespaces `creationChoice` et `contact` ajoutés ; `home.heroTitle`, `home.heroSubtitle` mis à jour ; `owners.whyChooseUs` retiré |
+| `messages/en.json` | Idem |
+
+### Leçons techniques retenues
+
+- **`text-align` est une propriété CSS héritée.** Un `text-center` sur un ancêtre cascade dans tous les descendants, y compris les dropdowns absolument positionnés qui sont des enfants DOM du composant. Toujours ajouter `text-left` explicitement sur les dropdowns ou leurs cellules de texte.
+- **Tailwind v4 : classes dynamiques non compilées.** Appliquer des classes Tailwind via `className` en JavaScript ne fonctionne que si la classe est déjà présente dans le CSS compilé. Pour tester dynamiquement, utiliser des `inline styles`.
+- **next-intl + composants client :** utiliser `useTranslations()` (hook). Pour les server components : `getTranslations()` (async). `getLocale()` lit le locale depuis les headers de requête définis par le middleware — fonctionne même dans des fichiers re-exportés via `[locale]/page.tsx`.
+- **Re-exports `[locale]/page.tsx` :** quand une page passe de `export const metadata` à `export async function generateMetadata`, le fichier de re-export dans `app/[locale]/` doit être mis à jour en conséquence.
+
+### Prochaines étapes immédiates
+
+- Vérifier visuellement en production que le dropdown voyageurs est correct sur `/en` et `/` (les fixes `self-start` + `text-left` sont déployés mais non confirmés côté Vercel).
+- Continuer la traduction des pages restantes non encore traduites sous `/en` (vérifier avec un audit des pages `app/[locale]/*/page.tsx`).
+- Tester le formulaire de contact (`/en/contact`) end-to-end : soumission, email Resend reçu, message de succès en anglais.
