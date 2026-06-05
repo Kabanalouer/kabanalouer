@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { localePath } from "@/lib/localePath";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home");
@@ -245,7 +246,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <Link
-            href="/chalets"
+            href={localePath("/chalets", locale)}
             className="text-charcoal-800 font-medium text-sm underline underline-offset-4 hover:text-primary transition-colors hidden md:block"
           >
             {t("viewAll")}
@@ -267,7 +268,7 @@ export default async function HomePage() {
 
         <div className="mt-10 flex justify-center md:hidden">
           <Link
-            href="/chalets"
+            href={localePath("/chalets", locale)}
             className="text-charcoal-800 font-medium text-sm underline underline-offset-4"
           >
             {t("viewAllMobile")}
@@ -322,7 +323,7 @@ export default async function HomePage() {
             {t("ctaDescPost")}
           </p>
           <Link
-            href="/devenir-hote"
+            href={localePath("/devenir-hote", locale)}
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-base"
           >
             {t("ctaButton")}

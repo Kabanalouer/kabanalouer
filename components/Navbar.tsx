@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 import { createClient } from "@/lib/supabase/client";
 import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
@@ -88,8 +89,11 @@ function UnreadDot() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const t = useTranslations("nav");
+  const locale = useLocale();
+  const lp = (path: string) => localePath(path, locale);
   const supabase = createClient();
   const pathname = usePathname();
+  const strippedPathname = locale === "en" && pathname.startsWith("/en") ? pathname.slice(3) : pathname;
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -106,7 +110,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/messages")) {
+    if (strippedPathname.startsWith("/dashboard") || strippedPathname.startsWith("/messages")) {
       if (voyageurMode) {
         localStorage.removeItem("kbl_voyageur");
         document.cookie = "kbl_voyageur=; path=/; max-age=0";
@@ -118,13 +122,13 @@ export default function Navbar() {
   const enterVoyageurMode = () => {
     localStorage.setItem("kbl_voyageur", "1");
     document.cookie = "kbl_voyageur=1; path=/; max-age=86400";
-    window.location.href = "/";
+    window.location.href = lp("/");
   };
 
   const exitVoyageurMode = () => {
     localStorage.removeItem("kbl_voyageur");
     document.cookie = "kbl_voyageur=; path=/; max-age=0";
-    window.location.href = "/dashboard/listings";
+    window.location.href = lp("/dashboard/listings");
   };
 
   const loadProfile = async (userId: string) => {
@@ -211,11 +215,11 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.href = lp("/");
   };
 
   const isHost = profile?.role === "host" || profile?.role === "admin";
-  const isHome = pathname === "/";
+  const isHome = strippedPathname === "/";
 
   // Shared nav wrapper classes
   const navWrap = "bg-white/95 backdrop-blur-md border-b border-[#ebebeb] sticky top-0 z-50";
@@ -224,7 +228,7 @@ export default function Navbar() {
   // ── HOST NAVBAR ──────────────────────────────────────────────────────────────
   if (isHost && !voyageurMode && user && profile) {
     const tabCls = (pathPrefix: string, exact = false) => {
-      const active = exact ? pathname === pathPrefix : pathname.startsWith(pathPrefix);
+      const active = exact ? strippedPathname === pathPrefix : strippedPathname.startsWith(pathPrefix);
       return [
         "flex items-center gap-2 px-5 h-full text-[15px] font-semibold transition-colors border-b-2",
         active
@@ -239,22 +243,22 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex items-center mr-8 shrink-0">
-            <Logo href="/dashboard" />
+            <Logo href={lp("/dashboard")} />
           </div>
 
           {/* Tabs — desktop only */}
           <div className="hidden md:flex flex-1 justify-center items-stretch">
-            <Link href="/dashboard" className={tabCls("/dashboard", true)}>
+            <Link href={lp("/dashboard")} className={tabCls("/dashboard", true)}>
               {t("dashboard")}
             </Link>
-            <Link href="/dashboard/listings" className={tabCls("/dashboard/listings")}>
+            <Link href={lp("/dashboard/listings")} className={tabCls("/dashboard/listings")}>
               {t("myListings")}
             </Link>
-            <Link href="/messages" className={tabCls("/messages")}>
+            <Link href={lp("/messages")} className={tabCls("/messages")}>
               {t("messages")}
               {unreadCount > 0 && <UnreadDot />}
             </Link>
-            <Link href="/dashboard/avis" className={tabCls("/dashboard/avis")}>
+            <Link href={lp("/dashboard/avis")} className={tabCls("/dashboard/avis")}>
               {t("myReviews")}
               {unansweredReviewsCount > 0 && (
                 <span className="bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
@@ -294,8 +298,8 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard/profile">{t("myProfile")}</DropdownLink>
-                    <DropdownLink href="/dashboard/listings/new">{t("createListing")}</DropdownLink>
+                    <DropdownLink href={lp("/dashboard/profile")}>{t("myProfile")}</DropdownLink>
+                    <DropdownLink href={lp("/dashboard/listings/new")}>{t("createListing")}</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
                       className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
@@ -328,7 +332,7 @@ export default function Navbar() {
 
           {/* Left */}
           <div className="flex items-center flex-1">
-            <Logo />
+            <Logo href={lp("/")} />
           </div>
 
           {/* Center */}
@@ -367,16 +371,16 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="py-1">
-                    <DropdownLink href="/dashboard/profile">{t("myProfile")}</DropdownLink>
-                    <DropdownLink href="/favoris">{t("myFavorites")}</DropdownLink>
+                    <DropdownLink href={lp("/dashboard/profile")}>{t("myProfile")}</DropdownLink>
+                    <DropdownLink href={lp("/favoris")}>{t("myFavorites")}</DropdownLink>
                     <Link
-                      href="/messages"
+                      href={lp("/messages")}
                       className="flex items-center justify-between px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
                     >
                       {t("messages")}
                       {unreadCount > 0 && <UnreadDot />}
                     </Link>
-                    <DropdownLink href="/devenir-hote">{t("registerCabin")}</DropdownLink>
+                    <DropdownLink href={lp("/devenir-hote")}>{t("registerCabin")}</DropdownLink>
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}
@@ -411,7 +415,7 @@ export default function Navbar() {
 
           {/* Left */}
           <div className="flex items-center flex-1">
-            <Logo />
+            <Logo href={lp("/")} />
           </div>
 
           {/* Center */}
@@ -420,13 +424,13 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center justify-end gap-2 flex-1">
             <Link
-              href="/devenir-hote"
+              href={lp("/devenir-hote")}
               className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
             >
               {t("registerCabin")}
             </Link>
             <Link
-              href="/signup"
+              href={lp("/signup")}
               className="bg-primary text-white text-[15px] px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
               {t("createAccount")}
@@ -449,13 +453,13 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="md:hidden border-t border-[#ebebeb] px-4 py-4 flex flex-col gap-3 pb-5">
             <Link
-              href="/devenir-hote"
+              href={lp("/devenir-hote")}
               className="text-sm font-medium text-charcoal-700 px-3 py-2 rounded-xl hover:bg-charcoal-50 transition-colors"
             >
               {t("registerCabin")}
             </Link>
             <Link
-              href="/signup"
+              href={lp("/signup")}
               className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
             >
               {t("createAccount")}

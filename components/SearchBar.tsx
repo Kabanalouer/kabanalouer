@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 // ── Static data ──────────────────────────────────────────────────────────────
 
@@ -323,7 +324,7 @@ export default function SearchBar({
     if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
       const slug = REGION_SLUG_MAP[active.value];
       if (slug) {
-        router.push(`/chalets/${slug}`);
+        router.push(localePath(`/chalets/${slug}`, locale));
         return;
       }
     }
@@ -343,7 +344,7 @@ export default function SearchBar({
         if (v) params.set(k, v);
       }
     }
-    router.push(`/chalets${params.toString() ? `?${params.toString()}` : ""}`);
+    router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
   };
 
   // Popular regions for empty-query state (no recent searches)

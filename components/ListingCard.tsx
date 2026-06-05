@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 export interface Listing {
   id: string;
@@ -35,6 +36,7 @@ export default function ListingCard({
   currentUserId?: string | null;
 }) {
   const t = useTranslations("listingCard");
+  const locale = useLocale();
   const photos =
     listing.photos.length > 0
       ? listing.photos
@@ -50,7 +52,7 @@ export default function ListingCard({
     if (checkout) qs.set("checkout", checkout);
     if (capacity) qs.set("capacity", capacity);
     const s = qs.toString();
-    return `/chalets/${listing.id}${s ? `?${s}` : ""}`;
+    return localePath(`/chalets/${listing.id}${s ? `?${s}` : ""}`, locale);
   })();
 
   const prev = (e: React.MouseEvent) => {

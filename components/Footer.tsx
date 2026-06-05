@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import FooterLangToggle from "./FooterLangToggle";
+import { localePath } from "@/lib/localePath";
 
 function FooterLogo() {
   return (
@@ -13,10 +14,6 @@ function FooterLogo() {
       style={{ marginLeft: -7 }}
     />
   );
-}
-
-function localePath(path: string, locale: string): string {
-  return locale === "en" ? `/en${path}` : path;
 }
 
 export default async function Footer() {

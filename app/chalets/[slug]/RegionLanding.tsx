@@ -8,6 +8,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { REGIONS, type RegionConfig } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { getLocale } from "next-intl/server";
+import { localePath } from "@/lib/localePath";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
@@ -162,12 +163,12 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         </div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
           <nav className="text-xs text-white/60 mb-4 flex items-center gap-1.5">
-            <Link href="/" className="hover:text-white transition-colors">
-              Accueil
+            <Link href={localePath("/", locale)} className="hover:text-white transition-colors">
+              {isEn ? "Home" : "Accueil"}
             </Link>
             <span>›</span>
-            <Link href="/chalets" className="hover:text-white transition-colors">
-              Chalets
+            <Link href={localePath("/chalets", locale)} className="hover:text-white transition-colors">
+              {isEn ? "Cabins" : "Chalets"}
             </Link>
             <span>›</span>
             <span className="text-white/90">{regionConfig.name}</span>
@@ -216,10 +217,10 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             </p>
           </div>
           <Link
-            href="/chalets"
+            href={localePath("/chalets", locale)}
             className="text-primary font-semibold text-sm hover:underline hidden md:block"
           >
-            Voir toutes les régions →
+            {isEn ? "All regions →" : "Voir toutes les régions →"}
           </Link>
         </div>
 
@@ -242,10 +243,10 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
               Soyez les premiers à découvrir les chalets de cette région.
             </p>
             <Link
-              href="/chalets"
+              href={localePath("/chalets", locale)}
               className="inline-block bg-primary text-white font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors"
             >
-              Explorer toutes les régions →
+              {isEn ? "Explore all regions →" : "Explorer toutes les régions →"}
             </Link>
           </div>
         )}
@@ -327,7 +328,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           {otherRegions.map((r) => (
             <Link
               key={r.slug}
-              href={`/chalets/${r.slug}`}
+              href={localePath(`/chalets/${r.slug}`, locale)}
               className="flex items-center px-4 py-3 rounded-xl border border-gray-200 hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-gray-700 hover:text-primary"
             >
               {r.name}

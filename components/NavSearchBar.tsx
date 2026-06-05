@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
 import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -215,7 +216,7 @@ function NavSearchBarInner() {
 
     if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
       const slug = REGION_SLUG_MAP[active.value];
-      if (slug) { router.push(`/chalets/${slug}`); return; }
+      if (slug) { router.push(localePath(`/chalets/${slug}`, locale)); return; }
     }
 
     const params = new URLSearchParams();
@@ -228,7 +229,7 @@ function NavSearchBarInner() {
     const totalCapacity = adults + children + babies;
     if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
     if (pets > 0) params.set("pets", String(pets));
-    router.push(`/chalets${params.toString() ? `?${params.toString()}` : ""}`);
+    router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
   };
 
   const rightMonth = leftMonth === 11 ? 0 : leftMonth + 1;
