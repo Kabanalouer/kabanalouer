@@ -598,7 +598,7 @@ export default function SearchBar({
             ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx: number, arr) => (
               <div key={label}>
                 <div className="flex items-center justify-between px-5 py-4">
-                  <div>
+                  <div className="self-start">
                     <p className="text-sm font-medium text-gray-800">{label}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
                   </div>

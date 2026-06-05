@@ -427,7 +427,7 @@ function NavSearchBarInner() {
               ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx, arr) => (
                 <div key={label}>
                   <div className="flex items-center justify-between px-5 py-4">
-                    <div>
+                    <div className="self-start">
                       <p className="text-sm font-medium text-charcoal-800">{label}</p>
                       <p className="text-xs text-charcoal-400 mt-0.5">{sub}</p>
                     </div>
