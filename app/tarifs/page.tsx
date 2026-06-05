@@ -2,21 +2,43 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Tarifs et abonnement",
-  description:
-    "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.",
-  alternates: { canonical: "/tarifs" },
-  openGraph: {
-    title: "Tarifs et abonnement | Kabanalouer",
-    description:
-      "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.",
-    url: "/tarifs",
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/tarifs" : "/tarifs";
+  const title = isEn ? "Pricing — Kabanalouer" : "Tarifs et abonnement — Kabanalouer";
+  const description = isEn
+    ? "One simple, transparent annual subscription. $299/year per cabin. Free offer for the first 50 owners."
+    : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/tarifs", en: "/en/tarifs", "x-default": "/tarifs" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const FREE_LAUNCH_LIMIT = 50;
 

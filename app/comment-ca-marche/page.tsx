@@ -1,24 +1,43 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Comment ça marche",
-  description:
-    "Trouvez et contactez directement les propriétaires de chalets au Québec. Aucun frais de service pour les voyageurs. 3 étapes simples.",
-  alternates: { canonical: "/comment-ca-marche" },
-  openGraph: {
-    title: "Comment ça marche | Kabanalouer",
-    description:
-      "Trouvez et contactez directement les propriétaires de chalets au Québec. Aucun frais de service pour les voyageurs.",
-    url: "/comment-ca-marche",
-  },
-  twitter: {
-    title: "Comment ça marche | Kabanalouer",
-    description: "3 étapes simples pour trouver et contacter les propriétaires de chalets au Québec.",
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/comment-ca-marche" : "/comment-ca-marche";
+  const title = isEn ? "How It Works — Kabanalouer" : "Comment ça marche — Kabanalouer";
+  const description = isEn
+    ? "Find and contact Quebec cabin owners directly. No service fees for travelers. 3 simple steps."
+    : "Trouvez et contactez directement les propriétaires de chalets au Québec. Aucun frais de service pour les voyageurs. 3 étapes simples.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/comment-ca-marche", en: "/en/comment-ca-marche", "x-default": "/comment-ca-marche" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const faqJsonLd = {
   "@context": "https://schema.org",

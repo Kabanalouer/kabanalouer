@@ -1,1 +1,1 @@
-export { default, metadata } from "@/app/comment-ca-marche/page";
+export { default, generateMetadata } from "@/app/comment-ca-marche/page";

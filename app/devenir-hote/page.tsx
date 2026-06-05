@@ -4,33 +4,43 @@ import Footer from "@/components/Footer";
 import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
 import HostCTA from "@/components/devenir-hote/HostCTA";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Affichez votre chalet sur Kabanalouer | 50 premiers propriétaires gratuits",
-  description:
-    "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299$/an. Offre gratuite pour les 50 premiers propriétaires.",
-  alternates: { canonical: "/devenir-hote" },
-  openGraph: {
-    title: "Affichez votre chalet sur Kabanalouer | 50 premiers propriétaires gratuits",
-    description:
-      "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299$/an.",
-    url: "/devenir-hote",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1200&q=80",
-        width: 1200,
-        height: 630,
-        alt: "Chalet québécois — Kabanalouer",
-      },
-    ],
-  },
-  twitter: {
-    title: "Affichez votre chalet sur Kabanalouer",
-    description: "Zéro commission, contact direct avec les voyageurs. Offre gratuite pour les 50 premiers propriétaires.",
-    images: ["https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1200&q=80"],
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/devenir-hote" : "/devenir-hote";
+  const title = isEn ? "List My Cabin — Kabanalouer" : "Inscrire mon chalet — Kabanalouer";
+  const description = isEn
+    ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free offer for the first 50 owners."
+    : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Offre gratuite pour les 50 premiers propriétaires.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/devenir-hote", en: "/en/devenir-hote", "x-default": "/devenir-hote" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const FREE_LAUNCH_LIMIT = 50;
 

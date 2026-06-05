@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: t("ogTitle"),
       description: t("ogDesc"),
       url: canonicalPath,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
       images: [
         {
           url: "https://kabanalouer.vercel.app/hero-chalet.webp",
@@ -36,6 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     twitter: {
+      card: "summary_large_image",
       title: t("ogTitle"),
       description: t("metaDesc"),
       images: ["https://kabanalouer.vercel.app/hero-chalet.webp"],

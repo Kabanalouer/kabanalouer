@@ -1,21 +1,43 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "À propos | Kabanalouer — Marketplace de chalets au Québec",
-  description:
-    "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.",
-  alternates: { canonical: "/a-propos" },
-  openGraph: {
-    title: "À propos | Kabanalouer — Marketplace de chalets au Québec",
-    description:
-      "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.",
-    url: "/a-propos",
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/a-propos" : "/a-propos";
+  const title = isEn ? "About — Kabanalouer" : "À propos — Kabanalouer";
+  const description = isEn
+    ? "Kabanalouer is the leading marketplace for cabin rentals in Quebec. Our mission: connecting travelers and owners without intermediaries."
+    : "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/a-propos", en: "/en/a-propos", "x-default": "/a-propos" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const organizationJsonLd = {
   "@context": "https://schema.org",

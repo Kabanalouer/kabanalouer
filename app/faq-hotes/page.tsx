@@ -1,21 +1,43 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "FAQ Propriétaires",
-  description:
-    "Toutes les réponses à vos questions sur la publication de votre chalet sur Kabanalouer.",
-  alternates: { canonical: "/faq-hotes" },
-  openGraph: {
-    title: "FAQ Propriétaires | Kabanalouer",
-    description:
-      "Toutes les réponses à vos questions sur la publication de votre chalet sur Kabanalouer.",
-    url: "/faq-hotes",
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/faq-hotes" : "/faq-hotes";
+  const title = isEn ? "Owner FAQ — Kabanalouer" : "FAQ proprios — Kabanalouer";
+  const description = isEn
+    ? "All answers to your questions about listing your cabin on Kabanalouer."
+    : "Toutes les réponses à vos questions sur la publication de votre chalet sur Kabanalouer.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/faq-hotes", en: "/en/faq-hotes", "x-default": "/faq-hotes" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const faqJsonLd = {
   "@context": "https://schema.org",

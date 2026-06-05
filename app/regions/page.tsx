@@ -4,21 +4,43 @@ import Footer from "@/components/Footer";
 import OwnerCTA from "@/components/OwnerCTA";
 import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Chalets à louer par région au Québec",
-  description:
-    "Explorez nos chalets à louer dans toutes les régions du Québec. Laurentides, Charlevoix, Cantons-de-l'Est et plus. Contact direct avec les propriétaires.",
-  alternates: { canonical: "/regions" },
-  openGraph: {
-    title: "Chalets à louer par région au Québec | Kabanalouer",
-    description:
-      "Explorez nos chalets à louer dans toutes les régions du Québec. Contact direct avec les propriétaires, aucun frais de service.",
-    url: "/regions",
-  },
-};
+const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const isEn = locale === "en";
+  const canonical = isEn ? "/en/regions" : "/regions";
+  const title = isEn ? "All Regions — Kabanalouer" : "Toutes les régions — Kabanalouer";
+  const description = isEn
+    ? "Explore cabin rentals across all Quebec regions. Laurentians, Charlevoix, Eastern Townships and more. Direct contact with owners."
+    : "Explorez nos chalets à louer dans toutes les régions du Québec. Laurentides, Charlevoix, Cantons-de-l'Est et plus. Contact direct avec les propriétaires.";
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { fr: "/regions", en: "/en/regions", "x-default": "/regions" },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

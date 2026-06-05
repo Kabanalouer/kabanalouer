@@ -13,6 +13,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const isEn = locale === "en";
   const basePath = isEn ? "/en/chalets" : "/chalets";
 
+  const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+
   if (destination) {
     return {
       title: t("metaTitleDestination", { destination }),
@@ -25,10 +27,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         title: t("ogTitleDestination", { destination }),
         description: t("ogDescDestination", { destination }),
         url: basePath,
+        siteName: "Kabanalouer",
+        locale: isEn ? "en_CA" : "fr_CA",
+        type: "website",
+        images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
       },
       twitter: {
+        card: "summary_large_image",
         title: t("ogTitleDestination", { destination }),
         description: t("metaDescDestination", { destination }),
+        images: [OG_IMAGE],
       },
     };
   }
@@ -44,10 +52,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       title: t("ogTitle"),
       description: t("ogDesc"),
       url: basePath,
+      siteName: "Kabanalouer",
+      locale: isEn ? "en_CA" : "fr_CA",
+      type: "website",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
     },
     twitter: {
+      card: "summary_large_image",
       title: t("ogTitle"),
       description: t("metaDesc"),
+      images: [OG_IMAGE],
     },
   };
 }
