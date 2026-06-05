@@ -16,32 +16,22 @@ export default function FooterLangToggle() {
   return (
     <div
       className="relative flex rounded-full"
-      style={{ backgroundColor: "#e8ebdc", width: 90, height: 32, padding: 3 }}
+      style={{ backgroundColor: "#e8ebdc", width: 80, height: 30, padding: 2 }}
     >
       {/* Sliding thumb */}
       <div
-        className="absolute rounded-full"
-        style={{
-          backgroundColor: "#636e40",
-          width: 42,
-          height: 26,
-          top: 3,
-          left: 3,
-          transform: isEn ? "translateX(42px)" : "translateX(0)",
-          transition: "transform 200ms ease",
-        }}
+        className={`absolute rounded-full transition-transform duration-200 ease ${isEn ? "translate-x-[38px]" : "translate-x-0"}`}
+        style={{ backgroundColor: "#636e40", width: 38, height: 26, top: 2, left: 2 }}
       />
       <button
         onClick={() => switchTo("fr")}
-        className="relative z-10 flex-1 flex items-center justify-center font-medium"
-        style={{ fontSize: 13, color: !isEn ? "white" : "#9ca3af" }}
+        className={`relative z-10 flex-1 flex items-center justify-center text-[13px] font-medium ${!isEn ? "text-white" : "text-[#888]"}`}
       >
         FR
       </button>
       <button
         onClick={() => switchTo("en")}
-        className="relative z-10 flex-1 flex items-center justify-center font-medium"
-        style={{ fontSize: 13, color: isEn ? "white" : "#9ca3af" }}
+        className={`relative z-10 flex-1 flex items-center justify-center text-[13px] font-medium ${isEn ? "text-white" : "text-[#888]"}`}
       >
         EN
       </button>
