@@ -136,17 +136,30 @@ export default async function HomePage() {
     promoData: promoMap.get(l.id as string) ?? null,
   }));
 
+  const BASE_URL = "https://kabanalouer.vercel.app";
+
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Kabanalouer",
-    url: "https://kabanalouer.vercel.app",
+    url: BASE_URL,
     description: "Marketplace de location de chalets au Québec",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://kabanalouer.vercel.app/chalets?destination={search_term_string}",
+      target: `${BASE_URL}/chalets?destination={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
+  };
+
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kabanalouer",
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo-wordmark.svg`,
+    description: "Marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service.",
+    areaServed: "Québec, Canada",
+    sameAs: [],
   };
 
   return (
@@ -154,6 +167,10 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <Navbar />
 

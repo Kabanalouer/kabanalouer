@@ -4,12 +4,13 @@ import FooterLangToggle from "./FooterLangToggle";
 
 function FooterLogo() {
   return (
-    <object
-      type="image/svg+xml"
-      data="/logo-wordmark.svg"
-      aria-hidden="true"
+    <img
+      src="/logo-wordmark.svg"
+      alt="Kabanalouer"
+      width={200}
+      height={42}
       className="block h-[42px] w-auto pointer-events-none"
-      style={{ width: 200, height: 42, marginLeft: -7 }}
+      style={{ marginLeft: -7 }}
     />
   );
 }

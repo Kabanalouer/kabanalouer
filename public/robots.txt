@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /dashboard/
-Disallow: /api/
-Disallow: /auth/
-Disallow: /messages
-Disallow: /favoris
-
-Sitemap: https://kabanalouer.vercel.app/sitemap.xml
