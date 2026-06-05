@@ -94,11 +94,18 @@ function ContactModal({
     setSending(true);
     setError("");
 
+    const { data: profile } = await supabase
+      .from("users")
+      .select("preferred_language")
+      .eq("id", senderId)
+      .single();
+
     const { error } = await supabase.from("messages").insert({
       listing_id: listingId,
       sender_id: senderId,
       receiver_id: hostId,
       content: message.trim(),
+      language: profile?.preferred_language || "fr",
     });
 
     if (error) {

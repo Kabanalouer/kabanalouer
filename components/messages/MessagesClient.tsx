@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
@@ -12,6 +12,7 @@ type Message = {
   receiver_id: string;
   content: string;
   is_read: boolean;
+  language: string | null;
   created_at: string;
   sender: { id: string; name: string; avatar_url: string | null };
   receiver: { id: string; name: string; avatar_url: string | null };
@@ -30,9 +31,11 @@ type Conversation = {
 
 export default function MessagesClient({
   currentUserId,
+  currentUserLanguage,
   initialConversations,
 }: {
   currentUserId: string;
+  currentUserLanguage: string;
   initialConversations: Conversation[];
 }) {
   const router = useRouter();
@@ -50,10 +53,59 @@ export default function MessagesClient({
   const [mobileView, setMobileView] = useState<"list" | "thread">(
     selectedListingId && selectedWithId ? "thread" : "list"
   );
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [expandedOriginals, setExpandedOriginals] = useState<Set<string>>(new Set());
+  const [translationDisabled, setTranslationDisabled] = useState(false);
+  const translationDisabledRef = useRef(false);
+  const translatedIds = useRef<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
+  );
+
+  // Keep ref in sync for use in async callbacks
+  useEffect(() => {
+    translationDisabledRef.current = translationDisabled;
+  }, [translationDisabled]);
+
+  // Load translation preference from localStorage when conversation changes
+  useEffect(() => {
+    if (!selectedListingId) return;
+    const stored = localStorage.getItem(`translation_disabled_${selectedListingId}`);
+    const isDisabled = stored === "true";
+    setTranslationDisabled(isDisabled);
+    translationDisabledRef.current = isDisabled;
+    setExpandedOriginals(new Set());
+  }, [selectedListingId]);
+
+  const translateMessage = useCallback(
+    async (msg: Message) => {
+      if (msg.sender_id === currentUserId) return;
+      if (translatedIds.current.has(msg.id)) return;
+      const msgLang = msg.language || "fr";
+      const myLang = currentUserLanguage || "fr";
+      if (msgLang === myLang) return;
+
+      translatedIds.current.add(msg.id);
+
+      try {
+        const res = await fetch("/api/translate-message", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: msg.content, fromLanguage: msgLang, toLanguage: myLang }),
+        });
+        if (res.ok) {
+          const { translation } = (await res.json()) as { translation: string };
+          setTranslations((prev) => ({ ...prev, [msg.id]: translation }));
+        } else {
+          translatedIds.current.delete(msg.id);
+        }
+      } catch {
+        translatedIds.current.delete(msg.id);
+      }
+    },
+    [currentUserId, currentUserLanguage]
   );
 
   useEffect(() => {
@@ -69,11 +121,14 @@ export default function MessagesClient({
       )
       .order("created_at", { ascending: true })
       .then(({ data }) => {
-        setMessages((data as Message[]) ?? []);
+        const msgs = (data as Message[]) ?? [];
+        setMessages(msgs);
         setLoadingMessages(false);
+        if (!translationDisabledRef.current) {
+          msgs.forEach((msg) => translateMessage(msg));
+        }
       });
 
-    // Mark received messages as read
     supabase
       .from("messages")
       .update({ is_read: true })
@@ -83,6 +138,13 @@ export default function MessagesClient({
       .eq("is_read", false)
       .then(() => {});
   }, [selectedListingId, selectedWithId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Translate when translation is re-enabled
+  useEffect(() => {
+    if (!translationDisabled && messages.length > 0) {
+      messages.forEach((msg) => translateMessage(msg));
+    }
+  }, [translationDisabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Realtime subscription
   useEffect(() => {
@@ -112,7 +174,11 @@ export default function MessagesClient({
             .eq("id", msg.id)
             .single();
 
-          if (data) setMessages((prev) => [...prev, data as Message]);
+          if (data) {
+            const newMsg = data as Message;
+            setMessages((prev) => [...prev, newMsg]);
+            if (!translationDisabledRef.current) translateMessage(newMsg);
+          }
 
           if (msg.receiver_id === currentUserId) {
             await supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
@@ -139,6 +205,7 @@ export default function MessagesClient({
       sender_id: currentUserId,
       receiver_id: selectedWithId,
       content: newMessage.trim(),
+      language: currentUserLanguage || "fr",
     });
 
     setNewMessage("");
@@ -161,6 +228,30 @@ export default function MessagesClient({
     setMobileView("list");
     router.push("/messages");
   };
+
+  const toggleOriginal = (msgId: string) => {
+    setExpandedOriginals((prev) => {
+      const next = new Set(prev);
+      if (next.has(msgId)) next.delete(msgId);
+      else next.add(msgId);
+      return next;
+    });
+  };
+
+  const toggleTranslation = () => {
+    const newValue = !translationDisabled;
+    setTranslationDisabled(newValue);
+    translationDisabledRef.current = newValue;
+    if (selectedListingId) {
+      localStorage.setItem(`translation_disabled_${selectedListingId}`, String(newValue));
+    }
+  };
+
+  const hasTranslatableMessages = messages.some(
+    (msg) =>
+      msg.sender_id !== currentUserId &&
+      (msg.language || "fr") !== (currentUserLanguage || "fr")
+  );
 
   return (
     // Mobile: 100vh - navbar(80px) - bottom nav(64px). Desktop: 100vh - navbar(80px).
@@ -273,11 +364,23 @@ export default function MessagesClient({
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="font-semibold text-charcoal-800 text-sm">{activeConv.other_user_name}</p>
                     <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
                   </div>
                 </>
+              )}
+
+              {hasTranslatableMessages && (
+                <button
+                  onClick={toggleTranslation}
+                  className="ml-auto flex-shrink-0 flex items-center gap-1.5 text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors border border-[#ebebeb] rounded-full px-3 py-1.5"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                  </svg>
+                  {translationDisabled ? "Activer la traduction" : "Désactiver la traduction"}
+                </button>
               )}
             </div>
 
@@ -294,6 +397,13 @@ export default function MessagesClient({
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.sender_id === currentUserId;
+                  const msgLang = msg.language || "fr";
+                  const myLang = currentUserLanguage || "fr";
+                  const needsTranslation = !isMine && msgLang !== myLang;
+                  const translated = translations[msg.id];
+                  const showTranslation = needsTranslation && !translationDisabled && !!translated;
+                  const isOriginalExpanded = expandedOriginals.has(msg.id);
+
                   return (
                     <div
                       key={msg.id}
@@ -306,17 +416,50 @@ export default function MessagesClient({
                             : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                        <p
-                          className={`text-xs mt-1 ${
-                            isMine ? "text-primary-50/70" : "text-charcoal-400"
-                          }`}
-                        >
-                          {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <p className="whitespace-pre-wrap">
+                          {showTranslation ? translated : msg.content}
                         </p>
+
+                        {showTranslation && (
+                          <>
+                            <button
+                              onClick={() => toggleOriginal(msg.id)}
+                              className="flex items-center gap-1 text-xs text-charcoal-400 hover:text-charcoal-600 mt-2 transition-colors"
+                            >
+                              <svg
+                                className={`w-3 h-3 transition-transform ${isOriginalExpanded ? "rotate-180" : ""}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                              </svg>
+                              {isOriginalExpanded ? "Masquer l'original" : "Voir le message original"}
+                            </button>
+                            {isOriginalExpanded && (
+                              <p className="whitespace-pre-wrap text-charcoal-500 text-xs mt-2 pt-2 border-t border-[#ebebeb]">
+                                {msg.content}
+                              </p>
+                            )}
+                          </>
+                        )}
+
+                        <div className="flex items-center justify-between mt-1 gap-3">
+                          <p
+                            className={`text-xs ${
+                              isMine ? "text-white/50" : "text-charcoal-400"
+                            }`}
+                          >
+                            {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          {showTranslation && (
+                            <span className="text-xs text-charcoal-400">Traduit</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
