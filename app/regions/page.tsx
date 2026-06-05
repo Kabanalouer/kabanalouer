@@ -66,7 +66,7 @@ export default async function RegionsPage() {
               className="absolute inset-0 bg-cover bg-center"
               style={{
                 backgroundImage:
-                  "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80')",
+                  "url('/images/cover-regions.jpg')",
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
@@ -82,7 +82,7 @@ export default async function RegionsPage() {
 
           {/* ── Region grid ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {REGIONS.map((region) => {
+            {[...REGIONS].sort((a, b) => a.name.localeCompare(b.name, "fr")).map((region) => {
               const count = counts[region.dbValue] ?? 0;
               const href =
                 count > 0
