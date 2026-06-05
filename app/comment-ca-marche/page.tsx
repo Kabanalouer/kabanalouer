@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = {
   title: "Comment ça marche",
@@ -66,7 +67,9 @@ const faqJsonLd = {
   ],
 };
 
-export default function CommentCaMarchePage() {
+export default async function CommentCaMarchePage() {
+  const t = await getTranslations("commentCaMarche");
+
   return (
     <div className="flex flex-col min-h-screen">
       <script
@@ -79,13 +82,13 @@ export default function CommentCaMarchePage() {
       <section className="bg-[#F8FAF9] py-20 border-b border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            Pour les voyageurs
+            {t("badge")}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
-            Comment ça marche ?
+            {t("h1")}
           </h1>
           <p className="text-lg text-charcoal-500 max-w-lg mx-auto leading-relaxed">
-            Trouver et réserver votre chalet idéal au Québec en 3 étapes simples.
+            {t("intro")}
           </p>
         </div>
       </section>
@@ -96,20 +99,12 @@ export default function CommentCaMarchePage() {
           <div className="space-y-8">
             <Step
               number={1}
-              title="Cherchez"
-              description="Utilisez notre moteur de recherche pour trouver le chalet parfait. Filtrez par région, dates, nombre de voyageurs et équipements. Consultez les photos, les disponibilités et les avis des voyageurs précédents."
-              action={{ label: "Explorer les chalets", href: "/chalets" }}
+              title={t("step1Title")}
+              description={t("step1Desc")}
+              action={{ label: t("step1Action"), href: "/chalets" }}
             />
-            <Step
-              number={2}
-              title="Contactez"
-              description="Envoyez directement un message au propriétaire via notre messagerie intégrée. Posez vos questions, discutez des détails du séjour et obtenez une confirmation. Aucun intermédiaire, contact direct avec le propriétaire."
-            />
-            <Step
-              number={3}
-              title="Profitez"
-              description="Une fois votre séjour confirmé avec le propriétaire, il ne vous reste plus qu'à préparer vos valises et profiter de votre escapade au cœur du Québec !"
-            />
+            <Step number={2} title={t("step2Title")} description={t("step2Desc")} />
+            <Step number={3} title={t("step3Title")} description={t("step3Desc")} />
           </div>
         </div>
       </section>
@@ -118,24 +113,12 @@ export default function CommentCaMarchePage() {
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-charcoal-800">Pourquoi Kabanalouer ?</h2>
+            <h2 className="text-3xl font-bold text-charcoal-800">{t("whyTitle")}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <WhyCard
-              icon={<DollarIcon />}
-              title="Aucun frais de service"
-              description="Contrairement aux grandes plateformes, Kabanalouer ne charge aucun frais de service aux voyageurs. Le prix affiché est le prix que vous payez."
-            />
-            <WhyCard
-              icon={<UsersIcon />}
-              title="Contact direct avec les propriétaires"
-              description="Pas d'intermédiaire. Vous communiquez directement avec le propriétaire pour personnaliser votre séjour."
-            />
-            <WhyCard
-              icon={<ShieldCheckIcon />}
-              title="Chalets québécois vérifiés"
-              description="Tous nos propriétaires sont vérifiés. Des chalets authentiques partout au Québec, pour tous les budgets et toutes les saisons."
-            />
+            <WhyCard icon={<DollarIcon />} title={t("why1Title")} description={t("why1Desc")} />
+            <WhyCard icon={<UsersIcon />} title={t("why2Title")} description={t("why2Desc")} />
+            <WhyCard icon={<ShieldCheckIcon />} title={t("why3Title")} description={t("why3Desc")} />
           </div>
         </div>
       </section>
@@ -144,29 +127,14 @@ export default function CommentCaMarchePage() {
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">
-            Questions fréquentes
+            {t("faqTitle")}
           </h2>
           <div className="space-y-4">
-            <FaqItem
-              question="Est-ce que je paye sur Kabanalouer ?"
-              answer="Non. Kabanalouer est une plateforme de mise en relation. Le paiement se fait directement entre vous et le propriétaire, selon les modalités convenues ensemble."
-            />
-            <FaqItem
-              question="Comment contacter un propriétaire ?"
-              answer="Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message."
-            />
-            <FaqItem
-              question="Est-ce que je dois payer pour créer un compte ?"
-              answer="Non, la création de compte voyageur est entièrement gratuite."
-            />
-            <FaqItem
-              question="Comment savoir si un chalet est disponible ?"
-              answer="Chaque fiche affiche un calendrier de disponibilités mis à jour par le propriétaire. Vous pouvez aussi filtrer par dates dans la recherche."
-            />
-            <FaqItem
-              question="Que faire si le propriétaire ne répond pas ?"
-              answer="Nous vous recommandons d'attendre 24-48h. Si vous n'avez pas de réponse, n'hésitez pas à contacter un autre chalet similaire."
-            />
+            <FaqItem question={t("faq1Q")} answer={t("faq1A")} />
+            <FaqItem question={t("faq2Q")} answer={t("faq2A")} />
+            <FaqItem question={t("faq3Q")} answer={t("faq3A")} />
+            <FaqItem question={t("faq4Q")} answer={t("faq4A")} />
+            <FaqItem question={t("faq5Q")} answer={t("faq5A")} />
           </div>
         </div>
       </section>
@@ -174,15 +142,13 @@ export default function CommentCaMarchePage() {
       {/* ── Final CTA ── */}
       <section className="bg-primary py-20">
         <div className="max-w-2xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Prêt à trouver votre chalet ?</h2>
-          <p className="text-white/80 text-lg mb-10">
-            Des centaines de chalets québécois vous attendent.
-          </p>
+          <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
+          <p className="text-white/80 text-lg mb-10">{t("ctaSubtitle")}</p>
           <Link
             href="/chalets"
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
-            Explorer les chalets →
+            {t("ctaBtn")}
           </Link>
         </div>
       </section>
@@ -205,17 +171,12 @@ function Step({
 }) {
   return (
     <div className="flex gap-6 md:gap-10 items-start">
-      {/* Number + connector */}
       <div className="flex flex-col items-center shrink-0">
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
           <span className="text-2xl font-black text-primary">{number}</span>
         </div>
-        {number < 3 && (
-          <div className="w-0.5 h-8 bg-primary/20 mt-3" />
-        )}
+        {number < 3 && <div className="w-0.5 h-8 bg-primary/20 mt-3" />}
       </div>
-
-      {/* Content */}
       <div className="flex-1 pb-8">
         <h3 className="text-xl font-bold text-charcoal-800 mb-3">{title}</h3>
         <p className="text-charcoal-500 leading-relaxed max-w-xl">{description}</p>
@@ -232,15 +193,7 @@ function Step({
   );
 }
 
-function WhyCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
+function WhyCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="mb-4">{icon}</div>

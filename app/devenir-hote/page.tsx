@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
 import HostCTA from "@/components/devenir-hote/HostCTA";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = {
   title: "Affichez votre chalet sur Kabanalouer | 50 premiers propriétaires gratuits",
@@ -53,10 +54,7 @@ const organizationJsonLd = {
   logo: "https://kabanalouer.vercel.app/favicon.ico",
   description:
     "Marketplace de location de chalets au Québec. Contact direct avec les propriétaires, zéro frais de service.",
-  areaServed: {
-    "@type": "AdministrativeArea",
-    name: "Québec, Canada",
-  },
+  areaServed: { "@type": "AdministrativeArea", name: "Québec, Canada" },
   offers: {
     "@type": "Offer",
     name: "Abonnement annuel propriétaire",
@@ -67,10 +65,19 @@ const organizationJsonLd = {
 };
 
 export default async function DevenirHotePage() {
-  const usedSlots = await getActiveSubscriptionCount();
+  const [usedSlots, t] = await Promise.all([
+    getActiveSubscriptionCount(),
+    getTranslations("devenirHote"),
+  ]);
   const remaining = Math.max(0, FREE_LAUNCH_LIMIT - usedSlots);
   const progressPct = Math.min(100, Math.round((usedSlots / FREE_LAUNCH_LIMIT) * 100));
   const isUrgent = remaining < 10;
+
+  const FEATURES = [
+    t("i0"), t("i1"), t("i2"), t("i3"), t("i4"), t("i5"), t("i6"), t("i7"),
+  ];
+
+  const PRICE_FEATURES = [t("priceF0"), t("priceF1"), t("priceF2")];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -96,32 +103,31 @@ export default async function DevenirHotePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-              <span>Plateforme à plus forte croissance au Québec</span>
+              <span>{t("heroLabel")}</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Affichez votre chalet.
+              {t("heroH1Line1")}
               <br />
-              Rejoignez la communauté Kabanalouer.
+              {t("heroH1Line2")}
             </h1>
             <p className="text-lg md:text-xl text-white/85 mb-10 leading-relaxed max-w-xl">
-              La marketplace de référence pour la location de chalet au Québec.
-              Contact direct avec les voyageurs, zéro frais de service.
+              {t("heroSubtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <HostCTA
-                label="Inscrire mon chalet gratuitement →"
+                label={t("heroCta")}
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary-dark transition-colors text-lg"
               />
               <Link
                 href="/chalets"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-4 rounded-full hover:bg-white/20 transition-colors text-base"
               >
-                Voir les annonces
+                {t("heroSeeListings")}
               </Link>
             </div>
             {remaining > 0 && (
               <p className="text-white/70 text-sm mt-5">
-                ✦ {remaining} place{remaining !== 1 ? "s" : ""} gratuites restantes — offre de lancement
+                ✦ {t("heroPlacesLeft", { remaining })}
               </p>
             )}
           </div>
@@ -132,25 +138,22 @@ export default async function DevenirHotePage() {
       <section className="bg-white border-b border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-5">
-            {isUrgent ? "Dernières places" : "Offre de lancement exclusive"}
+            {isUrgent ? t("offerUrgent") : t("offerBadge")}
           </div>
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
-            {remaining > 0 ? (
-              <>Il reste <span className="text-primary">{remaining}</span> place{remaining !== 1 ? "s" : ""} gratuites</>
-            ) : (
-              "Offre de lancement terminée"
-            )}
+            {remaining > 0
+              ? t("offerH2remaining", { remaining })
+              : t("offerH2done")}
           </h2>
           <p className="text-charcoal-500 text-sm mb-8 max-w-sm mx-auto">
             {remaining > 0
-              ? `Après les ${FREE_LAUNCH_LIMIT} premiers propriétaires, l'abonnement sera de 299 $/an par chalet.`
-              : "L'abonnement annuel est de 299 $/an par chalet."}
+              ? t("offerSubRemaining", { limit: FREE_LAUNCH_LIMIT })
+              : t("offerSubDone")}
           </p>
 
-          {/* Progress bar */}
           <div className="max-w-sm mx-auto mb-2">
             <div className="flex justify-between text-xs text-charcoal-400 mb-1.5">
-              <span>{usedSlots} / {FREE_LAUNCH_LIMIT} places utilisées</span>
+              <span>{t("offerProgress", { used: usedSlots, limit: FREE_LAUNCH_LIMIT })}</span>
               <span>{progressPct}%</span>
             </div>
             <div className="h-3 bg-charcoal-100 rounded-full overflow-hidden">
@@ -163,13 +166,13 @@ export default async function DevenirHotePage() {
 
           {isUrgent && remaining > 0 && (
             <p className="text-red-600 text-xs font-semibold mt-3">
-              Plus que {remaining} place{remaining !== 1 ? "s" : ""} — inscrivez-vous maintenant
+              {t("offerUrgentNote", { remaining })}
             </p>
           )}
 
           <div className="mt-8">
             <HostCTA
-              label={remaining > 0 ? "Profiter de l'offre gratuite →" : "Commencer à 299 $/an →"}
+              label={remaining > 0 ? t("offerCtaFree") : t("offerCta299")}
               className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
             />
           </div>
@@ -183,42 +186,16 @@ export default async function DevenirHotePage() {
       <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-14">
-            <h2 className="text-3xl font-bold text-charcoal-800">Pourquoi choisir Kabanalouer ?</h2>
-            <p className="text-charcoal-500 mt-3 max-w-xl mx-auto">
-              Une plateforme pensée pour les propriétaires de chalets québécois, pas pour les grandes plateformes internationales.
-            </p>
+            <h2 className="text-3xl font-bold text-charcoal-800">{t("whyTitle")}</h2>
+            <p className="text-charcoal-500 mt-3 max-w-xl mx-auto">{t("whySubtitle")}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <BenefitCard
-              icon={<HandshakeIcon />}
-              title="Contact direct"
-              description="Communiquez directement avec vos voyageurs. Pas d'intermédiaire, pas de commission sur vos revenus."
-            />
-            <BenefitCard
-              icon={<DollarCircleIcon />}
-              title="Zéro frais de service"
-              description="Contrairement à Airbnb, aucun frais de service n'est prélevé sur vos réservations. Vous gardez 100 % de vos revenus."
-            />
-            <BenefitCard
-              icon={<MapPinIcon />}
-              title="Plateforme spécialisée Québec"
-              description="Une plateforme pensée pour les chalets québécois. Vos voyageurs cherchent spécifiquement au Québec."
-            />
-            <BenefitCard
-              icon={<WrenchIcon />}
-              title="Outils modernes inclus"
-              description="Calendrier de disponibilités, sync iCal avec Airbnb et Booking, messagerie intégrée, tableau de bord et statistiques."
-            />
-            <BenefitCard
-              icon={<SearchIcon />}
-              title="Visibilité maximale"
-              description="Référencement optimisé pour les recherches de chalets au Québec. Soyez trouvé par les bons voyageurs."
-            />
-            <BenefitCard
-              icon={<TagIcon />}
-              title="Tarif simple et transparent"
-              description="Un seul abonnement annuel de 299 $/an par chalet. Pas de surprise, pas de commission cachée."
-            />
+            <BenefitCard icon={<HandshakeIcon />} title={t("b1Title")} description={t("b1Desc")} />
+            <BenefitCard icon={<DollarCircleIcon />} title={t("b2Title")} description={t("b2Desc")} />
+            <BenefitCard icon={<MapPinIcon />} title={t("b3Title")} description={t("b3Desc")} />
+            <BenefitCard icon={<WrenchIcon />} title={t("b4Title")} description={t("b4Desc")} />
+            <BenefitCard icon={<SearchIcon />} title={t("b5Title")} description={t("b5Desc")} />
+            <BenefitCard icon={<TagIcon />} title={t("b6Title")} description={t("b6Desc")} />
           </div>
         </div>
       </section>
@@ -229,25 +206,12 @@ export default async function DevenirHotePage() {
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="flex-1">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-5">
-                299 $/an · tout inclus
+                {t("inclBadge")}
               </div>
-              <h2 className="text-3xl font-bold text-charcoal-800 mb-4">
-                Tout ce dont vous avez besoin, inclus dans votre abonnement
-              </h2>
-              <p className="text-charcoal-500 mb-8 leading-relaxed">
-                Un seul forfait, sans module payant supplémentaire. Tout ce qu'il vous faut pour gérer et promouvoir votre chalet en ligne.
-              </p>
+              <h2 className="text-3xl font-bold text-charcoal-800 mb-4">{t("inclH2")}</h2>
+              <p className="text-charcoal-500 mb-8 leading-relaxed">{t("inclSubtitle")}</p>
               <ul className="space-y-3.5">
-                {[
-                  "Annonce illimitée avec photos HD",
-                  "Messagerie directe avec les voyageurs",
-                  "Calendrier de disponibilités (18 mois)",
-                  "Synchronisation iCal (Airbnb, Booking, etc.)",
-                  "Tableau de bord et statistiques",
-                  "Génération de description par IA",
-                  "Score de qualité et conseils",
-                  "Support par courriel",
-                ].map((feature) => (
+                {FEATURES.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
                     <span className="text-charcoal-700 text-sm">{feature}</span>
@@ -256,7 +220,7 @@ export default async function DevenirHotePage() {
               </ul>
               <div className="mt-10">
                 <HostCTA
-                  label="Commencer gratuitement →"
+                  label={t("inclCta")}
                   className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
                 />
               </div>
@@ -267,25 +231,25 @@ export default async function DevenirHotePage() {
               <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8 text-center">
                 {remaining > 0 ? (
                   <>
-                    <p className="text-sm text-charcoal-400 mb-1">Pour les {FREE_LAUNCH_LIMIT} premiers propriétaires</p>
+                    <p className="text-sm text-charcoal-400 mb-1">{t("priceForFirst", { limit: FREE_LAUNCH_LIMIT })}</p>
                     <div className="flex items-end justify-center gap-1 mb-1">
                       <span className="text-5xl font-bold text-primary">0 $</span>
-                      <span className="text-charcoal-400 mb-1.5">/an</span>
+                      <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
                     </div>
-                    <p className="text-xs text-charcoal-400 mb-6">puis 299 $/an au renouvellement</p>
+                    <p className="text-xs text-charcoal-400 mb-6">{t("priceThen")}</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-charcoal-400 mb-1">Abonnement annuel</p>
+                    <p className="text-sm text-charcoal-400 mb-1">{t("priceAnnual")}</p>
                     <div className="flex items-end justify-center gap-1 mb-1">
                       <span className="text-5xl font-bold text-primary">299 $</span>
-                      <span className="text-charcoal-400 mb-1.5">/an</span>
+                      <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
                     </div>
-                    <p className="text-xs text-charcoal-400 mb-6">par chalet, tout inclus</p>
+                    <p className="text-xs text-charcoal-400 mb-6">{t("pricePerCabin")}</p>
                   </>
                 )}
                 <div className="space-y-2 text-sm text-charcoal-600 text-left">
-                  {["Annonce complète", "Outils de gestion", "Support inclus"].map((item) => (
+                  {PRICE_FEATURES.map((item) => (
                     <div key={item} className="flex items-center gap-2">
                       <span className="text-primary text-xs">✓</span>
                       {item}
@@ -293,10 +257,10 @@ export default async function DevenirHotePage() {
                   ))}
                 </div>
                 <HostCTA
-                  label="Créer mon annonce"
+                  label={t("priceCreateListing")}
                   className="mt-6 w-full inline-flex items-center justify-center bg-primary text-white font-bold py-3 rounded-full hover:bg-primary-dark transition-colors text-sm"
                 />
-                <p className="text-xs text-charcoal-400 mt-3">Aucune carte requise pour commencer</p>
+                <p className="text-xs text-charcoal-400 mt-3">{t("priceNoCard")}</p>
               </div>
             </div>
           </div>
@@ -307,28 +271,13 @@ export default async function DevenirHotePage() {
       <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-14">
-            <h2 className="text-3xl font-bold text-charcoal-800">Ils font confiance à Kabanalouer</h2>
-            <p className="text-charcoal-500 mt-3">Des propriétaires de toutes les régions du Québec</p>
+            <h2 className="text-3xl font-bold text-charcoal-800">{t("testTitle")}</h2>
+            <p className="text-charcoal-500 mt-3">{t("testSubtitle")}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Testimonial
-              quote="Depuis que j'ai inscrit mon chalet sur Kabanalouer, je reçois des demandes de voyageurs directement sans passer par une plateforme américaine. C'est exactement ce que je cherchais !"
-              name="Marie-Hélène B."
-              region="Laurentides"
-              stars={5}
-            />
-            <Testimonial
-              quote="La synchronisation iCal avec mon calendrier Airbnb m'a sauvé des doubles réservations. L'interface est claire et le support est très réactif."
-              name="François L."
-              region="Charlevoix"
-              stars={5}
-            />
-            <Testimonial
-              quote="Pour 299 $ par an, j'ai tout ce qu'il me faut pour gérer mon chalet. Pas de commission, pas de surprise. Je recommande à tous les propriétaires québécois."
-              name="Josée T."
-              region="Estrie"
-              stars={5}
-            />
+            <Testimonial quote={t("t1Quote")} name={t("t1Name")} region={t("t1Region")} stars={5} />
+            <Testimonial quote={t("t2Quote")} name={t("t2Name")} region={t("t2Region")} stars={5} />
+            <Testimonial quote={t("t3Quote")} name={t("t3Name")} region={t("t3Region")} stars={5} />
           </div>
         </div>
       </section>
@@ -336,28 +285,20 @@ export default async function DevenirHotePage() {
       {/* ── Final CTA ── */}
       <section className="bg-primary py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Prêt à rejoindre la communauté ?
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("finalCtaTitle")}</h2>
           <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Créez votre annonce en moins de 10 minutes.
+            {t("finalCtaSubtitle")}
             {remaining > 0 && (
-              <> Profitez de l&apos;offre gratuite — il reste seulement <strong className="text-white">{remaining} place{remaining !== 1 ? "s" : ""}</strong>.</>
+              <> {t("finalCtaOfferPre")} <strong className="text-white">{t("finalCtaOfferSpots", { remaining })}</strong>{t("finalCtaOfferPost")}</>
             )}
           </p>
           <HostCTA
-            label="Commencer gratuitement →"
+            label={t("finalCtaBtn")}
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           />
-          {remaining > 0 ? (
-            <p className="text-white/55 text-sm mt-5">
-              Offre gratuite pour les {remaining} première{remaining !== 1 ? "s" : ""} place{remaining !== 1 ? "s" : ""} disponible{remaining !== 1 ? "s" : ""}
-            </p>
-          ) : (
-            <p className="text-white/55 text-sm mt-5">
-              Abonnement annuel · 299 $/an · Aucune commission
-            </p>
-          )}
+          <p className="text-white/55 text-sm mt-5">
+            {remaining > 0 ? t("finalCtaOfferNote", { remaining }) : t("finalCtaNoOfferNote")}
+          </p>
         </div>
       </section>
 
@@ -366,15 +307,7 @@ export default async function DevenirHotePage() {
   );
 }
 
-function BenefitCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
+function BenefitCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb] hover:border-primary/20 transition-colors">
       <div className="mb-4">{icon}</div>
@@ -384,17 +317,7 @@ function BenefitCard({
   );
 }
 
-function Testimonial({
-  quote,
-  name,
-  region,
-  stars,
-}: {
-  quote: string;
-  name: string;
-  region: string;
-  stars: number;
-}) {
+function Testimonial({ quote, name, region, stars }: { quote: string; name: string; region: string; stars: number }) {
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="flex gap-0.5 mb-4">

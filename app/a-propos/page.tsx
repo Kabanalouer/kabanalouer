@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,7 +28,9 @@ const organizationJsonLd = {
   slogan: "La marketplace des chalets québécois",
 };
 
-export default function AProposPage() {
+export default async function AProposPage() {
+  const t = await getTranslations("aPropos");
+
   return (
     <div className="flex flex-col min-h-screen">
       <script
@@ -40,14 +43,13 @@ export default function AProposPage() {
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            Fait au Québec
+            {t("badge")}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
-            Notre mission
+            {t("h1")}
           </h1>
           <p className="text-lg text-charcoal-500 max-w-lg mx-auto leading-relaxed">
-            Connecter les voyageurs québécois avec les plus beaux chalets de la province.
-            Sans intermédiaire, sans frais cachés.
+            {t("intro")}
           </p>
         </div>
       </section>
@@ -55,24 +57,11 @@ export default function AProposPage() {
       {/* ── Notre histoire ── */}
       <section className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-charcoal-800 mb-6">Pourquoi Kabanalouer ?</h2>
+          <h2 className="text-3xl font-bold text-charcoal-800 mb-6">{t("whyTitle")}</h2>
           <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
-            <p>
-              Kabanalouer est né d&apos;un constat simple — les plateformes existantes chargent
-              des frais de service élevés, compliquent la communication entre propriétaires et
-              voyageurs, et ne sont pas adaptées à la réalité des chalets québécois.
-            </p>
-            <p>
-              Nous avons créé Kabanalouer pour changer ça : une plateforme simple, transparente,
-              et 100&nbsp;% dédiée au Québec. Ici, les voyageurs contactent directement les
-              propriétaires, sans passer par un intermédiaire qui prend une commission sur chaque
-              transaction.
-            </p>
-            <p>
-              Notre modèle est simple : les propriétaires paient un abonnement annuel fixe pour
-              afficher leur chalet. Les voyageurs accèdent gratuitement à toutes les annonces. Pas
-              de commission, pas de frais de service, pas de surprise.
-            </p>
+            <p>{t("story1")}</p>
+            <p>{t("story2")}</p>
+            <p>{t("story3")}</p>
           </div>
         </div>
       </section>
@@ -80,23 +69,11 @@ export default function AProposPage() {
       {/* ── Nos valeurs ── */}
       <section className="py-20 bg-[#F8FAF9]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">Nos valeurs</h2>
+          <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">{t("valuesTitle")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ValueCard
-              icon={<LeafIcon />}
-              title="Authenticité québécoise"
-              description="Nous mettons en valeur les chalets uniques du Québec, des Laurentides à la Gaspésie. Chaque annonce raconte une histoire, un lieu, une expérience."
-            />
-            <ValueCard
-              icon={<UsersIcon />}
-              title="Contact direct"
-              description="Nous croyons que la meilleure expérience passe par une relation directe entre propriétaires et voyageurs. Aucun intermédiaire ne s'intercale entre vous."
-            />
-            <ValueCard
-              icon={<ShieldIcon />}
-              title="Transparence"
-              description="Aucune commission cachée, aucun frais surprise. Un modèle simple et honnête pour tous — le prix affiché est le prix que vous payez."
-            />
+            <ValueCard icon={<LeafIcon />} title={t("val1Title")} description={t("val1Desc")} />
+            <ValueCard icon={<UsersIcon />} title={t("val2Title")} description={t("val2Desc")} />
+            <ValueCard icon={<ShieldIcon />} title={t("val3Title")} description={t("val3Desc")} />
           </div>
         </div>
       </section>
@@ -105,13 +82,13 @@ export default function AProposPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">
-            Kabanalouer en chiffres
+            {t("statsTitle")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Stat value="14" label="régions du Québec couvertes" />
-            <Stat value="0 $" label="de frais de service pour les voyageurs" />
-            <Stat value="Direct" label="contact avec les propriétaires" />
-            <Stat value="24/7" label="disponible en ligne" />
+            <Stat value={t("stat1Value")} label={t("stat1Label")} />
+            <Stat value={t("stat2Value")} label={t("stat2Label")} />
+            <Stat value={t("stat3Value")} label={t("stat3Label")} />
+            <Stat value={t("stat4Value")} label={t("stat4Label")} />
           </div>
         </div>
       </section>
@@ -119,23 +96,22 @@ export default function AProposPage() {
       {/* ── CTA ── */}
       <section className="bg-primary py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Rejoignez la communauté</h2>
+          <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
           <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Que vous cherchiez un chalet pour votre prochaine escapade ou que vous souhaitiez
-            afficher votre propriété, Kabanalouer est fait pour vous.
+            {t("ctaSubtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/chalets"
               className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
             >
-              Explorer les chalets →
+              {t("ctaExploreCabins")}
             </Link>
             <Link
               href="/devenir-hote"
               className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition-colors text-lg"
             >
-              Afficher mon chalet →
+              {t("ctaListCabin")}
             </Link>
           </div>
         </div>
@@ -146,15 +122,7 @@ export default function AProposPage() {
   );
 }
 
-function ValueCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
+function ValueCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="mb-4">{icon}</div>

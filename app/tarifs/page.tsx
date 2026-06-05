@@ -2,6 +2,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -19,45 +20,6 @@ export const metadata: Metadata = {
 
 const FREE_LAUNCH_LIMIT = 50;
 
-const INCLUDED = [
-  "Annonce illimitée avec photos HD",
-  "Messagerie directe avec les voyageurs",
-  "Calendrier de disponibilités (18 mois)",
-  "Synchronisation iCal (Airbnb, Booking)",
-  "Tableau de bord et statistiques",
-  "Génération de description par IA",
-  "Score de qualité et conseils",
-  "Support par courriel",
-  "1 an d'accès inclus",
-];
-
-const COMPARISON = [
-  { feature: "Abonnement annuel", kbl: "299 $/an", airbnb: "Gratuit" },
-  { feature: "Commission sur réservation", kbl: "0 %", airbnb: "3–5 %" },
-  { feature: "Frais de service voyageur", kbl: "0 %", airbnb: "14–20 %" },
-  { feature: "Contact direct", kbl: true, airbnb: "Limité" },
-  { feature: "Spécialisé Québec", kbl: true, airbnb: false },
-];
-
-const FAQ = [
-  {
-    q: "Le prix est-il par chalet ou par compte ?",
-    a: "Par chalet. Si vous avez 2 chalets, vous payez 2 abonnements.",
-  },
-  {
-    q: "L'abonnement est-il remboursable ?",
-    a: "Non, l'abonnement n'est pas remboursable ni transférable.",
-  },
-  {
-    q: "Que se passe-t-il à l'expiration ?",
-    a: "Votre annonce est automatiquement dépubliée. Vous pouvez renouveler à tout moment depuis votre tableau de bord.",
-  },
-  {
-    q: "Y a-t-il des frais de transaction ?",
-    a: "Non. Kabanalouer ne prélève aucune commission sur vos revenus locatifs. Le paiement se fait directement entre vous et le voyageur.",
-  },
-];
-
 async function getActiveSubscriptionCount(): Promise<number> {
   const admin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,9 +33,31 @@ async function getActiveSubscriptionCount(): Promise<number> {
 }
 
 export default async function TarifsPage() {
-  const usedSlots = await getActiveSubscriptionCount();
+  const [usedSlots, t] = await Promise.all([
+    getActiveSubscriptionCount(),
+    getTranslations("tarifs"),
+  ]);
   const remaining = Math.max(0, FREE_LAUNCH_LIMIT - usedSlots);
   const hasOffer = remaining > 0;
+
+  const INCLUDED = [
+    t("f0"), t("f1"), t("f2"), t("f3"), t("f4"), t("f5"), t("f6"), t("f7"), t("f8"),
+  ];
+
+  const COMPARISON = [
+    { feature: t("compF0"), kbl: "299 $/an", airbnb: t("compAirbnb0") },
+    { feature: t("compF1"), kbl: "0 %", airbnb: t("compAirbnb1") },
+    { feature: t("compF2"), kbl: "0 %", airbnb: t("compAirbnb2") },
+    { feature: t("compF3"), kbl: true as const, airbnb: t("compAirbnb3") },
+    { feature: t("compF4"), kbl: true as const, airbnb: false as const },
+  ];
+
+  const FAQ = [
+    { q: t("faq0Q"), a: t("faq0A") },
+    { q: t("faq1Q"), a: t("faq1A") },
+    { q: t("faq2Q"), a: t("faq2A") },
+    { q: t("faq3Q"), a: t("faq3A") },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -83,13 +67,13 @@ export default async function TarifsPage() {
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-            Tarif transparent
+            {t("badge")}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal-800 mb-5 leading-tight">
-            Un tarif simple et transparent
+            {t("h1")}
           </h1>
           <p className="text-lg text-charcoal-500 max-w-lg mx-auto">
-            Un seul abonnement annuel. Aucune commission, aucun frais caché.
+            {t("intro")}
           </p>
         </div>
       </section>
@@ -98,21 +82,19 @@ export default async function TarifsPage() {
       <section className="py-12 md:py-20 bg-white">
         <div className="max-w-lg mx-auto px-4 sm:px-6">
           <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8">
-            {/* Badge */}
             {hasOffer && (
               <div className="inline-flex items-center gap-2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
-                Offre de lancement — {remaining} place{remaining > 1 ? "s" : ""} restante{remaining > 1 ? "s" : ""}
+                {t("offerBadge", { remaining })}
               </div>
             )}
 
-            {/* Price */}
             <div className="mb-6">
               {hasOffer ? (
                 <div className="flex items-end gap-3">
                   <span className="text-6xl font-bold text-primary">0 $</span>
                   <div className="mb-2">
                     <p className="text-sm text-charcoal-400 line-through">299 $/an</p>
-                    <p className="text-sm text-charcoal-500">première année</p>
+                    <p className="text-sm text-charcoal-500">{t("firstYear")}</p>
                   </div>
                 </div>
               ) : (
@@ -121,10 +103,9 @@ export default async function TarifsPage() {
                   <span className="text-charcoal-500 mb-2">/an</span>
                 </div>
               )}
-              <p className="text-sm text-charcoal-400 mt-1">par chalet · tout inclus</p>
+              <p className="text-sm text-charcoal-400 mt-1">{t("perCabinAll")}</p>
             </div>
 
-            {/* Features */}
             <ul className="space-y-3 mb-8">
               {INCLUDED.map((item) => (
                 <li key={item} className="flex items-start gap-3">
@@ -140,10 +121,10 @@ export default async function TarifsPage() {
               href={hasOffer ? "/signup?role=host" : "/devenir-hote"}
               className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-4 rounded-full hover:bg-primary/90 transition-colors text-base"
             >
-              {hasOffer ? "Profiter de l'offre gratuite →" : "Inscrire mon chalet →"}
+              {hasOffer ? t("offerBtn") : t("registerBtn")}
             </Link>
             <p className="text-xs text-charcoal-400 text-center mt-3">
-              Aucune carte requise · Annulation avant facturation
+              {t("noCardRequired")}
             </p>
           </div>
         </div>
@@ -153,10 +134,9 @@ export default async function TarifsPage() {
       <section className="py-12 md:py-20 bg-[#F8FAF9]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-8 md:mb-10">
-            Kabanalouer vs Airbnb
+            {t("compTitle")}
           </h2>
           <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
-            {/* Header */}
             <div className="grid grid-cols-3 bg-charcoal-50 border-b border-[#ebebeb]">
               <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-charcoal-400 uppercase tracking-wider" />
               <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold text-primary text-center">
@@ -182,9 +162,7 @@ export default async function TarifsPage() {
                   )}
                 </div>
                 <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
-                  {row.airbnb === true ? (
-                    <span className="text-charcoal-400 text-base sm:text-lg">✓</span>
-                  ) : row.airbnb === false ? (
+                  {row.airbnb === false ? (
                     <span className="text-red-400 text-base sm:text-lg font-bold">✗</span>
                   ) : (
                     <span className="text-[11px] sm:text-sm text-charcoal-500">{row.airbnb}</span>
@@ -193,9 +171,7 @@ export default async function TarifsPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-charcoal-400 text-center mt-4">
-            Frais Airbnb à titre indicatif, peuvent varier selon les marchés.
-          </p>
+          <p className="text-xs text-charcoal-400 text-center mt-4">{t("compDisclaimer")}</p>
         </div>
       </section>
 
@@ -203,7 +179,7 @@ export default async function TarifsPage() {
       <section className="py-12 md:py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-8 md:mb-10">
-            Questions sur les tarifs
+            {t("faqTitle")}
           </h2>
           <div className="space-y-3">
             {FAQ.map(({ q, a }) => (
@@ -235,17 +211,15 @@ export default async function TarifsPage() {
       {/* ── CTA ── */}
       <section className="bg-primary py-16">
         <div className="max-w-2xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Prêt à afficher votre chalet ?</h2>
+          <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
           <p className="text-white/80 text-lg mb-8">
-            {hasOffer
-              ? `Profitez de l'offre gratuite — il reste ${remaining} place${remaining > 1 ? "s" : ""}.`
-              : "Rejoignez des centaines de propriétaires québécois sur Kabanalouer."}
+            {hasOffer ? t("ctaOfferSubtitle", { remaining }) : t("ctaNoOfferSubtitle")}
           </p>
           <Link
             href="/signup?role=host"
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
-            Commencer gratuitement →
+            {t("ctaBtn")}
           </Link>
         </div>
       </section>
