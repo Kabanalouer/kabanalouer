@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import OwnerCTA from "@/components/OwnerCTA";
 import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
 import { getTranslations } from "next-intl/server";
@@ -124,22 +125,7 @@ export default async function RegionsPage() {
           </div>
         </div>
 
-        {/* ── CTA ── */}
-        <section className="bg-primary py-16 mt-8">
-          <div className="max-w-2xl mx-auto px-4 text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">Vous êtes propriétaire ?</h2>
-            <p className="text-white/80 text-lg mb-8">
-              Affichez votre chalet sur Kabanalouer et rejoignez des centaines de propriétaires
-              québécois.
-            </p>
-            <Link
-              href="/devenir-hote"
-              className="inline-block bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
-            >
-              Inscrire mon chalet →
-            </Link>
-          </div>
-        </section>
+        <OwnerCTA className="mt-8" />
       </main>
 
       <Footer />

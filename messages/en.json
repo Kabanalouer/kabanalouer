@@ -750,6 +750,11 @@
     "madeWith": "Made with",
     "inQuebec": "in Québec."
   },
+  "ownerCta": {
+    "title": "Are you a cabin owner?",
+    "subtitle": "List your cabin on Kabanalouer and join hundreds of Quebec cabin owners.",
+    "cta": "List my cabin →"
+  },
   "regions": {
     "bannerTitle": "Explore Quebec's regions",
     "bannerSubtitle": "Cabins in the most beautiful corners of the province",

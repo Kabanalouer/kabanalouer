@@ -750,6 +750,11 @@
     "madeWith": "Fait avec",
     "inQuebec": "au Québec."
   },
+  "ownerCta": {
+    "title": "Vous êtes propriétaire ?",
+    "subtitle": "Affichez votre chalet sur Kabanalouer et rejoignez des centaines de propriétaires québécois.",
+    "cta": "Inscrire mon chalet →"
+  },
   "regions": {
     "bannerTitle": "Explorez les régions du Québec",
     "bannerSubtitle": "Des chalets dans les plus beaux coins de la province",
