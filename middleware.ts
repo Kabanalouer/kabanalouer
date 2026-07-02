@@ -46,13 +46,24 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  // Refresh the Supabase session with a 2s timeout.
+  // Without this guard, a slow/unreachable Supabase causes MIDDLEWARE_INVOCATION_TIMEOUT on Vercel.
+  try {
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("supabase-timeout")), 2000)
+      ),
+    ]);
+  } catch {
+    // Session refresh timed out or failed — request continues without refreshing
+  }
 
   return finalResponse;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|ico)$).*)",
   ],
 };
