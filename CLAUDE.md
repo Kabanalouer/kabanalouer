@@ -8,7 +8,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 
 **Kabanalouer** est une marketplace de location de chalets au Québec — le Airbnb du chalet québécois. Les propriétaires publient leurs chalets, les voyageurs les contactent directement. Pas de frais de service pour les voyageurs.
 
-- **Production :** https://kabanalouer.vercel.app
+- **Production :** https://kabanalouer.ca (DNS Squarespace → Vercel)
 - **GitHub :** https://github.com/Kabanalouer/kabanalouer
 - **Simon n'est pas développeur** — toujours expliquer ce qui a été fait en langage clair après chaque intervention.
 
@@ -26,7 +26,8 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Anthropic SDK | 0.96+ | Modèle : `claude-sonnet-4-6` |
 | Google Maps | `@vis.gl/react-google-maps` | Split-view sur /chalets |
 | Resend | 6.x | Emails transactionnels |
-| Stripe | 22.x | Abonnements propriétaires (actif) |
+| Stripe | 22.x | Abonnements propriétaires — intégration complète en prod |
+| Cloudflare Turnstile | — | Anti-bot sur signup et login |
 | Vercel | — | Auto-deploy depuis `main` |
 
 **Clients Supabase :**
@@ -90,14 +91,15 @@ Fichiers dans `public/` :
 
 | Table | Rôle |
 |---|---|
-| `users` | Profils (bio, avatar_url, name, email) |
+| `users` | Profils (bio, avatar_url, name, email, role, stripe_customer_id) |
 | `listings` | Annonces chalets |
 | `rooms` | Chambres/salons liés à une annonce |
 | `availability` | Dates bloquées (manual + ical) |
-| `messages` | Messagerie voyageur ↔ proprio |
-| `reviews` | Avis voyageurs sur les chalets |
+| `messages` | Messagerie voyageur ↔ proprio (max 5000 chars, contrainte DB) |
+| `reviews` | Avis voyageurs sur les chalets (max 2000 chars) |
 | `favorites` | Favoris voyageurs |
-| `subscriptions` | Abonnements propriétaires |
+| `subscriptions` | Abonnements propriétaires (colonne `is_free_launch BOOLEAN`) |
+| `ai_usage_log` | Rate limiting IA — 20 appels/heure/utilisateur |
 | `promotions` | Promotions par annonce (rabais, durée, dernière minute) |
 | `featured_listings` | Annonces vedettes (région, accueil) |
 | `contact_messages` | Formulaire de contact public |
@@ -121,21 +123,28 @@ npx vercel --prod                                       # deploy manuel si besoi
 
 ```
 app/                    Pages App Router
-  (auth)/               Login, signup
+  (auth)/               Login, signup (Turnstile intégré)
   api/                  Routes API (auth check obligatoire)
     ai/                 Génération IA (suggest-titles, generate-description, generate-bio, listing-advice)
+    stripe/             checkout, portal, webhook
+    views/              Compteur de vues (Origin check + IP throttle)
+    sync-ical/          Sync iCal (CRON_SECRET requis)
   dashboard/            Espace proprio
   chalets/              Pages publiques annonces
+  auth/callback/        OAuth callback — gère le rôle et la langue
 components/
   dashboard/            Composants espace proprio
   chalets/              Composants pages publiques
+  TurnstileWidget.tsx   Widget Cloudflare Turnstile (script afterInteractive)
 lib/
   supabase/             client.ts + server.ts
+  aiRateLimit.ts        Rate limiting IA (table ai_usage_log)
   photo.ts              Compression WebP + normalisation URLs
   amenities.ts          Liste des caractéristiques
   listingScore.ts       Score optimisation 0-100 (buildCriteria, computeScore, getScoreLevel)
 public/                 Assets statiques (logos, hero image)
 design-system/          Fichiers de référence branding
+supabase/               Migrations SQL à exécuter manuellement dans Supabase Dashboard
 ```
 
 ---
@@ -158,9 +167,37 @@ design-system/          Fichiers de référence branding
 - **Score d'optimisation** (0–100) : `lib/listingScore.ts` — source unique de vérité, partagé entre `AnalyseSection.tsx` et `EditListingForm.tsx`
 - **Conseils IA** : `/api/ai/listing-advice` — `claude-sonnet-4-6`, retourne 3 conseils JSON
 - **Module promotions** : 3 types (rabais, durée, dernière minute), badges sur les cartes publiques
-- **Module vedettes** : région (49 $/mois) et accueil (99 $/mois) — Stripe à intégrer
+- **Module vedettes** : région (49 $/mois) et accueil (99 $/mois) — Stripe à intégrer (pas encore fait)
 - **iCal sync** bidirectionnel (`/api/sync-ical`)
 - **Photos chambres** : drag & drop, compression WebP, upload bucket `listing-photos`
+
+### Abonnement Stripe (299 $/an) — complet
+- **Price ID** : `price_1TogE7EVILGcAv4ar10TmOCz` — hardcodé dans `app/api/stripe/checkout/route.ts`
+- **Flux** : bouton dans `/dashboard/subscription` → `/api/stripe/checkout` (POST) → Stripe Checkout → webhook → `subscriptions` table
+- **Webhook** `/api/stripe/webhook` gère : `checkout.session.completed` (active l'abonnement, `is_free_launch: false`), `customer.subscription.updated`, `customer.subscription.deleted`
+- **Offre de lancement** : les 50 premiers proprios (FREE_LAUNCH_LIMIT = 50) obtiennent un accès gratuit 1 an via `/api/subscriptions/activate-free` (`is_free_launch: true`). La page d'abonnement affiche un badge "Offre de lancement" pour eux, sans bouton Stripe.
+- **Portail Stripe** : `/api/stripe/portal` permet aux abonnés payants de gérer leur abonnement
+- **Note technique** : dans Stripe SDK v22+, `current_period_end` est sur `subscription.items.data[0]`, pas sur `subscription` directement
+
+### Sécurité (audit complet effectué)
+- **Headers HTTP** : X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP — configurés dans `next.config.ts`
+- **Rate limiting IA** : 20 appels/heure/utilisateur via table `ai_usage_log` (`lib/aiRateLimit.ts`)
+- **CRON_SECRET** : `/api/sync-ical` bloqué sans le header `Authorization: Bearer <secret>`
+- **SSRF** : `/api/sync-ical` valide les URLs iCal (HTTPS uniquement, pas d'IP privées)
+- **Validation serveur** : messages 5000 chars, reviews 2000 chars, contact 5000 chars
+- **Avatar bucket** : MIME types restreints aux images uniquement (Supabase Storage)
+- **`/api/views`** : Origin check (kabanalouer.ca + localhost) + throttle IP 5 min par annonce
+
+### Cloudflare Turnstile (anti-bot)
+- Site Key : `0x4AAAAAADun6nA4SV0GHTM6` (hardcodée dans les pages login/signup)
+- Secret Key : configurée dans **Supabase Dashboard → Authentication → Bot Protection**
+- `TurnstileWidget.tsx` : script `afterInteractive` + `onLoad` callback pour render fiable
+- Passé via `captchaToken` dans `signUp()` et `signInWithPassword()`
+
+### Auth — rôle proprio/voyageur
+- **Email signup** : rôle dans `options.data.role` → trigger Postgres → `public.users.role`
+- **Google OAuth** : rôle passé dans l'URL de callback (`?role=host`), pas dans `queryParams` (ceux-ci vont à Google et sont perdus). Le callback `/auth/callback` lit le rôle et met à jour `public.users`.
+- **Trigger SQL** : `supabase/fix-handle-new-user-role.sql` — à exécuter si des proprios arrivent en mode voyageur après inscription
 
 ### Côté voyageur
 - **Recherche** : filtres, Google Maps split-view sur `/chalets`
@@ -172,6 +209,11 @@ design-system/          Fichiers de référence branding
 - 14 pages région statiques + pages villes dynamiques
 - Sitemap XML automatique
 - Métadonnées Open Graph + Twitter sur toutes les pages clés
+
+### i18n (next-intl)
+- FR par défaut (`/`), EN via préfixe `/en/`
+- `useTranslations()` dans les composants client, `getTranslations()` dans les server components
+- Namespaces traduits : `auth`, `home`, `contact`, `creationChoice`, etc.
 
 ---
 
@@ -189,57 +231,66 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 STRIPE_WEBHOOK_SECRET
 ANTHROPIC_API_KEY
 RESEND_API_KEY
-NEXT_PUBLIC_APP_URL                # https://kabanalouer.vercel.app
-NEXT_PUBLIC_VERCEL_URL             # https://kabanalouer.vercel.app
+CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
+NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
+NEXT_PUBLIC_VERCEL_URL             # https://kabanalouer.ca
 ```
 
 ---
 
-## 11. Dernière session — 2026-06-05
+## 11. Comptes de test
+
+| Compte | Email | Rôle | Notes |
+|---|---|---|---|
+| Admin | simon.authentik@gmail.com | admin | Accès `/admin` |
+| Voyageur | slemay@authentik.com | traveler | Compte voyageur de test |
+| Proprio test | info@chaletauthentik.com | host | `is_free_launch=false` pour tester le flux Stripe payant |
+
+---
+
+## 12. Migrations SQL en attente (Supabase Dashboard → SQL Editor)
+
+Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
+
+| Fichier | Description | Statut |
+|---|---|---|
+| `fix-handle-new-user-role.sql` | Corrige le trigger d'inscription pour bien lire le rôle | À exécuter si le bug rôle persiste |
+| `add-is-free-launch-column.sql` | Ajoute la colonne `is_free_launch` à `subscriptions` | Probablement déjà en place |
+| `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
+| `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
+| `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
+
+---
+
+## 13. Dernière session — 2026-07-02
 
 ### Fonctionnalités complétées
 
-**Internationalisation (i18n) — pages et composants traduits en anglais**
+**Correction du rôle proprio à l'inscription**
+- Bug : les proprios arrivaient en mode voyageur après confirmation email ou connexion Google
+- Fix A (`signup/page.tsx`) : rôle passé dans l'URL de callback Google OAuth (`?role=host`) plutôt que dans `queryParams` (qui est envoyé à Google et jamais retourné)
+- Fix B (`auth/callback/route.ts`) : le callback lit `user.user_metadata.role` (email) ou le param URL `role` (Google) et met à jour `public.users` immédiatement
 
-- **`CreationChoiceSection`** (`components/devenir-hote/CreationChoiceSection.tsx`) — section "Comment voulez-vous créer votre annonce ?" traduite avec `useTranslations("creationChoice")`. Namespace `creationChoice` ajouté dans `fr.json` et `en.json` (37 clés : titres, descriptions, formulaire d'import complet).
-- **Footer** (`components/Footer.tsx`) — lien "Pourquoi nous choisir ?" retiré de la colonne Proprios/Owners (FR et EN). Clé `owners.whyChooseUs` supprimée des deux fichiers JSON.
-- **Page contact** (`app/contact/page.tsx`, `app/contact/ContactForm.tsx`) — entièrement traduite. `metadata` statique remplacé par `generateMetadata()` avec `getLocale()`. `ContactForm` passe de textes hardcodés à `useTranslations("contact")` (sujets du select, labels, messages). Namespace `contact` ajouté (37 clés). `app/[locale]/contact/page.tsx` mis à jour pour re-exporter `generateMetadata` au lieu de `metadata`.
+**Intégration Stripe Checkout complète**
+- `app/api/stripe/checkout/route.ts` : Price ID réel branché, vérification rôle `host`, création/récupération customer Stripe
+- `app/api/stripe/webhook/route.ts` : bug `expires_at` corrigé → `subscription.items.data[0].current_period_end` ; `is_free_launch: false` ajouté
+- `app/dashboard/subscription/page.tsx` : trois états distincts — offre de lancement (badge gratuit), abonné payant (bouton portail), inactif (bouton Stripe)
+- `PublishUI.tsx` : prix corrigé 199 → 299 $/an
 
-**Contenu page d'accueil**
+**Cloudflare Turnstile**
+- `TurnstileWidget.tsx` : composant avec `strategy="afterInteractive"` + `onLoad` callback (fix du widget qui n'apparaissait pas)
+- Intégré sur `app/(auth)/signup/page.tsx` et `app/(auth)/login/page.tsx`
 
-- **H1** (`messages/fr.json`, `messages/en.json`, clé `home.heroTitle`) — nouveau texte SEO : "Payez moins cher pour votre location de chalet au Québec." / "Pay less for your Quebec cabin rental."
-- **Taille responsive H1** (`app/page.tsx`) — passage de `text-[2.6rem] md:text-5xl lg:text-[3.75rem]` (4 lignes sur mobile !) à `text-2xl sm:text-4xl lg:text-[3.25rem]` (2 lignes garanties sur tous les écrans, testé par Playwright sur 375–1440px).
-- **Sous-titre** (`home.heroSubtitle`) — simplifié : "Contactez les propriétaires directement." / "Contact owners directly."
-
-**Bugs UI corrigés**
-
-- **Alignement vertical labels dropdown voyageurs** (`SearchBar.tsx`, `NavSearchBar.tsx`) — `self-start` ajouté sur le bloc label+sous-titre pour ancrer le texte en haut de la ligne (au lieu de le centrer verticalement avec les boutons +/−).
-- **Alignement horizontal labels dropdown voyageurs** (`SearchBar.tsx`, `NavSearchBar.tsx`) — `text-left` ajouté sur le même bloc. Cause racine : `text-align: center` hérité du parent `.text-center` du hero de `page.tsx`, qui cascadait dans le dropdown. Les labels (plus courts que leurs sous-titres) se retrouvaient centrés dans la largeur du sous-titre → décalage visible de 9 à 23px selon la ligne.
-
-### Fichiers modifiés
-
-| Fichier | Changement |
-|---|---|
-| `app/page.tsx` | H1 : nouvelle classe responsive `text-2xl sm:text-4xl lg:text-[3.25rem]` |
-| `app/contact/page.tsx` | `metadata` → `generateMetadata()`, tous les textes via `getTranslations("contact")` |
-| `app/contact/ContactForm.tsx` | `useTranslations("contact")`, sujets et labels traduits |
-| `app/[locale]/contact/page.tsx` | Re-export `generateMetadata` (au lieu de `metadata`) |
-| `components/Footer.tsx` | Lien `owners.whyChooseUs` retiré |
-| `components/devenir-hote/CreationChoiceSection.tsx` | `useTranslations("creationChoice")`, tous textes traduits |
-| `components/SearchBar.tsx` | `self-start text-left` sur le leftDiv du dropdown voyageurs |
-| `components/NavSearchBar.tsx` | `self-start text-left` sur le leftDiv du dropdown voyageurs |
-| `messages/fr.json` | Namespaces `creationChoice` et `contact` ajoutés ; `home.heroTitle`, `home.heroSubtitle` mis à jour ; `owners.whyChooseUs` retiré |
-| `messages/en.json` | Idem |
+**Audit de sécurité**
+- Headers HTTP, rate limiting IA, CRON_SECRET, SSRF iCal, validation formulaires serveur, restriction MIME avatars, Origin check sur `/api/views`
 
 ### Leçons techniques retenues
 
-- **`text-align` est une propriété CSS héritée.** Un `text-center` sur un ancêtre cascade dans tous les descendants, y compris les dropdowns absolument positionnés qui sont des enfants DOM du composant. Toujours ajouter `text-left` explicitement sur les dropdowns ou leurs cellules de texte.
-- **Tailwind v4 : classes dynamiques non compilées.** Appliquer des classes Tailwind via `className` en JavaScript ne fonctionne que si la classe est déjà présente dans le CSS compilé. Pour tester dynamiquement, utiliser des `inline styles`.
-- **next-intl + composants client :** utiliser `useTranslations()` (hook). Pour les server components : `getTranslations()` (async). `getLocale()` lit le locale depuis les headers de requête définis par le middleware — fonctionne même dans des fichiers re-exportés via `[locale]/page.tsx`.
-- **Re-exports `[locale]/page.tsx` :** quand une page passe de `export const metadata` à `export async function generateMetadata`, le fichier de re-export dans `app/[locale]/` doit être mis à jour en conséquence.
+- **Stripe SDK v22+ :** `current_period_end` a été déplacé de `Subscription` vers `SubscriptionItem`. Utiliser `subscription.items.data[0].current_period_end`.
+- **Google OAuth + rôle :** `queryParams` dans `signInWithOAuth()` sont ajoutés à l'URL envoyée à Google — ils ne reviennent jamais dans le callback Supabase. Passer le rôle dans `redirectTo` à la place.
+- **Turnstile timing :** `strategy="lazyOnload"` charge pendant l'idle du navigateur (peu fiable sur des pages simples). Toujours utiliser `strategy="afterInteractive"` avec `onLoad` callback qui déclenche le render du widget.
+- **`text-align` est hérité en CSS :** un `text-center` sur un ancêtre affecte les dropdowns positionnés en absolu. Toujours ajouter `text-left` explicitement sur les éléments de texte dans les dropdowns.
 
-### Prochaines étapes immédiates
+### Prochaine étape immédiate
 
-- Vérifier visuellement en production que le dropdown voyageurs est correct sur `/en` et `/` (les fixes `self-start` + `text-left` sont déployés mais non confirmés côté Vercel).
-- Continuer la traduction des pages restantes non encore traduites sous `/en` (vérifier avec un audit des pages `app/[locale]/*/page.tsx`).
-- Tester le formulaire de contact (`/en/contact`) end-to-end : soumission, email Resend reçu, message de succès en anglais.
+Tester le paiement Stripe de bout en bout avec une carte de test Stripe (ex. `4242 4242 4242 4242`), vérifier que l'abonnement s'active dans la table `subscriptions`, et remettre `is_free_launch=true` sur `info@chaletauthentik.com` si le test est concluant.
