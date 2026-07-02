@@ -188,15 +188,15 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-center text-white">
+        {/* Content — ancré en bas sur mobile pour laisser l'image respirer en haut */}
+        <div className="relative z-10 h-full flex flex-col justify-end sm:justify-center text-white">
 
           {/* Contenu : badge + titre + sous-titre + recherche */}
-          <div className="flex flex-col items-center text-center px-4 py-10">
-            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-4 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
+          <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
+            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
               {t("badge")}
             </div>
-            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-5 max-w-3xl">
+            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-4 sm:mb-5 max-w-3xl">
               {t("heroTitle")}
             </h1>
             <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
