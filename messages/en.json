@@ -88,6 +88,7 @@
     "draft": "Draft",
     "score": "Score: {score}",
     "viewListing": "View listing ↗",
+    "editLink": "Edit",
     "edit": {
       "aiGenerating": "Generating…",
       "aiGenerate": "Generate with AI",

@@ -88,6 +88,7 @@
     "draft": "Brouillon",
     "score": "Score : {score}",
     "viewListing": "Voir la fiche ↗",
+    "editLink": "Modifier",
     "edit": {
       "aiGenerating": "Génération en cours…",
       "aiGenerate": "Générer avec l'IA",

@@ -91,7 +91,7 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
                   href={`/dashboard/listings/${listing.id}/edit`}
                   className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
                 >
-                  {t("edit")}
+                  {t("editLink")}
                 </Link>
               </div>
             </div>
