@@ -16,9 +16,13 @@ export async function POST(request: Request) {
   // Fetch user profile to get or create Stripe customer
   const { data: profile } = await supabase
     .from("users")
-    .select("stripe_customer_id, email, name")
+    .select("stripe_customer_id, email, name, role")
     .eq("id", user.id)
     .single();
+
+  if (profile?.role !== "host") {
+    return NextResponse.json({ error: "Accès réservé aux propriétaires" }, { status: 403 });
+  }
 
   let customerId = profile?.stripe_customer_id;
 
@@ -43,7 +47,7 @@ export async function POST(request: Request) {
     mode: "subscription",
     line_items: [
       {
-        price: process.env.STRIPE_PRICE_ID!,
+        price: "price_1TogE7EVILGcAv4ar10TmOCz",
         quantity: 1,
       },
     ],

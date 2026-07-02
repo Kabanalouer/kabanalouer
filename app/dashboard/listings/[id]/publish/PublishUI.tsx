@@ -236,7 +236,7 @@ export default function PublishUI({
                 </>
               ) : (
                 <>
-                  <p className="text-3xl font-extrabold text-gray-900">199 $</p>
+                  <p className="text-3xl font-extrabold text-gray-900">299 $</p>
                   <p className="text-sm text-gray-400">par année</p>
                 </>
               )}
@@ -280,7 +280,7 @@ export default function PublishUI({
                 disabled={loading}
                 className="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
               >
-                {loading ? "Redirection vers le paiement…" : "Payer et publier — 199 $/an"}
+                {loading ? "Redirection vers le paiement…" : "Payer et publier — 299 $/an"}
               </button>
               <p className="text-xs text-gray-400 text-center mt-2">
                 Paiement sécurisé par Stripe · Annulable à tout moment

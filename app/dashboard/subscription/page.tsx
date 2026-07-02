@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 type Subscription = {
   status: string;
   expires_at: string | null;
+  is_free_launch: boolean | null;
 };
 
 export default function SubscriptionPage() {
@@ -24,7 +25,7 @@ export default function SubscriptionPage() {
       if (!user) return;
       supabase
         .from("subscriptions")
-        .select("status, expires_at")
+        .select("status, expires_at, is_free_launch")
         .eq("user_id", user.id)
         .maybeSingle()
         .then(({ data }) => {
@@ -51,6 +52,7 @@ export default function SubscriptionPage() {
   };
 
   const isActive = sub?.status === "active";
+  const isFreeLaunch = sub?.is_free_launch === true;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -142,7 +144,19 @@ export default function SubscriptionPage() {
 
           {/* Action */}
           <div className="p-6">
-            {isActive ? (
+            {isActive && isFreeLaunch ? (
+              <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-xl p-4">
+                <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-primary">Offre de lancement — accès gratuit</p>
+                  <p className="text-xs text-charcoal-500 mt-0.5">
+                    Vous faites partie des premiers proprios sur Kabanalouer. Votre accès est gratuit pendant 1 an.
+                  </p>
+                </div>
+              </div>
+            ) : isActive ? (
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handlePortal}
@@ -153,17 +167,19 @@ export default function SubscriptionPage() {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={handleSubscribe}
-                disabled={redirecting}
-                className="w-full bg-primary text-white py-3.5 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
-              >
-                {redirecting ? "Redirection vers le paiement…" : "S'abonner pour 299 $/an"}
-              </button>
+              <>
+                <button
+                  onClick={handleSubscribe}
+                  disabled={redirecting}
+                  className="w-full bg-primary text-white py-3.5 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
+                >
+                  {redirecting ? "Redirection vers le paiement…" : "S'abonner pour 299 $/an"}
+                </button>
+                <p className="text-xs text-charcoal-400 text-center mt-3">
+                  Paiement sécurisé par Stripe · Annulable à tout moment
+                </p>
+              </>
             )}
-            <p className="text-xs text-charcoal-400 text-center mt-3">
-              Paiement sécurisé par Stripe · Annulable à tout moment
-            </p>
           </div>
         </div>
       )}

@@ -32,13 +32,15 @@ export async function POST(request: NextRequest) {
       if (!userId || !subscriptionId) break;
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      const currentPeriodEnd = new Date((subscription as unknown as { expires_at: number }).expires_at * 1000).toISOString();
+      // current_period_end moved to SubscriptionItem in newer Stripe API versions
+      const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
       await supabase.from("subscriptions").upsert({
         user_id: userId,
         stripe_subscription_id: subscriptionId,
         stripe_customer_id: session.customer as string,
         status: "active",
+        is_free_launch: false,
         expires_at: currentPeriodEnd,
       }, { onConflict: "user_id" });
 
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
 
       if (!user) break;
 
-      const currentPeriodEnd = new Date((subscription as unknown as { expires_at: number }).expires_at * 1000).toISOString();
+      const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
       await supabase.from("subscriptions").upsert({
         user_id: user.id,
