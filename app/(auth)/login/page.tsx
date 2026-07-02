@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import TurnstileWidget from "@/components/TurnstileWidget";
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 
 function LoginForm() {
   const t = useTranslations("auth.login");
@@ -21,14 +24,23 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) return;
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Token is single-use — clear it before the request so the widget re-challenges on error
+    const token = turnstileToken;
+    setTurnstileToken(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: token },
+    });
     if (error) {
       setError(t("invalidCredentials"));
       setLoading(false);
@@ -107,9 +119,15 @@ function LoginForm() {
             />
           </div>
 
+          <TurnstileWidget
+            sitekey={TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onReset={() => setTurnstileToken(null)}
+          />
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !turnstileToken}
             className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
           >
             {loading ? t("submitting") : t("submit")}
