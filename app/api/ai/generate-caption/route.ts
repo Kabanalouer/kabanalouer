@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { NextResponse } from "next/server";
 
 const SYSTEM_PROMPT =
@@ -13,6 +14,13 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+
+  if (!(await checkAiRateLimit(supabase, user.id, "generate-caption"))) {
+    return NextResponse.json(
+      { error: "Vous avez atteint la limite de 20 générations IA par heure. Réessayez plus tard." },
+      { status: 429 }
+    );
+  }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "Clé API Anthropic manquante." }, { status: 503 });

@@ -53,7 +53,7 @@ export async function PATCH(
   try {
     if (process.env.RESEND_API_KEY && review.author_id && listing) {
       const [authorRes, hostRes] = await Promise.all([
-        supabase.from("users").select("name, email").eq("id", review.author_id as string).single(),
+        admin.from("users").select("name, email").eq("id", review.author_id as string).single(),
         supabase.from("users").select("name").eq("id", user.id).single(),
       ]);
 
