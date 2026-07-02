@@ -6,6 +6,11 @@ import { NextResponse, type NextRequest } from "next/server";
 const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
+  // Admin routes: pas de locale, pas de refresh session — AdminLayout gère l'auth directement
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    return NextResponse.next({ request });
+  }
+
   // next-intl: locale detection, redirects (e.g. /fr/dashboard → /dashboard)
   const intlResponse = intlMiddleware(request);
 
