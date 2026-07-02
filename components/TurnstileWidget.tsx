@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import Script from "next/script";
 
 declare global {
   interface Window {
     turnstile?: {
       render: (
-        container: HTMLElement | string,
+        container: HTMLElement,
         params: {
           sitekey: string;
           callback?: (token: string) => void;
@@ -16,7 +17,6 @@ declare global {
           theme?: "light" | "dark" | "auto";
         }
       ) => string;
-      reset: (widgetId: string) => void;
       remove: (widgetId: string) => void;
     };
   }
@@ -32,40 +32,51 @@ export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) 
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
 
-  // Stable refs so the effect doesn't re-run when callbacks change identity
+  // Refs let the callbacks below capture the latest values without re-creating effects
   const onSuccessRef = useRef(onSuccess);
   const onResetRef = useRef(onReset);
   onSuccessRef.current = onSuccess;
   onResetRef.current = onReset;
 
+  const render = useCallback(() => {
+    if (window.turnstile && containerRef.current && !widgetId.current) {
+      widgetId.current = window.turnstile.render(containerRef.current, {
+        sitekey,
+        callback: (token: string) => onSuccessRef.current(token),
+        "expired-callback": () => onResetRef.current(),
+        "error-callback": () => onResetRef.current(),
+        language: "fr",
+        theme: "light",
+      });
+    }
+  }, [sitekey]);
+
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    const tryRender = () => {
-      if (window.turnstile && containerRef.current && !widgetId.current) {
-        widgetId.current = window.turnstile.render(containerRef.current, {
-          sitekey,
-          callback: (token) => onSuccessRef.current(token),
-          "expired-callback": () => onResetRef.current(),
-          "error-callback": () => onResetRef.current(),
-          language: "fr",
-          theme: "light",
-        });
-      } else if (!window.turnstile) {
-        timeoutId = setTimeout(tryRender, 100);
-      }
-    };
-
-    tryRender();
+    // Handles the case where window.turnstile is already loaded (cached script,
+    // or component re-mounts after the script's onLoad already fired)
+    render();
 
     return () => {
-      clearTimeout(timeoutId);
       if (widgetId.current && window.turnstile) {
-        try { window.turnstile.remove(widgetId.current); } catch { /* widget already removed */ }
+        try { window.turnstile.remove(widgetId.current); } catch { /* already removed */ }
         widgetId.current = null;
       }
     };
-  }, [sitekey]);
+  }, [render]);
 
-  return <div ref={containerRef} className="flex justify-center" />;
+  return (
+    <>
+      {/*
+        Script lives here (not in the layout) so onLoad is reliable.
+        Next.js deduplicates by src — only loads once even if multiple widgets exist.
+        afterInteractive fires right after hydration, before browser idle.
+      */}
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        strategy="afterInteractive"
+        onLoad={render}
+      />
+      <div ref={containerRef} className="flex justify-center" />
+    </>
+  );
 }

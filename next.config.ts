@@ -13,7 +13,7 @@ const securityHeaders = [
       "default-src 'self'",
       // Next.js requires unsafe-inline + unsafe-eval; Google Maps needs *.googleapis.com
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com js.stripe.com challenges.cloudflare.com",
-      "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+      "style-src 'self' 'unsafe-inline' fonts.googleapis.com challenges.cloudflare.com",
       "font-src 'self' fonts.gstatic.com data:",
       // img: allow HTTPS broadly (Unsplash, Supabase storage, Google Maps tiles)
       "img-src 'self' data: blob: https:",
