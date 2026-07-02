@@ -68,11 +68,13 @@ function SignupForm() {
     const params = new URLSearchParams();
     if (next !== defaultHome) params.set("next", next);
     if (locale !== "fr") params.set("locale", locale);
+    // queryParams go to Google's OAuth endpoint and are never returned — pass role in the callback URL instead
+    if (role === "host") params.set("role", "host");
     const qs = params.toString();
     const callbackUrl = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: callbackUrl, queryParams: { role } },
+      options: { redirectTo: callbackUrl },
     });
   };
 

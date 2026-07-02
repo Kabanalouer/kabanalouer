@@ -31,22 +31,32 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Sauvegarde de la langue préférée (email signup via metadata, Google OAuth via query param)
+        // Role: JWT metadata set at signUp() for email, URL param for Google OAuth (queryParams don't survive the OAuth round-trip)
+        const metaRole = user.user_metadata?.role as string | undefined;
+        const urlRole = searchParams.get("role");
+        const resolvedRole =
+          metaRole === "host" || metaRole === "traveler" ? metaRole :
+          urlRole === "host" ? "host" :
+          null;
+
+        // Language: JWT metadata for email signup, locale URL param for Google OAuth
         const lang =
           (user.user_metadata?.preferred_language as string | undefined) ??
           (localeParam === "en" ? "en" : undefined);
+
+        if (resolvedRole) {
+          await supabase.from("users").update({ role: resolvedRole }).eq("id", user.id);
+        }
         if (lang === "fr" || lang === "en") {
           await supabase.from("users").update({ preferred_language: lang }).eq("id", user.id);
         }
 
         // Redirect hosts to their dashboard by default (unless a specific `next` was set)
         if (next === "/") {
-          const { data: profile } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-          if (profile?.role === "host") {
+          const isHost = resolvedRole
+            ? resolvedRole === "host"
+            : (await supabase.from("users").select("role").eq("id", user.id).single()).data?.role === "host";
+          if (isHost) {
             return NextResponse.redirect(`${origin}/dashboard`);
           }
         }
