@@ -21,6 +21,10 @@ export async function PATCH(
 
   const { reply } = await req.json() as { reply?: string };
 
+  if (reply && reply.trim().length > 2000) {
+    return NextResponse.json({ error: "La réponse ne peut pas dépasser 2000 caractères." }, { status: 400 });
+  }
+
   // Get the review's listing_id + author info for the notification email
   const { data: review } = await supabase
     .from("reviews")

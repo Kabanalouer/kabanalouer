@@ -22,6 +22,10 @@ export async function submitContactForm(
     return { status: "error", message: "Tous les champs sont obligatoires." };
   }
 
+  if (message.length > 5000) {
+    return { status: "error", message: "Le message ne peut pas dépasser 5000 caractères." };
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return { status: "error", message: "Adresse courriel invalide." };

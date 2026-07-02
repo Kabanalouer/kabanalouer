@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Données invalides." }, { status: 400 });
   }
 
+  if (comment && comment.trim().length > 2000) {
+    return NextResponse.json({ error: "Le commentaire ne peut pas dépasser 2000 caractères." }, { status: 400 });
+  }
+
   // Eligibility: user must have sent at least one message for this listing
   const { count } = await supabase
     .from("messages")

@@ -10,11 +10,41 @@ function adminSupabase() {
   );
 }
 
+function validateIcalUrl(rawUrl: string): boolean {
+  let url: URL;
+  try { url = new URL(rawUrl); } catch { return false; }
+
+  if (url.protocol !== "https:") return false;
+
+  const hostname = url.hostname.toLowerCase();
+  if (hostname === "localhost" || hostname === "0.0.0.0" || hostname === "::1" || hostname === "[::1]") return false;
+
+  const ipv4 = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+    if (
+      a === 127 ||
+      a === 10 ||
+      a === 0 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254)
+    ) return false;
+  }
+
+  return true;
+}
+
 async function syncOneListing(
   supabase: ReturnType<typeof adminSupabase>,
   listingId: string,
   icalUrl: string
 ) {
+  if (!validateIcalUrl(icalUrl)) {
+    console.error(`[sync-ical] URL invalide ou non autorisée pour listing ${listingId}: ${icalUrl}`);
+    return { ok: false, error: "URL iCal invalide ou non autorisée" };
+  }
+
   // Fetch the iCal feed
   let icalText: string;
   try {
