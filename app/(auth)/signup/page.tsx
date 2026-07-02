@@ -151,14 +151,6 @@ function SignupForm() {
           </div>
         )}
 
-        {role === "host" && !roleParam && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-xs text-amber-700 leading-relaxed">
-            {t.rich("hostSubscriptionNote", {
-              strong: (chunks) => <strong>{chunks}</strong>,
-            })}
-          </div>
-        )}
-
         {/* Google */}
         <button
           onClick={handleGoogleSignup}
