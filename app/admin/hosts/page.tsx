@@ -10,7 +10,7 @@ export default async function AdminHostsPage() {
     supabase
       .from("users")
       .select("id, name, email, avatar_url, created_at")
-      .in("role", ["host", "admin"])
+      .eq("role", "host")
       .order("created_at", { ascending: false }),
     supabase.from("listings").select("host_id, is_published"),
     supabase.from("subscriptions").select("user_id, status, is_free_launch, expires_at, created_at"),
