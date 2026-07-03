@@ -1,5 +1,19 @@
 # CLAUDE.md — Kabanalouer
 
+## Design system prioritaire — ne pas dévier
+
+- **Couleur primaire :** olive `#636e40` (variantes : 600 `#4d5631`, 700 `#3a4124`, 100 `#e8ebdc`, 50 `#f5f6ec`)
+- **Couleur accent :** coral `#f04e45`
+- **Typographie :** Plus Jakarta Sans uniquement
+- **Boutons CTA :** toujours `rounded-full`
+- **Pas d'emojis** dans l'UI, **sentence case** partout, **prix en format québécois** (ex. `120 $/nuit`)
+- **Vocabulaire :** "proprio" dans les labels courts, "propriétaire" dans les textes longs, **jamais "hôte"**
+- **Ton :** français québécois naturel, chaleureux mais professionnel
+
+Le skill ui-ux-pro-max peut être utilisé pour des suggestions de structure, de patterns UX ou d'animations, mais ne doit JAMAIS proposer une nouvelle palette de couleurs, une nouvelle police, ou un nouveau style de bouton. Le design system ci-dessus est final et non négociable pour ce projet.
+
+---
+
 Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 
 ---
