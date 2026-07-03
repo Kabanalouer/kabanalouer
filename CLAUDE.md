@@ -186,7 +186,7 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - **Photos chambres** : drag & drop, compression WebP, upload bucket `listing-photos`
 
 ### Abonnement Stripe (299 $/an) — complet
-- **Price ID** : `price_1TogE7EVILGcAv4ar10TmOCz` — hardcodé dans `app/api/stripe/checkout/route.ts`
+- **Price ID** : `price_1ToqE7EVILGcAv4ar10TmOCz` — hardcodé dans `app/api/stripe/checkout/route.ts`
 - **Flux** : bouton dans `/dashboard/subscription` → `/api/stripe/checkout` (POST) → Stripe Checkout → webhook → `subscriptions` table
 - **Webhook** `/api/stripe/webhook` gère : `checkout.session.completed` (active l'abonnement, `is_free_launch: false`), `customer.subscription.updated`, `customer.subscription.deleted`
 - **Offre de lancement** : les 50 premiers proprios (FREE_LAUNCH_LIMIT = 50) obtiennent un accès gratuit 1 an via `/api/subscriptions/activate-free` (`is_free_launch: true`). La page d'abonnement affiche un badge "Offre de lancement" pour eux, sans bouton Stripe.
