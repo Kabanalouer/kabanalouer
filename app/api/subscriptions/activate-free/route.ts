@@ -59,13 +59,17 @@ export async function POST(request: NextRequest) {
   const expiresAt = new Date();
   expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-  await admin.from("subscriptions").upsert({
+  const { error: subError } = await admin.from("subscriptions").upsert({
     user_id: user.id,
     stripe_subscription_id: `free_launch_${user.id}`,
     status: "active",
     expires_at: expiresAt.toISOString(),
     is_free_launch: true,
   }, { onConflict: "user_id" });
+
+  if (subError) {
+    return NextResponse.json({ error: subError.message }, { status: 500 });
+  }
 
   await admin.from("users").update({ role: "host" }).eq("id", user.id);
   await admin.from("listings").update({ is_published: true }).eq("id", listingId);

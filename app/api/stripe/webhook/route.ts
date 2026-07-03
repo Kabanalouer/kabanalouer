@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       // current_period_end moved to SubscriptionItem in newer Stripe API versions
       const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
-      await supabase.from("subscriptions").upsert({
+      const { error: subError } = await supabase.from("subscriptions").upsert({
         user_id: userId,
         stripe_subscription_id: subscriptionId,
         stripe_customer_id: session.customer as string,
@@ -43,6 +43,11 @@ export async function POST(request: NextRequest) {
         is_free_launch: false,
         expires_at: currentPeriodEnd,
       }, { onConflict: "user_id" });
+
+      if (subError) {
+        console.error("checkout.session.completed: échec upsert subscriptions", subError);
+        return NextResponse.json({ error: subError.message }, { status: 500 });
+      }
 
       await supabase
         .from("users")
@@ -71,13 +76,18 @@ export async function POST(request: NextRequest) {
 
       const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
-      await supabase.from("subscriptions").upsert({
+      const { error: subUpdateError } = await supabase.from("subscriptions").upsert({
         user_id: user.id,
         stripe_subscription_id: subscription.id,
         stripe_customer_id: customerId,
         status: subscription.status === "active" ? "active" : "inactive",
         expires_at: currentPeriodEnd,
       }, { onConflict: "user_id" });
+
+      if (subUpdateError) {
+        console.error("customer.subscription.updated: échec upsert subscriptions", subUpdateError);
+        return NextResponse.json({ error: subUpdateError.message }, { status: 500 });
+      }
 
       break;
     }
