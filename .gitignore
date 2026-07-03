@@ -42,3 +42,7 @@ next-env.d.ts
 
 # responsive audit screenshots
 responsive-screenshots/
+
+# local Claude Code and Playwright CLI artifacts
+.claude/
+.playwright-cli/
