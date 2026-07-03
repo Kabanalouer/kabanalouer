@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
@@ -39,6 +39,20 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showMobileMap, setShowMobileMap] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(false);
+
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(footer);
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
     setIsLoading(true);
@@ -177,8 +191,8 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           {listGrid("grid-cols-1 sm:grid-cols-2")}
         </div>
 
-        {/* Bouton flottant "Voir la carte" */}
-        {!showMobileMap && (
+        {/* Bouton flottant "Voir la carte" — masqué quand le footer entre dans le viewport */}
+        {!showMobileMap && !footerVisible && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
             <button
               onClick={() => setShowMobileMap(true)}
