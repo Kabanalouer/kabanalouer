@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     mode: "subscription",
     line_items: [
       {
-        price: "price_1ToqE7EVILGcAv4ar10TmOCz",
+        price: "price_1ToqE7EVlLGcAv4arl0TmOCz",
         quantity: 1,
       },
     ],
