@@ -93,7 +93,9 @@ export default function Navbar() {
   const lp = (path: string) => localePath(path, locale);
   const supabase = createClient();
   const pathname = usePathname();
-  const strippedPathname = locale === "en" && pathname.startsWith("/en") ? pathname.slice(3) : pathname;
+  const strippedPathname = locale === "en" && pathname.startsWith("/en")
+    ? (pathname.slice(3) || "/")
+    : pathname;
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
