@@ -125,7 +125,7 @@ export default function FiltersModal({
       {/* ── Button ────────────────────────────────────────────────────────── */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`relative flex items-center gap-2 px-4 py-3 rounded-full border text-sm font-medium transition-colors shrink-0 ${
+        className={`relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border text-sm font-medium transition-colors shrink-0 ${
           activeCount > 0
             ? "border-charcoal-800 bg-charcoal-800 text-white"
             : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
@@ -135,7 +135,7 @@ export default function FiltersModal({
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
         </svg>
-        {t("button")}
+        <span className="lg:hidden xl:inline">{t("button")}</span>
         {activeCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}

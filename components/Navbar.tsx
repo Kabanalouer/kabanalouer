@@ -225,7 +225,7 @@ export default function Navbar() {
 
   // Shared nav wrapper classes
   const navWrap = "bg-white/95 backdrop-blur-md border-b border-[#ebebeb] sticky top-0 z-50";
-  const navInner = "px-6 lg:px-8";
+  const navInner = "px-6 xl:px-8";
 
   // ── HOST NAVBAR ──────────────────────────────────────────────────────────────
   if (isHost && !voyageurMode && user && profile) {
@@ -424,16 +424,16 @@ export default function Navbar() {
           {!isHome && <NavSearchBar />}
 
           {/* Desktop right */}
-          <div className="hidden md:flex items-center justify-end gap-2 flex-1">
+          <div className="hidden md:flex items-center justify-end gap-1.5 flex-1">
             <Link
               href={lp("/devenir-hote")}
-              className="px-5 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
+              className="whitespace-nowrap px-4 lg:px-3.5 xl:px-4 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
             >
               {t("registerCabin")}
             </Link>
             <Link
               href={lp("/signup")}
-              className="bg-primary text-white text-[15px] px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
+              className="whitespace-nowrap bg-primary text-white text-[15px] px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
               {t("createAccount")}
             </Link>

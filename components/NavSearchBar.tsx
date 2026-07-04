@@ -261,7 +261,7 @@ function NavSearchBarInner() {
   return (
     <>
       {/* Desktop: pill + filtres ──────────────────────────────────────── */}
-      <div className="hidden md:flex items-center gap-3">
+      <div className="hidden lg:flex items-center gap-2 lg:gap-0 xl:gap-2">
       <div
         ref={containerRef}
         className="flex items-center border border-[#dddddd] rounded-full bg-white shadow-sm hover:shadow-md transition-shadow"
@@ -270,7 +270,7 @@ function NavSearchBarInner() {
         <div className="relative">
           <button
             onClick={() => setActiveField(activeField === "dest" ? null : "dest")}
-            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[130px] ${activeField === "dest" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
+            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[99px] xl:min-w-[130px] ${activeField === "dest" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
             <span className={`text-sm font-medium leading-none truncate max-w-[120px] ${destLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
               {destLabel ?? t("destinationPlaceholder")}
@@ -348,9 +348,9 @@ function NavSearchBarInner() {
         <div className="relative">
           <button
             onClick={() => setActiveField(activeField === "dates" ? null : "dates")}
-            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[120px] ${activeField === "dates" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
+            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[94px] xl:min-w-[120px] ${activeField === "dates" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
-            <span className={`text-sm font-medium leading-none ${datesLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
+            <span className={`text-sm font-medium leading-none whitespace-nowrap ${datesLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
               {datesLabel ?? t("datesLabel")}
             </span>
           </button>
@@ -395,9 +395,9 @@ function NavSearchBarInner() {
         <div className="relative">
           <button
             onClick={() => setActiveField(activeField === "guests" ? null : "guests")}
-            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[110px] ${activeField === "guests" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
+            className={`flex items-center px-5 py-3 rounded-full transition-colors min-w-[84px] xl:min-w-[110px] ${activeField === "guests" ? "bg-charcoal-50" : "hover:bg-charcoal-50/60"}`}
           >
-            <span className={`text-sm font-medium leading-none ${guestsLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
+            <span className={`text-sm font-medium leading-none whitespace-nowrap ${guestsLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
               {guestsLabel ?? t("guestsPlaceholder")}
             </span>
           </button>
@@ -489,7 +489,7 @@ function NavSearchBarInner() {
 export default function NavSearchBar() {
   return (
     <Suspense fallback={
-      <div className="hidden md:block h-[52px] w-[430px] rounded-full border border-[#ebebeb] bg-white" />
+      <div className="hidden lg:block h-[52px] w-[430px] rounded-full border border-[#ebebeb] bg-white" />
     }>
       <NavSearchBarInner />
     </Suspense>
