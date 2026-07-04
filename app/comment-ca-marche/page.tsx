@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/comment-ca-marche" : "/comment-ca-marche";
-  const title = isEn ? "How It Works — Kabanalouer" : "Comment ça marche — Kabanalouer";
+  const title = isEn ? "How It Works" : "Comment ça marche";
   const description = isEn
     ? "Find and contact Quebec cabin owners directly. No service fees for travelers. 3 simple steps."
     : "Trouvez et contactez directement les propriétaires de chalets au Québec. Aucun frais de service pour les voyageurs. 3 étapes simples.";

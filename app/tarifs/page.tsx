@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/tarifs" : "/tarifs";
-  const title = isEn ? "Pricing — Kabanalouer" : "Tarifs et abonnement — Kabanalouer";
+  const title = isEn ? "Pricing" : "Tarifs et abonnement";
   const description = isEn
     ? "One simple, transparent annual subscription. $299/year per cabin. Free offer for the first 50 owners."
     : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.";

@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/a-propos" : "/a-propos";
-  const title = isEn ? "About — Kabanalouer" : "À propos — Kabanalouer";
+  const title = isEn ? "About" : "À propos";
   const description = isEn
     ? "Kabanalouer is the leading marketplace for cabin rentals in Quebec. Our mission: connecting travelers and owners without intermediaries."
     : "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.";

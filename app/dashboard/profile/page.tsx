@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/dashboard/ProfileForm";
 
-export const metadata = { title: "Mon profil — Kabanalouer" };
+export const metadata = { title: "Mon profil" };
 
 export default async function ProfilePage() {
   const supabase = await createClient();

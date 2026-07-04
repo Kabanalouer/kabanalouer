@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/regions" : "/regions";
-  const title = isEn ? "All Regions — Kabanalouer" : "Toutes les régions — Kabanalouer";
+  const title = isEn ? "All Regions" : "Toutes les régions";
   const description = isEn
     ? "Explore cabin rentals across all Quebec regions. Laurentians, Charlevoix, Eastern Townships and more. Direct contact with owners."
     : "Explorez nos chalets à louer dans toutes les régions du Québec. Laurentides, Charlevoix, Cantons-de-l'Est et plus. Contact direct avec les propriétaires.";

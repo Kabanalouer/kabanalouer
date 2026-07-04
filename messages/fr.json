@@ -554,13 +554,13 @@
     "ctaDescPost": "par chalet.",
     "ctaButton": "Inscrire mon chalet →",
     "ctaNote": "Offre gratuite pour les 50 premiers propriétaires · Aucune carte requise",
-    "metaTitle": "Chalets à louer au Québec — Kabanalouer",
+    "metaTitle": "Chalets à louer au Québec",
     "metaDesc": "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
     "ogTitle": "Kabanalouer — Location de chalets au Québec",
     "ogDesc": "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service."
   },
   "chaletsPage": {
-    "metaTitle": "Chalets au Québec — Recherche | Kabanalouer",
+    "metaTitle": "Chalets au Québec — Recherche",
     "metaDesc": "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
     "metaTitleDestination": "Location de chalet - {destination}",
     "metaDescDestination": "Trouvez et réservez les meilleurs chalets à louer à {destination}. Contactez directement les propriétaires, sans commission.",
@@ -609,7 +609,7 @@
   },
   "favoris": {
     "title": "Mes favoris",
-    "metaTitle": "Mes favoris — Kabanalouer",
+    "metaTitle": "Mes favoris",
     "empty": "Vous n'avez pas encore de favoris.",
     "emptyHint": "Explorez nos chalets et cliquez sur le cœur pour les sauvegarder.",
     "exploreCta": "Explorer les chalets"
@@ -1086,7 +1086,7 @@
     "errorSend": "Erreur lors de l'envoi."
   },
   "terms": {
-    "metaTitle": "Conditions d'utilisation | Kabanalouer",
+    "metaTitle": "Conditions d'utilisation",
     "metaDesc": "Conditions d'utilisation de la plateforme Kabanalouer — marketplace de location de chalets au Québec.",
     "label": "Légal",
     "h1": "Conditions d'utilisation",
@@ -1168,7 +1168,7 @@
     "backHome": "Retour à l'accueil"
   },
   "privacy": {
-    "metaTitle": "Politique de confidentialité | Kabanalouer",
+    "metaTitle": "Politique de confidentialité",
     "metaDesc": "Politique de confidentialité de Kabanalouer — comment nous collectons, utilisons et protégeons vos données personnelles, conformément à la Loi 25 du Québec.",
     "label": "Légal",
     "h1": "Politique de confidentialité",

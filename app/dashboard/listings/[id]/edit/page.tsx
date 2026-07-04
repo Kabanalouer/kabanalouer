@@ -12,7 +12,7 @@ function adminSupabase() {
   );
 }
 
-export const metadata = { title: "Modifier le chalet — Kabanalouer" };
+export const metadata = { title: "Modifier le chalet" };
 
 interface Props {
   params: Promise<{ id: string }>;

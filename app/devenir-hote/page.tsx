@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/devenir-hote" : "/devenir-hote";
-  const title = isEn ? "List My Cabin — Kabanalouer" : "Inscrire mon chalet — Kabanalouer";
+  const title = isEn ? "List My Cabin" : "Inscrire mon chalet";
   const description = isEn
     ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free offer for the first 50 owners."
     : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Offre gratuite pour les 50 premiers propriétaires.";

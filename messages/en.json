@@ -554,13 +554,13 @@
     "ctaDescPost": "per cabin.",
     "ctaButton": "List my cabin →",
     "ctaNote": "Free for the first 50 owners · No credit card required",
-    "metaTitle": "Quebec Cabin Rentals — Kabanalouer",
+    "metaTitle": "Quebec Cabin Rentals",
     "metaDesc": "Discover hundreds of cabins for rent in Quebec. Direct contact with owners, no service fees. Laurentians, Charlevoix, Eastern Townships and more.",
     "ogTitle": "Kabanalouer — Quebec Cabin Rentals",
     "ogDesc": "Discover hundreds of cabins for rent in Quebec. Direct contact with owners, no service fees."
   },
   "chaletsPage": {
-    "metaTitle": "Quebec Cabins — Search | Kabanalouer",
+    "metaTitle": "Quebec Cabins — Search",
     "metaDesc": "Find your ideal cabin in Quebec. Filter by region, dates and amenities. Real-time availability.",
     "metaTitleDestination": "Cabin rentals in {destination}",
     "metaDescDestination": "Find and book the best cabin rentals in {destination}. Contact owners directly, no commission.",
@@ -609,7 +609,7 @@
   },
   "favoris": {
     "title": "My favorites",
-    "metaTitle": "My favorites — Kabanalouer",
+    "metaTitle": "My favorites",
     "empty": "You have no favorites yet.",
     "emptyHint": "Explore our cabins and click the heart icon to save them.",
     "exploreCta": "Explore cabins"
@@ -1086,7 +1086,7 @@
     "errorSend": "Error sending review."
   },
   "terms": {
-    "metaTitle": "Terms of Use | Kabanalouer",
+    "metaTitle": "Terms of Use",
     "metaDesc": "Terms of use of the Kabanalouer platform — cabin rental marketplace in Quebec.",
     "label": "Legal",
     "h1": "Terms of Use",
@@ -1168,7 +1168,7 @@
     "backHome": "Back to home"
   },
   "privacy": {
-    "metaTitle": "Privacy Policy | Kabanalouer",
+    "metaTitle": "Privacy Policy",
     "metaDesc": "Privacy policy of Kabanalouer — how we collect, use, and protect your personal data in compliance with Quebec's Law 25.",
     "label": "Legal",
     "h1": "Privacy Policy",

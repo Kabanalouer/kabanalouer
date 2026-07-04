@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
 import { computeScore } from "@/lib/listingScore";
 
-export const metadata = { title: "Mes chalets — Kabanalouer" };
+export const metadata = { title: "Mes chalets" };
 
 export default async function ListingsPage({
   searchParams,

@@ -7,7 +7,7 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import { firstPhotoUrl } from "@/lib/photo";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 
-export const metadata = { title: "Tableau de bord — Kabanalouer" };
+export const metadata = { title: "Tableau de bord" };
 
 export default async function DashboardPage() {
   const supabase = await createClient();

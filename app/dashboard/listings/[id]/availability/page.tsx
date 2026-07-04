@@ -9,7 +9,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  return { title: "Disponibilités — Kabanalouer" };
+  return { title: "Disponibilités" };
 }
 
 export default async function AvailabilityPage({ params }: Props) {

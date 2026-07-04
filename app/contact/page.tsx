@@ -8,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   const canonical = isEn ? "/en/contact" : "/contact";
-  const title = isEn ? "Contact us — Kabanalouer" : "Nous contacter — Kabanalouer";
+  const title = isEn ? "Contact us" : "Nous contacter";
   const description = isEn
     ? "Contact the Kabanalouer team. We're here to help, whether you're a traveler or a cabin owner."
     : "Contactez l'équipe Kabanalouer. Nous sommes là pour vous aider, que vous soyez voyageur ou propriétaire de chalet.";
