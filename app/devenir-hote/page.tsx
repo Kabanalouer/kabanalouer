@@ -6,8 +6,9 @@ import HostCTA from "@/components/devenir-hote/HostCTA";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
-const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -60,8 +61,8 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Kabanalouer",
-  url: "https://kabanalouer.vercel.app",
-  logo: "https://kabanalouer.vercel.app/favicon.ico",
+  url: SITE_URL,
+  logo: `${SITE_URL}/favicon.ico`,
   description:
     "Marketplace de location de chalets au Québec. Contact direct avec les propriétaires, zéro frais de service.",
   areaServed: { "@type": "AdministrativeArea", name: "Québec, Canada" },

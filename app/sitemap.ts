@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 import { getRegionSlugs } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
+import { SITE_URL } from "@/lib/siteUrl";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE = "https://kabanalouer.vercel.app";
+const BASE = SITE_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

@@ -21,6 +21,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
+import { SITE_URL } from "@/lib/siteUrl";
 import { getRegionContent } from "@/lib/regionsContent";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import RegionLanding from "./RegionLanding";
@@ -389,7 +390,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     name: listing.title,
     description: (listing.description as string | null) ?? "",
     image: photos.map((p) => p.url),
-    url: `https://kabanalouer.vercel.app/chalets/${id}`,
+    url: `${SITE_URL}/chalets/${id}`,
     address: {
       "@type": "PostalAddress",
       addressLocality: city ?? listing.region,

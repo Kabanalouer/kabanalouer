@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
-const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -46,12 +47,12 @@ const breadcrumbJsonLd = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Accueil", item: "https://kabanalouer.vercel.app/" },
+    { "@type": "ListItem", position: 1, name: "Accueil", item: `${SITE_URL}/` },
     {
       "@type": "ListItem",
       position: 2,
       name: "Régions",
-      item: "https://kabanalouer.vercel.app/regions",
+      item: `${SITE_URL}/regions`,
     },
   ],
 };

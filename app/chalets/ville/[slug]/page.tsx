@@ -10,11 +10,12 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import { normalizePhotos } from "@/lib/photo";
 import { REGIONS } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
+import { SITE_URL } from "@/lib/siteUrl";
 import type { Metadata } from "next";
 
 export const revalidate = 86400;
 
-const BASE = "https://kabanalouer.vercel.app";
+const BASE = SITE_URL;
 
 function adminClient() {
   return createAdminClient(

@@ -5,6 +5,7 @@ import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/Chale
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
@@ -13,7 +14,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const isEn = locale === "en";
   const basePath = isEn ? "/en/chalets" : "/chalets";
 
-  const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+  const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
   if (destination) {
     return {

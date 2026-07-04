@@ -10,6 +10,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { localePath } from "@/lib/localePath";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home");
@@ -32,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       images: [
         {
-          url: "https://kabanalouer.vercel.app/hero-chalet.webp",
+          url: `${SITE_URL}/hero-chalet.webp`,
           width: 1200,
           height: 630,
           alt: "Chalet au bord du lac au Québec",
@@ -43,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: t("ogTitle"),
       description: t("metaDesc"),
-      images: ["https://kabanalouer.vercel.app/hero-chalet.webp"],
+      images: [`${SITE_URL}/hero-chalet.webp`],
     },
   };
 }
@@ -137,7 +138,7 @@ export default async function HomePage() {
     promoData: promoMap.get(l.id as string) ?? null,
   }));
 
-  const BASE_URL = "https://kabanalouer.vercel.app";
+  const BASE_URL = SITE_URL;
 
   const websiteJsonLd = {
     "@context": "https://schema.org",

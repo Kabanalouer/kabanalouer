@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { SITE_URL } from "@/lib/siteUrl";
 import { Resend } from "resend";
 
 function adminSupabase() {
@@ -112,7 +113,7 @@ export async function PATCH(
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0">
             <tr><td style="border-radius:50px;background:#636e40;">
-              <a href="https://kabanalouer.vercel.app/chalets/${review.listing_id}"
+              <a href="${SITE_URL}/chalets/${review.listing_id}"
                  style="display:inline-block;padding:13px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:50px;">
                 Voir la fiche du chalet
               </a>

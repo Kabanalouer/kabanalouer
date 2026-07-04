@@ -9,6 +9,7 @@ import { REGIONS, type RegionConfig } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
@@ -84,19 +85,19 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         "@type": "ListItem",
         position: 1,
         name: "Accueil",
-        item: "https://kabanalouer.vercel.app/",
+        item: `${SITE_URL}/`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Chalets",
-        item: "https://kabanalouer.vercel.app/chalets",
+        item: `${SITE_URL}/chalets`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: regionConfig.name,
-        item: `https://kabanalouer.vercel.app/chalets/${regionConfig.slug}`,
+        item: `${SITE_URL}/chalets/${regionConfig.slug}`,
       },
     ],
   };
@@ -111,7 +112,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           itemListElement: listings.map((l, i) => ({
             "@type": "ListItem",
             position: i + 1,
-            url: `https://kabanalouer.vercel.app/chalets/${l.id}`,
+            url: `${SITE_URL}/chalets/${l.id}`,
             name: l.title,
           })),
         }

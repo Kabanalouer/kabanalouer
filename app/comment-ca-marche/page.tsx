@@ -3,8 +3,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
-const OG_IMAGE = "https://kabanalouer.vercel.app/images/og-default.jpg";
+const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();

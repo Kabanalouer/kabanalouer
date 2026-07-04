@@ -33,8 +33,8 @@ Côte-Nord, Montérégie, Chaudière-Appalaches, Capitale-Nationale
 
 ## URLs importantes
 
-- Site principal : https://kabanalouer.vercel.app
-- Recherche de chalets : https://kabanalouer.vercel.app/chalets
-- Devenir hôte : https://kabanalouer.vercel.app/devenir-hote
-- Comment ça marche : https://kabanalouer.vercel.app/comment-ca-marche
-- Sitemap : https://kabanalouer.vercel.app/sitemap.xml
+- Site principal : https://kabanalouer.ca
+- Recherche de chalets : https://kabanalouer.ca/chalets
+- Devenir hôte : https://kabanalouer.ca/devenir-hote
+- Comment ça marche : https://kabanalouer.ca/comment-ca-marche
+- Sitemap : https://kabanalouer.ca/sitemap.xml
