@@ -177,7 +177,8 @@ export default async function HomePage() {
 
       {/* ── Hero ── */}
       {/* min-h sur mobile : le hero grandit pour contenir le contenu. sm+ : hauteur fixe viewport. */}
-      <section className="relative min-h-[calc(100svh-80px)] sm:h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] z-40">
+      {/* flex flex-col sur la section : flex-1 (plutôt que h-full) reste centré même quand min-h remplace une hauteur fixe */}
+      <section className="relative min-h-[calc(100svh-80px)] sm:h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] flex flex-col z-40">
         {/* overflow-hidden uniquement sur le wrapper background pour clipper le scale-[1.02] */}
         <div className="absolute inset-0 overflow-hidden">
           <div
@@ -188,8 +189,8 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
         </div>
 
-        {/* Content — ancré en bas sur mobile pour laisser l'image respirer en haut */}
-        <div className="relative z-10 h-full flex flex-col justify-end sm:justify-center text-white">
+        {/* Content — centré verticalement, mobile et desktop */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center text-white">
 
           {/* Contenu : badge + titre + sous-titre + recherche */}
           <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
