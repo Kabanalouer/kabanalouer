@@ -68,7 +68,7 @@ export default async function TarifsPage() {
   ];
 
   const COMPARISON = [
-    { feature: t("compF0"), kbl: "299 $/an", airbnb: t("compAirbnb0") },
+    { feature: t("compF0"), kbl: t("annualPrice"), airbnb: t("compAirbnb0") },
     { feature: t("compF1"), kbl: "0 %", airbnb: t("compAirbnb1") },
     { feature: t("compF2"), kbl: "0 %", airbnb: t("compAirbnb2") },
     { feature: t("compF3"), kbl: true as const, airbnb: t("compAirbnb3") },
@@ -116,14 +116,14 @@ export default async function TarifsPage() {
                 <div className="flex items-end gap-3">
                   <span className="text-6xl font-bold text-primary">0 $</span>
                   <div className="mb-2">
-                    <p className="text-sm text-charcoal-400 line-through">299 $/an</p>
+                    <p className="text-sm text-charcoal-400 line-through">{t("annualPrice")}</p>
                     <p className="text-sm text-charcoal-500">{t("firstYear")}</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-end gap-2">
                   <span className="text-6xl font-bold text-primary">299 $</span>
-                  <span className="text-charcoal-500 mb-2">/an</span>
+                  <span className="text-charcoal-500 mb-2">{t("perYearSuffix")}</span>
                 </div>
               )}
               <p className="text-sm text-charcoal-400 mt-1">{t("perCabinAll")}</p>

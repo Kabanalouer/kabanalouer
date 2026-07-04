@@ -906,6 +906,8 @@
     "offerBadge": "Offre de lancement — {remaining, plural, one {# place restante} other {# places restantes}}",
     "firstYear": "première année",
     "perCabinAll": "par chalet · tout inclus",
+    "annualPrice": "299 $/an",
+    "perYearSuffix": "/an",
     "noCardRequired": "Aucune carte requise · Annulation avant facturation",
     "offerBtn": "Profiter de l'offre gratuite →",
     "registerBtn": "Inscrire mon chalet →",
