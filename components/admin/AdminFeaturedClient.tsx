@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MAX_FEATURED_HOME, MAX_FEATURED_REGION } from "@/lib/featuredConfig";
 
 export type FeaturedRow = {
   id: string;
@@ -21,8 +22,6 @@ export type PickableListing = {
   region: string;
   hostName: string;
 };
-
-const MAX_SLOTS = 3;
 
 function getMonths(n: number): { value: string; label: string }[] {
   const months: { value: string; label: string }[] = [];
@@ -230,7 +229,7 @@ export default function AdminFeaturedClient({
           <div>
             <h2 className="text-lg font-bold text-charcoal-800">Page d&apos;accueil</h2>
             <p className="text-sm text-charcoal-400 mt-0.5">
-              {totalHomeActive}/{MAX_SLOTS} emplacement{totalHomeActive !== 1 ? "s" : ""} occupé{totalHomeActive !== 1 ? "s" : ""}
+              {totalHomeActive}/{MAX_FEATURED_HOME} emplacement{totalHomeActive !== 1 ? "s" : ""} occupé{totalHomeActive !== 1 ? "s" : ""}
             </p>
           </div>
           <span className="text-sm text-charcoal-400">99 $/mois</span>
@@ -244,7 +243,7 @@ export default function AdminFeaturedClient({
               removing={removing === row.id}
             />
           ))}
-          {Array.from({ length: Math.max(0, MAX_SLOTS - homeRows.length) }).map((_, i) => (
+          {Array.from({ length: Math.max(0, MAX_FEATURED_HOME - homeRows.length) }).map((_, i) => (
             <EmptySlot key={i} onAdd={() => openModal({ type: "home" })} />
           ))}
         </div>
@@ -271,7 +270,7 @@ export default function AdminFeaturedClient({
                     removing={removing === row.id}
                   />
                 ))}
-                {Array.from({ length: Math.max(0, MAX_SLOTS - rows.length) }).map((_, i) => (
+                {Array.from({ length: Math.max(0, MAX_FEATURED_REGION - rows.length) }).map((_, i) => (
                   <EmptySlot key={i} onAdd={() => openModal({ type: "region", region })} />
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { MAX_FEATURED_HOME, MAX_FEATURED_REGION } from "@/lib/featuredConfig";
 
 function adminSupabase() {
   return createAdminClient(
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
     }
 
-    // Check slot availability (max 3 per type/month, or type/region/month)
+    // Check slot availability
     let query = admin
       .from("featured_listings")
       .select("id", { count: "exact", head: true })
@@ -52,8 +53,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { count } = await query;
-    if ((count ?? 0) >= 3) {
-      return NextResponse.json({ error: "Les 3 emplacements sont déjà occupés pour ce mois." }, { status: 409 });
+    const max = type === "home" ? MAX_FEATURED_HOME : MAX_FEATURED_REGION;
+    if ((count ?? 0) >= max) {
+      return NextResponse.json({ error: `Les ${max} emplacements sont déjà occupés pour ce mois.` }, { status: 409 });
     }
 
     const { error } = await admin.from("featured_listings").insert({
