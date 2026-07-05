@@ -426,10 +426,10 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center justify-end gap-1.5 flex-1">
             <Link
-              href={lp("/devenir-hote")}
-              className="whitespace-nowrap px-4 lg:px-3.5 xl:px-4 py-2.5 text-[15px] font-medium text-charcoal-700 bg-white border border-[#ebebeb] hover:border-charcoal-200 rounded-full transition-colors"
+              href={lp("/login")}
+              className="whitespace-nowrap px-3 lg:px-2.5 xl:px-3 py-2.5 text-[15px] font-medium text-charcoal-700 hover:text-primary transition-colors"
             >
-              {t("registerCabin")}
+              {t("login")}
             </Link>
             <Link
               href={lp("/signup")}
@@ -455,10 +455,10 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="md:hidden border-t border-[#ebebeb] px-4 py-4 flex flex-col gap-3 pb-5">
             <Link
-              href={lp("/devenir-hote")}
+              href={lp("/login")}
               className="text-sm font-medium text-charcoal-700 px-3 py-2 rounded-xl hover:bg-charcoal-50 transition-colors"
             >
-              {t("registerCabin")}
+              {t("login")}
             </Link>
             <Link
               href={lp("/signup")}
