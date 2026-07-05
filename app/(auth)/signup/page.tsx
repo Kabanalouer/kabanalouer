@@ -29,6 +29,7 @@ function SignupForm() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>(roleParam ?? "traveler");
   const [error, setError] = useState("");
+  const [accountExists, setAccountExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -39,10 +40,11 @@ function SignupForm() {
     if (!turnstileToken) return;
     setLoading(true);
     setError("");
+    setAccountExists(false);
     // Token is single-use — clear before request so widget re-challenges on error
     const token = turnstileToken;
     setTurnstileToken(null);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -58,6 +60,13 @@ function SignupForm() {
     });
     if (error) {
       setError(error.message);
+      setLoading(false);
+      return;
+    }
+    // Supabase renvoie un user "fantôme" sans erreur quand l'email existe déjà
+    // et est confirmé (comportement voulu pour ne pas révéler qui a un compte).
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      setAccountExists(true);
       setLoading(false);
       return;
     }
@@ -165,8 +174,19 @@ function SignupForm() {
         <Divider label={t("or")} />
 
         <form onSubmit={handleSignup} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">{error}</div>
+          {(error || accountExists) && (
+            <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">
+              {accountExists ? (
+                <>
+                  {t("accountExists")}{" "}
+                  <Link href={loginHref} className="font-semibold underline">
+                    {t("accountExistsLoginLink")}
+                  </Link>
+                </>
+              ) : (
+                error
+              )}
+            </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

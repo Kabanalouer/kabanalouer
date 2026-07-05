@@ -726,7 +726,9 @@
       "backToListing": "← Back to the cabin",
       "backToHome": "← Back to home",
       "firstNamePlaceholder": "Jane",
-      "lastNamePlaceholder": "Doe"
+      "lastNamePlaceholder": "Doe",
+      "accountExists": "An account with this email already exists —",
+      "accountExistsLoginLink": "log in instead"
     }
   },
   "footer": {

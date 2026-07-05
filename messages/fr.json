@@ -726,7 +726,9 @@
       "backToListing": "← Retourner à la fiche du chalet",
       "backToHome": "← Retour à l'accueil",
       "firstNamePlaceholder": "Marie",
-      "lastNamePlaceholder": "Tremblay"
+      "lastNamePlaceholder": "Tremblay",
+      "accountExists": "Ce compte existe déjà —",
+      "accountExistsLoginLink": "connectez-vous plutôt"
     }
   },
   "footer": {
