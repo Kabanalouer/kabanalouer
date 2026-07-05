@@ -308,3 +308,15 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 ### Prochaine étape immédiate
 
 Tester le paiement Stripe de bout en bout avec une carte de test Stripe (ex. `4242 4242 4242 4242`), vérifier que l'abonnement s'active dans la table `subscriptions`, et remettre `is_free_launch=true` sur `info@chaletauthentik.com` si le test est concluant.
+
+---
+
+## 14. Points en suspens
+
+### Stripe — reçus/factures bloqués tant que le compte n'est pas activé (2026-07-04)
+
+Le branding (logo, couleurs olive/coral), le webhook et le réglage "Paiements réussis" (Paramètres → Entreprise → E-mails client) sont tous correctement configurés et fonctionnels — testé et confirmé via un paiement complet de bout en bout (`4242 4242 4242 4242`, compte `info@chaletauthentik.com`).
+
+Mais Stripe refuse d'envoyer un reçu à une vraie adresse cliente tant que le compte n'est pas **"activé"** (informations d'entreprise soumises et vérifiées par Stripe) — même en mode Test, il limite l'envoi à l'adresse du propriétaire du compte (`simon.authentik@gmail.com`).
+
+À reprendre une fois le statut fiscal de Simon confirmé (NEQ vs travailleur autonome) et le compte Stripe activé en conséquence.
