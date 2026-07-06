@@ -154,7 +154,11 @@ function FeaturedCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId, type, month: selectedMonth.slice(0, 7) }),
       });
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (res.ok && body.url) {
+        window.location.href = body.url;
+        return;
+      }
       setCheckoutMessage(body.error ?? t("genericError"));
     } catch {
       setCheckoutMessage(t("networkError"));

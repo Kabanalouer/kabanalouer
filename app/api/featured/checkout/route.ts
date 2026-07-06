@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-import { MAX_FEATURED_HOME, MAX_FEATURED_REGION, MAX_MONTHS_AHEAD } from "@/lib/featuredConfig";
+import { SITE_URL } from "@/lib/siteUrl";
+import {
+  MAX_FEATURED_HOME,
+  MAX_FEATURED_REGION,
+  MAX_MONTHS_AHEAD,
+  STRIPE_PRICE_FEATURED_HOME,
+  STRIPE_PRICE_FEATURED_REGION,
+} from "@/lib/featuredConfig";
 
 function allowedMonths(): string[] {
   const months: string[] = [];
@@ -13,6 +21,7 @@ function allowedMonths(): string[] {
 }
 
 export async function POST(request: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -77,5 +86,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Les places sont déjà toutes occupées pour ce mois." }, { status: 409 });
   }
 
-  return NextResponse.json({ error: "Paiement pas encore configuré, revient bientôt" }, { status: 501 });
+  const price = type === "home" ? STRIPE_PRICE_FEATURED_HOME : STRIPE_PRICE_FEATURED_REGION;
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [
+      {
+        price,
+        quantity: 1,
+      },
+    ],
+    success_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?paid=1`,
+    cancel_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?canceled=1`,
+    metadata: {
+      listing_id: listingId,
+      type,
+      month,
+      host_id: user.id,
+    },
+  });
+
+  return NextResponse.json({ url: session.url });
 }
