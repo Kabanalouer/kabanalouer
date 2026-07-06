@@ -320,3 +320,15 @@ Le branding (logo, couleurs olive/coral), le webhook et le réglage "Paiements r
 Mais Stripe refuse d'envoyer un reçu à une vraie adresse cliente tant que le compte n'est pas **"activé"** (informations d'entreprise soumises et vérifiées par Stripe) — même en mode Test, il limite l'envoi à l'adresse du propriétaire du compte (`simon.authentik@gmail.com`).
 
 À reprendre une fois le statut fiscal de Simon confirmé (NEQ vs travailleur autonome) et le compte Stripe activé en conséquence.
+
+### Infrastructure email (Resend + Google Workspace) — Phase 1 terminée (2026-07-06)
+
+- **Domaine vérifié** : `kabanalouer.ca` vérifié dans Resend (DKIM + SPF + DMARC)
+- **Google Workspace** : configuré et fonctionnel — Gmail actif pour `slemay@kabanalouer.ca` et `info@kabanalouer.ca`
+- **SMTP custom Supabase Auth** : branché sur Resend (host `smtp.resend.com`, port `465`, username `resend`, expéditeur `no-reply@kabanalouer.ca`) — testé avec succès
+- **Code** : les 3 appels Resend (`app/devenir-hote/actions.ts`, `app/api/reviews/route.ts`, `app/api/reviews/[id]/reply/route.ts`) utilisent maintenant `Kabanalouer <no-reply@kabanalouer.ca>` au lieu de `onboarding@resend.dev` — commité et déployé (commit `445494b`)
+
+**Reste à faire :**
+- Grand test complet des emails en conditions réelles
+- Templates Supabase Auth bilingues (encore en anglais générique)
+- Email de confirmation d'achat vedette (dépend du Stripe Checkout vedettes, pas encore fait)
