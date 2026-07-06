@@ -52,7 +52,7 @@ export async function submitImportRequest(
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: "Kabanalouer <onboarding@resend.dev>",
+        from: "Kabanalouer <no-reply@kabanalouer.ca>",
         to: "slemay@authentik.com",
         subject: `Nouvelle demande d'import — ${name}`,
         html: `

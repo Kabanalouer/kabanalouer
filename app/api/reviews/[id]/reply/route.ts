@@ -75,7 +75,7 @@ export async function PATCH(
 
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: "Kabanalouer <onboarding@resend.dev>",
+          from: "Kabanalouer <no-reply@kabanalouer.ca>",
           to: authorEmail,
           subject: `${hostFirstName} a répondu à votre avis sur ${listingTitle}`,
           html: `<!DOCTYPE html>
