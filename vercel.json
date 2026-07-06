@@ -3,6 +3,10 @@
     {
       "path": "/api/sync-ical",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/expire-featured",
+      "schedule": "0 3 * * *"
     }
   ]
 }
