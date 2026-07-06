@@ -10,6 +10,34 @@ function adminSupabase() {
   );
 }
 
+// Convertit une heure locale America/Toronto en instant UTC, en tenant compte de l'heure d'été/hiver
+// (double conversion via Intl — évite une dépendance comme date-fns-tz pour ce seul usage).
+function torontoToUtc(year: number, monthIndex: number, day: number, hour: number, minute: number, second: number): Date {
+  const guess = Date.UTC(year, monthIndex, day, hour, minute, second);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Toronto",
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+    .formatToParts(new Date(guess))
+    .reduce((acc, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+  const asIfLocal = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour), Number(parts.minute), Number(parts.second)
+  );
+
+  return new Date(guess + (guess - asIfLocal));
+}
+
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const body = await request.text();
@@ -27,6 +55,58 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Vedette (paiement unique) — distinct de l'abonnement annuel via mode "payment"
+      if (session.mode === "payment") {
+        const listingId = session.metadata?.listing_id;
+        const type = session.metadata?.type;
+        const month = session.metadata?.month;
+        const hostId = session.metadata?.host_id;
+        if (!listingId || !type || !month || !hostId) break;
+
+        // Stripe peut renvoyer le même événement plusieurs fois — évite le doublon
+        const { data: existing } = await supabase
+          .from("featured_listings")
+          .select("id")
+          .eq("stripe_checkout_session_id", session.id)
+          .maybeSingle();
+
+        if (existing) break;
+
+        let region: string | null = null;
+        if (type === "region") {
+          const { data: listing } = await supabase
+            .from("listings")
+            .select("region")
+            .eq("id", listingId)
+            .single();
+          region = listing?.region ?? null;
+        }
+
+        const [year, monthNum] = month.split("-").map(Number);
+        const lastDay = new Date(Date.UTC(year, monthNum, 0)).getUTCDate();
+        const expiresAt = torontoToUtc(year, monthNum - 1, lastDay, 23, 59, 59).toISOString();
+        const monthDate = `${month}-01`;
+
+        const { error: featuredError } = await supabase.from("featured_listings").insert({
+          listing_id: listingId,
+          host_id: hostId,
+          type,
+          region,
+          month: monthDate,
+          status: "active",
+          expires_at: expiresAt,
+          stripe_checkout_session_id: session.id,
+        });
+
+        if (featuredError) {
+          console.error("checkout.session.completed (vedette): échec insert featured_listings", featuredError);
+          return NextResponse.json({ error: featuredError.message }, { status: 500 });
+        }
+
+        break;
+      }
+
       const userId = session.metadata?.supabase_user_id;
       const subscriptionId = session.subscription as string;
       if (!userId || !subscriptionId) break;
