@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 
 const FREE_LAUNCH_LIMIT = 50;
 
@@ -73,6 +74,21 @@ export async function POST(request: NextRequest) {
 
   await admin.from("users").update({ role: "host" }).eq("id", user.id);
   await admin.from("listings").update({ is_published: true }).eq("id", listingId);
+
+  if (user.email) {
+    const { data: profile } = await admin
+      .from("users")
+      .select("preferred_language")
+      .eq("id", user.id)
+      .single();
+    const { error: emailError } = await sendWelcomeSubscriptionEmail({
+      email: user.email,
+      preferredLanguage: profile?.preferred_language === "en" ? "en" : "fr",
+    });
+    if (emailError) {
+      console.error("activate-free: échec envoi email de bienvenue", emailError);
+    }
+  }
 
   return NextResponse.json({ success: true });
 }

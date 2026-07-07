@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
 function adminSupabase() {
@@ -115,6 +116,16 @@ export async function POST(request: NextRequest) {
       // current_period_end moved to SubscriptionItem in newer Stripe API versions
       const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
+      // Un vrai renouvellement annuel ne passe jamais par checkout.session.completed
+      // (Stripe facture l'abonnement existant sans nouvelle Checkout Session). Le seul
+      // cas à exclure ici est la redélivrance du même événement par Stripe.
+      const { data: existingSub } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const isFirstActivation = !existingSub || existingSub.status !== "active";
+
       const { error: subError } = await supabase.from("subscriptions").upsert({
         user_id: userId,
         stripe_subscription_id: subscriptionId,
@@ -137,6 +148,23 @@ export async function POST(request: NextRequest) {
       const listingId = session.metadata?.listing_id;
       if (listingId) {
         await supabase.from("listings").update({ is_published: true }).eq("id", listingId);
+      }
+
+      if (isFirstActivation) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("email, preferred_language")
+          .eq("id", userId)
+          .single();
+        if (profile?.email) {
+          const { error: emailError } = await sendWelcomeSubscriptionEmail({
+            email: profile.email,
+            preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+          });
+          if (emailError) {
+            console.error("checkout.session.completed: échec envoi email de bienvenue", emailError);
+          }
+        }
       }
 
       break;
