@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import AuthCodeWelcomeTrigger from "@/components/AuthCodeWelcomeTrigger";
 import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
@@ -174,6 +175,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
+      <AuthCodeWelcomeTrigger />
       <Navbar />
 
       {/* ── Hero ── */}

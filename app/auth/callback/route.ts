@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { claimTravelerWelcomeSlot, sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -49,6 +50,23 @@ export async function GET(request: Request) {
         }
         if (lang === "fr" || lang === "en") {
           await supabase.from("users").update({ preferred_language: lang }).eq("id", user.id);
+        }
+
+        // Google OAuth n'a pas d'étape de confirmation email — le compte est actif
+        // immédiatement ici. La garde (role = 'traveler' AND welcome_email_sent = false)
+        // vit dans la requête elle-même : pas un traveler ou déjà envoyé → no-op silencieux.
+        if (user.email) {
+          const claimed = await claimTravelerWelcomeSlot(supabase, user.id);
+          if (claimed) {
+            const { error: emailError } = await sendWelcomeTravelerEmail({
+              email: user.email,
+              preferredLanguage: claimed.preferred_language === "en" ? "en" : "fr",
+              firstName: claimed.name?.trim().split(/\s+/)[0],
+            });
+            if (emailError) {
+              console.error("auth/callback: échec envoi email de bienvenue voyageur", emailError);
+            }
+          }
         }
 
         // Redirect hosts to their dashboard by default (unless a specific `next` was set)
