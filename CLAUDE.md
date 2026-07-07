@@ -312,10 +312,10 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-listings-unpublished-reason-column.sql` | Ajoute `unpublished_reason` à `listings` (dépublication/republication automatique liée à l'abonnement) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-is-free-launch-column.sql` | Ajoute la colonne `is_free_launch` à `subscriptions` | Probablement déjà en place |
 | `add-subscriptions-listing-id-column.sql` | Ajoute `listing_id`/`price_cents`/`price_tier` à `subscriptions` (restructuration par annonce, étape 1/10) | Exécuté et confirmé en prod le 2026-07-07 — requis pour le backfill et le cutover ci-dessous, tous deux réussis |
-| `add-users-free-launch-claimed-column.sql` | Ajoute `free_launch_claimed_at` à `users` (offre de lancement une fois dans sa vie, étape 1/10) | ⚠️ **Non confirmé** — jamais explicitement validé comme exécuté ; à vérifier avant le grand test complet, sans quoi `/api/subscriptions/activate-free` échouera |
+| `add-users-free-launch-claimed-column.sql` | Ajoute `free_launch_claimed_at` à `users` (offre de lancement une fois dans sa vie, étape 1/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `backfill-subscriptions-listing-id.sql` | Remplit `listing_id` sur les lignes `subscriptions` existantes (étape 3/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `restructure-subscriptions-per-listing-cutover.sql` | Cutover structurel : `DROP CONSTRAINT` sur `user_id`, `ADD CONSTRAINT UNIQUE`/`SET NOT NULL` sur `listing_id` (étape 4/10) | Exécuté et confirmé en prod le 2026-07-07 |
-| `add-listings-winback-columns.sql` | Ajoute `unpublished_at`/`reminder_winback_3d_sent`/`14d_sent` à `listings` (séquence de retour, étape 8/10) | ⚠️ **Non confirmé** — à vérifier avant le grand test complet, sans quoi le cron win-back échouera silencieusement |
+| `add-listings-winback-columns.sql` | Ajoute `unpublished_at`/`reminder_winback_3d_sent`/`14d_sent` à `listings` (séquence de retour, étape 8/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
