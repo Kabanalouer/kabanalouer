@@ -24,7 +24,7 @@ const TEMPLATES: Record<"fr" | "en", {
     heading: "Ton compte est prêt !",
     body: "Tu peux maintenant explorer les chalets du Québec et contacter les propriétaires directement — sans frais de service.",
     buttonLabel: "Voir les chalets",
-    buttonPath: "/chalets",
+    buttonPath: "/",
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
@@ -34,7 +34,7 @@ const TEMPLATES: Record<"fr" | "en", {
     heading: "Your account is ready!",
     body: "You can now explore cabins across Québec and contact owners directly — no service fees.",
     buttonLabel: "Browse cabins",
-    buttonPath: "/en/cabins",
+    buttonPath: "/en",
     footerNote: "Got a question? Just reply to this email — we're happy to help.",
   },
 };
