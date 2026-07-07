@@ -192,6 +192,7 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - **Offre de lancement** : les 50 premiers proprios (FREE_LAUNCH_LIMIT = 50) obtiennent un accès gratuit 1 an via `/api/subscriptions/activate-free` (`is_free_launch: true`). La page d'abonnement affiche un badge "Offre de lancement" pour eux, sans bouton Stripe.
 - **Portail Stripe** : `/api/stripe/portal` permet aux abonnés payants de gérer leur abonnement
 - **Note technique** : dans Stripe SDK v22+, `current_period_end` est sur `subscription.items.data[0]`, pas sur `subscription` directement
+- **Email de bienvenue** (ajouté le 2026-07-07) : `lib/emails/welcomeSubscription.ts` — envoyé via Resend, bilingue (`preferred_language`), même design que le Send Email Hook (olive/coral, Plus Jakarta Sans, `rounded-full`), expéditeur `info@kabanalouer.ca` (adresse surveillée, pas `no-reply`). Déclenché à la **première** activation seulement, dans les deux points d'entrée : `/api/stripe/webhook` (`checkout.session.completed`, garde sur le `status` existant avant l'upsert pour éviter les doublons de redélivrance Stripe — les vrais renouvellements ne passent jamais par cet événement) et `/api/subscriptions/activate-free` (offre de lancement, garde déjà existante). Un échec d'envoi est loggé sans faire échouer la requête.
 
 ### Sécurité (audit complet effectué)
 - **Headers HTTP** : X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP — configurés dans `next.config.ts`
