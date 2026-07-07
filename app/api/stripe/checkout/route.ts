@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -11,6 +12,10 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  if (!listingId) {
+    return NextResponse.json({ error: "listingId requis" }, { status: 400 });
   }
 
   // Fetch user profile to get or create Stripe customer
@@ -24,7 +29,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Accès réservé aux propriétaires" }, { status: 403 });
   }
 
+  const { data: listing } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("id", listingId)
+    .eq("host_id", user.id)
+    .maybeSingle();
+
+  if (!listing) {
+    return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+  }
+
+  const { data: existingSub } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("listing_id", listingId)
+    .maybeSingle();
+
+  if (existingSub?.status === "active") {
+    return NextResponse.json({ error: "Cette annonce a déjà un abonnement actif" }, { status: 409 });
+  }
+
   const preferredLanguage: "fr" | "en" = profile?.preferred_language === "en" ? "en" : "fr";
+  const rank = await getNextPaidRank(supabase, user.id);
+  const { priceId, tier } = priceForRank(rank);
 
   let customerId = profile?.stripe_customer_id;
 
@@ -51,18 +79,14 @@ export async function POST(request: Request) {
     locale: preferredLanguage,
     line_items: [
       {
-        price: "price_1ToqE7EVlLGcAv4arl0TmOCz",
+        price: priceId,
         quantity: 1,
       },
     ],
-    success_url: listingId
-      ? `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`
-      : `${appUrl}/dashboard/subscription?success=1`,
-    cancel_url: listingId
-      ? `${appUrl}/dashboard/listings/${listingId}/publish?canceled=1`
-      : `${appUrl}/dashboard/subscription?canceled=1`,
+    success_url: `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`,
+    cancel_url: `${appUrl}/dashboard/listings/${listingId}/publish?canceled=1`,
     allow_promotion_codes: true,
-    metadata: { supabase_user_id: user.id, ...(listingId ? { listing_id: listingId } : {}) },
+    metadata: { supabase_user_id: user.id, listing_id: listingId, price_tier: tier },
   });
 
   return NextResponse.json({ url: session.url });
