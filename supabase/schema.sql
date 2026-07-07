@@ -246,17 +246,21 @@ CREATE TRIGGER subscriptions_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, name, role, avatar_url)
+  INSERT INTO public.users (id, email, name, role, avatar_url, preferred_language)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(
       NEW.raw_user_meta_data->>'name',
-      NEW.raw_user_meta_data->>'full_name',
+      TRIM(
+        COALESCE(NEW.raw_user_meta_data->>'first_name', '') || ' ' ||
+        COALESCE(NEW.raw_user_meta_data->>'last_name', '')
+      ),
       split_part(NEW.email, '@', 1)
     ),
     COALESCE(NEW.raw_user_meta_data->>'role', 'traveler'),
-    NEW.raw_user_meta_data->>'avatar_url'
+    NEW.raw_user_meta_data->>'avatar_url',
+    COALESCE(NEW.raw_user_meta_data->>'preferred_language', 'fr')
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
