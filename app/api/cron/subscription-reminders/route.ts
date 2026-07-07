@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { sendSubscriptionReminderEmail, type ReminderThreshold } from "@/lib/emails/subscriptionReminder";
+import {
+  sendSubscriptionReminderEmail,
+  sendAutoRenewalReminderEmail,
+  type ReminderThreshold,
+} from "@/lib/emails/subscriptionReminder";
 
 function adminSupabase() {
   return createAdminClient(
@@ -9,7 +13,8 @@ function adminSupabase() {
   );
 }
 
-const THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent" | "reminder_10d_sent" | "reminder_3d_sent" }[] = [
+// Séquence à 3 seuils — offre de lancement uniquement (renouvellement actif requis).
+const RENEWAL_THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent" | "reminder_10d_sent" | "reminder_3d_sent" }[] = [
   { days: 30, column: "reminder_30d_sent" },
   { days: 10, column: "reminder_10d_sent" },
   { days: 3, column: "reminder_3d_sent" },
@@ -17,11 +22,12 @@ const THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent" | "remi
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// GET — appelé par le cron Vercel (une fois par jour). Rappels 30j/10j/3j avant
-// expires_at, pour les abonnements actifs payants ET offre de lancement.
-// Le cycle (reminder_cycle_expires_at) se réinitialise seul dès que expires_at
-// change (renouvellement Stripe ou conversion offre gratuite → payant) — aucune
-// logique de reset séparée nécessaire ailleurs dans le code.
+// GET — appelé par le cron Vercel (une fois par jour).
+// - is_free_launch = true : séquence de 3 rappels (30j/10j/3j), renouvellement actif requis.
+// - is_free_launch = false : un seul rappel informatif à 30j, Stripe renouvelle automatiquement.
+// Le cycle (reminder_cycle_expires_at) se réinitialise seul dès que expires_at change
+// (renouvellement Stripe ou conversion offre gratuite → payant) — aucune logique de
+// reset séparée nécessaire ailleurs dans le code.
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -34,7 +40,9 @@ export async function GET(request: NextRequest) {
 
   const { data: subs, error } = await supabase
     .from("subscriptions")
-    .select("id, user_id, expires_at, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_cycle_expires_at")
+    .select(
+      "id, user_id, expires_at, is_free_launch, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_cycle_expires_at"
+    )
     .eq("status", "active")
     .not("expires_at", "is", null)
     .lte("expires_at", windowEnd);
@@ -57,6 +65,7 @@ export async function GET(request: NextRequest) {
       reminder_30d_sent: sub.reminder_30d_sent as boolean,
       reminder_10d_sent: sub.reminder_10d_sent as boolean,
       reminder_3d_sent: sub.reminder_3d_sent as boolean,
+      reminder_auto_renewal_sent: sub.reminder_auto_renewal_sent as boolean,
     };
 
     if (storedCycle !== expiresAt.getTime()) {
@@ -64,6 +73,7 @@ export async function GET(request: NextRequest) {
       flags.reminder_30d_sent = false;
       flags.reminder_10d_sent = false;
       flags.reminder_3d_sent = false;
+      flags.reminder_auto_renewal_sent = false;
       await supabase
         .from("subscriptions")
         .update({ ...flags, reminder_cycle_expires_at: sub.expires_at })
@@ -72,8 +82,14 @@ export async function GET(request: NextRequest) {
     }
 
     const daysRemaining = Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS);
-    const dueThresholds = THRESHOLDS.filter(({ days, column }) => daysRemaining <= days && !flags[column]);
-    if (dueThresholds.length === 0) continue;
+
+    const isFreeLaunch = sub.is_free_launch as boolean;
+    const dueThresholds = isFreeLaunch
+      ? RENEWAL_THRESHOLDS.filter(({ days, column }) => daysRemaining <= days && !flags[column])
+      : [];
+    const autoRenewalDue = !isFreeLaunch && daysRemaining <= 30 && !flags.reminder_auto_renewal_sent;
+
+    if (dueThresholds.length === 0 && !autoRenewalDue) continue;
 
     const { data: profile } = await supabase
       .from("users")
@@ -83,22 +99,41 @@ export async function GET(request: NextRequest) {
 
     if (!profile?.email) continue;
 
-    for (const { days, column } of dueThresholds) {
-      const { error: emailError } = await sendSubscriptionReminderEmail({
+    const preferredLanguage = profile.preferred_language === "en" ? "en" : "fr";
+    const firstName = profile.name?.trim().split(/\s+/)[0];
+
+    if (isFreeLaunch) {
+      for (const { days, column } of dueThresholds) {
+        const { error: emailError } = await sendSubscriptionReminderEmail({
+          email: profile.email,
+          preferredLanguage,
+          firstName,
+          threshold: days,
+          expiresAt,
+        });
+
+        if (emailError) {
+          console.error(`[subscription-reminders] échec envoi rappel ${days}j (subscription ${sub.id})`, emailError);
+          continue; // pas de flag posé — retry au prochain passage du cron
+        }
+
+        await supabase.from("subscriptions").update({ [column]: true }).eq("id", sub.id);
+        sent++;
+      }
+    } else if (autoRenewalDue) {
+      const { error: emailError } = await sendAutoRenewalReminderEmail({
         email: profile.email,
-        preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
-        firstName: profile.name?.trim().split(/\s+/)[0],
-        threshold: days,
+        preferredLanguage,
+        firstName,
         expiresAt,
       });
 
       if (emailError) {
-        console.error(`[subscription-reminders] échec envoi rappel ${days}j (subscription ${sub.id})`, emailError);
-        continue; // pas de flag posé — retry au prochain passage du cron
+        console.error(`[subscription-reminders] échec envoi rappel renouvellement auto (subscription ${sub.id})`, emailError);
+      } else {
+        await supabase.from("subscriptions").update({ reminder_auto_renewal_sent: true }).eq("id", sub.id);
+        sent++;
       }
-
-      await supabase.from("subscriptions").update({ [column]: true }).eq("id", sub.id);
-      sent++;
     }
   }
 
