@@ -283,6 +283,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 |---|---|---|
 | `fix-handle-new-user-role.sql` | Corrige le trigger d'inscription pour bien lire le rôle | À exécuter si le bug rôle persiste |
 | `fix-handle-new-user-preferred-language.sql` | Ajoute `preferred_language` à l'INSERT du trigger (manquant, comptes email restaient bloqués sur `fr`) | Exécuté et confirmé en prod le 2026-07-07 |
+| `add-welcome-email-sent-column.sql` | Ajoute `users.welcome_email_sent` (garde anti-doublon, email de bienvenue voyageur) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-is-free-launch-column.sql` | Ajoute la colonne `is_free_launch` à `subscriptions` | Probablement déjà en place |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
