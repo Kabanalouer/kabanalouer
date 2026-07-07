@@ -221,7 +221,7 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - ⚠️ **Point important** : une fois ce hook actif, Supabase n'envoie **plus aucun email par défaut, pour aucun type d'événement** — le SMTP interne est désactivé globalement pendant que le hook est actif, pas seulement pour signup/recovery. Si on ajoute un jour magic link, invitation, ou changement d'email, il faudra revenir modifier cette fonction pour les gérer aussi, sinon **aucun email ne partira** pour ces cas.
 - **Testé et validé en production le 2026-07-07** : inscription et mot de passe oublié, en français, avec succès
 - **À faire éventuellement** :
-  - Tester la version anglaise (signup + recovery)
+  - Tester la version anglaise (signup + recovery) — bloqué le 2026-07-07 par la limite de débit par défaut de Supabase Auth (`email rate limit exceeded`) après plusieurs tests consécutifs en français ; **pas un bug du hook**. À reprendre lors du grand test complet, en vérifiant/ajustant au besoin Authentication → Rate Limits dans Supabase.
   - Envisager la rotation de `RESEND_API_KEY` et `SEND_EMAIL_HOOK_SECRET` — exposés en clair dans une session de travail, jamais tournés depuis
 
 ### Côté voyageur
