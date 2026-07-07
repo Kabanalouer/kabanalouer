@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sendSubscriptionReminderEmail, type ReminderThreshold } from "@/lib/emails/subscriptionReminder";
+
+function adminSupabase() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+const THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent" | "reminder_10d_sent" | "reminder_3d_sent" }[] = [
+  { days: 30, column: "reminder_30d_sent" },
+  { days: 10, column: "reminder_10d_sent" },
+  { days: 3, column: "reminder_3d_sent" },
+];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// GET — appelé par le cron Vercel (une fois par jour). Rappels 30j/10j/3j avant
+// expires_at, pour les abonnements actifs payants ET offre de lancement.
+// Le cycle (reminder_cycle_expires_at) se réinitialise seul dès que expires_at
+// change (renouvellement Stripe ou conversion offre gratuite → payant) — aucune
+// logique de reset séparée nécessaire ailleurs dans le code.
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = adminSupabase();
+  const windowEnd = new Date(Date.now() + 31 * DAY_MS).toISOString();
+
+  const { data: subs, error } = await supabase
+    .from("subscriptions")
+    .select("id, user_id, expires_at, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_cycle_expires_at")
+    .eq("status", "active")
+    .not("expires_at", "is", null)
+    .lte("expires_at", windowEnd);
+
+  if (error) {
+    console.error("[subscription-reminders] échec lecture subscriptions", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  let sent = 0;
+  let cyclesReset = 0;
+
+  for (const sub of subs ?? []) {
+    const expiresAt = new Date(sub.expires_at as string);
+    const storedCycle = sub.reminder_cycle_expires_at
+      ? new Date(sub.reminder_cycle_expires_at as string).getTime()
+      : null;
+
+    const flags = {
+      reminder_30d_sent: sub.reminder_30d_sent as boolean,
+      reminder_10d_sent: sub.reminder_10d_sent as boolean,
+      reminder_3d_sent: sub.reminder_3d_sent as boolean,
+    };
+
+    if (storedCycle !== expiresAt.getTime()) {
+      // expires_at a changé depuis le dernier passage (renouvellement) — nouveau cycle.
+      flags.reminder_30d_sent = false;
+      flags.reminder_10d_sent = false;
+      flags.reminder_3d_sent = false;
+      await supabase
+        .from("subscriptions")
+        .update({ ...flags, reminder_cycle_expires_at: sub.expires_at })
+        .eq("id", sub.id);
+      cyclesReset++;
+    }
+
+    const daysRemaining = Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS);
+    const dueThresholds = THRESHOLDS.filter(({ days, column }) => daysRemaining <= days && !flags[column]);
+    if (dueThresholds.length === 0) continue;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("email, name, preferred_language")
+      .eq("id", sub.user_id)
+      .single();
+
+    if (!profile?.email) continue;
+
+    for (const { days, column } of dueThresholds) {
+      const { error: emailError } = await sendSubscriptionReminderEmail({
+        email: profile.email,
+        preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+        firstName: profile.name?.trim().split(/\s+/)[0],
+        threshold: days,
+        expiresAt,
+      });
+
+      if (emailError) {
+        console.error(`[subscription-reminders] échec envoi rappel ${days}j (subscription ${sub.id})`, emailError);
+        continue; // pas de flag posé — retry au prochain passage du cron
+      }
+
+      await supabase.from("subscriptions").update({ [column]: true }).eq("id", sub.id);
+      sent++;
+    }
+  }
+
+  return NextResponse.json({ ok: true, checked: subs?.length ?? 0, sent, cyclesReset });
+}

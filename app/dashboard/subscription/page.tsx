@@ -145,17 +145,26 @@ export default function SubscriptionPage() {
           {/* Action */}
           <div className="p-6">
             {isActive && isFreeLaunch ? (
-              <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-xl p-4">
-                <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p className="text-sm font-semibold text-primary">Offre de lancement — accès gratuit</p>
-                  <p className="text-xs text-charcoal-500 mt-0.5">
-                    Vous faites partie des premiers proprios sur Kabanalouer. Votre accès est gratuit pendant 1 an.
-                  </p>
+              <>
+                <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Offre de lancement — accès gratuit</p>
+                    <p className="text-xs text-charcoal-500 mt-0.5">
+                      Vous faites partie des premiers proprios sur Kabanalouer. Votre accès est gratuit pendant 1 an.
+                    </p>
+                  </div>
                 </div>
-              </div>
+                <button
+                  onClick={handleSubscribe}
+                  disabled={redirecting}
+                  className="w-full mt-4 border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
+                >
+                  {redirecting ? "Redirection vers le paiement…" : "Passer à l'abonnement payant"}
+                </button>
+              </>
             ) : isActive ? (
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
