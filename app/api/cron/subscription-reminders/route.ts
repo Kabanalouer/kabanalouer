@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   const { data: subs, error } = await supabase
     .from("subscriptions")
     .select(
-      "id, listing_id, user_id, status, expires_at, is_free_launch, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at"
+      "id, listing_id, user_id, status, expires_at, is_free_launch, price_cents, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at, listings(title)"
     )
     .not("expires_at", "is", null)
     .or(`and(status.eq.active,expires_at.lte.${windowEnd}),status.eq.past_due`);
@@ -65,6 +65,9 @@ export async function GET(request: NextRequest) {
   let cyclesReset = 0;
 
   for (const sub of subs ?? []) {
+    const listingsField = sub.listings as { title: string } | { title: string }[] | null;
+    const listingTitleRaw = Array.isArray(listingsField) ? listingsField[0]?.title : listingsField?.title;
+
     // ── Paiement échoué : notification unique, indépendante du décompte d'échéance ──
     if (sub.status === "past_due") {
       if (sub.reminder_past_due_sent) continue;
@@ -77,10 +80,13 @@ export async function GET(request: NextRequest) {
 
       if (!profile?.email) continue;
 
+      const preferredLanguage: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
       const { error: emailError } = await sendPaymentFailedEmail({
         email: profile.email,
-        preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+        preferredLanguage,
         firstName: profile.name?.trim().split(/\s+/)[0],
+        listingTitle: listingTitleRaw || (preferredLanguage === "en" ? "your listing" : "ton chalet"),
+        priceCents: sub.price_cents,
       });
 
       if (emailError) {
@@ -137,8 +143,9 @@ export async function GET(request: NextRequest) {
 
     if (!profile?.email) continue;
 
-    const preferredLanguage = profile.preferred_language === "en" ? "en" : "fr";
+    const preferredLanguage: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
     const firstName = profile.name?.trim().split(/\s+/)[0];
+    const listingTitle = listingTitleRaw || (preferredLanguage === "en" ? "your listing" : "ton chalet");
 
     if (isFreeLaunch) {
       for (const { days, column } of dueThresholds) {
@@ -148,6 +155,7 @@ export async function GET(request: NextRequest) {
           firstName,
           threshold: days,
           expiresAt,
+          listingTitle,
         });
 
         if (emailError) {
@@ -164,6 +172,8 @@ export async function GET(request: NextRequest) {
         preferredLanguage,
         firstName,
         expiresAt,
+        listingTitle,
+        priceCents: sub.price_cents ?? 0,
       });
 
       if (emailError) {
@@ -223,7 +233,7 @@ export async function GET(request: NextRequest) {
   // deux annonces du même proprio peuvent expirer/s'annuler à des moments différents.
   const { data: unpublishedListings, error: winbackError } = await supabase
     .from("listings")
-    .select("id, host_id, unpublished_at, reminder_winback_3d_sent, reminder_winback_14d_sent")
+    .select("id, host_id, title, unpublished_at, reminder_winback_3d_sent, reminder_winback_14d_sent")
     .eq("unpublished_reason", "subscription")
     .not("unpublished_at", "is", null);
 
@@ -247,11 +257,13 @@ export async function GET(request: NextRequest) {
 
       if (!profile?.email) continue;
 
+      const winbackLang: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
       const { error: emailError } = await sendWinbackReminderEmail({
         email: profile.email,
-        preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+        preferredLanguage: winbackLang,
         firstName: profile.name?.trim().split(/\s+/)[0],
         threshold: dueThreshold.days,
+        listingTitle: listing.title || (winbackLang === "en" ? "your listing" : "ton chalet"),
       });
 
       if (emailError) {

@@ -175,16 +175,17 @@ export async function POST(request: NextRequest) {
       // avoir tout annulé. Une 2e/3e/4e annonce du même proprio ne redéclenche pas
       // ce courriel "bienvenue chez Kabanalouer".
       if (isFirstActivation && priceTier === "tier1") {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("email, preferred_language, name")
-          .eq("id", userId)
-          .single();
+        const [{ data: profile }, { data: listingRow }] = await Promise.all([
+          supabase.from("users").select("email, preferred_language, name").eq("id", userId).single(),
+          supabase.from("listings").select("title").eq("id", listingId).single(),
+        ]);
         if (profile?.email) {
+          const lang: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
           const { error: emailError } = await sendWelcomeSubscriptionEmail({
             email: profile.email,
-            preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+            preferredLanguage: lang,
             firstName: profile.name?.trim().split(/\s+/)[0],
+            listingTitle: listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
           });
           if (emailError) {
             console.error("checkout.session.completed: échec envoi email de bienvenue", emailError);

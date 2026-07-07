@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id")
+    .select("id, title")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
@@ -91,10 +91,12 @@ export async function POST(request: NextRequest) {
       .select("preferred_language, name")
       .eq("id", user.id)
       .single();
+    const lang: "fr" | "en" = profile?.preferred_language === "en" ? "en" : "fr";
     const { error: emailError } = await sendWelcomeSubscriptionEmail({
       email: user.email,
-      preferredLanguage: profile?.preferred_language === "en" ? "en" : "fr",
+      preferredLanguage: lang,
       firstName: profile?.name?.trim().split(/\s+/)[0],
+      listingTitle: listing.title || (lang === "en" ? "your listing" : "ton chalet"),
     });
     if (emailError) {
       console.error("activate-free: échec envoi email de bienvenue", emailError);
