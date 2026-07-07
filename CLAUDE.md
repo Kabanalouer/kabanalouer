@@ -333,3 +333,11 @@ Mais Stripe refuse d'envoyer un reçu à une vraie adresse cliente tant que le c
 - Grand test complet des emails en conditions réelles
 - Templates Supabase Auth bilingues (encore en anglais générique)
 - Email de confirmation d'achat vedette (dépend du Stripe Checkout vedettes, pas encore fait)
+
+### Langue préférée (`preferred_language`) — en attente de test manuel (2026-07-07)
+
+Implémenté (commit `4eabe82`) mais pas encore testé en conditions réelles :
+- Section langue FR/EN dans `/dashboard/profile` (met à jour `auth.updateUser` + `public.users.preferred_language`, redirige vers l'équivalent `/en`)
+- Redirection automatique dans le middleware pour les utilisateurs connectés sous `/dashboard`, `/messages`, `/favoris` si l'URL ne correspond pas à `preferred_language`
+
+À valider lors du grand test de bout en bout : sélecteur FR/EN dans le profil (mise à jour + redirection immédiate + persistance après refresh), redirection automatique dans l'espace connecté, et confirmer que les pages publiques restent librement navigables via le sélecteur du footer même connecté.
