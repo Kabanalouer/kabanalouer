@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
+import { centsForTier, type PriceTier } from "@/lib/subscriptionPricing";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
 function adminSupabase() {
@@ -109,8 +110,13 @@ export async function POST(request: NextRequest) {
       }
 
       const userId = session.metadata?.supabase_user_id;
+      const listingId = session.metadata?.listing_id;
+      const priceTier = session.metadata?.price_tier as PriceTier | undefined;
       const subscriptionId = session.subscription as string;
-      if (!userId || !subscriptionId) break;
+      if (!userId || !listingId || !subscriptionId) {
+        console.error("checkout.session.completed: métadonnée manquante (supabase_user_id/listing_id/subscription)");
+        break;
+      }
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       // current_period_end moved to SubscriptionItem in newer Stripe API versions
@@ -118,22 +124,26 @@ export async function POST(request: NextRequest) {
 
       // Un vrai renouvellement annuel ne passe jamais par checkout.session.completed
       // (Stripe facture l'abonnement existant sans nouvelle Checkout Session). Le seul
-      // cas à exclure ici est la redélivrance du même événement par Stripe.
+      // cas à exclure ici est la redélivrance du même événement par Stripe. Vérifié par
+      // annonce (listing_id) — chaque annonce a son propre abonnement indépendant.
       const { data: existingSub } = await supabase
         .from("subscriptions")
         .select("status")
-        .eq("user_id", userId)
+        .eq("listing_id", listingId)
         .maybeSingle();
       const isFirstActivation = !existingSub || existingSub.status !== "active";
 
       const { error: subError } = await supabase.from("subscriptions").upsert({
+        listing_id: listingId,
         user_id: userId,
         stripe_subscription_id: subscriptionId,
         stripe_customer_id: session.customer as string,
         status: "active",
         is_free_launch: false,
+        price_tier: priceTier ?? null,
+        price_cents: priceTier ? centsForTier(priceTier) : null,
         expires_at: currentPeriodEnd,
-      }, { onConflict: "user_id" });
+      }, { onConflict: "listing_id" });
 
       if (subError) {
         console.error("checkout.session.completed: échec upsert subscriptions", subError);
@@ -145,26 +155,26 @@ export async function POST(request: NextRequest) {
         .update({ role: "host", stripe_customer_id: session.customer as string })
         .eq("id", userId);
 
-      const listingId = session.metadata?.listing_id;
-      if (listingId) {
-        await supabase.from("listings").update({ is_published: true }).eq("id", listingId);
-      }
-
-      // Republication automatique : chez Stripe, un abonnement canceled ne redevient
-      // jamais actif sur le même objet — un réabonnement (ou une conversion offre de
-      // lancement expirée → payant) passe toujours par une nouvelle Checkout Session,
-      // donc toujours par ici. Ne touche jamais les dépublications manuelles (brouillon,
-      // "Désactiver mon compte") puisqu'elles ne portent jamais unpublished_reason.
-      // TODO(restructuration par annonce, étape 6) : cibler par listing_id plutôt que
-      // host_id — chaque annonce aura son propre abonnement, la republication en masse
-      // sur tout le portefeuille du proprio n'aura plus de sens.
+      // Publie/republie CETTE annonce précise (une par abonnement désormais) — ne
+      // touche jamais les dépublications manuelles (brouillon, "Désactiver mon
+      // compte") puisqu'elles ne portent jamais unpublished_reason.
       await supabase
         .from("listings")
-        .update({ is_published: true, unpublished_reason: null })
-        .eq("host_id", userId)
-        .eq("unpublished_reason", "subscription");
+        .update({
+          is_published: true,
+          unpublished_reason: null,
+          unpublished_at: null,
+          reminder_winback_3d_sent: false,
+          reminder_winback_14d_sent: false,
+        })
+        .eq("id", listingId);
 
-      if (isFirstActivation) {
+      // Email de bienvenue "nouveau proprio payant" : uniquement au tier1 (rang 1),
+      // qui ne peut survenir que si ce proprio n'a aucune autre annonce payante
+      // active en ce moment — donc soit sa toute première, soit un retour après
+      // avoir tout annulé. Une 2e/3e/4e annonce du même proprio ne redéclenche pas
+      // ce courriel "bienvenue chez Kabanalouer".
+      if (isFirstActivation && priceTier === "tier1") {
         const { data: profile } = await supabase
           .from("users")
           .select("email, preferred_language, name")

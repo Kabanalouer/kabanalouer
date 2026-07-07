@@ -10,10 +10,19 @@ export const LISTING_PRICE_IDS = {
 
 export type PriceTier = "tier1" | "tier2_3" | "tier4plus";
 
+const TIER_CENTS: Record<PriceTier, number> = {
+  tier1: 29900,
+  tier2_3: 24900,
+  tier4plus: 19900,
+};
+
+export function centsForTier(tier: PriceTier): number {
+  return TIER_CENTS[tier];
+}
+
 export function priceForRank(rank: number): { priceId: string; cents: number; tier: PriceTier } {
-  if (rank === 1) return { priceId: LISTING_PRICE_IDS.tier1, cents: 29900, tier: "tier1" };
-  if (rank <= 3) return { priceId: LISTING_PRICE_IDS.tier2_3, cents: 24900, tier: "tier2_3" };
-  return { priceId: LISTING_PRICE_IDS.tier4plus, cents: 19900, tier: "tier4plus" };
+  const tier: PriceTier = rank === 1 ? "tier1" : rank <= 3 ? "tier2_3" : "tier4plus";
+  return { priceId: LISTING_PRICE_IDS[tier], cents: TIER_CENTS[tier], tier };
 }
 
 // Rang de la PROCHAINE annonce payante de ce proprio. Compte les abonnements
