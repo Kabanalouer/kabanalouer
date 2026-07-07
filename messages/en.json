@@ -746,6 +746,8 @@
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Minimum 8 characters",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "submitting": "Creating…",
       "submit": "Create my account",
       "alreadyAccount": "Already have an account?",
