@@ -52,7 +52,11 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
-    const callbackUrl = `${window.location.origin}/auth/callback${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
+    const params = new URLSearchParams();
+    if (next !== defaultHome) params.set("next", next);
+    if (locale !== "fr") params.set("locale", locale);
+    const qs = params.toString();
+    const callbackUrl = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl },
