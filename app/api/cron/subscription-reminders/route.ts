@@ -171,5 +171,37 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, checked: subs?.length ?? 0, sent, cyclesReset });
+  // ── Dépublication automatique (abonnement annulé ou offre de lancement expirée) ──
+  // Requête séparée : critère différent (canceled OU free-launch expiré), pas de lien
+  // avec le décompte de rappels ci-dessus. Idempotent par construction : le filtre
+  // is_published = true fait qu'une annonce déjà dépubliée pour cette raison n'est
+  // plus jamais re-traitée les jours suivants.
+  const { data: lapsedSubs, error: lapsedError } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .or(`status.eq.canceled,and(is_free_launch.eq.true,expires_at.lt.${new Date().toISOString()})`);
+
+  let unpublished = 0;
+
+  if (lapsedError) {
+    console.error("[subscription-reminders] échec lecture abonnements expirés/annulés", lapsedError);
+  } else {
+    for (const sub of lapsedSubs ?? []) {
+      const { data: toUnpublish, error: unpublishError } = await supabase
+        .from("listings")
+        .update({ is_published: false, unpublished_reason: "subscription" })
+        .eq("host_id", sub.user_id)
+        .eq("is_published", true)
+        .select("id");
+
+      if (unpublishError) {
+        console.error(`[subscription-reminders] échec dépublication (user ${sub.user_id})`, unpublishError);
+        continue;
+      }
+
+      unpublished += toUnpublish?.length ?? 0;
+    }
+  }
+
+  return NextResponse.json({ ok: true, checked: subs?.length ?? 0, sent, cyclesReset, unpublished });
 }

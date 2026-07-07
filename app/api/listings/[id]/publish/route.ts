@@ -18,7 +18,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     .maybeSingle();
 
   if (subscription?.status !== "active") {
-    return NextResponse.json({ error: "Abonnement inactif" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Ton abonnement doit être actif pour publier une annonce — renouvelle-le d'abord." },
+      { status: 403 }
+    );
   }
 
   const { error } = await supabase

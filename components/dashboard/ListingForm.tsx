@@ -117,6 +117,17 @@ export default function ListingForm({
       setSaveError("Le numéro CITQ doit contenir exactement 6 chiffres.");
       return;
     }
+    if (publish) {
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (subscription?.status !== "active") {
+        setSaveError("Ton abonnement doit être actif pour publier une annonce — renouvelle-le d'abord.");
+        return;
+      }
+    }
     setSaving(true);
     setSaveError("");
 

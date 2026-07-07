@@ -150,6 +150,17 @@ export async function POST(request: NextRequest) {
         await supabase.from("listings").update({ is_published: true }).eq("id", listingId);
       }
 
+      // Republication automatique : chez Stripe, un abonnement canceled ne redevient
+      // jamais actif sur le même objet — un réabonnement (ou une conversion offre de
+      // lancement expirée → payant) passe toujours par une nouvelle Checkout Session,
+      // donc toujours par ici. Ne touche jamais les dépublications manuelles (brouillon,
+      // "Désactiver mon compte") puisqu'elles ne portent jamais unpublished_reason.
+      await supabase
+        .from("listings")
+        .update({ is_published: true, unpublished_reason: null })
+        .eq("host_id", userId)
+        .eq("unpublished_reason", "subscription");
+
       if (isFirstActivation) {
         const { data: profile } = await supabase
           .from("users")
