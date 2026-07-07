@@ -203,6 +203,11 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
   - Le webhook préserve maintenant le vrai statut Stripe (`active`/`past_due`/`trialing`/`canceled`)
   - `/api/cron/subscription-reminders` envoie une notification unique dès `past_due` détecté (`sendPaymentFailedEmail()`), indépendante du décompte 30j/10j/3j, via la colonne `reminder_past_due_sent` (remise à `false` par le webhook dès qu'on quitte l'état `past_due`)
   - `/dashboard/subscription` : nouvel état visuel "Paiement en retard" (point ambre) + bouton "Gérer mon abonnement" (portail) au lieu du cul-de-sac précédent
+- **Dépublication/republication automatique** (ajouté le 2026-07-07) : la menace de l'email de rappel à 3 jours ("ton annonce disparaîtra des résultats de recherche") est maintenant réelle, pas juste un texte sans effet.
+  - **Colonne** `listings.unpublished_reason` — `NULL` = manuel ou jamais dépubliée par le système (brouillon jamais publié, sauvegarde en brouillon, "Désactiver mon compte") ; `'subscription'` = dépubliée automatiquement. Écrite **uniquement** par le cron et le webhook ci-dessous — jamais par les 3 cas manuels, ce qui garantit qu'ils ne sont jamais republiés par erreur.
+  - **Dépublication** : `/api/cron/subscription-reminders` dépublie les annonces des comptes `status = 'canceled'` OU offre de lancement expirée sans renouvellement (`is_free_launch = true` et `expires_at` dépassé). Idempotent par construction (filtre `is_published = true` avant l'update — une annonce déjà dépubliée pour cette raison n'est plus jamais retraitée).
+  - **Republication** : `/api/stripe/webhook` (`checkout.session.completed`) republie automatiquement dès qu'un paiement réussit — chez Stripe, un abonnement `canceled` ou une offre expirée ne redeviennent actifs que via une **nouvelle** Checkout Session, donc toujours via ce point d'entrée.
+  - **Garde-fou publication manuelle** : impossible de publier/republier une annonce tant que l'abonnement n'est pas `active` — vérifié dans `/api/listings/[id]/publish/route.ts` (déjà présent, message clarifié) et `components/dashboard/ListingForm.tsx` (bouton "Publier" de l'éditeur, ajouté — c'était le seul chemin sans vérification). Même message d'erreur aux deux endroits : *"Ton abonnement doit être actif pour publier une annonce — renouvelle-le d'abord."*
 
 ### Sécurité (audit complet effectué)
 - **Headers HTTP** : X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP — configurés dans `next.config.ts`
@@ -296,6 +301,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-subscription-reminder-tracking.sql` | Ajoute `reminder_30d_sent`/`10d`/`3d`/`reminder_cycle_expires_at` à `subscriptions` | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-reminder-auto-renewal-column.sql` | Ajoute `reminder_auto_renewal_sent` à `subscriptions` (rappel unique, abonnements payants) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-reminder-past-due-column.sql` | Ajoute `reminder_past_due_sent` à `subscriptions` (notification paiement échoué) | Exécuté et confirmé en prod le 2026-07-07 |
+| `add-listings-unpublished-reason-column.sql` | Ajoute `unpublished_reason` à `listings` (dépublication/republication automatique liée à l'abonnement) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-is-free-launch-column.sql` | Ajoute la colonne `is_free_launch` à `subscriptions` | Probablement déjà en place |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
