@@ -155,6 +155,9 @@ export async function POST(request: NextRequest) {
       // lancement expirée → payant) passe toujours par une nouvelle Checkout Session,
       // donc toujours par ici. Ne touche jamais les dépublications manuelles (brouillon,
       // "Désactiver mon compte") puisqu'elles ne portent jamais unpublished_reason.
+      // TODO(restructuration par annonce, étape 6) : cibler par listing_id plutôt que
+      // host_id — chaque annonce aura son propre abonnement, la republication en masse
+      // sur tout le portefeuille du proprio n'aura plus de sens.
       await supabase
         .from("listings")
         .update({ is_published: true, unpublished_reason: null })
@@ -184,16 +187,6 @@ export async function POST(request: NextRequest) {
 
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
-
-      const { data: user } = await supabase
-        .from("users")
-        .select("id")
-        .eq("stripe_customer_id", customerId)
-        .single();
-
-      if (!user) break;
-
       const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
       // Ne pas écraser 'past_due' en 'inactive' — la contrainte CHECK de la table
@@ -208,9 +201,6 @@ export async function POST(request: NextRequest) {
       const mappedStatus = statusMap[subscription.status] ?? "inactive";
 
       const updatePayload: Record<string, unknown> = {
-        user_id: user.id,
-        stripe_subscription_id: subscription.id,
-        stripe_customer_id: customerId,
         status: mappedStatus,
         expires_at: currentPeriodEnd,
       };
@@ -220,10 +210,17 @@ export async function POST(request: NextRequest) {
         updatePayload.reminder_past_due_sent = false;
       }
 
-      const { error: subUpdateError } = await supabase.from("subscriptions").upsert(updatePayload, { onConflict: "user_id" });
+      // Résout la ligne par stripe_subscription_id (unique) plutôt que par
+      // stripe_customer_id — un même customer Stripe porte désormais un abonnement
+      // par annonce ; cibler par customer mettrait à jour la mauvaise annonce, ou
+      // toutes en même temps, au lieu de celle réellement concernée par l'événement.
+      const { error: subUpdateError } = await supabase
+        .from("subscriptions")
+        .update(updatePayload)
+        .eq("stripe_subscription_id", subscription.id);
 
       if (subUpdateError) {
-        console.error("customer.subscription.updated: échec upsert subscriptions", subUpdateError);
+        console.error("customer.subscription.updated: échec update subscriptions", subUpdateError);
         return NextResponse.json({ error: subUpdateError.message }, { status: 500 });
       }
 
@@ -232,20 +229,12 @@ export async function POST(request: NextRequest) {
 
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
 
-      const { data: user } = await supabase
-        .from("users")
-        .select("id")
-        .eq("stripe_customer_id", customerId)
-        .single();
-
-      if (!user) break;
-
+      // Même logique : cible l'abonnement précis (une annonce), pas tous ceux du customer.
       await supabase
         .from("subscriptions")
         .update({ status: "canceled" })
-        .eq("user_id", user.id);
+        .eq("stripe_subscription_id", subscription.id);
 
       break;
     }
