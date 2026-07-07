@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
@@ -77,6 +78,24 @@ function ErrorMsg({ msg }: { msg: string }) {
   return msg ? <p className="text-sm text-red-500">{msg}</p> : null;
 }
 
+function LangButton({ selected, onClick, disabled, label }: {
+  selected: boolean; onClick: () => void; disabled: boolean; label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || selected}
+      className={[
+        "flex-1 border-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:cursor-default",
+        selected ? "border-primary bg-primary/5 text-charcoal-800" : "border-[#ebebeb] text-charcoal-600 hover:border-charcoal-300",
+      ].join(" ")}
+    >
+      {label}
+    </button>
+  );
+}
+
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -135,6 +154,7 @@ export default function ProfileForm({
   initialNotifPrefs,
   role,
   initialBio,
+  initialPreferredLanguage,
 }: {
   userId: string;
   email: string;
@@ -144,10 +164,13 @@ export default function ProfileForm({
   initialNotifPrefs: Record<string, boolean>;
   role: string;
   initialBio: string;
+  initialPreferredLanguage: "fr" | "en";
 }) {
   const supabase = createClient();
   const t = useTranslations("profile");
   const tc = useTranslations("common");
+  const router = useRouter();
+  const pathname = usePathname();
 
   // ── Personal info ────────────────────────────────────────────────────────────
   const nameParts = initialName.trim().split(/\s+/);
@@ -250,6 +273,30 @@ export default function ProfileForm({
     setContactSaving(false);
     if (error) setContactError(t("errorSaving"));
     else { setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); }
+  };
+
+  // ── Langue ───────────────────────────────────────────────────────────────────
+  const [preferredLanguage, setPreferredLanguage] = useState<"fr" | "en">(initialPreferredLanguage);
+  const [langSaving, setLangSaving] = useState(false);
+  const [langError, setLangError] = useState("");
+
+  const changeLanguage = async (lang: "fr" | "en") => {
+    if (lang === preferredLanguage || langSaving) return;
+    setLangSaving(true);
+    setLangError("");
+    const [{ error: authError }, { error: dbError }] = await Promise.all([
+      supabase.auth.updateUser({ data: { preferred_language: lang } }),
+      supabase.from("users").update({ preferred_language: lang }).eq("id", userId),
+    ]);
+    if (authError || dbError) {
+      setLangError(t("errorLanguage"));
+      setLangSaving(false);
+      return;
+    }
+    setPreferredLanguage(lang);
+    const isEn = pathname.startsWith("/en");
+    const basePath = isEn ? pathname.slice(3) || "/" : pathname;
+    router.push(lang === "en" ? `/en${basePath}` : basePath);
   };
 
   // ── Security ─────────────────────────────────────────────────────────────────
@@ -480,6 +527,25 @@ export default function ProfileForm({
           <SaveButton saving={contactSaving} saved={contactSaved} onClick={saveContact} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
           <ErrorMsg msg={contactError} />
         </div>
+      </Section>
+
+      {/* ── Langue ────────────────────────────────────────────────────────── */}
+      <Section title={t("language")} description={t("languageDesc")}>
+        <div className="flex gap-3">
+          <LangButton
+            selected={preferredLanguage === "fr"}
+            onClick={() => changeLanguage("fr")}
+            disabled={langSaving}
+            label={t("languageFrench")}
+          />
+          <LangButton
+            selected={preferredLanguage === "en"}
+            onClick={() => changeLanguage("en")}
+            disabled={langSaving}
+            label={t("languageEnglish")}
+          />
+        </div>
+        <ErrorMsg msg={langError} />
       </Section>
 
       {/* ── Sécurité ──────────────────────────────────────────────────────── */}

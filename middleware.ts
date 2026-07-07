@@ -54,15 +54,38 @@ export async function middleware(request: NextRequest) {
 
   // Refresh the Supabase session with a 2s timeout.
   // Without this guard, a slow/unreachable Supabase causes MIDDLEWARE_INVOCATION_TIMEOUT on Vercel.
+  let user: { user_metadata?: { preferred_language?: string } } | null = null;
   try {
-    await Promise.race([
+    const result = await Promise.race([
       supabase.auth.getUser(),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("supabase-timeout")), 2000)
       ),
     ]);
+    user = result.data.user;
   } catch {
     // Session refresh timed out or failed — request continues without refreshing
+  }
+
+  // Langue préférée : uniquement dans l'espace connecté (dashboard/messages/favoris).
+  // Les pages publiques restent librement navigables dans l'une ou l'autre langue
+  // (sélecteur du footer) même pour un utilisateur connecté.
+  const { pathname } = request.nextUrl;
+  const isPrivateArea = ["/dashboard", "/messages", "/favoris"].some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`) || pathname.startsWith(`/en${base}/`) || pathname === `/en${base}`
+  );
+  if (user && isPrivateArea) {
+    const preferredLanguage = user.user_metadata?.preferred_language;
+    if (preferredLanguage === "fr" || preferredLanguage === "en") {
+      const isEnPath = pathname === "/en" || pathname.startsWith("/en/");
+      const currentLocale = isEnPath ? "en" : "fr";
+      if (currentLocale !== preferredLanguage) {
+        const basePath = isEnPath ? pathname.slice(3) || "/" : pathname;
+        const targetPath = preferredLanguage === "en" ? `/en${basePath}` : basePath;
+        const redirectUrl = new URL(`${targetPath}${request.nextUrl.search}`, request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
   }
 
   return finalResponse;
