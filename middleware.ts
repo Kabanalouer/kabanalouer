@@ -7,7 +7,8 @@ const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
   // Admin routes: pas de locale, pas de refresh session — AdminLayout gère l'auth directement
-  if (request.nextUrl.pathname.startsWith("/admin")) {
+  // Auth routes (ex. /auth/callback) : pas d'équivalent sous app/[locale], la réécriture i18n causait un 404
+  if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/auth/")) {
     return NextResponse.next({ request });
   }
 
