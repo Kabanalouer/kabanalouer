@@ -213,6 +213,17 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - **Google OAuth** : rôle passé dans l'URL de callback (`?role=host`), pas dans `queryParams` (ceux-ci vont à Google et sont perdus). Le callback `/auth/callback` lit le rôle et met à jour `public.users`.
 - **Trigger SQL** : `supabase/fix-handle-new-user-role.sql` — à exécuter si des proprios arrivent en mode voyageur après inscription
 
+### Send Email Hook (emails Auth personnalisés) — mis en place le 2026-07-07
+- **Edge Function** : `supabase/functions/send-email-hook/index.ts` — déployée et active en production
+- Intercepte et personnalise uniquement les emails **signup** (confirmation d'inscription) et **recovery** (réinitialisation de mot de passe), dans la langue de l'utilisateur (`preferred_language`), avec le design Kabanalouer (olive/coral, Plus Jakarta Sans, boutons `rounded-full`)
+- **Configuré dans** Supabase Dashboard → Authentication → Hooks → Send Email Hook (type HTTPS), pointant vers la fonction déployée
+- **Secrets requis** dans l'environnement de la fonction (via `supabase secrets set`) : `RESEND_API_KEY` et `SEND_EMAIL_HOOK_SECRET`
+- ⚠️ **Point important** : une fois ce hook actif, Supabase n'envoie **plus aucun email par défaut, pour aucun type d'événement** — le SMTP interne est désactivé globalement pendant que le hook est actif, pas seulement pour signup/recovery. Si on ajoute un jour magic link, invitation, ou changement d'email, il faudra revenir modifier cette fonction pour les gérer aussi, sinon **aucun email ne partira** pour ces cas.
+- **Testé et validé en production le 2026-07-07** : inscription et mot de passe oublié, en français, avec succès
+- **À faire éventuellement** :
+  - Tester la version anglaise (signup + recovery)
+  - Envisager la rotation de `RESEND_API_KEY` et `SEND_EMAIL_HOOK_SECRET` — exposés en clair dans une session de travail, jamais tournés depuis
+
 ### Côté voyageur
 - **Recherche** : filtres, Google Maps split-view sur `/chalets`
 - **Messagerie** directe proprio ↔ voyageur
