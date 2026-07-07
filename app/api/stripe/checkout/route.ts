@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   // Fetch user profile to get or create Stripe customer
   const { data: profile } = await supabase
     .from("users")
-    .select("stripe_customer_id, email, name, role")
+    .select("stripe_customer_id, email, name, role, preferred_language")
     .eq("id", user.id)
     .single();
 
@@ -24,12 +24,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Accès réservé aux propriétaires" }, { status: 403 });
   }
 
+  const preferredLanguage: "fr" | "en" = profile?.preferred_language === "en" ? "en" : "fr";
+
   let customerId = profile?.stripe_customer_id;
 
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: profile?.email ?? user.email ?? undefined,
       name: profile?.name ?? undefined,
+      preferred_locales: [preferredLanguage],
       metadata: { supabase_user_id: user.id },
     });
     customerId = customer.id;
@@ -45,6 +48,7 @@ export async function POST(request: Request) {
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
+    locale: preferredLanguage,
     line_items: [
       {
         price: "price_1ToqE7EVlLGcAv4arl0TmOCz",
