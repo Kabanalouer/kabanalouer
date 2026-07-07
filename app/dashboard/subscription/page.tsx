@@ -52,6 +52,7 @@ export default function SubscriptionPage() {
   };
 
   const isActive = sub?.status === "active";
+  const isPastDue = sub?.status === "past_due";
   const isFreeLaunch = sub?.is_free_launch === true;
 
   return (
@@ -89,11 +90,11 @@ export default function SubscriptionPage() {
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-block w-2.5 h-2.5 rounded-full ${
-                    isActive ? "bg-green-500" : "bg-charcoal-300"
+                    isActive ? "bg-green-500" : isPastDue ? "bg-amber-500" : "bg-charcoal-300"
                   }`}
                 />
                 <span className="font-semibold text-charcoal-800">
-                  {isActive ? "Actif" : "Inactif"}
+                  {isActive ? "Actif" : isPastDue ? "Paiement en retard" : "Inactif"}
                 </span>
               </div>
             </div>
@@ -175,6 +176,19 @@ export default function SubscriptionPage() {
                   {redirecting ? "Redirection…" : "Gérer mon abonnement"}
                 </button>
               </div>
+            ) : isPastDue ? (
+              <>
+                <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm">
+                  Le dernier paiement de votre abonnement a échoué. Mettez à jour votre méthode de paiement pour éviter une interruption.
+                </div>
+                <button
+                  onClick={handlePortal}
+                  disabled={redirecting}
+                  className="w-full border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
+                >
+                  {redirecting ? "Redirection…" : "Gérer mon abonnement"}
+                </button>
+              </>
             ) : (
               <>
                 <button

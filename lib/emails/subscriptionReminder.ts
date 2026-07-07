@@ -192,3 +192,66 @@ export async function sendAutoRenewalReminderEmail({
 
   return { error: error ? new Error(error.message) : null };
 }
+
+// ── Paiement échoué (abonnements payants, status = 'past_due') ──────────────
+const PAYMENT_FAILED_TEMPLATE: Record<"fr" | "en", {
+  subjectGeneric: string;
+  subjectNamed: (firstName: string) => string;
+  greeting: (firstName: string) => string;
+  heading: string;
+  body: string;
+  buttonLabel: string;
+  footerNote: string;
+}> = {
+  fr: {
+    subjectGeneric: "Le paiement de ton abonnement Kabanalouer a échoué",
+    subjectNamed: (firstName) => `${firstName}, le paiement de ton abonnement Kabanalouer a échoué`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
+    heading: "Ton paiement n'a pas pu être traité",
+    body: "Le renouvellement automatique de ton abonnement annuel (299 $) n'a pas fonctionné — ta carte a probablement été refusée. Stripe va retenter automatiquement dans les prochains jours, mais tu peux aussi mettre à jour ta méthode de paiement dès maintenant pour éviter toute interruption.",
+    buttonLabel: "Mettre à jour mon paiement",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+  },
+  en: {
+    subjectGeneric: "Your Kabanalouer subscription payment failed",
+    subjectNamed: (firstName) => `${firstName}, your Kabanalouer subscription payment failed`,
+    greeting: (firstName) => `Hi ${firstName}!`,
+    heading: "Your payment couldn't be processed",
+    body: "The automatic renewal of your annual subscription ($299) didn't go through — your card was likely declined. Stripe will automatically retry over the next few days, but you can also update your payment method now to avoid any interruption.",
+    buttonLabel: "Update my payment method",
+    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+  },
+};
+
+export async function sendPaymentFailedEmail({
+  email,
+  preferredLanguage,
+  firstName,
+}: {
+  email: string;
+  preferredLanguage: "fr" | "en";
+  firstName?: string | null;
+}): Promise<{ error: Error | null }> {
+  const template = PAYMENT_FAILED_TEMPLATE[preferredLanguage];
+  const trimmedFirstName = firstName?.trim() || undefined;
+  const buttonPath = preferredLanguage === "en" ? "/en/dashboard/subscription" : "/dashboard/subscription";
+
+  const html = renderEmail({
+    lang: preferredLanguage,
+    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
+    heading: template.heading,
+    body: template.body,
+    buttonLabel: template.buttonLabel,
+    buttonUrl: `${SITE_URL}${buttonPath}`,
+    footerNote: template.footerNote,
+  });
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: [email],
+    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
+    html,
+  });
+
+  return { error: error ? new Error(error.message) : null };
+}

@@ -185,13 +185,31 @@ export async function POST(request: NextRequest) {
 
       const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
 
-      const { error: subUpdateError } = await supabase.from("subscriptions").upsert({
+      // Ne pas écraser 'past_due' en 'inactive' — la contrainte CHECK de la table
+      // l'autorise déjà, mais ce mapping le collapsait silencieusement, rendant
+      // impossible de distinguer "jamais abonné" de "paiement en échec".
+      const statusMap: Record<string, string> = {
+        active: "active",
+        past_due: "past_due",
+        trialing: "trialing",
+        canceled: "canceled",
+      };
+      const mappedStatus = statusMap[subscription.status] ?? "inactive";
+
+      const updatePayload: Record<string, unknown> = {
         user_id: user.id,
         stripe_subscription_id: subscription.id,
         stripe_customer_id: customerId,
-        status: subscription.status === "active" ? "active" : "inactive",
+        status: mappedStatus,
         expires_at: currentPeriodEnd,
-      }, { onConflict: "user_id" });
+      };
+      // Efface le flag de notification dès qu'on quitte l'état past_due (récupération
+      // ou annulation) — tant qu'on y reste, on laisse le cron gérer ce flag lui-même.
+      if (mappedStatus !== "past_due") {
+        updatePayload.reminder_past_due_sent = false;
+      }
+
+      const { error: subUpdateError } = await supabase.from("subscriptions").upsert(updatePayload, { onConflict: "user_id" });
 
       if (subUpdateError) {
         console.error("customer.subscription.updated: échec upsert subscriptions", subUpdateError);
