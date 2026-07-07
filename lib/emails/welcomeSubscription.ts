@@ -36,7 +36,7 @@ function renderEmail({
             </tr>
             <tr>
               <td style="padding:16px 32px 0 32px;">
-                ${greeting ? `<p style="margin:0 0 4px 0;font-size:15px;line-height:1.6;color:#57534e;">${greeting}</p>` : ""}
+                ${greeting ? `<p style="margin:0 0 12px 0;font-size:15px;line-height:1.6;color:#57534e;">${greeting}</p>` : ""}
                 <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.3;color:#292524;">${heading}</h1>
                 <p style="margin:0 0 28px 0;font-size:15px;line-height:1.6;color:#57534e;">${body}</p>
               </td>
