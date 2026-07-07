@@ -6,6 +6,7 @@ import {
   sendPaymentFailedEmail,
   type ReminderThreshold,
 } from "@/lib/emails/subscriptionReminder";
+import { sendWinbackReminderEmail, type WinbackThreshold } from "@/lib/emails/winbackReminder";
 
 function adminSupabase() {
   return createAdminClient(
@@ -21,17 +22,20 @@ const RENEWAL_THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent"
   { days: 3, column: "reminder_3d_sent" },
 ];
 
+const WINBACK_THRESHOLDS: { days: WinbackThreshold; column: "reminder_winback_3d_sent" | "reminder_winback_14d_sent" }[] = [
+  { days: 3, column: "reminder_winback_3d_sent" },
+  { days: 14, column: "reminder_winback_14d_sent" },
+];
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// GET — appelé par le cron Vercel (une fois par jour).
-// - status = 'past_due' (paiement Stripe échoué) : un seul email informatif, dès détecté,
-//   peu importe expires_at — pas un décompte d'échéance, juste "ton dernier paiement a échoué".
-// - status = 'active' + is_free_launch = true : séquence de 3 rappels (30j/10j/3j), renouvellement actif requis.
-// - status = 'active' + is_free_launch = false : un seul rappel informatif à 30j, Stripe renouvelle automatiquement.
-// Le cycle (reminder_cycle_expires_at) se réinitialise seul dès que expires_at change
-// (renouvellement Stripe ou conversion offre gratuite → payant) — aucune logique de
-// reset séparée nécessaire ailleurs dans le code. reminder_past_due_sent est géré
-// séparément par le webhook (remis à false dès qu'on quitte l'état past_due).
+// GET — appelé par le cron Vercel (une fois par jour). Chaque ligne subscriptions
+// correspond désormais à UNE annonce (listing_id) — plus à un proprio entier.
+// - status = 'past_due' : un seul email informatif dès détecté.
+// - status = 'active' + is_free_launch = true : séquence 30j/10j/3j, renouvellement actif requis.
+// - status = 'active' + is_free_launch = false : un seul rappel informatif à 30j (Stripe renouvelle automatiquement).
+// - status = 'canceled' OU offre de lancement expirée : dépublication de CETTE annonce précise.
+// - annonce dépubliée pour raison d'abonnement : séquence de retour (win-back) 3j/14j, par annonce.
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -47,7 +51,7 @@ export async function GET(request: NextRequest) {
   const { data: subs, error } = await supabase
     .from("subscriptions")
     .select(
-      "id, user_id, status, expires_at, is_free_launch, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at"
+      "id, listing_id, user_id, status, expires_at, is_free_launch, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at"
     )
     .not("expires_at", "is", null)
     .or(`and(status.eq.active,expires_at.lte.${windowEnd}),status.eq.past_due`);
@@ -172,13 +176,13 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Dépublication automatique (abonnement annulé ou offre de lancement expirée) ──
-  // Requête séparée : critère différent (canceled OU free-launch expiré), pas de lien
-  // avec le décompte de rappels ci-dessus. Idempotent par construction : le filtre
-  // is_published = true fait qu'une annonce déjà dépubliée pour cette raison n'est
-  // plus jamais re-traitée les jours suivants.
+  // Chaque ligne subscriptions porte déjà son listing_id — plus besoin de fan-out par
+  // host_id, on cible directement l'annonce concernée. Idempotent par construction :
+  // le filtre is_published = true fait qu'une annonce déjà dépubliée pour cette raison
+  // n'est plus jamais re-traitée les jours suivants.
   const { data: lapsedSubs, error: lapsedError } = await supabase
     .from("subscriptions")
-    .select("user_id")
+    .select("listing_id")
     .or(`status.eq.canceled,and(is_free_launch.eq.true,expires_at.lt.${new Date().toISOString()})`);
 
   let unpublished = 0;
@@ -186,16 +190,27 @@ export async function GET(request: NextRequest) {
   if (lapsedError) {
     console.error("[subscription-reminders] échec lecture abonnements expirés/annulés", lapsedError);
   } else {
+    const unpublishedAt = new Date().toISOString();
     for (const sub of lapsedSubs ?? []) {
+      // reminder_winback_*_sent remis à false ici, uniquement au moment de la
+      // transition publié → dépublié (jamais les jours suivants, grâce au filtre
+      // is_published = true) — évite qu'un flag posé lors d'un cycle précédent
+      // bloque à tort la séquence de retour d'un nouveau cycle.
       const { data: toUnpublish, error: unpublishError } = await supabase
         .from("listings")
-        .update({ is_published: false, unpublished_reason: "subscription" })
-        .eq("host_id", sub.user_id)
+        .update({
+          is_published: false,
+          unpublished_reason: "subscription",
+          unpublished_at: unpublishedAt,
+          reminder_winback_3d_sent: false,
+          reminder_winback_14d_sent: false,
+        })
+        .eq("id", sub.listing_id)
         .eq("is_published", true)
         .select("id");
 
       if (unpublishError) {
-        console.error(`[subscription-reminders] échec dépublication (user ${sub.user_id})`, unpublishError);
+        console.error(`[subscription-reminders] échec dépublication (listing ${sub.listing_id})`, unpublishError);
         continue;
       }
 
@@ -203,5 +218,51 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, checked: subs?.length ?? 0, sent, cyclesReset, unpublished });
+  // ── Retour (win-back) — par annonce individuelle, plus par proprio. Chaque
+  // annonce a maintenant son propre unpublished_at et ses propres flags, puisque
+  // deux annonces du même proprio peuvent expirer/s'annuler à des moments différents.
+  const { data: unpublishedListings, error: winbackError } = await supabase
+    .from("listings")
+    .select("id, host_id, unpublished_at, reminder_winback_3d_sent, reminder_winback_14d_sent")
+    .eq("unpublished_reason", "subscription")
+    .not("unpublished_at", "is", null);
+
+  let winbackSent = 0;
+
+  if (winbackError) {
+    console.error("[subscription-reminders] échec lecture annonces dépubliées (win-back)", winbackError);
+  } else {
+    for (const listing of unpublishedListings ?? []) {
+      const daysSince = Math.floor((Date.now() - new Date(listing.unpublished_at as string).getTime()) / DAY_MS);
+      const dueThreshold = WINBACK_THRESHOLDS.find(
+        ({ days, column }) => daysSince >= days && !listing[column as "reminder_winback_3d_sent" | "reminder_winback_14d_sent"]
+      );
+      if (!dueThreshold) continue;
+
+      const { data: profile } = await supabase
+        .from("users")
+        .select("email, name, preferred_language")
+        .eq("id", listing.host_id)
+        .single();
+
+      if (!profile?.email) continue;
+
+      const { error: emailError } = await sendWinbackReminderEmail({
+        email: profile.email,
+        preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+        firstName: profile.name?.trim().split(/\s+/)[0],
+        threshold: dueThreshold.days,
+      });
+
+      if (emailError) {
+        console.error(`[subscription-reminders] échec envoi rappel win-back ${dueThreshold.days}j (listing ${listing.id})`, emailError);
+        continue; // pas de flag posé — retry au prochain passage du cron
+      }
+
+      await supabase.from("listings").update({ [dueThreshold.column]: true }).eq("id", listing.id);
+      winbackSent++;
+    }
+  }
+
+  return NextResponse.json({ ok: true, checked: subs?.length ?? 0, sent, cyclesReset, unpublished, winbackSent });
 }
