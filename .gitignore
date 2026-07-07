@@ -46,3 +46,6 @@ responsive-screenshots/
 # local Claude Code and Playwright CLI artifacts
 .claude/
 .playwright-cli/
+
+# Supabase CLI local cache/link state
+supabase/.temp/
