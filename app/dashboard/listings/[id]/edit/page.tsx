@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
+import { getFreeLaunchClaimedCount, getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 
 function adminSupabase() {
   return createAdminClient(
@@ -34,21 +35,26 @@ export default async function EditListingPage({ params }: Props) {
 
   if (!listing) notFound();
 
-  const [{ data: subscription }, { count: activeCount }, { data: blockedDates }] = await Promise.all([
+  const admin = adminSupabase();
+
+  const [{ data: subscription }, { data: userRow }, freeLaunchClaimedCount, nextPaidRank, { data: blockedDates }] = await Promise.all([
+    // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
+    // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
     supabase
       .from("subscriptions")
       .select("status, expires_at")
-      .eq("user_id", user.id)
+      .eq("listing_id", id)
       .maybeSingle(),
-    adminSupabase()
-      .from("subscriptions")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active"),
+    supabase.from("users").select("free_launch_claimed_at").eq("id", user.id).single(),
+    getFreeLaunchClaimedCount(admin),
+    getNextPaidRank(admin, user.id),
     supabase
       .from("availability")
       .select("date, source")
       .eq("listing_id", id),
   ]);
+
+  const { cents: nextPaidPriceCents } = priceForRank(nextPaidRank);
 
   return (
     <div className="max-w-5xl">
@@ -65,7 +71,9 @@ export default async function EditListingPage({ params }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.expires_at ?? null}
-        activeSubscriptionCount={activeCount ?? 0}
+        freeLaunchClaimedCount={freeLaunchClaimedCount}
+        hasClaimedFreeLaunch={!!userRow?.free_launch_claimed_at}
+        nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}

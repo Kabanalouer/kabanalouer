@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { renderEmail } from "./renderEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -85,11 +86,6 @@ function formatExpiryDate(expiresAt: Date, lang: "fr" | "en"): string {
     month: "long",
     day: "numeric",
   });
-}
-
-function formatPriceLabel(cents: number, lang: "fr" | "en"): string {
-  const amount = (cents / 100).toLocaleString(lang === "en" ? "en-CA" : "fr-CA");
-  return lang === "en" ? `$${amount}` : `${amount} $`;
 }
 
 export async function sendSubscriptionReminderEmail({

@@ -19,6 +19,7 @@ import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
+import { FREE_LAUNCH_LIMIT, formatPriceLabel } from "@/lib/subscriptionPricing";
 
 
 type FormState = {
@@ -116,8 +117,6 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
-const FREE_LAUNCH_LIMIT = 50;
-
 const INDICATOR_SECTION_IDS = new Set<SectionId>([
   "photos", "titre", "description", "capacite", "chambres",
   "equipements", "proximite", "tarifs", "calendrier", "localisation", "infos", "promotions",
@@ -135,7 +134,9 @@ export default function EditListingForm({
   initialLng,
   subscriptionStatus: initialSubStatus,
   subscriptionExpiresAt: initialSubExpiresAt,
-  activeSubscriptionCount,
+  freeLaunchClaimedCount,
+  hasClaimedFreeLaunch,
+  nextPaidPriceCents,
   initialBlocked,
   icalUrl,
   icalLastSync,
@@ -151,7 +152,9 @@ export default function EditListingForm({
   initialLng: number | null;
   subscriptionStatus: string | null;
   subscriptionExpiresAt: string | null;
-  activeSubscriptionCount: number;
+  freeLaunchClaimedCount: number;
+  hasClaimedFreeLaunch: boolean;
+  nextPaidPriceCents: number;
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
   icalLastSync: string | null;
@@ -1327,8 +1330,10 @@ export default function EditListingForm({
 
           {/* Section: Publier */}
           {activeSection === "publier" && (() => {
-            const slotsLeft = Math.max(0, FREE_LAUNCH_LIMIT - activeSubscriptionCount);
-            const isFree = slotsLeft > 0;
+            const slotsLeft = Math.max(0, FREE_LAUNCH_LIMIT - freeLaunchClaimedCount);
+            // L'offre gratuite n'est proposée que si des places restent ET que ce
+            // proprio ne l'a jamais réclamée — une fois dans sa vie, définitivement.
+            const isFree = slotsLeft > 0 && !hasClaimedFreeLaunch;
             const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate
@@ -1336,6 +1341,9 @@ export default function EditListingForm({
               : null;
             const oneYearFromNow = new Date();
             oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+            const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
+            const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
+            const referencePriceLabel = formatPriceLabel(29900, lang); // tier1 — valeur de référence affichée barrée pour l'offre gratuite
 
             if (isPublished && subStatus === "active") {
               const publishedDate = new Date(listingCreatedAt + (listingCreatedAt.includes("T") ? "" : "T12:00:00"));
@@ -1437,7 +1445,7 @@ export default function EditListingForm({
                         <div className="w-full bg-charcoal-100 rounded-full h-1.5">
                           <div
                             className="bg-primary rounded-full h-1.5"
-                            style={{ width: `${(activeSubscriptionCount / FREE_LAUNCH_LIMIT) * 100}%` }}
+                            style={{ width: `${(freeLaunchClaimedCount / FREE_LAUNCH_LIMIT) * 100}%` }}
                           />
                         </div>
                         <p className="text-xs text-charcoal-400 mt-1">
@@ -1463,12 +1471,12 @@ export default function EditListingForm({
                   <div>
                     {isFree ? (
                       <>
-                        <p className="text-sm text-charcoal-400 line-through mb-0.5">{t("publish.oldPrice")}</p>
+                        <p className="text-sm text-charcoal-400 line-through mb-0.5">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
                         <p className="text-2xl font-extrabold text-primary mb-1">{t("publish.free")}</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice")}</p>
+                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice", { price: nextPaidPriceLabel })}</p>
                         <p className="text-sm text-charcoal-400 mb-1">{t("publish.perYear")}</p>
                       </>
                     )}
@@ -1506,7 +1514,7 @@ export default function EditListingForm({
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
-                        {publishLoading ? t("publish.redirecting") : t("publish.payAndPublish")}
+                        {publishLoading ? t("publish.redirecting") : t("publish.payAndPublish", { price: nextPaidPriceLabel })}
                       </button>
                       <p className="text-xs text-charcoal-400">{t("publish.securePayment")}</p>
                     </>

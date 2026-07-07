@@ -25,6 +25,11 @@ export function priceForRank(rank: number): { priceId: string; cents: number; ti
   return { priceId: LISTING_PRICE_IDS[tier], cents: TIER_CENTS[tier], tier };
 }
 
+export function formatPriceLabel(cents: number, lang: "fr" | "en"): string {
+  const amount = (cents / 100).toLocaleString(lang === "en" ? "en-CA" : "fr-CA");
+  return lang === "en" ? `$${amount}` : `${amount} $`;
+}
+
 // Rang de la PROCHAINE annonce payante de ce proprio. Compte les abonnements
 // payants ACTUELLEMENT ACTIFS (pas l'historique total) — annuler une annonce
 // libère son rang pour la prochaine ajoutée, tel que confirmé.
