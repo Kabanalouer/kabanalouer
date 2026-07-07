@@ -78,12 +78,13 @@ export async function POST(request: NextRequest) {
   if (user.email) {
     const { data: profile } = await admin
       .from("users")
-      .select("preferred_language")
+      .select("preferred_language, name")
       .eq("id", user.id)
       .single();
     const { error: emailError } = await sendWelcomeSubscriptionEmail({
       email: user.email,
       preferredLanguage: profile?.preferred_language === "en" ? "en" : "fr",
+      firstName: profile?.name?.trim().split(/\s+/)[0],
     });
     if (emailError) {
       console.error("activate-free: échec envoi email de bienvenue", emailError);

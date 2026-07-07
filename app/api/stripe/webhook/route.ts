@@ -153,13 +153,14 @@ export async function POST(request: NextRequest) {
       if (isFirstActivation) {
         const { data: profile } = await supabase
           .from("users")
-          .select("email, preferred_language")
+          .select("email, preferred_language, name")
           .eq("id", userId)
           .single();
         if (profile?.email) {
           const { error: emailError } = await sendWelcomeSubscriptionEmail({
             email: profile.email,
             preferredLanguage: profile.preferred_language === "en" ? "en" : "fr",
+            firstName: profile.name?.trim().split(/\s+/)[0],
           });
           if (emailError) {
             console.error("checkout.session.completed: échec envoi email de bienvenue", emailError);

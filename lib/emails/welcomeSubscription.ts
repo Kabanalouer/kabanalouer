@@ -7,6 +7,7 @@ const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
 function renderEmail({
   lang,
+  greeting,
   heading,
   body,
   buttonLabel,
@@ -14,6 +15,7 @@ function renderEmail({
   footerNote,
 }: {
   lang: "fr" | "en";
+  greeting?: string;
   heading: string;
   body: string;
   buttonLabel: string;
@@ -34,6 +36,7 @@ function renderEmail({
             </tr>
             <tr>
               <td style="padding:16px 32px 0 32px;">
+                ${greeting ? `<p style="margin:0 0 4px 0;font-size:15px;line-height:1.6;color:#57534e;">${greeting}</p>` : ""}
                 <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.3;color:#292524;">${heading}</h1>
                 <p style="margin:0 0 28px 0;font-size:15px;line-height:1.6;color:#57534e;">${body}</p>
               </td>
@@ -57,7 +60,9 @@ function renderEmail({
 }
 
 const TEMPLATES: Record<"fr" | "en", {
-  subject: string;
+  subjectGeneric: string;
+  subjectNamed: (firstName: string) => string;
+  greeting: (firstName: string) => string;
   heading: string;
   body: string;
   buttonLabel: string;
@@ -65,7 +70,9 @@ const TEMPLATES: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subject: "Bienvenue proprio ! Ton abonnement Kabanalouer est actif",
+    subjectGeneric: "Bienvenue ! Ton abonnement Kabanalouer est actif",
+    subjectNamed: (firstName) => `Bienvenue ${firstName} ! Ton abonnement Kabanalouer est actif`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Ton abonnement est actif !",
     body: "Merci de faire confiance à Kabanalouer. Ton abonnement annuel est maintenant actif — si ce n'est pas déjà fait, complète et publie ton annonce pour commencer à recevoir des demandes de voyageurs.",
     buttonLabel: "Compléter mon annonce",
@@ -73,7 +80,9 @@ const TEMPLATES: Record<"fr" | "en", {
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
-    subject: "Welcome, owner! Your Kabanalouer subscription is active",
+    subjectGeneric: "Welcome! Your Kabanalouer subscription is active",
+    subjectNamed: (firstName) => `Welcome ${firstName}! Your Kabanalouer subscription is active`,
+    greeting: (firstName) => `Hi ${firstName}!`,
     heading: "Your subscription is active!",
     body: "Thanks for trusting Kabanalouer. Your annual subscription is now active — if you haven't already, complete and publish your listing to start receiving requests from travelers.",
     buttonLabel: "Complete my listing",
@@ -85,13 +94,18 @@ const TEMPLATES: Record<"fr" | "en", {
 export async function sendWelcomeSubscriptionEmail({
   email,
   preferredLanguage,
+  firstName,
 }: {
   email: string;
   preferredLanguage: "fr" | "en";
+  firstName?: string | null;
 }): Promise<{ error: Error | null }> {
   const template = TEMPLATES[preferredLanguage];
+  const trimmedFirstName = firstName?.trim() || undefined;
+
   const html = renderEmail({
     lang: preferredLanguage,
+    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
     heading: template.heading,
     body: template.body,
     buttonLabel: template.buttonLabel,
@@ -102,7 +116,7 @@ export async function sendWelcomeSubscriptionEmail({
   const { error } = await resend.emails.send({
     from: FROM,
     to: [email],
-    subject: template.subject,
+    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
     html,
   });
 
