@@ -238,10 +238,16 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         ) : (
           <div className="text-center py-20 bg-gray-50 rounded-2xl">
             <p className="text-gray-500 text-lg mb-2">
-              Aucun chalet disponible {regionConfig.locative} pour l&apos;instant.
+              {isEn ? (
+                `No cabins available ${content?.locative_en ?? "in Quebec"} yet.`
+              ) : (
+                <>Aucun chalet disponible {regionConfig.locative}{" "}pour l&apos;instant.</>
+              )}
             </p>
             <p className="text-gray-400 text-sm mb-6">
-              Soyez les premiers à découvrir les chalets de cette région.
+              {isEn
+                ? "Be the first to discover the cabins in this region."
+                : "Soyez les premiers à découvrir les chalets de cette région."}
             </p>
             <Link
               href={localePath("/chalets", locale)}

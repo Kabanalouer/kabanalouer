@@ -64,10 +64,9 @@ export default function AdminNav() {
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-[#ebebeb] bg-white min-h-screen sticky top-0 h-screen">
         <div className="px-5 py-5 border-b border-[#ebebeb]">
           <Link href="/admin">
-            <object
-              type="image/svg+xml"
-              data="/logo-wordmark.svg"
-              aria-hidden="true"
+            <img
+              src="/logo-wordmark.svg"
+              alt="Kabanalouer"
               className="pointer-events-none"
               style={{ height: 32, width: "auto" }}
             />
@@ -104,10 +103,9 @@ export default function AdminNav() {
           <aside className="relative z-50 w-64 bg-white flex flex-col h-full shadow-xl">
             <div className="px-5 py-5 border-b border-[#ebebeb] flex items-center justify-between">
               <div>
-                <object
-                  type="image/svg+xml"
-                  data="/logo-wordmark.svg"
-                  aria-hidden="true"
+                <img
+                  src="/logo-wordmark.svg"
+                  alt="Kabanalouer"
                   className="pointer-events-none"
                   style={{ height: 28, width: "auto" }}
                 />
