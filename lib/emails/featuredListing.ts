@@ -45,7 +45,7 @@ const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
     greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Le boost de ton annonce est activé !",
     body: (listingTitle, monthLabel, placement) =>
-      `Félicitations ! Le boost de ${listingTitle} est maintenant actif pour ${monthLabel}. Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs. Ton boost couvre le mois en cours — un petit rappel te sera envoyé avant son terme, pour que tu gardes le contrôle facilement.`,
+      `Félicitations ! Le boost de ${listingTitle} est maintenant actif pour ${monthLabel}. Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs. Un petit rappel te sera envoyé avant son terme, pour que tu gardes le contrôle facilement.`,
     buttonLabel: "Voir mon annonce",
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
@@ -55,7 +55,7 @@ const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
     greeting: (firstName) => `Hi ${firstName}!`,
     heading: "Your ad boost is active!",
     body: (listingTitle, monthLabel, placement) =>
-      `Congratulations! Your boost for ${listingTitle} is now active for ${monthLabel}. Your listing now appears in ${placement}, with extra visibility and a priority spot in what travelers see first. Your boost covers the current month — we'll send you a quick reminder before it ends, so you stay easily in control.`,
+      `Congratulations! Your boost for ${listingTitle} is now active for ${monthLabel}. Your listing now appears in ${placement}, with extra visibility and a priority spot in what travelers see first. We'll send you a quick reminder before it ends, so you stay easily in control.`,
     buttonLabel: "View my listing",
     footerNote: "Got a question? Just reply to this email — we're happy to help.",
   },
