@@ -42,11 +42,11 @@ export async function POST(request: Request) {
 
   const { data: existingSub } = await supabase
     .from("subscriptions")
-    .select("status")
+    .select("status, is_free_launch")
     .eq("listing_id", listingId)
     .maybeSingle();
 
-  if (existingSub?.status === "active") {
+  if (existingSub?.status === "active" && existingSub?.is_free_launch === false) {
     return NextResponse.json({ error: "Cette annonce a déjà un abonnement actif" }, { status: 409 });
   }
 
