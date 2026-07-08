@@ -12,8 +12,8 @@ export default async function AdminHostsPage() {
       .select("id, name, email, avatar_url, created_at")
       .eq("role", "host")
       .order("created_at", { ascending: false }),
-    supabase.from("listings").select("host_id, is_published"),
-    supabase.from("subscriptions").select("user_id, status, is_free_launch, expires_at, created_at"),
+    supabase.from("listings").select("id, host_id, title, is_published"),
+    supabase.from("subscriptions").select("user_id, listing_id, status, is_free_launch, expires_at, created_at"),
   ]);
 
   // Listing counts per host
@@ -24,28 +24,40 @@ export default async function AdminHostsPage() {
     listingMap.set(id, { total: prev.total + 1, published: prev.published + (l.is_published ? 1 : 0) });
   }
 
-  // Subscription per user (one row per user due to onConflict: "user_id")
-  const subMap = new Map<string, { status: string; isFreeLaunch: boolean; expiresAt: string | null; createdAt: string | null }>();
+  // Titre de chaque annonce, pour l'affichage par abonnement
+  const listingTitleMap = new Map<string, string>();
+  for (const l of (listings ?? [])) {
+    listingTitleMap.set(l.id as string, (l.title as string) || "Chalet sans titre");
+  }
+
+  function getSubLabel(status: string, isFreeLaunch: boolean): SubLabel {
+    if (status === "active" && isFreeLaunch) return "free_launch";
+    if (status === "active") return "active";
+    return "expired";
+  }
+
+  // Abonnements par proprio — un proprio multi-annonces a une entrée par annonce,
+  // plus de collapsing par user_id (chaque annonce a son propre abonnement depuis
+  // la restructuration per-listing).
+  const subsByHost = new Map<string, HostRow["subscriptions"]>();
   for (const s of (subscriptions ?? [])) {
-    subMap.set(s.user_id as string, {
-      status: s.status as string,
+    const hostId = s.user_id as string;
+    const listingId = s.listing_id as string;
+    const arr = subsByHost.get(hostId) ?? [];
+    arr.push({
+      listingId,
+      listingTitle: listingTitleMap.get(listingId) ?? "Chalet sans titre",
       isFreeLaunch: !!(s.is_free_launch as boolean),
       expiresAt: (s.expires_at as string | null) ?? null,
       createdAt: (s.created_at as string | null) ?? null,
+      subLabel: getSubLabel(s.status as string, !!(s.is_free_launch as boolean)),
     });
-  }
-
-  function getSubLabel(sub: ReturnType<typeof subMap.get> | null): SubLabel {
-    if (!sub) return "none";
-    if (sub.status === "active" && sub.isFreeLaunch) return "free_launch";
-    if (sub.status === "active") return "active";
-    return "expired";
+    subsByHost.set(hostId, arr);
   }
 
   const rows: HostRow[] = (users ?? []).map((u) => {
     const id = u.id as string;
     const counts = listingMap.get(id) ?? { total: 0, published: 0 };
-    const sub = subMap.get(id) ?? null;
     return {
       id,
       name: (u.name as string) ?? "",
@@ -54,8 +66,7 @@ export default async function AdminHostsPage() {
       totalListings: counts.total,
       publishedListings: counts.published,
       createdAt: (u.created_at as string) ?? "",
-      subscription: sub,
-      subLabel: getSubLabel(sub),
+      subscriptions: subsByHost.get(id) ?? [],
     };
   });
 

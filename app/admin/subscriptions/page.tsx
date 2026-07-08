@@ -7,14 +7,19 @@ import AdminSubscriptionsClient, {
 
 export const metadata = { title: "Abonnements — Administration" };
 
-export default async function AdminSubscriptionsPage() {
+export default async function AdminSubscriptionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: subs }, { data: listings }] = await Promise.all([
     supabase
       .from("subscriptions")
       .select(
-        "user_id, stripe_subscription_id, status, is_free_launch, created_at, expires_at, user:user_id(id, name, email, avatar_url)"
+        "user_id, listing_id, stripe_subscription_id, status, is_free_launch, created_at, expires_at, user:user_id(id, name, email, avatar_url), listings:listing_id(title)"
       )
       .order("created_at", { ascending: false }),
     supabase.from("listings").select("host_id"),
@@ -48,7 +53,13 @@ export default async function AdminSubscriptionsPage() {
       ? (userRaw[0] as { id: string; name: string; email: string; avatar_url: string | null } | undefined)
       : (userRaw as { id: string; name: string; email: string; avatar_url: string | null } | null);
 
+    const listingRaw = s.listings;
+    const listing = Array.isArray(listingRaw)
+      ? (listingRaw[0] as { title: string } | undefined)
+      : (listingRaw as { title: string } | null);
+
     const userId = s.user_id as string;
+    const listingId = s.listing_id as string;
     const isFreeLaunch = !!(s.is_free_launch as boolean);
     const dbStatus = (s.status as string) ?? "active";
     const expiresAt = (s.expires_at as string | null) ?? null;
@@ -56,6 +67,8 @@ export default async function AdminSubscriptionsPage() {
     return {
       id: `${userId}-${i}`,
       userId,
+      listingId,
+      listingTitle: listing?.title || "Chalet sans titre",
       name: user?.name ?? "",
       email: user?.email ?? "",
       avatarUrl: user?.avatar_url ?? null,
@@ -86,7 +99,7 @@ export default async function AdminSubscriptionsPage() {
           {rows.length} abonnement{rows.length !== 1 ? "s" : ""} au total
         </p>
       </div>
-      <AdminSubscriptionsClient subscriptions={rows} metrics={metrics} />
+      <AdminSubscriptionsClient subscriptions={rows} metrics={metrics} initialSearch={q ?? ""} />
     </div>
   );
 }

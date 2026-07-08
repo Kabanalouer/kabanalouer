@@ -9,6 +9,8 @@ export type SubStatus = "active" | "expired" | "canceled";
 export type SubscriptionRow = {
   id: string;
   userId: string;
+  listingId: string;
+  listingTitle: string;
   name: string;
   email: string;
   avatarUrl: string | null;
@@ -108,13 +110,15 @@ function exportCSV(rows: SubscriptionRow[]) {
 export default function AdminSubscriptionsClient({
   subscriptions,
   metrics,
+  initialSearch = "",
 }: {
   subscriptions: SubscriptionRow[];
   metrics: { totalActive: number; freeLaunch: number; paid: number; revenue: number };
+  initialSearch?: string;
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterKey>("all");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [sortKey, setSortKey] = useState<SortKey>("expiresAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [modalRow, setModalRow] = useState<SubscriptionRow | null>(null);
@@ -153,14 +157,14 @@ export default function AdminSubscriptionsClient({
       });
   }, [subscriptions, filter, search, sortKey, sortDir]);
 
-  async function handleAction(userId: string, action: "activate_free" | "extend" | "deactivate") {
+  async function handleAction(row: SubscriptionRow, action: "activate_free" | "extend" | "deactivate") {
     setActionLoading(action);
     setActionError("");
     try {
       const res = await fetch("/api/admin/subscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action }),
+        body: JSON.stringify({ userId: row.userId, listingId: row.listingId, action }),
       });
       if (!res.ok) {
         const d = await res.json() as { error?: string };
@@ -246,6 +250,9 @@ export default function AdminSubscriptionsClient({
                   Proprio
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide whitespace-nowrap">
+                  Annonce
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide whitespace-nowrap">
                   Annonces
                 </th>
                 <th
@@ -302,6 +309,11 @@ export default function AdminSubscriptionsClient({
                       </div>
                     </td>
 
+                    {/* Annonce */}
+                    <td className="px-4 py-3 text-charcoal-600 truncate max-w-[160px]">
+                      {s.listingTitle}
+                    </td>
+
                     {/* Annonces */}
                     <td className="px-4 py-3 text-charcoal-600 font-medium">
                       {s.totalListings}
@@ -345,7 +357,7 @@ export default function AdminSubscriptionsClient({
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-charcoal-400">
+                  <td colSpan={8} className="px-4 py-10 text-center text-charcoal-400">
                     Aucun abonnement ne correspond aux filtres sélectionnés.
                   </td>
                 </tr>
@@ -399,6 +411,10 @@ export default function AdminSubscriptionsClient({
                 <span className={`font-medium ${TYPE_BADGE[modalRow.type].text}`}>{TYPE_BADGE[modalRow.type].label}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-charcoal-400">Annonce</span>
+                <span className="text-charcoal-600 truncate max-w-[220px]">{modalRow.listingTitle}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-charcoal-400">Statut</span>
                 <span className={`font-medium ${STATUS_BADGE[modalRow.status].text}`}>{STATUS_BADGE[modalRow.status].label}</span>
               </div>
@@ -416,21 +432,21 @@ export default function AdminSubscriptionsClient({
 
             <div className="space-y-2">
               <button
-                onClick={() => handleAction(modalRow.userId, "activate_free")}
+                onClick={() => handleAction(modalRow, "activate_free")}
                 disabled={!!actionLoading || modalRow.status === "active"}
                 className="w-full text-sm font-semibold px-4 py-2.5 rounded-xl bg-[#f5f6ec] text-primary hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {actionLoading === "activate_free" ? "En cours…" : "Activer abonnement gratuit"}
               </button>
               <button
-                onClick={() => handleAction(modalRow.userId, "extend")}
+                onClick={() => handleAction(modalRow, "extend")}
                 disabled={!!actionLoading}
                 className="w-full text-sm font-semibold px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {actionLoading === "extend" ? "En cours…" : "Prolonger d'un an"}
               </button>
               <button
-                onClick={() => handleAction(modalRow.userId, "deactivate")}
+                onClick={() => handleAction(modalRow, "deactivate")}
                 disabled={!!actionLoading || modalRow.status === "canceled"}
                 className="w-full text-sm font-semibold px-4 py-2.5 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
