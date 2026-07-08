@@ -17,12 +17,36 @@ type FeaturedRow = {
   host_id: string;
   type: string;
   region: string | null;
+  month: string;
   listings: { title: string } | { title: string }[] | null;
 };
 
 function listingTitleOf(row: FeaturedRow): string | undefined {
   const field = row.listings;
   return Array.isArray(field) ? field[0]?.title : field?.title;
+}
+
+// Un boost déjà renouvelé (même annonce+type+région, mois strictement postérieur,
+// statut actif ou en attente) rend les emails J-3/expiration de CETTE ligne obsolètes —
+// le proprio a déjà agi, lui envoyer "c'est terminé" serait contradictoire.
+async function hasNewerRenewal(
+  supabase: ReturnType<typeof adminSupabase>,
+  featured: FeaturedRow
+): Promise<boolean> {
+  let query = supabase
+    .from("featured_listings")
+    .select("id", { count: "exact", head: true })
+    .eq("listing_id", featured.listing_id)
+    .eq("type", featured.type)
+    .in("status", ["active", "pending"])
+    .gt("month", featured.month);
+
+  if (featured.type === "region") {
+    query = query.eq("region", featured.region);
+  }
+
+  const { count } = await query;
+  return (count ?? 0) > 0;
 }
 
 // GET — called by Vercel cron (runs once daily):
@@ -52,11 +76,12 @@ export async function GET(request: NextRequest) {
 
   // ── Rappel J-3 : vedettes actives se terminant dans 3 jours ────────────────
   let reminderSent = 0;
+  let reminderSkipped = 0;
   const threeDaysFromNow = new Date(Date.now() + 3 * DAY_MS).toISOString();
 
   const { data: expiringSoon, error: expiringError } = await supabase
     .from("featured_listings")
-    .select("id, listing_id, host_id, type, region, listings(title)")
+    .select("id, listing_id, host_id, type, region, month, listings(title)")
     .eq("status", "active")
     .lte("expires_at", threeDaysFromNow)
     .is("reminder_3d_sent_at", null);
@@ -65,6 +90,12 @@ export async function GET(request: NextRequest) {
     console.error("[expire-featured] échec lecture vedettes bientôt terminées", expiringError);
   } else {
     for (const featured of (expiringSoon ?? []) as FeaturedRow[]) {
+      if (await hasNewerRenewal(supabase, featured)) {
+        await supabase.from("featured_listings").update({ reminder_3d_sent_at: new Date().toISOString() }).eq("id", featured.id);
+        reminderSkipped++;
+        continue; // déjà renouvelé — pas de rappel inutile, mais on arrête de réévaluer cette ligne
+      }
+
       const { data: profile } = await supabase
         .from("users")
         .select("email, name, preferred_language")
@@ -101,11 +132,12 @@ export async function GET(request: NextRequest) {
   // de cette colonne, une notification rétroactive à toutes les vedettes déjà
   // expirées depuis longtemps (expired_email_sent_at serait NULL pour toutes).
   let expiredEmailSent = 0;
+  let expiredSkipped = 0;
   const threeDaysAgo = new Date(Date.now() - 3 * DAY_MS).toISOString();
 
   const { data: justExpired, error: justExpiredError } = await supabase
     .from("featured_listings")
-    .select("id, listing_id, host_id, type, region, listings(title)")
+    .select("id, listing_id, host_id, type, region, month, listings(title)")
     .eq("status", "expired")
     .gte("expires_at", threeDaysAgo)
     .is("expired_email_sent_at", null);
@@ -114,6 +146,12 @@ export async function GET(request: NextRequest) {
     console.error("[expire-featured] échec lecture vedettes expirées", justExpiredError);
   } else {
     for (const featured of (justExpired ?? []) as FeaturedRow[]) {
+      if (await hasNewerRenewal(supabase, featured)) {
+        await supabase.from("featured_listings").update({ expired_email_sent_at: new Date().toISOString() }).eq("id", featured.id);
+        expiredSkipped++;
+        continue; // déjà renouvelé — pas de notification contradictoire, mais on arrête de réévaluer cette ligne
+      }
+
       const { data: profile } = await supabase
         .from("users")
         .select("email, name, preferred_language")
@@ -145,5 +183,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, expired: data?.length ?? 0, reminderSent, expiredEmailSent });
+  return NextResponse.json({ ok: true, expired: data?.length ?? 0, reminderSent, reminderSkipped, expiredEmailSent, expiredSkipped });
 }
