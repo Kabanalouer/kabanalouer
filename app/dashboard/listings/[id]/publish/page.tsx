@@ -27,7 +27,7 @@ export default async function PublishPage({ params, searchParams }: Props) {
     const { data: subscription } = await supabase
       .from("subscriptions")
       .select("status")
-      .eq("user_id", user.id)
+      .eq("listing_id", id)
       .maybeSingle();
 
     if (subscription?.status === "active") {

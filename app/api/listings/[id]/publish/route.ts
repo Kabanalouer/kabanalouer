@@ -11,10 +11,21 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
+  const { data: ownedListing } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .maybeSingle();
+
+  if (!ownedListing) {
+    return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+  }
+
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("status")
-    .eq("user_id", user.id)
+    .eq("listing_id", id)
     .maybeSingle();
 
   if (subscription?.status !== "active") {
