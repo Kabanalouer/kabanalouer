@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
+import { sendFeaturedConfirmationEmail, type FeaturedType } from "@/lib/emails/featuredListing";
 import { centsForTier, type PriceTier } from "@/lib/subscriptionPricing";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
@@ -75,15 +76,12 @@ export async function POST(request: NextRequest) {
 
         if (existing) break;
 
-        let region: string | null = null;
-        if (type === "region") {
-          const { data: listing } = await supabase
-            .from("listings")
-            .select("region")
-            .eq("id", listingId)
-            .single();
-          region = listing?.region ?? null;
-        }
+        const { data: listingRow } = await supabase
+          .from("listings")
+          .select("title, region")
+          .eq("id", listingId)
+          .single();
+        const region = type === "region" ? (listingRow?.region ?? null) : null;
 
         const [year, monthNum] = month.split("-").map(Number);
         const lastDay = new Date(Date.UTC(year, monthNum, 0)).getUTCDate();
@@ -104,6 +102,29 @@ export async function POST(request: NextRequest) {
         if (featuredError) {
           console.error("checkout.session.completed (vedette): échec insert featured_listings", featuredError);
           return NextResponse.json({ error: featuredError.message }, { status: 500 });
+        }
+
+        const { data: hostProfile } = await supabase
+          .from("users")
+          .select("email, name, preferred_language")
+          .eq("id", hostId)
+          .single();
+
+        if (hostProfile?.email) {
+          const lang: "fr" | "en" = hostProfile.preferred_language === "en" ? "en" : "fr";
+          const { error: emailError } = await sendFeaturedConfirmationEmail({
+            email: hostProfile.email,
+            preferredLanguage: lang,
+            firstName: hostProfile.name?.trim().split(/\s+/)[0],
+            listingId,
+            listingTitle: listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
+            type: type as FeaturedType,
+            region,
+            month,
+          });
+          if (emailError) {
+            console.error("checkout.session.completed (vedette): échec envoi email de confirmation", emailError);
+          }
         }
 
         break;

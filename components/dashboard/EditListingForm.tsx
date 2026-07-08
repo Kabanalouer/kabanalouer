@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import PreviewModal from "./PreviewModal";
@@ -193,7 +193,10 @@ export default function EditListingForm({
     ...initialData,
   });
 
-  const [activeSection, setActiveSection] = useState<SectionId>("photos");
+  const searchParams = useSearchParams();
+  const [activeSection, setActiveSection] = useState<SectionId>(
+    searchParams.get("section") === "vedette" ? "vedette" : "photos"
+  );
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
