@@ -40,22 +40,22 @@ const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: (listingTitle) => `Ta vedette pour ${listingTitle} est activée`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, ta vedette pour ${listingTitle} est activée`,
+    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est activé`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est activé`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ta vedette est activée !",
+    heading: "Le boost de ton annonce est activé !",
     body: (listingTitle, monthLabel, placement) =>
-      `Félicitations ! Ta vedette pour ${listingTitle} est maintenant active pour ${monthLabel}. Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs. Ta vedette couvre le mois en cours — un petit rappel te sera envoyé avant son terme, pour que tu gardes le contrôle facilement.`,
+      `Félicitations ! Le boost de ${listingTitle} est maintenant actif pour ${monthLabel}. Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs. Ton boost couvre le mois en cours — un petit rappel te sera envoyé avant son terme, pour que tu gardes le contrôle facilement.`,
     buttonLabel: "Voir mon annonce",
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
-    subjectGeneric: (listingTitle) => `Your featured spot for ${listingTitle} is now active`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your featured spot for ${listingTitle} is now active`,
+    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} is now active`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} is now active`,
     greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your featured spot is active!",
+    heading: "Your ad boost is active!",
     body: (listingTitle, monthLabel, placement) =>
-      `Congratulations! Your featured spot for ${listingTitle} is now active for ${monthLabel}. Your listing now appears in ${placement}, with extra visibility and a priority spot in what travelers see first. Your featured spot covers the current month — we'll send you a quick reminder before it ends, so you stay easily in control.`,
+      `Congratulations! Your boost for ${listingTitle} is now active for ${monthLabel}. Your listing now appears in ${placement}, with extra visibility and a priority spot in what travelers see first. Your boost covers the current month — we'll send you a quick reminder before it ends, so you stay easily in control.`,
     buttonLabel: "View my listing",
     footerNote: "Got a question? Just reply to this email — we're happy to help.",
   },
@@ -116,23 +116,23 @@ const EXPIRING_TEMPLATE: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: (listingTitle) => `Ta vedette ${listingTitle} se termine dans 3 jours`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, ta vedette ${listingTitle} se termine dans 3 jours`,
+    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ta vedette se termine dans 3 jours",
+    heading: "Le boost de ton annonce se termine dans 3 jours",
     body: (listingTitle, placement) =>
-      `${listingTitle} bénéficie en ce moment d'une visibilité vedette dans ${placement}. Les annonces vedettes reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ta vedette dès maintenant pour l'éviter.`,
-    buttonLabel: "Renouveler ma vedette",
+      `${listingTitle} bénéficie en ce moment d'un boost de visibilité dans ${placement}. Les annonces boostées reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ton boost dès maintenant pour l'éviter.`,
+    buttonLabel: "Renouveler mon boost",
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
-    subjectGeneric: (listingTitle) => `Your featured spot for ${listingTitle} ends in 3 days`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your featured spot for ${listingTitle} ends in 3 days`,
+    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} ends in 3 days`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} ends in 3 days`,
     greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your featured spot ends in 3 days",
+    heading: "Your ad boost ends in 3 days",
     body: (listingTitle, placement) =>
-      `${listingTitle} currently benefits from featured visibility in ${placement}. Featured listings generally get significantly more visits than standard listings. In 3 days, your listing will go back to standard and lose that priority visibility. Renew your featured spot now to avoid that.`,
-    buttonLabel: "Renew my featured spot",
+      `${listingTitle} currently benefits from a visibility boost in ${placement}. Boosted listings generally get significantly more visits than standard listings. In 3 days, your listing will go back to standard and lose that priority visibility. Renew your boost now to avoid that.`,
+    buttonLabel: "Renew my boost",
     footerNote: "Got a question? Just reply to this email — we're happy to help.",
   },
 };
@@ -189,23 +189,23 @@ const EXPIRED_TEMPLATE: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: (listingTitle) => `Ta vedette ${listingTitle} est maintenant terminée`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, ta vedette ${listingTitle} est maintenant terminée`,
+    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est maintenant terminé`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est maintenant terminé`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ta vedette est maintenant terminée",
+    heading: "Le boost de ton annonce est terminé",
     body: (listingTitle, placement) =>
-      `La période vedette de ${listingTitle} est terminée — ton annonce est repassée en affichage standard. Elle n'apparaît plus dans ${placement}. Réactive ta vedette pour lui redonner cette visibilité prioritaire.`,
-    buttonLabel: "Réactiver ma vedette",
+      `La période de boost de ${listingTitle} est terminée — ton annonce est repassée en affichage standard. Elle n'apparaît plus dans ${placement}. Réactive ton boost pour lui redonner cette visibilité prioritaire.`,
+    buttonLabel: "Réactiver mon boost",
     footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
-    subjectGeneric: (listingTitle) => `Your featured spot for ${listingTitle} has ended`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your featured spot for ${listingTitle} has ended`,
+    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} has ended`,
+    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} has ended`,
     greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your featured spot has ended",
+    heading: "Your ad boost has ended",
     body: (listingTitle, placement) =>
-      `The featured period for ${listingTitle} has ended — your listing is back to standard display. It no longer appears in ${placement}. Reactivate your featured spot to give it back that priority visibility.`,
-    buttonLabel: "Reactivate my featured spot",
+      `The boost period for ${listingTitle} has ended — your listing is back to standard display. It no longer appears in ${placement}. Reactivate your boost to give it back that priority visibility.`,
+    buttonLabel: "Reactivate my boost",
     footerNote: "Got a question? Just reply to this email — we're happy to help.",
   },
 };

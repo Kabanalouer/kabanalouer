@@ -97,7 +97,7 @@ function EmptySlot({ onAdd }: { onAdd: () => void }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       </div>
-      <span className="text-sm text-charcoal-400 group-hover:text-primary/70">Emplacement libre — Ajouter une vedette</span>
+      <span className="text-sm text-charcoal-400 group-hover:text-primary/70">Emplacement libre — Ajouter un boost</span>
     </button>
   );
 }
@@ -214,11 +214,11 @@ export default function AdminFeaturedClient({
       {/* Metrics */}
       <div className="grid grid-cols-2 gap-4 max-w-sm">
         <div className="bg-white rounded-xl border border-[#ebebeb] px-5 py-4">
-          <p className="text-xs text-charcoal-400 mb-1">Vedettes accueil actives</p>
+          <p className="text-xs text-charcoal-400 mb-1">Boosts accueil actifs</p>
           <p className="text-2xl font-bold text-charcoal-800">{totalHomeActive}</p>
         </div>
         <div className="bg-white rounded-xl border border-[#ebebeb] px-5 py-4">
-          <p className="text-xs text-charcoal-400 mb-1">Vedettes région actives</p>
+          <p className="text-xs text-charcoal-400 mb-1">Boosts région actifs</p>
           <p className="text-2xl font-bold text-charcoal-800">{totalRegionActive}</p>
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function AdminFeaturedClient({
         <div className="mb-4">
           <h2 className="text-lg font-bold text-charcoal-800">Par région</h2>
           <p className="text-sm text-charcoal-400 mt-0.5">
-            {totalRegionActive} vedette{totalRegionActive !== 1 ? "s" : ""} active{totalRegionActive !== 1 ? "s" : ""} · 49 $/mois
+            {totalRegionActive} boost{totalRegionActive !== 1 ? "s" : ""} actif{totalRegionActive !== 1 ? "s" : ""} · 49 $/mois
           </p>
         </div>
         <div className="space-y-6">
@@ -291,7 +291,7 @@ export default function AdminFeaturedClient({
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-charcoal-800 text-base">
-                Ajouter une vedette —{" "}
+                Ajouter un boost —{" "}
                 {modal.type === "home" ? "Page d'accueil" : modal.region ?? "Région"}
               </h2>
               <button

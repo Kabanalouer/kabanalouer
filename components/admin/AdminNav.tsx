@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { label: "Propriétaires", href: "/admin/hosts" },
   { label: "Voyageurs", href: "/admin/travelers" },
   { label: "Abonnements", href: "/admin/subscriptions" },
-  { label: "Vedettes", href: "/admin/featured" },
+  { label: "Boosts", href: "/admin/featured" },
   { label: "Messages de contact", href: "/admin/messages" },
 ];
 

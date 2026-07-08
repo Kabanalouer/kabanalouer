@@ -6,7 +6,7 @@ import AdminFeaturedClient, {
   type PickableListing,
 } from "@/components/admin/AdminFeaturedClient";
 
-export const metadata = { title: "Vedettes — Administration" };
+export const metadata = { title: "Boosts — Administration" };
 
 export default async function AdminFeaturedPage() {
   const supabase = await createClient();
@@ -71,9 +71,9 @@ export default async function AdminFeaturedPage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-charcoal-800">Vedettes</h1>
+        <h1 className="text-2xl font-bold text-charcoal-800">Boosts</h1>
         <p className="text-sm text-charcoal-400 mt-0.5">
-          Gérez les emplacements vedettes de la page d&apos;accueil et des pages région.
+          Gérez les emplacements de boost de la page d&apos;accueil et des pages région.
         </p>
       </div>
       <AdminFeaturedClient

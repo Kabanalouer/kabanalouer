@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (ownFeatured) {
-    return NextResponse.json({ error: "Cette annonce a déjà une vedette pour ce mois." }, { status: 409 });
+    return NextResponse.json({ error: "Cette annonce a déjà un boost pour ce mois." }, { status: 409 });
   }
 
   let slotQuery = supabase
