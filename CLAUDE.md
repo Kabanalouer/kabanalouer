@@ -322,7 +322,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 
 ---
 
-## 13. Dernière session — 2026-07-08
+## 13. Dernière session — 2026-07-08 / 2026-07-09
 
 ### Fonctionnalités complétées
 
@@ -352,6 +352,11 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 - **Toute restructuration de contrainte d'unicité** (comme `subscriptions` par `user_id` → `listing_id` le 2026-07-07) doit être suivie d'un grep systématique de tous les `.eq("user_id", ...)` / `onConflict: "user_id"` sur la table concernée — le panneau admin avait été oublié lors du cutover initial.
 - **`<object type="image/svg+xml">` est bloqué par une CSP stricte** (`object-src 'none'`) — utiliser `<img>` pour des SVG statiques comme des logos.
 - **Skills plugin installés via `/plugin` + `/reload-plugins`** peuvent afficher "0 skills" dans le message de confirmation tout en étant réellement chargés et utilisables dans la session — vérifier directement l'accès au `SKILL.md` plutôt que de se fier au message.
+
+### Suite de session — 2026-07-09
+
+- **Outillage** : installation des plugins `vercel`, `stripe`, `typescript-lsp`, `security-guidance`, `code-simplifier`, `hookify`, `claude-md-management` (via `/plugin` + `/reload-plugins`)
+- Bug SITE_URL, note iCal et politique d'approbation traités le même jour — voir sections 10, 14 et 15 (déjà committés séparément, `c64d582`/`65652aa`)
 
 ### Prochaine étape immédiate
 
