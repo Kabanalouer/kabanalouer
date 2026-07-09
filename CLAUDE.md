@@ -282,7 +282,6 @@ ANTHROPIC_API_KEY
 RESEND_API_KEY
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
-NEXT_PUBLIC_VERCEL_URL             # https://kabanalouer.ca
 ```
 
 ---
@@ -396,5 +395,18 @@ Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Rest
 - Traitement de l'espace vide sur les sections courtes du dashboard
 - État vide de la section "Aperçu"
 - Incohérence de l'ordre des CTA mobile vs desktop
+
+---
+
+## 15. Règles d'approbation (mise à jour le 2026-07-09)
+
+**Approbation manuelle stricte et obligatoire — jamais d'auto-approbation, même en mode "Yes, allow all edits during this session" :**
+- `git push`
+- Toute écriture Supabase directe (INSERT/UPDATE/DELETE, migrations SQL)
+- Toute action Stripe (paiements réels ou en mode Test, changements de configuration)
+
+**Pour tout le reste, Simon peut utiliser "Yes, allow all edits during this session" librement, sans repasser par une approbation au cas par cas :** édition de fichiers, lecture/exploration de code, `npx tsc --noEmit`, `git commit` local, création/suppression de fichiers temporaires de script (`.tmp-*.mjs`).
+
+Remplace l'ancienne règle ("toujours manuel, par étape, aucune auto-approbation de session") en vigueur jusqu'à cette date.
 
 Aussi notés pendant la revue, hors scope (pas encore investigués) : 2 avertissements console Playwright détectés sur les sections Localisation/Infos générales/Promotions.

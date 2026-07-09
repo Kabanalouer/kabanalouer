@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { consolidateRanges, generateIcal } from "@/lib/ical";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // GET /api/listings/[id]/ical
 // Returns an iCal file with all blocked dates for a listing
@@ -26,7 +27,7 @@ export async function GET(
   const sortedDates = (availability ?? []).map((a) => a.date as string);
   const ranges = consolidateRanges(sortedDates);
 
-  const appUrl = process.env.NEXT_PUBLIC_VERCEL_URL ?? "https://kabanalouer.vercel.app";
+  const appUrl = SITE_URL;
   const icalContent = generateIcal({
     listingTitle: listing.title,
     listingId: id,

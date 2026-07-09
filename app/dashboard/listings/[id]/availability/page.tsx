@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { SITE_URL } from "@/lib/siteUrl";
 import AvailabilityCalendar from "@/components/dashboard/AvailabilityCalendar";
 import ICalSync from "@/components/dashboard/ICalSync";
 
@@ -38,7 +39,7 @@ export default async function AvailabilityPage({ params }: Props) {
 
   const blocked = (availability ?? []) as { date: string; source: "manual" | "ical" }[];
 
-  const appUrl = process.env.NEXT_PUBLIC_VERCEL_URL ?? "https://kabanalouer.vercel.app";
+  const appUrl = SITE_URL;
   const exportUrl = `${appUrl}/api/listings/${id}/ical`;
 
   return (
