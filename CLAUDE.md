@@ -396,6 +396,10 @@ Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Rest
 - État vide de la section "Aperçu"
 - Incohérence de l'ordre des CTA mobile vs desktop
 
+### Export iCal — lien jamais affiché sur la page Disponibilités (2026-07-09)
+
+`exportUrl` dans `app/dashboard/listings/[id]/availability/page.tsx` est calculée mais jamais affichée à l'utilisateur (code mort préexistant, pas introduit aujourd'hui) — `ICalSync` ne reçoit que `listingId`/`initialUrl`/`initialLastSync`, pas d'export visible sur cette page. À déterminer : est-ce voulu (export pas encore livré comme fonctionnalité) ou un oubli d'intégration. Non urgent.
+
 ---
 
 ## 15. Règles d'approbation (mise à jour le 2026-07-09)
