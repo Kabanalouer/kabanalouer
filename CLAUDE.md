@@ -181,7 +181,7 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - **Score d'optimisation** (0–100) : `lib/listingScore.ts` — source unique de vérité, partagé entre `AnalyseSection.tsx` et `EditListingForm.tsx`
 - **Conseils IA** : `/api/ai/listing-advice` — `claude-sonnet-4-6`, retourne 3 conseils JSON
 - **Module promotions** : 3 types (rabais, durée, dernière minute), badges sur les cartes publiques
-- **Module vedettes** : région (49 $/mois) et accueil (99 $/mois) — Stripe à intégrer (pas encore fait)
+- **Module vedettes ("boost" côté proprio/admin, "vedette" resté côté voyageur/public)** : région (49 $/mois) et accueil (99 $/mois), Stripe déjà intégré. Séquence email complète ajoutée le 2026-07-08 (confirmation d'achat, rappel J-3, expiration — `lib/emails/featuredListing.ts`, `app/api/cron/expire-featured/route.ts`), avec anti-doublon (`reminder_3d_sent_at`/`expired_email_sent_at` sur `featured_listings`) et un garde-fou `hasNewerRenewal()` qui bloque l'envoi d'un rappel/expiration si le proprio a déjà renouvelé pour un mois ultérieur.
 - **iCal sync** bidirectionnel (`/api/sync-ical`)
 - **Photos chambres** : drag & drop, compression WebP, upload bucket `listing-photos`
 
@@ -316,44 +316,47 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `backfill-subscriptions-listing-id.sql` | Remplit `listing_id` sur les lignes `subscriptions` existantes (étape 3/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `restructure-subscriptions-per-listing-cutover.sql` | Cutover structurel : `DROP CONSTRAINT` sur `user_id`, `ADD CONSTRAINT UNIQUE`/`SET NOT NULL` sur `listing_id` (étape 4/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-listings-winback-columns.sql` | Ajoute `unpublished_at`/`reminder_winback_3d_sent`/`14d_sent` à `listings` (séquence de retour, étape 8/10) | Exécuté et confirmé en prod le 2026-07-07 |
+| `add-featured-reminder-tracking.sql` | Ajoute `reminder_3d_sent_at`/`expired_email_sent_at` à `featured_listings` (séquence email boost) | À exécuter dans Supabase Dashboard si pas déjà fait |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
 
 ---
 
-## 13. Dernière session — 2026-07-02
+## 13. Dernière session — 2026-07-08
 
 ### Fonctionnalités complétées
 
-**Correction du rôle proprio à l'inscription**
-- Bug : les proprios arrivaient en mode voyageur après confirmation email ou connexion Google
-- Fix A (`signup/page.tsx`) : rôle passé dans l'URL de callback Google OAuth (`?role=host`) plutôt que dans `queryParams` (qui est envoyé à Google et jamais retourné)
-- Fix B (`auth/callback/route.ts`) : le callback lit `user.user_metadata.role` (email) ou le param URL `role` (Google) et met à jour `public.users` immédiatement
+**Séquence email boost (3 emails)** — `lib/emails/featuredListing.ts`, webhook et cron étendus, voir section 9 (Module vedettes). Migration `add-featured-reminder-tracking.sql` fournie mais pas exécutée automatiquement.
 
-**Intégration Stripe Checkout complète**
-- `app/api/stripe/checkout/route.ts` : Price ID réel branché, vérification rôle `host`, création/récupération customer Stripe
-- `app/api/stripe/webhook/route.ts` : bug `expires_at` corrigé → `subscription.items.data[0].current_period_end` ; `is_free_launch: false` ajouté
-- `app/dashboard/subscription/page.tsx` : trois états distincts — offre de lancement (badge gratuit), abonné payant (bouton portail), inactif (bouton Stripe)
-- `PublishUI.tsx` : prix corrigé 199 → 299 $/an
+**Renommage "vedette" → "boost"** dans tous les textes proprio/admin (dashboard, emails, panneau admin) — le mot "vedette" reste utilisé côté voyageur (nom de la section publique) et dans tous les identifiants techniques (table `featured_listings`, paramètre d'URL `?section=vedette`, etc.), volontairement inchangés.
 
-**Cloudflare Turnstile**
-- `TurnstileWidget.tsx` : composant avec `strategy="afterInteractive"` + `onLoad` callback (fix du widget qui n'apparaissait pas)
-- Intégré sur `app/(auth)/signup/page.tsx` et `app/(auth)/login/page.tsx`
+**Audit QA complet** (playwright-cli + skill webapp-testing, en lecture seule sauf autorisation explicite) et corrections des bugs trouvés :
+- Cron envoyant un rappel/expiration boost contradictoire après un renouvellement anticipé (`hasNewerRenewal()`)
+- Phrase incorrecte "couvre le mois en cours" dans l'email de confirmation boost
+- Faux témoignages retirés de `/devenir-hote` (contenu fictif, jamais de vrais avis clients)
+- Logos en `<object type="image/svg+xml">` bloqués par la CSP (`object-src 'none'`) → remplacés par `<img>` à 6 emplacements
+- Espace manquant + traduction anglaise manquante dans le texte vide des pages région (`RegionLanding.tsx`)
+- Titres de page génériques corrigés (login, signup, mot de passe, abonnement) — split en `page.tsx` (server, `metadata`) + composant client, pattern déjà utilisé pour `EditListingForm.tsx`
+- Nouvelle page 404 (`app/not-found.tsx`)
+- Un proprio en offre de lancement gratuite ne pouvait pas passer à un abonnement payant (bloqué en 409) — `app/api/stripe/checkout/route.ts` bloquait le checkout dès qu'une ligne `subscriptions` existait pour l'annonce, même si elle était `is_free_launch: true` ; corrigé pour ne bloquer que si `existingSub?.status === "active" && existingSub?.is_free_launch === false`
 
-**Audit de sécurité**
-- Headers HTTP, rate limiting IA, CRON_SECRET, SSRF iCal, validation formulaires serveur, restriction MIME avatars, Origin check sur `/api/views`
+**Test de bout en bout réel** de la séquence boost (achat → rappel J-3 → expiration) en production, paiement Stripe en mode Test, chaque écriture Supabase directe montrée et approuvée individuellement avant exécution.
+
+**Bug `user_id` vs `listing_id` sur `subscriptions`** — depuis le cutover du 2026-07-07 (`UNIQUE(listing_id)`, plus par proprio), 7 emplacements filtraient encore par `user_id` avec `.maybeSingle()`, qui plante avec une erreur `PGRST116` dès qu'un proprio a 2+ annonces payantes. Corrigé en 2 lots : 3 fichiers simples (dont `app/api/listings/[id]/publish/route.ts` — vérification de propriété de l'annonce déplacée avant la vérification d'abonnement, filtre `user_id` → `listing_id`) + suppression du code mort `ListingForm.tsx`, puis refonte du panneau admin (`/admin/subscriptions`, `/api/admin/subscriptions`, `/admin/hosts`) — voir détails dans l'historique git, commits de "fix: corrige le bug user_id/listing_id" et "fix: corrige le panneau admin pour l'architecture per-listing". `/admin/hosts` a perdu son modale d'action (cassée par la même refonte) et renvoie maintenant vers `/admin/subscriptions?q=...` pour toute action.
+
+**Revue visuelle du dashboard proprio** avec les skills `frontend-design` + `ui-ux-pro-max` (analyse uniquement, palette/police/boutons du design system non négociables) — 2 corrections "petites et sûres" appliquées : couleur du toggle %/$ dans Promotions (`bg-charcoal-800` → `bg-primary`), état désactivé neutre du bouton Sauvegarder du Calendrier (`bg-charcoal-200`/`text-charcoal-400` au lieu d'une opacité réduite sur `bg-primary`).
 
 ### Leçons techniques retenues
 
-- **Stripe SDK v22+ :** `current_period_end` a été déplacé de `Subscription` vers `SubscriptionItem`. Utiliser `subscription.items.data[0].current_period_end`.
-- **Google OAuth + rôle :** `queryParams` dans `signInWithOAuth()` sont ajoutés à l'URL envoyée à Google — ils ne reviennent jamais dans le callback Supabase. Passer le rôle dans `redirectTo` à la place.
-- **Turnstile timing :** `strategy="lazyOnload"` charge pendant l'idle du navigateur (peu fiable sur des pages simples). Toujours utiliser `strategy="afterInteractive"` avec `onLoad` callback qui déclenche le render du widget.
-- **`text-align` est hérité en CSS :** un `text-center` sur un ancêtre affecte les dropdowns positionnés en absolu. Toujours ajouter `text-left` explicitement sur les éléments de texte dans les dropdowns.
+- **`.maybeSingle()` sur 2+ lignes ne retourne pas silencieusement `undefined`** — il retourne `{data: null, error: {code: "PGRST116"}, status: 406}` (vérifié dans `@supabase/postgrest-js` v2.105.4). Le bug `user_id`/`listing_id` n'était pas silencieux, juste jamais vérifié par le code appelant.
+- **Toute restructuration de contrainte d'unicité** (comme `subscriptions` par `user_id` → `listing_id` le 2026-07-07) doit être suivie d'un grep systématique de tous les `.eq("user_id", ...)` / `onConflict: "user_id"` sur la table concernée — le panneau admin avait été oublié lors du cutover initial.
+- **`<object type="image/svg+xml">` est bloqué par une CSP stricte** (`object-src 'none'`) — utiliser `<img>` pour des SVG statiques comme des logos.
+- **Skills plugin installés via `/plugin` + `/reload-plugins`** peuvent afficher "0 skills" dans le message de confirmation tout en étant réellement chargés et utilisables dans la session — vérifier directement l'accès au `SKILL.md` plutôt que de se fier au message.
 
 ### Prochaine étape immédiate
 
-Tester le paiement Stripe de bout en bout avec une carte de test Stripe (ex. `4242 4242 4242 4242`), vérifier que l'abonnement s'active dans la table `subscriptions`, et remettre `is_free_launch=true` sur `info@chaletauthentik.com` si le test est concluant.
+Aucune tâche en cours à la fin de cette session — voir section 14 pour les points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
 
 ---
 
@@ -377,7 +380,6 @@ Mais Stripe refuse d'envoyer un reçu à une vraie adresse cliente tant que le c
 **Reste à faire :**
 - Grand test complet des emails en conditions réelles
 - Templates Supabase Auth bilingues (encore en anglais générique)
-- Email de confirmation d'achat vedette (dépend du Stripe Checkout vedettes, pas encore fait)
 
 ### Langue préférée (`preferred_language`) — en attente de test manuel (2026-07-07)
 
@@ -386,3 +388,13 @@ Implémenté (commit `4eabe82`) mais pas encore testé en conditions réelles :
 - Redirection automatique dans le middleware pour les utilisateurs connectés sous `/dashboard`, `/messages`, `/favoris` si l'URL ne correspond pas à `preferred_language`
 
 À valider lors du grand test de bout en bout : sélecteur FR/EN dans le profil (mise à jour + redirection immédiate + persistance après refresh), redirection automatique dans l'espace connecté, et confirmer que les pages publiques restent librement navigables via le sélecteur du footer même connecté.
+
+### Revue visuelle du dashboard proprio (frontend-design + ui-ux-pro-max) — findings non traités (2026-07-08)
+
+Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Restent en suspens, à discuter avant d'y toucher :
+- Regroupement des "Caractéristiques" dans l'édition d'annonce
+- Traitement de l'espace vide sur les sections courtes du dashboard
+- État vide de la section "Aperçu"
+- Incohérence de l'ordre des CTA mobile vs desktop
+
+Aussi notés pendant la revue, hors scope (pas encore investigués) : 2 avertissements console Playwright détectés sur les sections Localisation/Infos générales/Promotions.
