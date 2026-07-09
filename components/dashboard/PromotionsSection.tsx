@@ -213,14 +213,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <button
                         type="button"
                         onClick={() => setRabaisUnit("percent")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
                         onClick={() => setRabaisUnit("amount")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
                       </button>
@@ -318,14 +318,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <button
                         type="button"
                         onClick={() => setLmUnit("percent")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
                         onClick={() => setLmUnit("amount")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
                       </button>

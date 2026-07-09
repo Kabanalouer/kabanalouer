@@ -198,7 +198,11 @@ export default function AvailabilityCalendar({
             <button
               onClick={handleSave}
               disabled={!isDirty || saving}
-              className="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-40"
+              className={`text-sm font-semibold px-4 py-2 rounded-xl transition-colors ${
+                !isDirty || saving
+                  ? "bg-charcoal-200 text-charcoal-400 cursor-not-allowed"
+                  : "bg-primary text-white hover:bg-primary-dark"
+              }`}
             >
               {saving ? "Sauvegarde…" : "Sauvegarder"}
             </button>
