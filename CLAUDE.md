@@ -322,7 +322,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 
 ---
 
-## 13. Dernière session — 2026-07-08 / 2026-07-09
+## 13. Dernière session — 2026-07-08 au 2026-07-10
 
 ### Fonctionnalités complétées
 
@@ -358,13 +358,34 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 - **Outillage** : installation des plugins `vercel`, `stripe`, `typescript-lsp`, `security-guidance`, `code-simplifier`, `hookify`, `claude-md-management` (via `/plugin` + `/reload-plugins`)
 - Bug SITE_URL, note iCal et politique d'approbation traités le même jour — voir sections 10, 14 et 15 (déjà committés séparément, `c64d582`/`65652aa`)
 
+### Session du 2026-07-10 (Cowork)
+
+**Bug critique corrigé** : les compteurs de badges (messages non lus, avis sans réponse) dans la Navbar et la barre de navigation mobile retournaient silencieusement 0 pour tous les proprios — les requêtes Supabase en `HEAD` (`count: exact`) envoyées directement depuis le navigateur retournaient systématiquement une erreur 503 (100 % reproductible, aucune erreur console). Root-causé via sub-agent : seuls `Navbar.tsx` et `DashboardBottomNav.tsx` (client-side, `@/lib/supabase/client`) étaient touchés. Corrigé en créant `app/api/nav/counts/route.ts` (calcul serveur) et en basculant les deux composants sur un simple `fetch()`. Commit `f78cf8c`, vérifié en production (200 au lieu de 503).
+
+**Audit SEO/GEO complet** : correction du schema.org `LodgingBusiness` (checkinTime/checkoutTime, pricing minPrice-only pour éviter d'affirmer un maxPrice inexistant), ajout Organization/WebSite JSON-LD, fixes `robots.ts` (commits `73164d2`, `807726f`). Recherche sur l'éligibilité à Google Vacation Rentals : le modèle peer-to-peer de Kabanalouer est explicitement exclu par Google (réservé aux gestionnaires professionnels multi-propriétés) — pas une piste à poursuivre.
+
+**Audit UX/UI complet** (desktop + mobile, site public et dashboard proprio, via Claude in Chrome) : aucun bug visuel majeur trouvé, corrections précédentes confirmées en production.
+
+**Pages villes bilingues** : ajout de la route EN + métadonnées traduites pour `/chalets/ville/[slug]` (nouveau fichier `app/[locale]/cabins/city/[slug]/page.tsx`, même pattern de ré-export que les pages région), correction de textes restés en français sur `RegionLanding.tsx` malgré le pattern `isEn` déjà en place ailleurs dans le fichier, ajout des URLs EN dans `app/sitemap.ts` (`cityPages`). Commit `a1d4522`.
+
+**Discussions stratégiques (hors code, rien d'implémenté)** :
+- Infolettre : recommandation d'utiliser les fonctionnalités natives Resend (Broadcasts + Audiences) plutôt que Mailchimp, puisque le domaine `kabanalouer.ca` est déjà vérifié chez Resend — éviterait un nouvel abonnement/outil à intégrer.
+- Blogue : deux approches proposées, aucune décision prise — (a) articles en Markdown dans le repo (simple, mais nécessite mon implication à chaque publication), ou (b) table Supabase + section `/dashboard/blog` (plus de travail initial, mais autonomie complète pour Simon).
+- Plan stratégique de lancement complet produit : document Word `Kabanalouer_Plan_Strategique_Lancement.docx` (racine du repo) — positionnement, avatars proprios/voyageurs, accroches, analyse concurrentielle détaillée (concurrents principaux identifiés par Simon : ChaletsAuQuebec.com, Chaletsalouer.com, Trouvermonchalet.ca; concurrents secondaires : RSVPchalets, Reserver.ca, Québec location de chalets, MonsieurChalets, Airbnb/VRBO), plan de recrutement des proprios, plan de communication voyageurs. Cibles chiffrées (KPIs) pas encore définies avec Simon.
+
 ### Prochaine étape immédiate
 
-Aucune tâche en cours à la fin de cette session — voir section 14 pour les points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
+- QA fonctionnel du site (recherche, formulaires, navigation, erreurs console) — pas encore fait.
+- Valider avec Simon : décision infolettre (Resend Broadcasts), décision blogue (Markdown vs table Supabase), cibles chiffrées du plan stratégique.
+- Voir section 14 pour les autres points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
 
 ---
 
 ## 14. Points en suspens
+
+### Titre de test laissé sur une annonce brouillon (2026-07-09)
+
+Lors d'un test QA de la sauvegarde du formulaire "Titre", le titre "Chalet test QA au bord du lac" a été saisi et sauvegardé sur une vraie annonce brouillon de Simon (effet de bord d'un test, pas une donnée fictive isolée). Pas confirmé si corrigé depuis — à vérifier avec Simon, ou il peut simplement remettre son vrai titre.
 
 ### Stripe — reçus/factures bloqués tant que le compte n'est pas activé (2026-07-04)
 
