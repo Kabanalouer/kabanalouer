@@ -407,16 +407,21 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
           priceRange:
             listing.price_high > listing.price_low
               ? `$${listing.price_low} - $${listing.price_high} CAD`
-              : `$${listing.price_low} CAD`,
+              : `$${listing.price_low}+ CAD`,
           // priceRange (ci-dessus) est du texte libre pour l'affichage — makesOffer/priceSpecification
-          // donne en plus un prix structuré (min/max explicites) que Google peut lire de façon fiable.
+          // donne en plus un prix structuré que Google peut lire de façon fiable. Le formulaire proprio
+          // ne permet de saisir qu'un seul prix ("à partir de") — price_high reste à 0 tant que cette
+          // fonctionnalité n'existe pas côté UI. On ne déclare donc que minPrice dans ce cas : schema.org
+          // définit minPrice/maxPrice comme des bornes indépendantes ("the lowest/highest price if the
+          // price is a range"), donc omettre maxPrice communique fidèlement "à partir de X$, prix final
+          // confirmé avec le proprio" — plutôt que d'affirmer à tort un plafond qui n'existe pas.
           makesOffer: {
             "@type": "Offer",
             priceCurrency: "CAD",
             priceSpecification: {
               "@type": "UnitPriceSpecification",
               minPrice: listing.price_low,
-              maxPrice: listing.price_high > listing.price_low ? listing.price_high : listing.price_low,
+              ...(listing.price_high > listing.price_low ? { maxPrice: listing.price_high } : {}),
               priceCurrency: "CAD",
               unitText: "nuit",
             },
