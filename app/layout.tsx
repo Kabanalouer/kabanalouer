@@ -44,6 +44,26 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Kabanalouer",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo-mark.svg`,
+  description:
+    "Kabanalouer est une marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service pour les voyageurs.",
+};
+
+// Pas de potentialAction/SearchAction : /chalets filtre par région/ville/capacité,
+// il n'y a pas de recherche plein texte à laquelle brancher un paramètre {search_term_string}
+// (Google exige que l'action déclarée fonctionne réellement).
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Kabanalouer",
+  url: SITE_URL,
+};
+
 export default async function RootLayout({
   children,
 }: {
@@ -55,6 +75,14 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`h-full ${jakarta.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>

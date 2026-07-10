@@ -400,9 +400,31 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     ...(listing.latitude && listing.longitude
       ? { geo: { "@type": "GeoCoordinates", latitude: listing.latitude, longitude: listing.longitude } }
       : {}),
+    ...(listing.checkin_time ? { checkinTime: listing.checkin_time } : {}),
+    ...(listing.checkout_time ? { checkoutTime: listing.checkout_time } : {}),
     ...(listing.price_on_request === false && listing.price_low > 0
-      ? { priceRange: `$${listing.price_low} CAD / nuit` }
+      ? {
+          priceRange:
+            listing.price_high > listing.price_low
+              ? `$${listing.price_low} - $${listing.price_high} CAD`
+              : `$${listing.price_low} CAD`,
+          // priceRange (ci-dessus) est du texte libre pour l'affichage — makesOffer/priceSpecification
+          // donne en plus un prix structuré (min/max explicites) que Google peut lire de façon fiable.
+          makesOffer: {
+            "@type": "Offer",
+            priceCurrency: "CAD",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              minPrice: listing.price_low,
+              maxPrice: listing.price_high > listing.price_low ? listing.price_high : listing.price_low,
+              priceCurrency: "CAD",
+              unitText: "nuit",
+            },
+          },
+        }
       : {}),
+    // Sur demande (price_on_request === true) : aucun prix envoyé, volontairement — ne jamais
+    // afficher de prix inventé ou approximatif dans les données structurées (règle Google).
     amenityFeature: amenities.map((a) => ({ "@type": "LocationFeatureSpecification", name: a, value: true })),
     numberOfRooms: bedroomCount,
     occupancy: { "@type": "QuantitativeValue", maxValue: listing.capacity, unitText: "personnes" },
