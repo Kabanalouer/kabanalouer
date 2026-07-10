@@ -419,3 +419,27 @@ Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Rest
 Remplace l'ancienne règle ("toujours manuel, par étape, aucune auto-approbation de session") en vigueur jusqu'à cette date.
 
 Aussi notés pendant la revue, hors scope (pas encore investigués) : 2 avertissements console Playwright détectés sur les sections Localisation/Infos générales/Promotions.
+
+**Changements visuels — aperçu avant/push obligatoire (ajouté le 2026-07-10) :** pour tout changement touchant l'UI (mise en page, couleurs, espacement, contenu affiché, états vides, etc.), toujours montrer un aperçu visuel avant/après — desktop et responsive quand la différence s'y applique — avant de demander l'approbation du commit/push. Ne jamais demander l'approbation d'un changement visuel sans l'avoir montré au préalable.
+
+---
+
+## 16. Outils Claude Code installés localement (plugins/skills)
+
+Section stable — à ne pas laisser disparaître dans le fil de session (contrairement aux entrées de "dernière session" plus haut, appelées à défiler avec le temps).
+
+**Plugins** (installés via `/plugin` + `/reload-plugins` dans Claude Code, terminal) :
+- `vercel` — déploiements et debug
+- `stripe` — paiements et abonnements
+- `typescript-lsp` — support langage TypeScript
+- `security-guidance` — revue de sécurité
+- `code-simplifier` — simplification de code
+- `hookify` — hooks Claude Code
+- `claude-md-management` — gestion de ce fichier CLAUDE.md
+
+**Skills utilisés** (via plugin ou natifs) :
+- `ui-ux-pro-max` — suggestions structure/UX/animations (jamais couleurs/police/boutons, voir section design system)
+- `webapp-testing` — audits QA
+- `frontend-design` — revue visuelle
+
+**Note** : ces plugins/skills sont spécifiques à l'environnement Claude Code (terminal) et n'ont pas d'équivalent automatique dans Cowork — leurs capacités les plus utiles pour ce projet (Vercel, Stripe) sont déjà branchées ici comme connecteurs MCP.

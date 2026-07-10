@@ -98,7 +98,11 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Stats (client component with period filter) ──────────────────── */}
-      <DashboardStats listings={(listings ?? []).map((l) => ({ id: l.id, title: l.title ?? t("untitled") }))} />
+      {/* Masquée tant qu'aucune annonce n'existe — évite un mur de "0"/tirets
+          juste au-dessus de l'état vide "Créer une annonce" ci-dessous. */}
+      {listings && listings.length > 0 && (
+        <DashboardStats listings={listings.map((l) => ({ id: l.id, title: l.title ?? t("untitled") }))} />
+      )}
 
       {/* ── Listings ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">

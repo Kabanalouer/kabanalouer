@@ -179,7 +179,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
         {/* Reviews card */}
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("reviewsLabel")}</span>
+            <span className="text-xs font-semibold text-charcoal-400 tracking-wide">{t("reviewsLabel")}</span>
             <StarOutlineIcon />
           </div>
           {avgRating !== null ? (
@@ -231,7 +231,7 @@ function StatCard({
   return (
     <div className="bg-white rounded-2xl border border-[#ebebeb] p-5">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-semibold text-charcoal-400 tracking-wide">{label}</span>
         {icon}
       </div>
       <div className={`font-bold mb-1 ${unavailable ? "text-charcoal-300" : "text-charcoal-800"} ${small ? "text-base leading-snug" : "text-2xl"}`}>

@@ -568,7 +568,7 @@ export default function EditListingForm({
         onDeleted={() => router.push("/dashboard/listings?deleted=1")}
       />
     )}
-    <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+    <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
 
       {/* ── Left nav ────────────────────────────────────────────────────── */}
       <aside className="w-full lg:w-56 shrink-0">
@@ -736,7 +736,7 @@ export default function EditListingForm({
 
       {/* ── Content area ────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0">
-        <div className="bg-white rounded-2xl border border-[#ebebeb] p-6">
+        <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 h-full">
 
           {/* Section: Photos */}
           {activeSection === "photos" && (

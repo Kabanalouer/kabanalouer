@@ -97,6 +97,62 @@ export const AMENITY_DESC_EN: Record<string, string> = {
   "Borne de recharge pour véhicule électrique": "EV charging station",
 };
 
+// Regroupement pour l'affichage dans AmenitiesPicker — purement visuel (scan plus rapide
+// sur une liste de 30 items), ne change rien à la liste plate AMENITIES ci-dessus ni à
+// l'alignement positionnel avec AMENITIES_EN (getAmenityLabel reste inchangé).
+export const AMENITY_GROUPS: { label: string; items: readonly string[] }[] = [
+  {
+    label: "Extérieur",
+    items: [
+      "Bord de l'eau",
+      "Piscine extérieure",
+      "Piscine intérieure",
+      "Ski in / Ski out",
+      "Situé sur un resort",
+      "Foyer extérieur (firepit)",
+      "BBQ",
+      "Terrasse",
+      "Module de jeux pour enfant",
+      "Borne de recharge pour véhicule électrique",
+    ],
+  },
+  {
+    label: "Détente",
+    items: [
+      "Spa",
+      "Sauna",
+      "Foyer intérieur au bois",
+      "Chalet en bois rond",
+    ],
+  },
+  {
+    label: "Divertissement",
+    items: [
+      "Table de billard",
+      "Babyfoot",
+      "Table de ping-pong",
+      "Arcades",
+      "Jeux de société",
+      "Livres et Revues",
+      "Système audio (musique)",
+      "Télévision avec câble",
+      "Télévision intelligente",
+      "Gym",
+    ],
+  },
+  {
+    label: "Confort et pratique",
+    items: [
+      "Wifi",
+      "Espace de travail dédié (télétravail)",
+      "Climatisation",
+      "Cuisine complète avec vaisselle et chaudrons",
+      "Literie et serviettes incluses",
+      "Buanderie",
+    ],
+  },
+];
+
 export function getAmenityLabel(amenity: string, locale: string): string {
   if (locale !== "en") return amenity;
   const idx = (AMENITIES as readonly string[]).indexOf(amenity);
