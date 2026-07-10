@@ -17,39 +17,32 @@ export default function DashboardBottomNav() {
   useEffect(() => {
     let userId: string | null = null;
 
-    const loadCounts = async (uid: string) => {
-      const { count: unread } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("receiver_id", uid)
-        .eq("is_read", false);
-      setUnreadCount(unread ?? 0);
-
-      const { data: listings } = await supabase
-        .from("listings")
-        .select("id")
-        .eq("host_id", uid);
-      if (listings && listings.length > 0) {
-        const { count: unanswered } = await supabase
-          .from("reviews")
-          .select("id", { count: "exact", head: true })
-          .in("listing_id", listings.map((l) => l.id))
-          .is("host_reply", null);
-        setUnansweredCount(unanswered ?? 0);
+    // Comptes exécutés côté serveur via /api/nav/counts — les mêmes requêtes Supabase en HEAD
+    // envoyées directement depuis le navigateur retournent systématiquement une erreur 503
+    // (constaté en QA le 2026-07-10), donc on ne les fait plus depuis le client (voir la route API).
+    const loadCounts = async () => {
+      try {
+        const res = await fetch("/api/nav/counts");
+        if (!res.ok) return;
+        const data = await res.json();
+        setUnreadCount(data.unreadCount ?? 0);
+        setUnansweredCount(data.unansweredReviewsCount ?? 0);
+      } catch {
+        // Échec silencieux : les badges restent à leur dernière valeur connue (0 par défaut)
       }
     };
 
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         userId = data.user.id;
-        loadCounts(userId);
+        loadCounts();
       }
     });
 
     const channel = supabase
       .channel("dashboard-bottom-nav-unread")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        if (userId) loadCounts(userId);
+        if (userId) loadCounts();
       })
       .subscribe();
 

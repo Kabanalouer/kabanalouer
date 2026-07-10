@@ -142,27 +142,19 @@ export default function Navbar() {
     if (data) setProfile(data as Profile);
   };
 
-  const loadUnread = async (userId: string) => {
-    const { count } = await supabase
-      .from("messages")
-      .select("id", { count: "exact", head: true })
-      .eq("receiver_id", userId)
-      .eq("is_read", false);
-    setUnreadCount(count ?? 0);
-  };
-
-  const loadUnansweredReviews = async (userId: string) => {
-    const { data: listings } = await supabase
-      .from("listings")
-      .select("id")
-      .eq("host_id", userId);
-    if (!listings || listings.length === 0) { setUnansweredReviewsCount(0); return; }
-    const { count } = await supabase
-      .from("reviews")
-      .select("id", { count: "exact", head: true })
-      .in("listing_id", listings.map((l) => l.id))
-      .is("host_reply", null);
-    setUnansweredReviewsCount(count ?? 0);
+  // Comptes exécutés côté serveur via /api/nav/counts — les mêmes requêtes Supabase en HEAD
+  // envoyées directement depuis le navigateur retournent systématiquement une erreur 503
+  // (constaté en QA le 2026-07-10), donc on ne les fait plus depuis le client (voir la route API).
+  const loadNavCounts = async () => {
+    try {
+      const res = await fetch("/api/nav/counts");
+      if (!res.ok) return;
+      const data = await res.json();
+      setUnreadCount(data.unreadCount ?? 0);
+      setUnansweredReviewsCount(data.unansweredReviewsCount ?? 0);
+    } catch {
+      // Échec silencieux : les badges restent à leur dernière valeur connue (0 par défaut)
+    }
   };
 
   useEffect(() => {
@@ -170,15 +162,14 @@ export default function Navbar() {
       setUser(data.user);
       if (data.user) {
         loadProfile(data.user.id);
-        loadUnread(data.user.id);
-        loadUnansweredReviews(data.user.id);
+        loadNavCounts();
       }
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user ?? null;
       setUser(u);
-      if (u) { loadProfile(u.id); loadUnread(u.id); loadUnansweredReviews(u.id); }
+      if (u) { loadProfile(u.id); loadNavCounts(); }
       else { setProfile(null); setUnreadCount(0); }
     });
 
@@ -194,7 +185,7 @@ export default function Navbar() {
         schema: "public",
         table: "messages",
         filter: `receiver_id=eq.${user.id}`,
-      }, () => loadUnread(user.id))
+      }, () => loadNavCounts())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
