@@ -26,6 +26,19 @@ export async function POST(req: NextRequest) {
 
   const admin = adminSupabase();
 
+  // Vérifie que le listingId appartient bien au userId fourni — les actions ci-dessous
+  // utilisent le client service-role (contourne RLS), donc rien d'autre ne protège contre
+  // un couple userId/listingId incohérent envoyé par le client (voir revue de sécurité 2026-07-10).
+  const { data: listingCheck } = await admin
+    .from("listings")
+    .select("id")
+    .eq("id", listingId)
+    .eq("host_id", userId)
+    .maybeSingle();
+  if (!listingCheck) {
+    return NextResponse.json({ error: "Cette annonce n'appartient pas à ce proprio" }, { status: 400 });
+  }
+
   if (action === "activate_free") {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);

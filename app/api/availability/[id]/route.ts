@@ -13,10 +13,19 @@ export async function POST(
 
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
+  // Vérification explicite en plus de RLS (défense en profondeur — revue de sécurité 2026-07-10)
+  const { data: listing } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .maybeSingle();
+  if (!listing) return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+
   const { dates } = (await request.json()) as { dates: string[] };
 
   // Delete all existing manual blocks for this listing
-  // RLS ensures only the owner can do this
+  // RLS ensures only the owner can do this (vérification explicite ci-dessus en plus)
   const { error: deleteError } = await supabase
     .from("availability")
     .delete()
