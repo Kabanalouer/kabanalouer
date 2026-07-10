@@ -9,8 +9,11 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import { normalizePhotos } from "@/lib/photo";
 import { REGIONS } from "@/lib/regions";
+import { getRegionContent } from "@/lib/regionsContent";
 import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getLocale } from "next-intl/server";
+import { localePath } from "@/lib/localePath";
 import type { Metadata } from "next";
 
 export const revalidate = 86400;
@@ -49,23 +52,42 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getLocale();
+  const isEn = locale === "en";
   const cities = await getPublishedCities();
   const cityName = cityFromSlug(slug, cities);
   if (!cityName) return {};
 
-  const title = `Chalets à louer à ${cityName}`;
-  const description = `Découvrez nos chalets à louer à ${cityName}, Québec. Contact direct avec les propriétaires, aucun frais de service.`;
+  const title = isEn
+    ? `Cabins for rent in ${cityName}`
+    : `Chalets à louer à ${cityName}`;
+  const description = isEn
+    ? `Discover our cabins for rent in ${cityName}, Quebec. Direct contact with owners, no service fees.`
+    : `Découvrez nos chalets à louer à ${cityName}, Québec. Contact direct avec les propriétaires, aucun frais de service.`;
   return {
     title,
     description,
-    alternates: { canonical: `/chalets/ville/${slug}` },
-    openGraph: { title, description, url: `/chalets/ville/${slug}` },
+    alternates: {
+      canonical: `/chalets/ville/${slug}`,
+      languages: {
+        fr: `/chalets/ville/${slug}`,
+        en: `/en/cabins/city/${slug}`,
+        "x-default": `/chalets/ville/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: isEn ? `/en/cabins/city/${slug}` : `/chalets/ville/${slug}`,
+    },
     twitter: { title, description },
   };
 }
 
 export default async function CityPage({ params }: Props) {
   const { slug } = await params;
+  const locale = await getLocale();
+  const isEn = locale === "en";
 
   const cities = await getPublishedCities();
   const cityName = cityFromSlug(slug, cities);
@@ -103,6 +125,7 @@ export default async function CityPage({ params }: Props) {
 
   const regionDbValue = listings[0].region;
   const regionConfig = REGIONS.find((r) => r.dbValue === regionDbValue);
+  const regionContent = regionConfig ? getRegionContent(regionConfig.slug) : undefined;
 
   // Other cities in the same region
   const { data: regionCityData } = await adminClient()
@@ -179,17 +202,17 @@ export default async function CityPage({ params }: Props) {
       <section className="bg-[#F8FAF9] border-b border-gray-100 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <nav className="text-xs text-gray-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
-            <Link href="/chalets" className="hover:text-primary transition-colors">
-              Chalets
+            <Link href={localePath("/chalets", locale)} className="hover:text-primary transition-colors">
+              {isEn ? "Cabins" : "Chalets"}
             </Link>
             {regionConfig && (
               <>
                 <span>›</span>
                 <Link
-                  href={`/chalets/${regionConfig.slug}`}
+                  href={localePath(`/chalets/${regionConfig.slug}`, locale)}
                   className="hover:text-primary transition-colors"
                 >
-                  {regionConfig.name}
+                  {isEn ? (regionContent?.region_en ?? regionConfig.name) : regionConfig.name}
                 </Link>
               </>
             )}
@@ -197,12 +220,12 @@ export default async function CityPage({ params }: Props) {
             <span className="text-gray-600">{cityName}</span>
           </nav>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            Chalets à louer à {cityName}
+            {isEn ? `Cabins for rent in ${cityName}` : `Chalets à louer à ${cityName}`}
           </h1>
           <p className="text-gray-500 mb-8">
-            {count} chalet{count > 1 ? "s" : ""} disponible{count > 1 ? "s" : ""} à{" "}
-            {cityName}
-            {regionConfig ? `, ${regionConfig.name}` : ""}
+            {isEn
+              ? `${count} cabin${count > 1 ? "s" : ""} available in ${cityName}${regionContent ? `, ${regionContent.region_en}` : ""}`
+              : `${count} chalet${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""} à ${cityName}${regionConfig ? `, ${regionConfig.name}` : ""}`}
           </p>
           <div className="flex justify-center">
             <SearchBar initialCity={cityName} />
@@ -215,18 +238,22 @@ export default async function CityPage({ params }: Props) {
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-xl font-bold text-gray-900">
-              {count} chalet{count > 1 ? "s" : ""} à {cityName}
+              {isEn
+                ? `${count} cabin${count > 1 ? "s" : ""} in ${cityName}`
+                : `${count} chalet${count > 1 ? "s" : ""} à ${cityName}`}
             </h2>
             <p className="text-gray-500 mt-1 text-sm">
-              Contact direct · Aucun frais de service
+              {isEn ? "Direct contact · No service fees" : "Contact direct · Aucun frais de service"}
             </p>
           </div>
           {regionConfig && (
             <Link
-              href={`/chalets/${regionConfig.slug}`}
+              href={localePath(`/chalets/${regionConfig.slug}`, locale)}
               className="text-primary font-semibold text-sm hover:underline hidden md:block"
             >
-              Voir tous les chalets {regionConfig.locative} →
+              {isEn
+                ? `See all cabins ${regionContent?.locative_en ?? `in ${regionConfig.name}`} →`
+                : `Voir tous les chalets ${regionConfig.locative} →`}
             </Link>
           )}
         </div>
@@ -246,13 +273,15 @@ export default async function CityPage({ params }: Props) {
       {otherCities.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
           <h2 className="text-base font-bold text-gray-900 mb-4">
-            Autres villes{regionConfig ? ` ${regionConfig.locative}` : ""}
+            {isEn
+              ? `Other cities${regionContent ? ` ${regionContent.locative_en}` : ""}`
+              : `Autres villes${regionConfig ? ` ${regionConfig.locative}` : ""}`}
           </h2>
           <div className="flex flex-wrap gap-2">
             {otherCities.map((city) => (
               <Link
                 key={city}
-                href={`/chalets/ville/${slugify(city)}`}
+                href={localePath(`/chalets/ville/${slugify(city)}`, locale)}
                 className="px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
               >
                 {city}
@@ -260,10 +289,12 @@ export default async function CityPage({ params }: Props) {
             ))}
             {regionConfig && (
               <Link
-                href={`/chalets/${regionConfig.slug}`}
+                href={localePath(`/chalets/${regionConfig.slug}`, locale)}
                 className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
               >
-                Toute la région {regionConfig.name} →
+                {isEn
+                  ? `All of ${regionContent?.region_en ?? regionConfig.name} →`
+                  : `Toute la région ${regionConfig.name} →`}
               </Link>
             )}
           </div>

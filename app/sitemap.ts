@@ -76,12 +76,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           .filter((c): c is string => !!c)
       ),
     ];
-    cityPages = distinctCities.map((city) => ({
-      url: `${BASE}/chalets/ville/${slugify(city)}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.75,
-    }));
+    cityPages = distinctCities.flatMap((city) => [
+      {
+        url: `${BASE}/chalets/ville/${slugify(city)}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.75,
+      },
+      {
+        url: `${BASE}/en/cabins/city/${slugify(city)}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.75,
+      },
+    ]);
   } catch {
     // Don't fail the build if Supabase is unreachable
   }

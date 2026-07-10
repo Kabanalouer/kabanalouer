@@ -195,7 +195,9 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {/* ── Chalets en vedette dans cette région ── */}
       {vedetteListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 w-full">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Chalets en vedette dans cette région</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
+            {isEn ? "Featured cabins in this region" : "Chalets en vedette dans cette région"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
             {vedetteListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
@@ -209,12 +211,18 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-xl font-bold text-gray-900">
-              {listingCount > 0
-                ? `${listingCount} chalet${listingCount > 1 ? "s" : ""} disponible${listingCount > 1 ? "s" : ""} ${regionConfig.locative}`
-                : `Chalets ${regionConfig.locative}`}
+              {isEn
+                ? (listingCount > 0
+                    ? `${listingCount} cabin${listingCount > 1 ? "s" : ""} available ${content?.locative_en ?? "in Quebec"}`
+                    : `Cabins ${content?.locative_en ?? "in Quebec"}`)
+                : (listingCount > 0
+                    ? `${listingCount} chalet${listingCount > 1 ? "s" : ""} disponible${listingCount > 1 ? "s" : ""} ${regionConfig.locative}`
+                    : `Chalets ${regionConfig.locative}`)}
             </h2>
             <p className="text-gray-500 mt-1 text-sm">
-              Contact direct avec les propriétaires · Aucun frais de service
+              {isEn
+                ? "Direct contact with owners · No service fees"
+                : "Contact direct avec les propriétaires · Aucun frais de service"}
             </p>
           </div>
           <Link
