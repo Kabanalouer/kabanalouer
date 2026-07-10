@@ -185,3 +185,10 @@ export function getRegionBySlug(slug: string): RegionConfig | undefined {
 export function getRegionSlugs(): string[] {
   return REGIONS.map((r) => r.slug);
 }
+
+// Retrouve le slug de page publique (/chalets/[slug]) à partir de la valeur région
+// stockée en base (listings.region / featured_listings.region) — utilisé pour lier
+// le nom de région vers sa page publique dans les emails de boost.
+export function getRegionSlugByDbValue(dbValue: string): string | undefined {
+  return REGIONS.find((r) => r.dbValue === dbValue)?.slug;
+}

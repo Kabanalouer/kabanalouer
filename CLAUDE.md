@@ -6,7 +6,7 @@
 - **Couleur accent :** coral `#f04e45`
 - **Typographie :** Plus Jakarta Sans uniquement
 - **Boutons CTA :** toujours `rounded-full`
-- **Pas d'emojis** dans l'UI, **sentence case** partout, **prix en format québécois** (ex. `120 $/nuit`)
+- **Pas d'emojis** dans l'UI (dashboard, boutons, pages publiques), **sentence case** partout, **prix en format québécois** (ex. `120 $/nuit`). Exception (2026-07-10) : un emoji ponctuel est toléré dans la phrase de clôture chaleureuse d'un email transactionnel de confirmation (ex. "Merci pour ta confiance 🙏"), jamais dans un titre, un sujet, un bouton ou l'UI du site elle-même.
 - **Vocabulaire :** "proprio" dans les labels courts, "propriétaire" dans les textes longs, **jamais "hôte"**
 - **Ton :** français québécois naturel, chaleureux mais professionnel
 

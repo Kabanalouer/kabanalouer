@@ -115,6 +115,7 @@ export async function GET(request: NextRequest) {
         listingTitle,
         type: featured.type as FeaturedType,
         region: featured.region,
+        month: featured.month.slice(0, 7),
       });
 
       if (emailError) {
@@ -171,6 +172,7 @@ export async function GET(request: NextRequest) {
         listingTitle,
         type: featured.type as FeaturedType,
         region: featured.region,
+        month: featured.month.slice(0, 7),
       });
 
       if (emailError) {
