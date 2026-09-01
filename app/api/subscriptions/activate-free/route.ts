@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   const { error: subError } = await admin.from("subscriptions").upsert({
     listing_id: listingId,
     user_id: user.id,
-    stripe_subscription_id: `free_launch_${listingId}`,
+    stripe_subscription_id: null,
     status: "active",
     expires_at: expiresAt.toISOString(),
     is_free_launch: true,
