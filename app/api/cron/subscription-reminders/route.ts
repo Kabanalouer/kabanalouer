@@ -69,7 +69,11 @@ export async function GET(request: NextRequest) {
     const listingTitleRaw = Array.isArray(listingsField) ? listingsField[0]?.title : listingsField?.title;
 
     // ── Paiement échoué : notification unique, indépendante du décompte d'échéance ──
-    if (sub.status === "past_due") {
+    // Garde is_free_launch = false : une ligne gratuite n'a jamais de vraie carte
+    // Stripe derrière elle, donc ne devrait jamais atteindre 'past_due' par un
+    // chemin réel du code — mais si c'était le cas, cet email affirmerait à tort
+    // qu'une carte a été refusée.
+    if (sub.status === "past_due" && !sub.is_free_launch) {
       if (sub.reminder_past_due_sent) continue;
 
       const { data: profile } = await supabase
