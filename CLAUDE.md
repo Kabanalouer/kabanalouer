@@ -279,6 +279,7 @@ STRIPE_SECRET_KEY
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 STRIPE_WEBHOOK_SECRET
 ANTHROPIC_API_KEY
+GOOGLE_TRANSLATE_API_KEY           # server-side uniquement — traduction auto des messages
 RESEND_API_KEY
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca

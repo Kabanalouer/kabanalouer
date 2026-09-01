@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -187,15 +186,13 @@ export default function ContactForm({
       message.trim(),
     ].filter((l) => l !== null).join("\n");
 
-    const supabase = createClient();
-    const { error: err } = await supabase.from("messages").insert({
-      listing_id: listingId,
-      sender_id: currentUserId,
-      receiver_id: hostId,
-      content: lines,
+    const res = await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId, receiverId: hostId, content: lines }),
     });
 
-    if (err) {
+    if (!res.ok) {
       setError("Erreur lors de l'envoi. Réessayez.");
       setSending(false);
       return;

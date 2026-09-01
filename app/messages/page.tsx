@@ -26,12 +26,13 @@ export default async function MessagesPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, preferred_language")
+    .select("role, preferred_language, translation_enabled")
     .eq("id", user.id)
     .single();
 
   const isHost = profile?.role === "host" || profile?.role === "admin";
   const currentUserLanguage = profile?.preferred_language || "fr";
+  const translationEnabled = profile?.translation_enabled !== false;
 
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
@@ -103,6 +104,7 @@ export default async function MessagesPage() {
       <MessagesClient
         currentUserId={user.id}
         currentUserLanguage={currentUserLanguage}
+        initialTranslationEnabled={translationEnabled}
         initialConversations={conversations}
       />
       {isHost && <DashboardBottomNav />}

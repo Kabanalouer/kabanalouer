@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 export default function ContactButton({
   listingId,
@@ -57,7 +56,6 @@ export default function ContactButton({
           hostId={hostId}
           hostName={hostName}
           listingTitle={listingTitle}
-          senderId={currentUserId}
           onClose={() => setOpen(false)}
           onSent={() => router.push(`/messages?listing=${listingId}&with=${hostId}`)}
         />
@@ -71,7 +69,6 @@ function ContactModal({
   hostId,
   hostName,
   listingTitle,
-  senderId,
   onClose,
   onSent,
 }: {
@@ -79,7 +76,6 @@ function ContactModal({
   hostId: string;
   hostName: string;
   listingTitle: string;
-  senderId: string;
   onClose: () => void;
   onSent: () => void;
 }) {
@@ -87,28 +83,19 @@ function ContactModal({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
-  const supabase = createClient();
 
   const handleSend = async () => {
     if (!message.trim()) return;
     setSending(true);
     setError("");
 
-    const { data: profile } = await supabase
-      .from("users")
-      .select("preferred_language")
-      .eq("id", senderId)
-      .single();
-
-    const { error } = await supabase.from("messages").insert({
-      listing_id: listingId,
-      sender_id: senderId,
-      receiver_id: hostId,
-      content: message.trim(),
-      language: profile?.preferred_language || "fr",
+    const res = await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId, receiverId: hostId, content: message.trim() }),
     });
 
-    if (error) {
+    if (!res.ok) {
       setError("Erreur lors de l'envoi. Réessayez.");
       setSending(false);
       return;

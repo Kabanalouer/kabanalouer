@@ -417,7 +417,9 @@
     }
   },
   "messages": {
-    "title": "Messages"
+    "title": "Messages",
+    "translationToggleLabel": "Automatic translation",
+    "translatedBadge": "Automatically translated"
   },
   "reviews": {
     "heading": "My reviews",
