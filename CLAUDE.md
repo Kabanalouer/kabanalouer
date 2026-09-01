@@ -264,6 +264,15 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
 - `useTranslations()` dans les composants client, `getTranslations()` dans les server components
 - Namespaces traduits : `auth`, `home`, `contact`, `creationChoice`, etc.
 
+### Import d'annonces depuis Airbnb (fondations backend, 2026-09-01)
+
+Phase 1 de l'import d'annonces externes — **Airbnb seulement**, VRBO retiré (voir plus bas). Pas encore d'interface (bouton "Ajouter un chalet", file de révision admin, courriel de bienvenue) — prévu dans des prompts séparés.
+
+- **Route** : `POST /api/listings/import` — `{ url, photosRightsConfirmed }`, authentifié (`host`/`admin` seulement). Détecte la plateforme par domaine (`lib/apify.ts`), rejette VRBO avec un message explicite, appelle l'actor Apify `tri_angle/airbnb-rooms-urls-scraper` (poll jusqu'à 60s, `maxDuration = 90` sur la route), mappe les données vers `listings` (`lib/listingImportMapping.ts`), crée le brouillon (`is_published: false`, `import_status: 'pending_review'`), puis déclenche la réécriture IA de la description (Claude Sonnet, `claude-sonnet-4-6`) qui met en valeur les équipements et intègre nom/ville/région pour le SEO.
+- **`amenities` et `region` sont des listes fermées** (`lib/amenities.ts`, `lib/regions.ts`) — le texte scrapé ne matche jamais exactement, donc mapping best-effort par mots-clés (`matchAmenities`/`matchRegion` dans `lib/listingImportMapping.ts`). Ce qui ne matche rien est conservé dans `listings.import_raw_data` (jsonb) pour une future révision admin, jamais perdu silencieusement.
+- **VRBO retiré de la phase 1** (2026-09-01) : l'actor `one-api/vrbo-scraper` s'est montré peu fiable sur les photos lors d'un vrai test — sur une annonce, seulement 2 entrées retournées dans `Raw.photos`, toutes les deux des vignettes de carte Google Maps (`maps.googleapis.com`), aucune vraie photo du chalet, alors qu'un premier test avait fonctionné correctement (5 vraies photos + 2 vignettes). Le reste des données (titre, description, chambres, équipements, localisation) était bien extrait — seule l'extraction de photos a échoué, de façon incohérente d'une annonce à l'autre. À réévaluer plus tard : un actor Apify plus fiable, ou une méthode maison. Le mapping VRBO (`mapVrboItem` dans `lib/listingImportMapping.ts`) reste en place, juste non branché sur la route.
+- **Testé en conditions réelles** : Airbnb fonctionne très bien — titre, description, 80 photos avec légendes, équipements et région bien mappés sur un vrai chalet des Laurentides.
+
 ---
 
 ## 10. Variables d'environnement
@@ -280,6 +289,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 STRIPE_WEBHOOK_SECRET
 ANTHROPIC_API_KEY
 GOOGLE_TRANSLATE_API_KEY           # server-side uniquement — traduction auto des messages
+APIFY_API_TOKEN                    # server-side uniquement — import d'annonces Airbnb (Apify)
 RESEND_API_KEY
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
@@ -316,6 +326,8 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `backfill-subscriptions-listing-id.sql` | Remplit `listing_id` sur les lignes `subscriptions` existantes (étape 3/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `restructure-subscriptions-per-listing-cutover.sql` | Cutover structurel : `DROP CONSTRAINT` sur `user_id`, `ADD CONSTRAINT UNIQUE`/`SET NOT NULL` sur `listing_id` (étape 4/10) | Exécuté et confirmé en prod le 2026-07-07 |
 | `add-listings-winback-columns.sql` | Ajoute `unpublished_at`/`reminder_winback_3d_sent`/`14d_sent` à `listings` (séquence de retour, étape 8/10) | Exécuté et confirmé en prod le 2026-07-07 |
+| `add-translation-columns.sql` | Ajoute `messages.content_translated`/`translated_language` et `users.translation_enabled` (traduction auto FR/EN des messages) | Exécuté et confirmé en prod le 2026-09-01 |
+| `add-listing-import-columns.sql` | Ajoute `listings.import_source`/`import_source_url`/`import_status`/`photos_rights_confirmed`/`import_raw_data` (import Airbnb) | Exécuté et confirmé (projet Supabase unique, partagé dev/prod) le 2026-09-01 |
 | `add-featured-reminder-tracking.sql` | Ajoute `reminder_3d_sent_at`/`expired_email_sent_at` à `featured_listings` (séquence email boost) | À exécuter dans Supabase Dashboard si pas déjà fait |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |

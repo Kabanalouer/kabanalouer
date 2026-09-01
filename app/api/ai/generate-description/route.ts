@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
+import { cleanDescription, truncateToLastSentence } from "@/lib/aiText";
 import { NextResponse } from "next/server";
 
 const SYSTEM_PROMPT_FR =
@@ -87,31 +88,6 @@ export async function POST(request: Request) {
           ? `Prix : à partir de ${price_low} $/nuit`
           : null,
       ].filter(Boolean).join("\n");
-
-function cleanDescription(text: string): string {
-  const lines = text.split("\n");
-  // Remove lines starting with # or ** (headers, bold labels)
-  const filtered = lines.filter((line) => !line.trimStart().startsWith("#") && !line.trimStart().startsWith("**"));
-  // Drop leading blank lines
-  while (filtered.length > 0 && filtered[0].trim() === "") filtered.shift();
-  return filtered.join("\n").trimEnd();
-}
-
-function truncateToLastSentence(text: string, max: number): string {
-  if (text.length <= max) return text;
-  const truncated = text.slice(0, max);
-  // Find the last sentence-ending punctuation followed by a space or end of string
-  const lastSentenceEnd = Math.max(
-    truncated.lastIndexOf(". "),
-    truncated.lastIndexOf("! "),
-    truncated.lastIndexOf("? "),
-    truncated.lastIndexOf(".\n"),
-    truncated.lastIndexOf("!\n"),
-    truncated.lastIndexOf("?\n"),
-  );
-  if (lastSentenceEnd > max * 0.5) return text.slice(0, lastSentenceEnd + 1).trimEnd();
-  return truncated.trimEnd();
-}
 
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
