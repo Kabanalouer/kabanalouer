@@ -208,6 +208,10 @@
     },
     "publish": {
       "launchOffer": "Offre de lancement",
+      "adminReviewHeading": "Réviser et publier",
+      "adminReviewBadge": "Révision administrateur",
+      "adminReviewNote": "Cette annonce a été importée et attend votre révision. Ajustez ce qui doit l'être, puis publiez-la au nom du propriétaire.",
+      "adminPublishButton": "Publier au nom du propriétaire",
       "headingFree": "Publiez votre chalet gratuitement",
       "headingActive": "Votre abonnement est actif",
       "headingPaid": "Publiez votre chalet",

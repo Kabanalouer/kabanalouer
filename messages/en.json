@@ -208,6 +208,10 @@
     },
     "publish": {
       "launchOffer": "Launch offer",
+      "adminReviewHeading": "Review and publish",
+      "adminReviewBadge": "Admin review",
+      "adminReviewNote": "This listing was imported and is waiting for your review. Adjust anything that needs it, then publish it on the owner's behalf.",
+      "adminPublishButton": "Publish on the owner's behalf",
       "headingFree": "Publish your cabin for free",
       "headingActive": "Your subscription is active",
       "headingPaid": "Publish your cabin",

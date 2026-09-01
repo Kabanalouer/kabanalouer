@@ -6,6 +6,7 @@ import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { cleanDescription, truncateToLastSentence } from "@/lib/aiText";
 import { detectImportPlatform, runApifyActor, ApifyImportError } from "@/lib/apify";
 import { mapAirbnbItem, type ImportedListingData } from "@/lib/listingImportMapping";
+import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 
 // L'attente Apify seule peut prendre jusqu'à ~60s (voir lib/apify.ts) — laisse
 // de la marge pour l'appel IA et les écritures qui suivent.
@@ -187,6 +188,22 @@ export async function POST(request: NextRequest) {
   if (insertError || !listing) {
     console.error("listings/import: échec insert listings", insertError);
     return NextResponse.json({ error: "Échec de la création de l'annonce importée" }, { status: 500 });
+  }
+
+  // Notification à Simon — ne doit jamais faire échouer l'import déjà réussi.
+  try {
+    const { data: hostProfile } = await admin.from("users").select("name").eq("id", user.id).single();
+    const { error: notifError } = await sendImportReviewNotification({
+      listingId: listing.id,
+      listingTitle: mapped.title || "Annonce sans titre",
+      platform,
+      hostName: hostProfile?.name?.trim() || "un propriétaire",
+    });
+    if (notifError) {
+      console.error("listings/import: échec envoi notification admin", notifError);
+    }
+  } catch (err) {
+    console.error("listings/import: échec envoi notification admin", err);
   }
 
   // Réécriture IA — ne doit jamais faire échouer l'import déjà réussi. Le

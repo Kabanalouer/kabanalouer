@@ -26,18 +26,28 @@ export default async function EditListingPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const { data: listing } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("id", id)
-    .eq("host_id", user.id)
-    .single();
+  // Pas de filtre host_id ici — RLS laisse passer soit le propriétaire, soit
+  // un admin (nouvelle politique "Les admins gèrent tous les listings"). Le
+  // filtre par propriété reste vérifié explicitement juste en dessous : RLS
+  // laisse aussi voir les annonces PUBLIÉES de n'importe qui (page publique),
+  // ce qui ne doit jamais suffire à ouvrir ce formulaire d'édition.
+  const [{ data: listing }, { data: viewerProfile }] = await Promise.all([
+    supabase.from("listings").select("*").eq("id", id).maybeSingle(),
+    supabase.from("users").select("role").eq("id", user.id).single(),
+  ]);
 
   if (!listing) notFound();
 
+  const isOwner = listing.host_id === user.id;
+  const isAdmin = viewerProfile?.role === "admin";
+  if (!isOwner && !isAdmin) notFound();
+
+  const isAdminReview = isAdmin && !isOwner;
+  const hostId = listing.host_id as string;
+
   const admin = adminSupabase();
 
-  const [{ data: subscription }, { data: userRow }, nextPaidRank, { data: blockedDates }] = await Promise.all([
+  const [{ data: subscription }, { data: hostRow }, nextPaidRank, { data: blockedDates }] = await Promise.all([
     // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
     // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
     supabase
@@ -45,8 +55,11 @@ export default async function EditListingPage({ params }: Props) {
       .select("status, expires_at")
       .eq("listing_id", id)
       .maybeSingle(),
-    supabase.from("users").select("free_launch_claimed_at").eq("id", user.id).single(),
-    getNextPaidRank(admin, user.id),
+    // Toujours le propriétaire réel de l'annonce (hostId), jamais le viewer —
+    // sinon un admin en révision verrait ses propres données à la place de
+    // celles du proprio (offre gratuite déjà réclamée, rang tarifaire, etc.).
+    supabase.from("users").select("free_launch_claimed_at").eq("id", hostId).single(),
+    getNextPaidRank(admin, hostId),
     supabase
       .from("availability")
       .select("date, source")
@@ -62,7 +75,7 @@ export default async function EditListingPage({ params }: Props) {
         <p className="text-gray-500 text-sm mt-1 line-clamp-1">{listing.title}</p>
       </div>
       <EditListingForm
-        userId={user.id}
+        userId={hostId}
         listingId={id}
         isPublished={listing.is_published ?? false}
         initialCity={listing.city ?? ""}
@@ -70,13 +83,15 @@ export default async function EditListingPage({ params }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.expires_at ?? null}
-        hasClaimedFreeLaunch={!!userRow?.free_launch_claimed_at}
+        hasClaimedFreeLaunch={!!hostRow?.free_launch_claimed_at}
         nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}
         listingCreatedAt={(listing.created_at as string) ?? new Date().toISOString()}
         viewsListing={(listing.views_listing as number) ?? 0}
+        isAdminReview={isAdminReview}
+        importStatus={(listing.import_status as string | null) ?? null}
         initialData={{
           title: listing.title ?? "",
           description: listing.description ?? "",

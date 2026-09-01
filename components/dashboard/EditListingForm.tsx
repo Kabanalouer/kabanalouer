@@ -141,6 +141,8 @@ export default function EditListingForm({
   icalLastSync,
   listingCreatedAt,
   viewsListing,
+  isAdminReview,
+  importStatus,
 }: {
   userId: string;
   listingId: string;
@@ -158,6 +160,11 @@ export default function EditListingForm({
   icalLastSync: string | null;
   listingCreatedAt: string;
   viewsListing: number;
+  // true quand un admin révise l'annonce de quelqu'un d'autre (accès via la
+  // nouvelle politique RLS admin) — jamais vrai pour un proprio sur sa propre
+  // annonce, même si son compte a le rôle admin par ailleurs.
+  isAdminReview?: boolean;
+  importStatus?: string | null;
 }) {
   const t = useTranslations("listings");
   const tEdit = useTranslations("listings.edit");
@@ -203,6 +210,7 @@ export default function EditListingForm({
   const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
+  const [localImportStatus, setLocalImportStatus] = useState(importStatus ?? null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -411,6 +419,22 @@ export default function EditListingForm({
     setSubStatus("active");
     setSubExpiresAt(expires.toISOString());
     setPublishLoading(false);
+  };
+
+  const handleAdminPublish = async () => {
+    setPublishLoading(true);
+    setPublishError("");
+    const res = await fetch(`/api/admin/listings/${listingId}/publish`, { method: "POST" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setPublishError(data.error ?? tEdit("activateError"));
+      setPublishLoading(false);
+      return;
+    }
+    setIsPublished(true);
+    setLocalImportStatus("published");
+    setPublishLoading(false);
+    router.push("/admin/imports?published=1");
   };
 
   const handleStripeCheckout = async () => {
@@ -1344,6 +1368,46 @@ export default function EditListingForm({
             const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
             const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
             const referencePriceLabel = formatPriceLabel(29900, lang); // tier1 — valeur de référence affichée barrée pour l'offre gratuite
+
+            // Admin en train de réviser une annonce importée d'un autre proprio —
+            // remplace entièrement le flux gratuit/payant normal, jamais visible
+            // pour un proprio sur sa propre annonce.
+            if (isAdminReview && localImportStatus === "pending_review") {
+              return (
+                <SectionShell title={t("publish.adminReviewHeading")}>
+                  <div className="max-w-md space-y-5">
+                    {showPublishErrors && !canPublish && (
+                      <PublishErrorBox
+                        incompleteSectionIds={incompleteSectionIds}
+                        onNavigate={(id) => { setActiveSection(id as SectionId); setShowPublishErrors(false); }}
+                        getSectionLabel={getSectionLabel}
+                        tEdit={tEdit}
+                      />
+                    )}
+
+                    <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
+                      {t("publish.adminReviewBadge")}
+                    </div>
+                    <p className="text-sm text-charcoal-500">{t("publish.adminReviewNote")}</p>
+
+                    {publishError && (
+                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{publishError}</p>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        if (!canPublish) { setShowPublishErrors(true); return; }
+                        void handleAdminPublish();
+                      }}
+                      disabled={publishLoading}
+                      className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
+                    >
+                      {publishLoading ? tEdit("publishing") : t("publish.adminPublishButton")}
+                    </button>
+                  </div>
+                </SectionShell>
+              );
+            }
 
             if (isPublished && subStatus === "active") {
               const publishedDate = new Date(listingCreatedAt + (listingCreatedAt.includes("T") ? "" : "T12:00:00"));
