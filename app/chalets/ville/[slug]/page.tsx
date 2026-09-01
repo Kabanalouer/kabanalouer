@@ -14,6 +14,7 @@ import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
+import { safeJsonLd } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 
 export const revalidate = 86400;
@@ -190,11 +191,11 @@ export default async function CityPage({ params }: Props) {
     <div className="flex flex-col min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
       />
       <Navbar />
 

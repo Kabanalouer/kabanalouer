@@ -3,6 +3,13 @@
 
 export type ImportPlatform = "airbnb" | "vrbo";
 
+// `hostname.includes("airbnb.")` matchait à tort "airbnb.evil.com" — un
+// attaquant aurait pu faire pointer l'actor Apify vers un domaine de son
+// choix. Match par label de domaine exact (sous-domaine + TLD autorisé),
+// jamais par simple sous-chaîne.
+const AIRBNB_HOSTNAME = /^([a-z0-9-]+\.)?airbnb\.(com|ca|com\.[a-z]{2}|co\.[a-z]{2}|[a-z]{2})$/i;
+const VRBO_HOSTNAME = /^([a-z0-9-]+\.)?vrbo\.com$/i;
+
 export function detectImportPlatform(url: string): ImportPlatform | null {
   let hostname: string;
   try {
@@ -10,8 +17,8 @@ export function detectImportPlatform(url: string): ImportPlatform | null {
   } catch {
     return null;
   }
-  if (hostname.includes("airbnb.")) return "airbnb";
-  if (hostname.includes("vrbo.com")) return "vrbo";
+  if (AIRBNB_HOSTNAME.test(hostname)) return "airbnb";
+  if (VRBO_HOSTNAME.test(hostname)) return "vrbo";
   return null;
 }
 

@@ -112,6 +112,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Accès réservé aux propriétaires" }, { status: 403 });
   }
 
+  // Chaque appel Apify coûte des crédits réels — sans cette limite, un compte
+  // pourrait déclencher des imports en boucle à volonté.
+  if (!(await checkAiRateLimit(supabase, user.id, "listings-import-apify"))) {
+    return NextResponse.json(
+      { error: "Vous avez atteint la limite de 20 imports par heure. Réessayez plus tard." },
+      { status: 429 }
+    );
+  }
+
   let items: unknown[];
   try {
     const checkIn = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);

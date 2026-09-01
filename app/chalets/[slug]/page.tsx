@@ -21,6 +21,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewForm from "@/components/chalets/ReviewForm";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
+import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getRegionContent } from "@/lib/regionsContent";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
@@ -459,7 +460,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
       <ViewTracker listingId={id} isOwner={isOwner} />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(lodgingJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}
       />
       <Navbar />
 
