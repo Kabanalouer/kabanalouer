@@ -428,20 +428,19 @@ Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Rest
 
 ---
 
-## 15. Règles d'approbation (mise à jour le 2026-07-09)
+## 15. Règles d'approbation (mise à jour le 2026-09-01)
 
 **Approbation manuelle stricte et obligatoire — jamais d'auto-approbation, même en mode "Yes, allow all edits during this session" :**
-- `git push`
 - Toute écriture Supabase directe (INSERT/UPDATE/DELETE, migrations SQL)
 - Toute action Stripe (paiements réels ou en mode Test, changements de configuration)
 
-**Pour tout le reste, Simon peut utiliser "Yes, allow all edits during this session" librement, sans repasser par une approbation au cas par cas :** édition de fichiers, lecture/exploration de code, `npx tsc --noEmit`, `git commit` local, création/suppression de fichiers temporaires de script (`.tmp-*.mjs`).
+**Pour tout le reste, Simon peut utiliser "Yes, allow all edits during this session" librement, sans repasser par une approbation au cas par cas :** édition de fichiers, lecture/exploration de code, `npx tsc --noEmit`, `git commit` local, création/suppression de fichiers temporaires de script (`.tmp-*.mjs`), et depuis le 2026-09-01, **`git push`** — ajouté aux permissions auto-allow dans `.claude/settings.local.json` (non suivi par git). Justification : le repo n'a qu'un seul remote/branche de déploiement (`main` → Vercel), donc aucun risque de pousser au mauvais endroit ; un push problématique reste réversible via l'historique des déploiements Vercel ou un `git revert`.
 
-Remplace l'ancienne règle ("toujours manuel, par étape, aucune auto-approbation de session") en vigueur jusqu'à cette date.
+Remplace l'ancienne règle (jusqu'au 2026-09-01, `git push` en approbation manuelle stricte comme Supabase/Stripe) en vigueur depuis le 2026-07-09.
 
 Aussi notés pendant la revue, hors scope (pas encore investigués) : 2 avertissements console Playwright détectés sur les sections Localisation/Infos générales/Promotions.
 
-**Changements visuels — aperçu avant/push obligatoire (ajouté le 2026-07-10) :** pour tout changement touchant l'UI (mise en page, couleurs, espacement, contenu affiché, états vides, etc.), toujours montrer un aperçu visuel avant/après — desktop et responsive quand la différence s'y applique — avant de demander l'approbation du commit/push. Ne jamais demander l'approbation d'un changement visuel sans l'avoir montré au préalable.
+**Changements visuels — aperçu avant/push obligatoire (ajouté le 2026-07-10) :** pour tout changement touchant l'UI (mise en page, couleurs, espacement, contenu affiché, états vides, etc.), toujours montrer un aperçu visuel avant/après — desktop et responsive quand la différence s'y applique — avant de committer/pusher. Reste valide même si `git push` est maintenant en auto-allow : l'aperçu visuel est un point d'arrêt à respecter par discipline, pas seulement un gate de permission — ne jamais pusher un changement visuel sans l'avoir montré au préalable.
 
 ---
 
