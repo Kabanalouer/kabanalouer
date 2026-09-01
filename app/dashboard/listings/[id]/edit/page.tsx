@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
-import { getFreeLaunchClaimedCount, getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
+import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 
 function adminSupabase() {
   return createAdminClient(
@@ -37,7 +37,7 @@ export default async function EditListingPage({ params }: Props) {
 
   const admin = adminSupabase();
 
-  const [{ data: subscription }, { data: userRow }, freeLaunchClaimedCount, nextPaidRank, { data: blockedDates }] = await Promise.all([
+  const [{ data: subscription }, { data: userRow }, nextPaidRank, { data: blockedDates }] = await Promise.all([
     // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
     // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
     supabase
@@ -46,7 +46,6 @@ export default async function EditListingPage({ params }: Props) {
       .eq("listing_id", id)
       .maybeSingle(),
     supabase.from("users").select("free_launch_claimed_at").eq("id", user.id).single(),
-    getFreeLaunchClaimedCount(admin),
     getNextPaidRank(admin, user.id),
     supabase
       .from("availability")
@@ -71,7 +70,6 @@ export default async function EditListingPage({ params }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.expires_at ?? null}
-        freeLaunchClaimedCount={freeLaunchClaimedCount}
         hasClaimedFreeLaunch={!!userRow?.free_launch_claimed_at}
         nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}

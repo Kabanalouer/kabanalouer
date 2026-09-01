@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
-import { FREE_LAUNCH_LIMIT, getFreeLaunchClaimedCount } from "@/lib/subscriptionPricing";
 
 function adminSupabase() {
   return createAdminClient(
@@ -57,11 +56,6 @@ export async function POST(request: NextRequest) {
 
   if (existingSub?.status === "active") {
     return NextResponse.json({ error: "Cette annonce a déjà un abonnement actif" }, { status: 409 });
-  }
-
-  const claimedCount = await getFreeLaunchClaimedCount(admin);
-  if (claimedCount >= FREE_LAUNCH_LIMIT) {
-    return NextResponse.json({ error: "Plus de places gratuites disponibles" }, { status: 409 });
   }
 
   const expiresAt = new Date();

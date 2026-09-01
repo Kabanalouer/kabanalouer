@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
 import HostCTA from "@/components/devenir-hote/HostCTA";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -16,8 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = isEn ? "/en/devenir-hote" : "/devenir-hote";
   const title = isEn ? "List My Cabin" : "Inscrire mon chalet";
   const description = isEn
-    ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free offer for the first 50 owners."
-    : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Offre gratuite pour les 50 premiers propriétaires.";
+    ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free for your first year."
+    : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Gratuit pour votre première année.";
   return {
     title,
     description,
@@ -43,20 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const FREE_LAUNCH_LIMIT = 50;
-
-async function getActiveSubscriptionCount(): Promise<number> {
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { count } = await admin
-    .from("subscriptions")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active");
-  return count ?? 0;
-}
-
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -76,13 +61,7 @@ const organizationJsonLd = {
 };
 
 export default async function DevenirHotePage() {
-  const [usedSlots, t] = await Promise.all([
-    getActiveSubscriptionCount(),
-    getTranslations("devenirHote"),
-  ]);
-  const remaining = Math.max(0, FREE_LAUNCH_LIMIT - usedSlots);
-  const progressPct = Math.min(100, Math.round((usedSlots / FREE_LAUNCH_LIMIT) * 100));
-  const isUrgent = remaining < 10;
+  const t = await getTranslations("devenirHote");
 
   const FEATURES = [
     t("i0"), t("i1"), t("i2"), t("i3"), t("i4"), t("i5"), t("i6"), t("i7"),
@@ -136,11 +115,9 @@ export default async function DevenirHotePage() {
                 {t("heroSeeListings")}
               </Link>
             </div>
-            {remaining > 0 && (
-              <p className="text-white/70 text-sm mt-5">
-                ✦ {t("heroPlacesLeft", { remaining })}
-              </p>
-            )}
+            <p className="text-white/70 text-sm mt-5">
+              ✦ {t("heroFreeYear")}
+            </p>
           </div>
         </div>
       </section>
@@ -149,41 +126,18 @@ export default async function DevenirHotePage() {
       <section className="bg-white border-b border-[#ebebeb]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-5">
-            {isUrgent ? t("offerUrgent") : t("offerBadge")}
+            {t("offerBadge")}
           </div>
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
-            {remaining > 0
-              ? t("offerH2remaining", { remaining })
-              : t("offerH2done")}
+            {t("offerH2")}
           </h2>
           <p className="text-charcoal-500 text-sm mb-8 max-w-sm mx-auto">
-            {remaining > 0
-              ? t("offerSubRemaining", { limit: FREE_LAUNCH_LIMIT })
-              : t("offerSubDone")}
+            {t("offerSub")}
           </p>
-
-          <div className="max-w-sm mx-auto mb-2">
-            <div className="flex justify-between text-xs text-charcoal-400 mb-1.5">
-              <span>{t("offerProgress", { used: usedSlots, limit: FREE_LAUNCH_LIMIT })}</span>
-              <span>{progressPct}%</span>
-            </div>
-            <div className="h-3 bg-charcoal-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${isUrgent ? "bg-red-500" : "bg-primary"}`}
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-          </div>
-
-          {isUrgent && remaining > 0 && (
-            <p className="text-red-600 text-xs font-semibold mt-3">
-              {t("offerUrgentNote", { remaining })}
-            </p>
-          )}
 
           <div className="mt-8">
             <HostCTA
-              label={remaining > 0 ? t("offerCtaFree") : t("offerCta299")}
+              label={t("offerCtaFree")}
               className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-full hover:bg-primary-dark transition-colors"
             />
           </div>
@@ -240,25 +194,12 @@ export default async function DevenirHotePage() {
             {/* Price card */}
             <div className="w-full lg:w-72 shrink-0">
               <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8 text-center">
-                {remaining > 0 ? (
-                  <>
-                    <p className="text-sm text-charcoal-400 mb-1">{t("priceForFirst", { limit: FREE_LAUNCH_LIMIT })}</p>
-                    <div className="flex items-end justify-center gap-1 mb-1">
-                      <span className="text-5xl font-bold text-primary">0 $</span>
-                      <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
-                    </div>
-                    <p className="text-xs text-charcoal-400 mb-6">{t("priceThen")}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-charcoal-400 mb-1">{t("priceAnnual")}</p>
-                    <div className="flex items-end justify-center gap-1 mb-1">
-                      <span className="text-5xl font-bold text-primary">299 $</span>
-                      <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
-                    </div>
-                    <p className="text-xs text-charcoal-400 mb-6">{t("pricePerCabin")}</p>
-                  </>
-                )}
+                <p className="text-sm text-charcoal-400 mb-1">{t("priceForFirst")}</p>
+                <div className="flex items-end justify-center gap-1 mb-1">
+                  <span className="text-5xl font-bold text-primary">0 $</span>
+                  <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
+                </div>
+                <p className="text-xs text-charcoal-400 mb-6">{t("priceThen")}</p>
                 <div className="space-y-2 text-sm text-charcoal-600 text-left">
                   {PRICE_FEATURES.map((item) => (
                     <div key={item} className="flex items-center gap-2">
@@ -283,17 +224,14 @@ export default async function DevenirHotePage() {
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("finalCtaTitle")}</h2>
           <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            {t("finalCtaSubtitle")}
-            {remaining > 0 && (
-              <> {t("finalCtaOfferPre")} <strong className="text-white">{t("finalCtaOfferSpots", { remaining })}</strong>{t("finalCtaOfferPost")}</>
-            )}
+            {t("finalCtaSubtitle")} {t("finalCtaOfferText")}
           </p>
           <HostCTA
             label={t("finalCtaBtn")}
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           />
           <p className="text-white/55 text-sm mt-5">
-            {remaining > 0 ? t("finalCtaOfferNote", { remaining }) : t("finalCtaNoOfferNote")}
+            {t("finalCtaOfferNote")}
           </p>
         </div>
       </section>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -14,8 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = isEn ? "/en/tarifs" : "/tarifs";
   const title = isEn ? "Pricing" : "Tarifs et abonnement";
   const description = isEn
-    ? "One simple, transparent annual subscription. $299/year per cabin. Free offer for the first 50 owners."
-    : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Offre gratuite pour les 50 premiers propriétaires.";
+    ? "One simple, transparent annual subscription. $299/year per cabin. Free for your first year."
+    : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Gratuit pour votre première année.";
   return {
     title,
     description,
@@ -41,27 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const FREE_LAUNCH_LIMIT = 50;
-
-async function getActiveSubscriptionCount(): Promise<number> {
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { count } = await admin
-    .from("subscriptions")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active");
-  return count ?? 0;
-}
-
 export default async function TarifsPage() {
-  const [usedSlots, t] = await Promise.all([
-    getActiveSubscriptionCount(),
-    getTranslations("tarifs"),
-  ]);
-  const remaining = Math.max(0, FREE_LAUNCH_LIMIT - usedSlots);
-  const hasOffer = remaining > 0;
+  const t = await getTranslations("tarifs");
 
   const INCLUDED = [
     t("f0"), t("f1"), t("f2"), t("f3"), t("f4"), t("f5"), t("f6"), t("f7"), t("f8"),
@@ -105,27 +85,18 @@ export default async function TarifsPage() {
       <section className="py-12 md:py-20 bg-white">
         <div className="max-w-lg mx-auto px-4 sm:px-6">
           <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8">
-            {hasOffer && (
-              <div className="inline-flex items-center gap-2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
-                {t("offerBadge", { remaining })}
-              </div>
-            )}
+            <div className="inline-flex items-center gap-2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
+              {t("offerBadge")}
+            </div>
 
             <div className="mb-6">
-              {hasOffer ? (
-                <div className="flex items-end gap-3">
-                  <span className="text-6xl font-bold text-primary">0 $</span>
-                  <div className="mb-2">
-                    <p className="text-sm text-charcoal-400 line-through">{t("annualPrice")}</p>
-                    <p className="text-sm text-charcoal-500">{t("firstYear")}</p>
-                  </div>
+              <div className="flex items-end gap-3">
+                <span className="text-6xl font-bold text-primary">0 $</span>
+                <div className="mb-2">
+                  <p className="text-sm text-charcoal-400 line-through">{t("annualPrice")}</p>
+                  <p className="text-sm text-charcoal-500">{t("firstYear")}</p>
                 </div>
-              ) : (
-                <div className="flex items-end gap-2">
-                  <span className="text-6xl font-bold text-primary">299 $</span>
-                  <span className="text-charcoal-500 mb-2">{t("perYearSuffix")}</span>
-                </div>
-              )}
+              </div>
               <p className="text-sm text-charcoal-400 mt-1">{t("perCabinAll")}</p>
             </div>
 
@@ -141,10 +112,10 @@ export default async function TarifsPage() {
             </ul>
 
             <Link
-              href={hasOffer ? "/signup?role=host" : "/devenir-hote"}
+              href="/signup?role=host"
               className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-4 rounded-full hover:bg-primary/90 transition-colors text-base"
             >
-              {hasOffer ? t("offerBtn") : t("registerBtn")}
+              {t("offerBtn")}
             </Link>
             <p className="text-xs text-charcoal-400 text-center mt-3">
               {t("noCardRequired")}
@@ -236,7 +207,7 @@ export default async function TarifsPage() {
         <div className="max-w-2xl mx-auto px-4 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
           <p className="text-white/80 text-lg mb-8">
-            {hasOffer ? t("ctaOfferSubtitle", { remaining }) : t("ctaNoOfferSubtitle")}
+            {t("ctaOfferSubtitle")}
           </p>
           <Link
             href="/signup?role=host"

@@ -1,7 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const FREE_LAUNCH_LIMIT = 50;
-
 export const LISTING_PRICE_IDS = {
   tier1: "price_1ToqE7EVlLGcAv4arl0TmOCz",
   tier2_3: "price_1TqeYhEVlLGcAv4aUUuiwT8R",
@@ -42,15 +40,4 @@ export async function getNextPaidRank(admin: SupabaseClient, hostId: string): Pr
     .eq("status", "active");
 
   return (count ?? 0) + 1;
-}
-
-// Nombre de proprios ayant déjà réclamé l'offre de lancement, une fois dans leur
-// vie — permanent, ne diminue jamais même si l'annonce gratuite est annulée depuis.
-export async function getFreeLaunchClaimedCount(admin: SupabaseClient): Promise<number> {
-  const { count } = await admin
-    .from("users")
-    .select("id", { count: "exact", head: true })
-    .not("free_launch_claimed_at", "is", null);
-
-  return count ?? 0;
 }

@@ -19,7 +19,7 @@ import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
-import { FREE_LAUNCH_LIMIT, formatPriceLabel } from "@/lib/subscriptionPricing";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 
 type FormState = {
@@ -134,7 +134,6 @@ export default function EditListingForm({
   initialLng,
   subscriptionStatus: initialSubStatus,
   subscriptionExpiresAt: initialSubExpiresAt,
-  freeLaunchClaimedCount,
   hasClaimedFreeLaunch,
   nextPaidPriceCents,
   initialBlocked,
@@ -152,7 +151,6 @@ export default function EditListingForm({
   initialLng: number | null;
   subscriptionStatus: string | null;
   subscriptionExpiresAt: string | null;
-  freeLaunchClaimedCount: number;
   hasClaimedFreeLaunch: boolean;
   nextPaidPriceCents: number;
   initialBlocked: BlockedEntry[];
@@ -1333,10 +1331,9 @@ export default function EditListingForm({
 
           {/* Section: Publier */}
           {activeSection === "publier" && (() => {
-            const slotsLeft = Math.max(0, FREE_LAUNCH_LIMIT - freeLaunchClaimedCount);
-            // L'offre gratuite n'est proposée que si des places restent ET que ce
-            // proprio ne l'a jamais réclamée — une fois dans sa vie, définitivement.
-            const isFree = slotsLeft > 0 && !hasClaimedFreeLaunch;
+            // L'offre gratuite n'est proposée que si ce proprio ne l'a jamais
+            // réclamée — une fois dans sa vie, définitivement, sans limite de nombre.
+            const isFree = !hasClaimedFreeLaunch;
             const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate
@@ -1439,25 +1436,6 @@ export default function EditListingForm({
                     <h3 className="text-base font-bold text-charcoal-800 mb-1">
                       {isFree ? t("publish.headingFree") : t("publish.headingPaid")}
                     </h3>
-                    {isFree && (
-                      <>
-                        <div className="flex items-center justify-between mb-1 mt-3">
-                          <span className="text-xs text-charcoal-600">{t("publish.slotsLeft")}</span>
-                          <span className="text-xs font-bold text-primary">{slotsLeft} / {FREE_LAUNCH_LIMIT}</span>
-                        </div>
-                        <div className="w-full bg-charcoal-100 rounded-full h-1.5">
-                          <div
-                            className="bg-primary rounded-full h-1.5"
-                            style={{ width: `${(freeLaunchClaimedCount / FREE_LAUNCH_LIMIT) * 100}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-charcoal-400 mt-1">
-                          <strong className="text-charcoal-700">
-                            {tEdit(slotsLeft === 1 ? "slotsInfoOne" : "slotsInfoMany", { count: slotsLeft, total: FREE_LAUNCH_LIMIT })}
-                          </strong>
-                        </p>
-                      </>
-                    )}
                   </div>
 
                   <ul className="space-y-1.5">
