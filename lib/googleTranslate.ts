@@ -3,7 +3,7 @@
 // simplement null, à l'appelant de décider quoi faire (ici : ne rien afficher
 // de traduit, le message original reste utilisé).
 
-const ENDPOINT = "https://translation.googleapis.com/language/translate2";
+const ENDPOINT = "https://translation.googleapis.com/language/translate/v2";
 
 export type SupportedLanguage = "fr" | "en";
 
