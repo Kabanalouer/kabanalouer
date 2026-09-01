@@ -196,7 +196,7 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
   - 4ᵉ et plus : **199 $/an** chacune (`tier4plus`, Price ID `price_1TqeYhEVlLGcAv4a9mPZ8H0T`)
   - Le rang (`getNextPaidRank()`) = nombre d'abonnements payants **actuellement actifs** de ce proprio (`is_free_launch: false`, `status: active`) + 1. C'est le compte actif, pas l'historique total — annuler une annonce libère son rang pour la prochaine ajoutée, confirmé volontairement ainsi.
   - Le prix est **verrouillé au moment du paiement** (`price_cents`/`price_tier` sur la ligne `subscriptions`, via la métadonnée Stripe `price_tier` posée au checkout) et **jamais recalculé rétroactivement** si le proprio ajoute ou annule d'autres annonces par la suite.
-- **Offre de lancement — une fois dans sa vie par proprio** : `users.free_launch_claimed_at` (`TIMESTAMPTZ`, permanent, jamais effacé) bloque toute deuxième réclamation, même si la première annonce gratuite a été annulée depuis. Les 50 places (`FREE_LAUNCH_LIMIT`) sont comptées sur ce même flag (`getFreeLaunchClaimedCount()`) — pas sur les abonnements gratuits actuellement actifs, qui pourraient sous-compter si certains ont été annulés. L'annonce gratuite ne compte **jamais** dans le rang tarifaire des annonces payantes.
+- **Offre de lancement — une fois dans sa vie par proprio, sans limite de nombre** : `users.free_launch_claimed_at` (`TIMESTAMPTZ`, permanent, jamais effacé) bloque toute deuxième réclamation, même si la première annonce gratuite a été annulée depuis. L'annonce gratuite ne compte **jamais** dans le rang tarifaire des annonces payantes. **Mise à jour le 2026-09-01** : le plafond de 50 places (`FREE_LAUNCH_LIMIT`) a été retiré — voir la sous-section dédiée plus bas, qui détaille aussi pourquoi cette offre ne passe plus du tout par Stripe.
 - **Checkout** (`/api/stripe/checkout`) : `listingId` obligatoire dans le corps de la requête, vérifie la propriété de l'annonce et l'absence d'abonnement actif existant pour elle, calcule le rang/prix au moment de la requête, passe `listing_id` et `price_tier` en métadonnée Stripe.
 - **Webhook** `/api/stripe/webhook` :
   - `checkout.session.completed` : upsert par `listing_id` (`onConflict`), enregistre `price_cents`/`price_tier` verrouillés, republie uniquement l'annonce concernée (`id`), plus tout le portefeuille du proprio (`host_id`) comme avant. L'email de bienvenue "nouveau proprio payant" ne se déclenche qu'au `tier1` (rang 1) — le seul cas qui correspond à une première annonce payante active pour ce proprio, sans quoi une 2ᵉ/3ᵉ/4ᵉ annonce le redéclencherait à tort.
@@ -216,6 +216,31 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
 - **Emails mentionnent l'annonce et le prix verrouillé** (étape 9) : `welcomeSubscription`, `subscriptionReminder`, `winbackReminder` acceptent tous `listingTitle` (fallback "ton chalet"/"your listing" si vide) et affichent le prix verrouillé de la ligne `subscriptions` (`price_cents` → `formatPriceLabel()`) au lieu d'un "299 $" codé en dur.
 - **Bug critique corrigé en même temps** (étape 10) : `/dashboard/listings/[id]/edit` filtrait encore l'abonnement par `user_id` avec `.maybeSingle()` — plantait dès qu'un proprio avait plusieurs annonces (plusieurs lignes possibles). Filtre maintenant par `listing_id`, et affiche le vrai prix dynamique (`getNextPaidRank`/`priceForRank`) au lieu du texte "199 $/an" codé en dur qui ne correspondait à aucun des trois tarifs réels. `PublishUI.tsx` (code mort, jamais importé depuis que la vraie UI de publication a été déplacée dans `EditListingForm.tsx`) a été supprimé au passage.
 - **Migration de données** : vérifié au préalable qu'aucun proprio actif n'avait plusieurs annonces sous un même abonnement (requête de vérification, 0 ligne retournée) — un backfill simple a suffi, pas de cas "grandfathered" à gérer (`supabase/backfill-subscriptions-listing-id.sql`, exécuté et confirmé). Cutover structurel (`DROP CONSTRAINT`/`ADD CONSTRAINT UNIQUE(listing_id)`/`SET NOT NULL`) exécuté et confirmé le même jour (`supabase/restructure-subscriptions-per-listing-cutover.sql`).
+
+### Offre de lancement gratuite illimitée, sans Stripe (2026-09-01)
+
+Basculée de "50 premiers propriétaires gratuits" à "gratuit pour votre première année, sans limite de nombre de proprios" :
+
+- **`FREE_LAUNCH_LIMIT` et `getFreeLaunchClaimedCount()` retirés** de `lib/subscriptionPricing.ts` — l'éligibilité dépend uniquement de `hasClaimedFreeLaunch` (une fois dans sa vie), plus aucun plafond global. Sans ce changement dans `EditListingForm.tsx`, plus personne n'aurait pu réclamer l'offre une fois le 50ᵉ proprio atteint, peu importe le texte affiché.
+- **Aucun appel à l'API Stripe** dans `/api/subscriptions/activate-free` — vérifié par grep sur tout le projet. Écriture directe dans `subscriptions` (`is_free_launch: true`, `stripe_subscription_id: null` — plus de faux ID `free_launch_${listingId}` comme avant, confirmé qu'aucun code ne le lit comme un vrai ID Stripe).
+- **Même mécanisme réutilisé pour les imports Airbnb publiés par l'admin** (voir sous-section Import plus bas) — deux points d'écriture créent maintenant ce type d'abonnement, tous deux avec la garde "jamais une deuxième fois".
+- **Dépublication à l'expiration** : déjà couverte par le cron existant (`is_free_launch = true AND expires_at dépassé`), aucun nouveau code nécessaire — vérifié avant de coder quoi que ce soit.
+- **Garde défensive ajoutée** : la branche `past_due` du cron de rappels (email "paiement échoué") vérifie maintenant aussi `is_free_launch = false` — une ligne gratuite n'a jamais de vraie carte Stripe, donc ne devrait jamais atteindre `past_due` par un chemin réel, mais si ça arrivait, l'ancien code aurait envoyé un email affirmant à tort qu'une carte a été refusée.
+- **Textes mis à jour partout** : page d'accueil, `/tarifs`, `/devenir-hote`, badge dashboard (`SubscriptionClient.tsx`), FAQ propriétaires, Conditions d'utilisation — nouvelle formule standard FR "Gratuit pour votre première année" / EN "Free for your first year".
+- **Promesse "conservation 90 jours" retirée** (FAQ propriétaires, Conditions d'utilisation, Politique de confidentialité section "Conservation des données", y compris le JSON-LD FAQPage codé en dur de `/faq-hotes`) — aucun mécanisme de suppression après 90 jours n'existait ni n'était prévu ; le comportement réel (données conservées indéfiniment après dépublication, aucune suppression automatique) est maintenant ce qui est écrit.
+
+### Traduction automatique des messages FR⇆EN (2026-09-01)
+
+Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle par conversation en `localStorage`, jamais persisté) par une traduction automatique à l'envoi, stockée en base.
+
+- **Google Cloud Translation API v2** (`lib/googleTranslate.ts`) — endpoint `https://translation.googleapis.com/language/translate/v2` (⚠️ pas `/language/translate2` — bug réel commis puis corrigé le jour même, trouvé via un vrai test de bout en bout en production qui a confirmé un 404 Google dans les logs Vercel).
+- **Colonnes** : `messages.content_translated`/`translated_language` (nullable), `users.translation_enabled` (bool, défaut `true`, **réglage global par utilisateur, pas par conversation** — remplace le `localStorage` précédent).
+- **Déclenchement** : à l'envoi, si `preferred_language` diffère entre expéditeur et destinataire ET que le destinataire n'a pas désactivé la traduction. Centralisé dans une nouvelle route `POST /api/messages`, qui remplace les 3 anciens points d'insertion directe côté client (`MessagesClient.tsx`, `ContactButton.tsx`, `ContactForm.tsx` — ce dernier ne renseignait jamais `language`, corrigé au passage).
+- **Échec toujours silencieux** : `translateText()` ne lève jamais d'exception, retourne `null` — le message s'affiche normalement sans traduction plutôt que de bloquer l'envoi.
+- **Propagation** : via Realtime `UPDATE` sur `messages` (ajouté dans `MessagesClient.tsx` — l'abonnement existant n'écoutait que `INSERT`, une mise à jour de traduction posée après coup n'aurait jamais atteint le destinataire déjà sur la page).
+- **Affichage** : badge "Traduit automatiquement" au-dessus du texte traduit, original en dessous, visible seulement si `translation_enabled` est **actuellement** vrai pour le lecteur — si désactivé après coup, les traductions déjà en base restent stockées mais masquées, jamais supprimées.
+- **Testé de bout en bout en production** avec deux vrais comptes (langues différentes, sessions injectées via jetons Supabase le temps du test) : traduction générée et affichée correctement après le correctif d'endpoint.
+- Helpers `cleanDescription`/`truncateToLastSentence` extraits vers `lib/aiText.ts` (partagé avec `generate-description` et l'import Airbnb).
 
 ### Sécurité (audit complet effectué)
 - **Headers HTTP** : X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP — configurés dans `next.config.ts`
@@ -314,6 +339,11 @@ NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
 | Voyageur | slemay@authentik.com | traveler | Compte voyageur de test |
 | Proprio test | info@chaletauthentik.com | host | `is_free_launch=false` pour tester le flux Stripe payant |
 
+**Données de test laissées sur `info@chaletauthentik.com` (2026-09-01)** — à nettoyer ou ignorer selon le besoin :
+- Annonce brouillon "Chalet test QA au bord du lac" (déjà notée section 14, préexistante).
+- Une annonce importée depuis un vrai lien VRBO (`https://www.vrbo.com/fr-ca/location/p9607368`) créée pendant le test du flux d'import — brouillon `pending_review`, jamais publié, `import_raw_data` contient la vraie réponse Apify (utile comme référence si besoin de retester le mapping VRBO plus tard).
+- `preferred_language` a été temporairement basculé à `'en'` puis remis à `'fr'` pour le test de traduction — confirmé remis à sa valeur d'origine.
+
 ---
 
 ## 12. Migrations SQL en attente (Supabase Dashboard → SQL Editor)
@@ -345,7 +375,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 
 ---
 
-## 13. Dernière session — 2026-07-08 au 2026-07-10
+## 13. Historique des sessions — 2026-07-08 au 2026-09-01
 
 ### Fonctionnalités complétées
 
@@ -396,11 +426,29 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 - Blogue : deux approches proposées, aucune décision prise — (a) articles en Markdown dans le repo (simple, mais nécessite mon implication à chaque publication), ou (b) table Supabase + section `/dashboard/blog` (plus de travail initial, mais autonomie complète pour Simon).
 - Plan stratégique de lancement complet produit : document Word `Kabanalouer_Plan_Strategique_Lancement.docx` (racine du repo) — positionnement, avatars proprios/voyageurs, accroches, analyse concurrentielle détaillée (concurrents principaux identifiés par Simon : ChaletsAuQuebec.com, Chaletsalouer.com, Trouvermonchalet.ca; concurrents secondaires : RSVPchalets, Reserver.ca, Québec location de chalets, MonsieurChalets, Airbnb/VRBO), plan de recrutement des proprios, plan de communication voyageurs. Cibles chiffrées (KPIs) pas encore définies avec Simon.
 
+### Session du 2026-09-01
+
+Trois chantiers de fond, chacun testé en conditions réelles avant commit :
+
+1. **Offre de lancement gratuite illimitée, sans Stripe** — voir section 9. Retrait complet du plafond de 50 places et de la promesse de conservation "90 jours" (textes + logique).
+2. **Traduction automatique des messages FR⇆EN** — voir section 9. Bug d'endpoint Google Translate trouvé et corrigé via un vrai test de bout en bout en production.
+3. **Import d'annonces Airbnb, phase 1** — voir section 9. VRBO exploré puis retiré pour fiabilité des photos côté actor Apify. File de révision admin + politique RLS admin (première du projet) + courriels de notification/bienvenue.
+
+**Aussi fait** : 3 failles de sécurité corrigées le jour même sur le commit initial de l'import (allowlist de domaine, absence de limite avant l'appel Apify, injection JSON-LD — voir section 9) ; recherche de faisabilité pour importer depuis Chalet à louer / Chalet au Québec (concurrents) — voir section 14, rien codé.
+
+**Outillage** : première utilisation dans ce projet d'une politique RLS admin (compromis documenté section 9) ; premier usage de sessions injectées via jetons Supabase (`/auth/v1/verify` + cookies `@supabase/ssr` reconstruits) pour contourner Cloudflare Turnstile en test local, faute d'accès aux domaines autorisés à temps.
+
 ### Prochaine étape immédiate
 
-- QA fonctionnel du site (recherche, formulaires, navigation, erreurs console) — pas encore fait.
-- Valider avec Simon : décision infolettre (Resend Broadcasts), décision blogue (Markdown vs table Supabase), cibles chiffrées du plan stratégique.
-- Voir section 14 pour les autres points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
+**Grand test complet en attente (Simon)** — rien de ce qui suit n'a encore été testé en conditions réelles par un vrai clic bout en bout, seulement par des appels directs :
+- Flux de révision admin des imports Airbnb au complet : recevoir la notification, réviser via le formulaire, cliquer "Publier au nom du propriétaire", confirmer que le courriel de bienvenue part bien et que l'abonnement offre de lancement est bien créé.
+- QA fonctionnel du site (recherche, formulaires, navigation, erreurs console) — toujours pas fait depuis le 2026-07-10.
+- Sélecteur de langue FR/EN dans le profil + redirection automatique (section 14) — toujours pas testé depuis le 2026-07-07.
+- Version anglaise des emails Auth (signup + recovery) — toujours pas testée depuis le 2026-07-07 (bloqué à l'époque par une limite de débit Supabase, jamais repris).
+
+**Décisions produits toujours en attente** (aucun changement depuis le 2026-07-10) : infolettre (Resend Broadcasts vs Mailchimp), blogue (Markdown vs table Supabase), cibles chiffrées du plan stratégique.
+
+Voir section 14 pour les autres points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
 
 ---
 
@@ -444,6 +492,14 @@ Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Rest
 - Traitement de l'espace vide sur les sections courtes du dashboard
 - État vide de la section "Aperçu"
 - Incohérence de l'ordre des CTA mobile vs desktop
+
+### Import depuis Chalet à louer / Chalet au Québec — faisabilité validée, rien construit (2026-09-01)
+
+Recherche exploratoire (lecture seule, une annonce réelle testée par site) avant de décider si ça vaut la peine de construire un scraper dédié pour ces 2 concurrents (pas d'actor Apify existant, contrairement à Airbnb/VRBO) :
+
+- **chaletsauquebec.com** : entièrement rendu côté serveur (ASP.NET WebForms), zéro JavaScript requis. Titre, description, photos (26 trouvées, conversion `/thumb/` → `/Grand/` pour la pleine résolution), chambres/capacité/équipements (panneau de faits structuré), région (vrai `BreadcrumbList` en microdata), prix — tout extractible par simple fetch HTML. `robots.txt` entièrement ouvert.
+- **chaletsalouer.com** : pareil sauf la galerie photo, qui est chargée par un carrousel JS (seulement 5-6 vignettes dans le HTML brut) — nécessiterait Playwright ou de la rétro-ingénierie d'un endpoint AJAX pour cette annonce en particulier. `robots.txt` bloque nommément les crawlers IA (ClaudeBot inclus) via `Content-Signal: ai-train=no` — pas un blocage technique du scraping en général, mais un signal explicite à respecter (user-agent honnête requis, jamais un navigateur ou un autre bot usurpé).
+- **Recommandation** : réaliste à construire, mais tester 5-10 annonces de plus par site avant de s'engager (une seule annonce testée par site) — contrairement aux actors Apify (maintenus par une équipe externe), un scraper maison ici serait 100 % à la charge de Kabanalouer si le site change de structure.
 
 ### Export iCal — lien jamais affiché sur la page Disponibilités (2026-07-09)
 
