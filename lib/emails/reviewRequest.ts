@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { renderEmail } from "./renderEmail";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
@@ -56,11 +57,13 @@ export async function sendReviewRequestEmail({
   const template = INITIAL_TEMPLATE[preferredLanguage];
   const trimmedFirstName = firstName?.trim() || undefined;
 
+  // firstName/listingTitle viennent de données saisies par les utilisateurs
+  // (nom de profil, titre d'annonce) — jamais interpolées telles quelles.
   const html = renderEmail({
     lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
+    greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
     heading: template.heading,
-    body: template.body(listingTitle),
+    body: template.body(escapeHtml(listingTitle)),
     buttonLabel: template.exchangeButtonLabel,
     buttonUrl: echangeUrl,
     secondaryButtonLabel: template.stayButtonLabel,
@@ -127,9 +130,9 @@ export async function sendStayReviewRequestEmail({
 
   const html = renderEmail({
     lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
+    greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
     heading: template.heading,
-    body: template.body(listingTitle),
+    body: template.body(escapeHtml(listingTitle)),
     buttonLabel: template.buttonLabel,
     buttonUrl: stayUrl,
     footerNote: template.footerNote,

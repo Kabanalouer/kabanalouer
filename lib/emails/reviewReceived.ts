@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
@@ -66,11 +67,20 @@ export async function sendReviewReceivedEmail({
   const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
   const buttonPath = preferredLanguage === "en" ? "/en/dashboard/avis" : "/dashboard/avis";
 
+  // reviewerFirstName/listingTitle/comment viennent de données saisies par
+  // les utilisateurs (nom de profil, titre d'annonce, commentaire libre) —
+  // jamais interpolées telles quelles dans le HTML du courriel.
   const html = renderEmail({
     lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
+    greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
     heading: template.heading,
-    body: template.body(reviewerFirstName, listingTitle, stars, rating, comment),
+    body: template.body(
+      escapeHtml(reviewerFirstName),
+      escapeHtml(listingTitle),
+      stars,
+      rating,
+      comment ? escapeHtml(comment) : null
+    ),
     buttonLabel: template.buttonLabel,
     buttonUrl: `${SITE_URL}${buttonPath}`,
     footerNote: template.footerNote,
