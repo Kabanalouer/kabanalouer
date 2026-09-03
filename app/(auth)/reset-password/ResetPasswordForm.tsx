@@ -25,16 +25,19 @@ function ResetPasswordForm() {
   useEffect(() => {
     let mounted = true;
 
-    // @supabase/ssr utilise le flux PKCE par défaut — le lien de courriel
-    // revient ici avec un ?code= à échanger explicitement contre une session
-    // (contrairement à l'ancien flux implicite, qui aurait fourni les tokens
-    // directement dans le fragment d'URL et déclenché PASSWORD_RECOVERY tout
-    // seul). Sans cet échange, getSession() ne trouve jamais rien et l'écran
-    // "lien invalide" s'affiche à tort, même pour un lien tout frais.
+    // Le lien de courriel mène ici avec ?token_hash=...&type=recovery (voir
+    // supabase/functions/send-email-hook/index.ts) — jamais vers
+    // /auth/v1/verify directement, pour que le token à usage unique ne soit
+    // consommé QUE par ce vrai appel côté client, pas par un simple GET/HEAD
+    // automatisé d'un scanneur de sécurité de messagerie (cause documentée
+    // par Supabase des "Lien invalide ou expiré" qui apparaissent avant même
+    // que l'utilisateur ait cliqué — voir doc "OTP Verification Failures").
     const init = async () => {
-      const code = new URLSearchParams(window.location.search).get("code");
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const params = new URLSearchParams(window.location.search);
+      const tokenHash = params.get("token_hash");
+      const type = params.get("type");
+      if (tokenHash && type === "recovery") {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
         if (!mounted) return;
         if (error) {
           setStatus("invalid");

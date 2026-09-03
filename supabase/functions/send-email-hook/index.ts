@@ -28,6 +28,21 @@ function jsonResponse(body: unknown, status: number) {
 }
 
 function buildActionLink(tokenHash: string, actionType: string, redirectTo: string) {
+  // 'recovery' : lien direct vers NOTRE page plutôt que /auth/v1/verify —
+  // ce dernier consomme le token à usage unique dès qu'on y accède, même via
+  // un simple GET automatisé. Les scanneurs de sécurité de messagerie
+  // (ex. Microsoft Safe Links) "prévisitent" les liens des courriels et
+  // invalident ainsi le token avant le vrai clic de l'utilisateur (voir doc
+  // Supabase "OTP Verification Failures" — cause documentée : email
+  // prefetching). ResetPasswordForm.tsx consomme le token lui-même, côté
+  // client (JS), via supabase.auth.verifyOtp() — un simple GET/HEAD de la
+  // page HTML par un scanneur ne déclenche pas cet appel.
+  if (actionType === "recovery") {
+    const url = new URL(redirectTo);
+    url.searchParams.set("token_hash", tokenHash);
+    url.searchParams.set("type", actionType);
+    return url.toString();
+  }
   const base = Deno.env.get("SUPABASE_URL")!;
   const params = new URLSearchParams({ token: tokenHash, type: actionType, redirect_to: redirectTo });
   return `${base}/auth/v1/verify?${params.toString()}`;
