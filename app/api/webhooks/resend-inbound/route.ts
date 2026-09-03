@@ -5,6 +5,12 @@ import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
 import { extractEmailAddress, extractReplyToken, isAutoReply } from "@/lib/emailReplyAddress";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
+// Clé séparée, permission "Full access" — RESEND_API_KEY (utilisée partout
+// ailleurs pour l'envoi) est en "Sending access" seulement et ne peut pas
+// appeler l'API de réception (confirmé en test réel : 401
+// "restricted_api_key"). Moindre privilège : seule cette route a besoin
+// d'une clé plus large, jamais utilisée pour l'envoi.
+const resendReceiving = new Resend(process.env.RESEND_RECEIVING_API_KEY!);
 
 // Phase 2b — reçoit les réponses envoyées depuis la messagerie normale du
 // destinataire (Gmail, Outlook, etc.) à conv-{token}@reply.kabanalouer.ca et
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
 
   // Le webhook ne transporte que les métadonnées — le corps complet
   // (texte/HTML/en-têtes) nécessite cet appel supplémentaire.
-  const { data: email, error: fetchError } = await resend.emails.receiving.get(email_id);
+  const { data: email, error: fetchError } = await resendReceiving.emails.receiving.get(email_id);
   if (fetchError || !email) {
     console.error("[resend-inbound] échec récupération du courriel complet", fetchError);
     return NextResponse.json({ error: "Échec de récupération du courriel" }, { status: 500 });
