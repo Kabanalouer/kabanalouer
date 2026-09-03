@@ -6,9 +6,10 @@ import { buildReplyToAddress, getOrCreateEmailReplyAddress } from "@/lib/emailRe
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-// no-reply : le Reply-To (adresse conv-{token}@reply.kabanalouer.ca, voir
-// Phase 2b) est ce qui permet réellement de répondre à ce courriel.
-const FROM = "Kabanalouer <no-reply@kabanalouer.ca>";
+// messages@ (pas no-reply@, contrairement aux autres courriels du projet) —
+// moins dissuasif pour la réponse, maintenant que la Phase 2b permet
+// réellement de répondre via le Reply-To (conv-{token}@reply.kabanalouer.ca).
+const FROM = "Kabanalouer <messages@kabanalouer.ca>";
 
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -32,7 +33,7 @@ const TEMPLATE: Record<"fr" | "en", {
     headingMany: (count, senderFirstName) => `${count} nouveaux messages de ${senderFirstName}`,
     body: (listingTitle, preview) => `À propos de : ${listingTitle}<br/><br/><em>"${preview}"</em>`,
     buttonLabel: "Voir la conversation",
-    footerNote: "Ceci est un courriel automatique — réponds directement dans ta messagerie Kabanalouer.",
+    footerNote: "Ceci est un courriel automatique — réponds directement à ce courriel, ou dans ta messagerie Kabanalouer.",
   },
   en: {
     subjectOne: (senderFirstName, listingTitle) => `New message from ${senderFirstName} about ${listingTitle}`,
@@ -42,7 +43,7 @@ const TEMPLATE: Record<"fr" | "en", {
     headingMany: (count, senderFirstName) => `${count} new messages from ${senderFirstName}`,
     body: (listingTitle, preview) => `About: ${listingTitle}<br/><br/><em>"${preview}"</em>`,
     buttonLabel: "View conversation",
-    footerNote: "This is an automated email — reply directly in your Kabanalouer messaging.",
+    footerNote: "This is an automated email — reply directly to this email, or in your Kabanalouer messaging.",
   },
 };
 
