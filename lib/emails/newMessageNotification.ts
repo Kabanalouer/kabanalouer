@@ -72,9 +72,17 @@ export async function sendNewMessageNotificationEmail({
   // jamais interpolées telles quelles dans le HTML (voir lib/escapeHtml.ts).
   const safeSender = escapeHtml(senderFirstName);
   const safeListingTitle = escapeHtml(listingTitle);
-  const truncated = previewText.length > PREVIEW_MAX_LENGTH
-    ? `${previewText.slice(0, PREVIEW_MAX_LENGTH)}…`
-    : previewText;
+  // Le gabarit entoure déjà l'aperçu de guillemets (voir body() ci-dessus) —
+  // si le message lui-même commence ou finit par un guillemet (tapé par
+  // l'utilisateur, ex. "...texte"), on se retrouve avec deux guillemets
+  // collés. On retire ceux en trop aux extrémités avant le gabarit.
+  const trimmedQuotes = previewText.trim().replace(
+    /^["'‘’“”«»]+|["'‘’“”«»]+$/g,
+    ""
+  );
+  const truncated = trimmedQuotes.length > PREVIEW_MAX_LENGTH
+    ? `${trimmedQuotes.slice(0, PREVIEW_MAX_LENGTH)}…`
+    : trimmedQuotes;
   const safePreview = escapeHtml(truncated);
 
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
