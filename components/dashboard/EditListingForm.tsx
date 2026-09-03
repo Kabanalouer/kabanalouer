@@ -15,6 +15,7 @@ import LocationSection from "./LocationSection";
 import AvailabilityCalendar, { type BlockedEntry } from "./AvailabilityCalendar";
 import ICalSync from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
+import QuoteSection from "./QuoteSection";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
@@ -44,6 +45,9 @@ type FormState = {
   checkin_type: "autonomous" | "in_person";
   nearby_activities: string[];
   price_on_request: boolean;
+  quote_inclusions: string[];
+  quote_exclusions: string[];
+  quote_booking_instructions: string;
 };
 
 function timeSlots(startH: number, endH: number): string[] {
@@ -69,6 +73,7 @@ type SectionId =
   | "calendrier"
   | "localisation"
   | "tarifs"
+  | "devis"
   | "infos"
   | "promotions"
   | "analyse"
@@ -88,6 +93,7 @@ const SECTIONS: Array<{
   { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
   { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
   { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
+  { id: "devis",        sectionKey: "quote",     isComplete: () => true },
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
   { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
@@ -107,6 +113,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
+  devis:        ["quote_inclusions", "quote_exclusions", "quote_booking_instructions"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
   promotions:   [],
   analyse:      [],
@@ -195,6 +202,9 @@ export default function EditListingForm({
     checkin_type: "autonomous" as const,
     nearby_activities: [],
     price_on_request: false,
+    quote_inclusions: [],
+    quote_exclusions: [],
+    quote_booking_instructions: "",
     ...initialData,
   });
 
@@ -559,6 +569,7 @@ export default function EditListingForm({
       equipements:  t("sections.amenities"),
       proximite:    t("sections.nearby"),
       tarifs:       t("sections.pricing"),
+      devis:        t("sections.devis"),
       calendrier:   t("sections.calendar"),
       localisation: t("sections.location"),
       infos:        t("sections.general"),
@@ -1268,6 +1279,20 @@ export default function EditListingForm({
 
               </div>
               <RequiredNote tEdit={tEdit} />
+            </SectionShell>
+          )}
+
+          {/* Section: Devis */}
+          {activeSection === "devis" && (
+            <SectionShell title={t("sections.devis")}>
+              <QuoteSection
+                inclusions={form.quote_inclusions}
+                exclusions={form.quote_exclusions}
+                bookingInstructions={form.quote_booking_instructions}
+                onInclusionsChange={(v) => set("quote_inclusions", v)}
+                onExclusionsChange={(v) => set("quote_exclusions", v)}
+                onBookingInstructionsChange={(v) => set("quote_booking_instructions", v)}
+              />
             </SectionShell>
           )}
 

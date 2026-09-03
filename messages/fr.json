@@ -175,6 +175,7 @@
       "amenities": "Caractéristiques",
       "nearby": "À proximité",
       "pricing": "Tarifs",
+      "devis": "Devis",
       "calendar": "Calendrier",
       "location": "Localisation",
       "general": "Infos générales",
@@ -284,6 +285,19 @@
       "livingroomPhotos": "Photos du salon",
       "bedroomDefault": "Chambre {n}",
       "livingroomDefault": "Salon {n}"
+    },
+    "quote": {
+      "intro": "Remplissez cette section une seule fois — elle vous servira à générer rapidement un devis structuré pour chaque demande, directement dans votre messagerie.",
+      "inclusionsTitle": "Ce qui est compris",
+      "inclusionsEmpty": "Aucun élément ajouté.",
+      "inclusionsPlaceholder": "ex. Bois de foyer",
+      "addInclusion": "+ Ajouter un élément",
+      "exclusionsTitle": "Ce qui n'est pas compris",
+      "exclusionsEmpty": "Aucun élément ajouté.",
+      "exclusionsPlaceholder": "ex. Frais de ménage",
+      "addExclusion": "+ Ajouter un élément",
+      "bookingTitle": "Comment réserver",
+      "bookingPlaceholder": "Expliquez les prochaines étapes pour confirmer la réservation…"
     },
     "photos": {
       "errorUnreadable": "Fichier illisible.",

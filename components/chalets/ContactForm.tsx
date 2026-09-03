@@ -189,7 +189,12 @@ export default function ContactForm({
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId, receiverId: hostId, content: lines }),
+      body: JSON.stringify({
+        listingId, receiverId: hostId, content: lines,
+        checkIn: checkin || undefined,
+        checkOut: checkout || undefined,
+        numGuests: guestTotal > 0 ? guestTotal : undefined,
+      }),
     });
 
     if (!res.ok) {

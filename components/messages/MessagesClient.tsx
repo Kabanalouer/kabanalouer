@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import QuoteCard from "./QuoteCard";
+import QuoteWidget from "./QuoteWidget";
+import type { QuoteData } from "@/lib/quoteMessage";
 
 type Message = {
   id: string;
@@ -16,6 +19,10 @@ type Message = {
   translated_language: string | null;
   is_read: boolean;
   language: string | null;
+  check_in: string | null;
+  check_out: string | null;
+  num_guests: number | null;
+  quote_data: QuoteData | null;
   created_at: string;
   sender: { id: string; name: string; avatar_url: string | null };
   receiver: { id: string; name: string; avatar_url: string | null };
@@ -27,9 +34,11 @@ type Conversation = {
   other_user_avatar: string | null;
   listing_id: string;
   listing_title: string;
+  listing_host_id: string | null;
   last_message: string;
   last_message_at: string;
   unread_count: number;
+  has_quote_request: boolean;
 };
 
 export default function MessagesClient({
@@ -62,11 +71,24 @@ export default function MessagesClient({
   // Réglage global par utilisateur (pas par conversation) — contrôle
   // uniquement l'affichage des traductions REÇUES, jamais l'envoi.
   const [translationEnabled, setTranslationEnabled] = useState(initialTranslationEnabled);
+  const [showQuoteWidget, setShowQuoteWidget] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
   );
+  // Le widget "Devis structuré" n'est offert que si l'utilisateur courant est
+  // le proprio de l'annonce concernée par CETTE conversation précise (pas
+  // juste son rôle global — un même compte peut être proprio d'un chalet et
+  // avoir contacté un autre proprio ailleurs comme voyageur) ET que le fil a
+  // débuté via le CTA principal "Demande de devis" (dates + voyageurs) —
+  // jamais pour une conversation ouverte via "Contacter le propriétaire".
+  const isHostOfListing = !!activeConv && activeConv.listing_host_id === currentUserId;
+  const canSendStructuredQuote = isHostOfListing && !!activeConv?.has_quote_request;
+
+  useEffect(() => {
+    setShowQuoteWidget(false);
+  }, [selectedListingId, selectedWithId]);
 
   useEffect(() => {
     if (!selectedListingId || !selectedWithId) return;
@@ -360,6 +382,14 @@ export default function MessagesClient({
                   const isMine = msg.sender_id === currentUserId;
                   const showTranslation = !isMine && !!msg.content_translated && translationEnabled;
 
+                  if (msg.quote_data) {
+                    return (
+                      <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                        <QuoteCard quote={msg.quote_data} listingTitle={activeConv?.listing_title ?? ""} />
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
                       key={msg.id}
@@ -407,23 +437,56 @@ export default function MessagesClient({
             </div>
 
             {/* Input */}
-            <div className="bg-white border-t border-[#ebebeb] px-4 py-3 flex gap-3 items-end">
-              <textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Écrivez votre message… (Entrée pour envoyer)"
-                rows={1}
-                className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
-                style={{ minHeight: "42px" }}
-              />
-              <button
-                onClick={handleSend}
-                disabled={sending || !newMessage.trim()}
-                className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
-              >
-                {sending ? "…" : "Envoyer"}
-              </button>
+            <div id="message-composer" className="bg-white border-t border-[#ebebeb] px-4 py-3">
+              {canSendStructuredQuote && (
+                <div className="flex gap-2 mb-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowQuoteWidget(false)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                      !showQuoteWidget ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-500 hover:border-charcoal-300"
+                    }`}
+                  >
+                    Message libre
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuoteWidget(true)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                      showQuoteWidget ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-500 hover:border-charcoal-300"
+                    }`}
+                  >
+                    Devis structuré
+                  </button>
+                </div>
+              )}
+
+              {canSendStructuredQuote && showQuoteWidget && activeConv ? (
+                <QuoteWidget
+                  listingId={activeConv.listing_id}
+                  receiverId={activeConv.other_user_id}
+                  onSent={() => setShowQuoteWidget(false)}
+                />
+              ) : (
+                <div className="flex gap-3 items-end">
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Écrivez votre message… (Entrée pour envoyer)"
+                    rows={1}
+                    className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
+                    style={{ minHeight: "42px" }}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={sending || !newMessage.trim()}
+                    className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
+                  >
+                    {sending ? "…" : "Envoyer"}
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}

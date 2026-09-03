@@ -175,6 +175,7 @@
       "amenities": "Amenities",
       "nearby": "Nearby",
       "pricing": "Pricing",
+      "devis": "Quote",
       "calendar": "Calendar",
       "location": "Location",
       "general": "General info",
@@ -284,6 +285,19 @@
       "livingroomPhotos": "Living space photos",
       "bedroomDefault": "Bedroom {n}",
       "livingroomDefault": "Living room {n}"
+    },
+    "quote": {
+      "intro": "Fill in this section once — it'll let you quickly generate a structured quote for each request, right from your messaging.",
+      "inclusionsTitle": "What's included",
+      "inclusionsEmpty": "No item added.",
+      "inclusionsPlaceholder": "e.g. Firewood",
+      "addInclusion": "+ Add an item",
+      "exclusionsTitle": "What's not included",
+      "exclusionsEmpty": "No item added.",
+      "exclusionsPlaceholder": "e.g. Cleaning fee",
+      "addExclusion": "+ Add an item",
+      "bookingTitle": "How to book",
+      "bookingPlaceholder": "Explain the next steps to confirm the booking…"
     },
     "photos": {
       "errorUnreadable": "File could not be read.",

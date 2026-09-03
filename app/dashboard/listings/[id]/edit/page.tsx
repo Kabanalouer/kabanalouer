@@ -114,6 +114,9 @@ export default async function EditListingPage({ params }: Props) {
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
           price_on_request: (listing.price_on_request as boolean | null) ?? true,
           min_age: (listing.min_age as number | null) ?? 21,
+          quote_inclusions: Array.isArray(listing.quote_inclusions) ? listing.quote_inclusions as string[] : [],
+          quote_exclusions: Array.isArray(listing.quote_exclusions) ? listing.quote_exclusions as string[] : [],
+          quote_booking_instructions: (listing.quote_booking_instructions as string | null) ?? "",
         }}
       />
     </div>
