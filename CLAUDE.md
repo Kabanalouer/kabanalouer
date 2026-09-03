@@ -312,6 +312,17 @@ Phase 1 de l'import d'annonces externes — **Airbnb seulement**, VRBO retiré (
 
 > **Politique RLS admin sur `listings` — un cas à part.** Partout ailleurs dans ce projet (abonnements, proprios, panneau annonces), l'admin agit via le client service-role côté serveur, jamais via une session RLS élargie. Exception acceptée sciemment ici : `EditListingForm.tsx` fait de nombreuses écritures Supabase directes côté client (pas via une API centralisée) — router chacune vers une nouvelle API service-role aurait été un chantier disproportionné pour débloquer la révision des imports. Compromis de rapidité de développement accepté malgré le risque : une politique RLS élève les permissions au niveau de **la session admin entière** sur toute la table, pas d'une route précise et auditable. La politique vérifie `role = 'admin'` strictement via une jointure sur `users` (jamais juste "authenticated"). Migration : `supabase/add-listings-admin-rls-policy.sql`.
 
+### Messagerie par courriel — notification (Phase 2a) et réponse (Phase 2b) (2026-09-03)
+
+- **Phase 2a — notification "nouveau message"** : cron `/api/cron/new-message-notifications` (`*/5 * * * *`) — regroupe les messages non lus depuis 5+ minutes par `listing_id`+`sender_id`+`receiver_id`, re-vérifie `is_read` juste avant l'envoi (évite une notification si lu entre-temps), un seul courriel par groupe (compte, expéditeur, annonce, aperçu tronqué à 150 caractères). Colonne `messages.notification_sent_at` (anti-doublon, posée même si aucun envoi parce que lu entre-temps). `lib/emails/newMessageNotification.ts` — FR/EN, échappement HTML de tout contenu utilisateur (`lib/escapeHtml.ts`).
+  - **Bug trouvé et corrigé le jour même en testant en conditions réelles** : le gabarit entoure déjà l'aperçu de guillemets — un message se terminant lui-même par un guillemet produisait deux guillemets collés. Corrigé en retirant tout guillemet (droit ou courbe) en début/fin du contenu brut avant le gabarit.
+- **Phase 2b — réponse par courriel** : sous-domaine dédié `reply.kabanalouer.ca` (jamais la racine — le MX racine est déjà celui de Google Workspace), créé et vérifié dans Resend (réception activée). Table `email_reply_addresses` (une ligne par paire d'utilisateurs sur une annonce, `user_a_id`/`user_b_id` normalisés — le plus petit UUID en premier — pour toujours retomber sur la même ligne). Token court (16 octets/32 car. hex, `lib/emailReplyAddress.ts`) — volontairement plus court que `review_requests.token` (32 octets) : au-delà de ~59 caractères, `conv-{token}@reply.kabanalouer.ca` dépasserait la limite RFC 5321 de 64 caractères pour le local-part d'une adresse courriel.
+  - Le courriel de notification (Phase 2a) porte maintenant un `Reply-To: conv-{token}@reply.kabanalouer.ca` — répondre depuis Gmail/Outlook insère directement le message dans la conversation, sans connexion à l'app.
+  - **Route `POST /api/webhooks/resend-inbound`** : vérifie la signature (`resend.webhooks.verify()`, Svix), ne traite que `email.received`, extrait le token de l'adresse "to", retrouve la paire, appelle `resend.emails.receiving.get()` pour le contenu complet (le webhook ne transporte que les métadonnées), détecte les réponses automatiques (en-têtes `Auto-Submitted`/`X-Autoreply` ou motifs de sujet courants), vérifie que l'adresse "from" correspond à un des deux participants légitimes, nettoie le texte via `email-reply-parser` (retire les citations du fil), puis insère via `insertMessageAndTranslate` (`lib/sendMessage.ts`) — message indiscernable d'un envoi normal, traduction automatique incluse gratuitement. Chaque cas d'exclusion est ignoré silencieusement (log seulement).
+  - **Bug trouvé et corrigé en testant en conditions réelles** : `RESEND_API_KEY` (utilisée partout ailleurs pour l'envoi) a la permission "Sending access" seulement — l'appel à l'API de réception échouait avec 401 `restricted_api_key`. Corrigé en créant une clé séparée `RESEND_RECEIVING_API_KEY` ("Full access"), utilisée uniquement dans cette route — moindre privilège, la clé d'envoi reste inchangée partout ailleurs.
+  - **Limite connue, acceptée telle quelle par Simon** : `email-reply-parser` retire bien les citations du fil et les formules classiques ("Sent from my iPhone", etc.) mais pas une signature personnalisée sans séparateur standard (`--` sur sa propre ligne) — une signature Gmail avec mise en forme (nom en gras) peut donc se retrouver insérée avec le message.
+  - **Testé et confirmé de bout en bout en conditions réelles** (message envoyé via l'app → notification reçue → réponse Gmail → insertion correcte, sender/receiver et listing corrects, citation du fil bien retirée).
+
 ---
 
 ## 10. Variables d'environnement
@@ -329,7 +340,9 @@ STRIPE_WEBHOOK_SECRET
 ANTHROPIC_API_KEY
 GOOGLE_TRANSLATE_API_KEY           # server-side uniquement — traduction auto des messages
 APIFY_API_TOKEN                    # server-side uniquement — import d'annonces Airbnb (Apify)
-RESEND_API_KEY
+RESEND_API_KEY                     # "Sending access" seulement — ne peut PAS appeler l'API de réception
+RESEND_RECEIVING_API_KEY           # "Full access" — utilisée uniquement par /api/webhooks/resend-inbound
+RESEND_WEBHOOK_SECRET              # whsec_... — vérifie la signature Svix du webhook Resend Inbound
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
 ```
@@ -374,6 +387,9 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-listing-import-columns.sql` | Ajoute `listings.import_source`/`import_source_url`/`import_status`/`photos_rights_confirmed`/`import_raw_data` (import Airbnb) | Exécuté et confirmé (projet Supabase unique, partagé dev/prod) le 2026-09-01 |
 | `add-listings-admin-rls-policy.sql` | Ajoute la politique RLS "Les admins gèrent tous les listings" — première politique RLS admin du projet, voir section 9 (Import d'annonces) pour le compromis accepté | À exécuter par Simon dans Supabase SQL Editor |
 | `add-featured-reminder-tracking.sql` | Ajoute `reminder_3d_sent_at`/`expired_email_sent_at` à `featured_listings` (séquence email boost) | À exécuter dans Supabase Dashboard si pas déjà fait |
+| `add-review-request-system.sql` | Crée la table `review_requests` (système d'avis automatique en deux volets, échange/séjour) | Exécuté et confirmé en prod |
+| `add-message-notification-tracking.sql` | Ajoute `messages.notification_sent_at` (anti-doublon, cron de notification "nouveau message", Phase 2a) | Exécuté et confirmé en prod le 2026-09-03 |
+| `add-email-reply-addresses.sql` | Crée la table `email_reply_addresses` (adresses `conv-{token}@reply.kabanalouer.ca`, Phase 2b) | Exécuté et confirmé en prod le 2026-09-03 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
@@ -442,6 +458,12 @@ Trois chantiers de fond, chacun testé en conditions réelles avant commit :
 **Aussi fait** : 3 failles de sécurité corrigées le jour même sur le commit initial de l'import (allowlist de domaine, absence de limite avant l'appel Apify, injection JSON-LD — voir section 9) ; recherche de faisabilité pour importer depuis Chalet à louer / Chalet au Québec (concurrents) — voir section 14, rien codé.
 
 **Outillage** : première utilisation dans ce projet d'une politique RLS admin (compromis documenté section 9) ; premier usage de sessions injectées via jetons Supabase (`/auth/v1/verify` + cookies `@supabase/ssr` reconstruits) pour contourner Cloudflare Turnstile en test local, faute d'accès aux domaines autorisés à temps.
+
+### Session du 2026-09-03 — Messagerie par courriel (Phase 2a + 2b)
+
+Voir section 9 pour le détail technique complet. Résumé :
+- **Phase 2a** (notification "nouveau message") et **Phase 2b** (réponse par courriel via `reply.kabanalouer.ca`) construites et testées de bout en bout en conditions réelles, chacune avec un vrai bug trouvé et corrigé pendant le test (guillemets doubles dans l'aperçu ; clé Resend restreinte à l'envoi, bloquant l'API de réception).
+- Avant de coder la Phase 2b, exploration en lecture seule confirmant directement dans les types du SDK `resend@6.12.4` installé (pas seulement la doc) que `resend.webhooks.verify()` et `resend.emails.receiving.get()` existaient bien, et que `email-reply-parser` s'installait sans conflit.
 
 ### Prochaine étape immédiate
 
