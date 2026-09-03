@@ -24,10 +24,29 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+
+    // @supabase/ssr utilise le flux PKCE par défaut — le lien de courriel
+    // revient ici avec un ?code= à échanger explicitement contre une session
+    // (contrairement à l'ancien flux implicite, qui aurait fourni les tokens
+    // directement dans le fragment d'URL et déclenché PASSWORD_RECOVERY tout
+    // seul). Sans cet échange, getSession() ne trouve jamais rien et l'écran
+    // "lien invalide" s'affiche à tort, même pour un lien tout frais.
+    const init = async () => {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!mounted) return;
+        if (error) {
+          setStatus("invalid");
+          return;
+        }
+      }
+      const { data } = await supabase.auth.getSession();
       if (mounted && data.session) setStatus("ready");
       else if (mounted) setStatus((s) => (s === "checking" ? "invalid" : s));
-    });
+    };
+    init();
+
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setStatus("ready");
     });

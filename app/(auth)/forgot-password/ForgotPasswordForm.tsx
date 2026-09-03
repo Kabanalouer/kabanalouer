@@ -31,7 +31,9 @@ function ForgotPasswordForm() {
     setTurnstileToken(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       captchaToken: token,
-      redirectTo: `${SITE_URL}/reset-password`,
+      // Localisé (pas fixé à /reset-password) — corrige au passage l'écran
+      // d'erreur qui s'affichait en français même pour un voyageur anglophone.
+      redirectTo: `${SITE_URL}${localePath("/reset-password", locale)}`,
     });
     setLoading(false);
     if (error) {
