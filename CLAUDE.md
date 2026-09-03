@@ -251,6 +251,11 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 - **Avatar bucket** : MIME types restreints aux images uniquement (Supabase Storage)
 - **`/api/views`** : Origin check (kabanalouer.ca + localhost) + throttle IP 5 min par annonce
 
+**Audit du 2026-07-02 (3 points, tous réglés le 2026-09-03)** :
+- **Vercel Deployment Protection** : aucun changement apporté — décision de Simon ("pas de changement"), le SSO déjà en place couvre déjà ce besoin.
+- **Fuite de messages d'erreur bruts dans les réponses API** : masquée dans 21 endroits (18 fichiers) — chaque `catch` renvoie désormais un message générique au client, jamais `error.message` brut (qui pouvait exposer des détails internes : structure de requête, noms de colonnes, etc.).
+- **`robots.txt`** : déjà conforme (exclut bien `/admin` et `/dashboard`) — correction mineure ajoutée en prime pour `/en/login` et `/en/signup`, qui manquaient à l'exclusion EN.
+
 ### Cloudflare Turnstile (anti-bot)
 - Site Key : `0x4AAAAAADun6nA4SV0GHTM6` (hardcodée dans les pages login/signup)
 - Secret Key : configurée dans **Supabase Dashboard → Authentication → Bot Protection**
@@ -459,11 +464,17 @@ Trois chantiers de fond, chacun testé en conditions réelles avant commit :
 
 **Outillage** : première utilisation dans ce projet d'une politique RLS admin (compromis documenté section 9) ; premier usage de sessions injectées via jetons Supabase (`/auth/v1/verify` + cookies `@supabase/ssr` reconstruits) pour contourner Cloudflare Turnstile en test local, faute d'accès aux domaines autorisés à temps.
 
-### Session du 2026-09-03 — Messagerie par courriel (Phase 2a + 2b)
+### Session du 2026-09-03
 
-Voir section 9 pour le détail technique complet. Résumé :
-- **Phase 2a** (notification "nouveau message") et **Phase 2b** (réponse par courriel via `reply.kabanalouer.ca`) construites et testées de bout en bout en conditions réelles, chacune avec un vrai bug trouvé et corrigé pendant le test (guillemets doubles dans l'aperçu ; clé Resend restreinte à l'envoi, bloquant l'API de réception).
-- Avant de coder la Phase 2b, exploration en lecture seule confirmant directement dans les types du SDK `resend@6.12.4` installé (pas seulement la doc) que `resend.webhooks.verify()` et `resend.emails.receiving.get()` existaient bien, et que `email-reply-parser` s'installait sans conflit.
+1. **Phase 2 complète — messagerie par courriel** (voir section 9 pour le détail technique). Phase 2a (notification "nouveau message") et Phase 2b (réponse par courriel via `reply.kabanalouer.ca`) construites et **testées de bout en bout en conditions réelles dans les deux volets** (message envoyé → notification reçue → réponse Gmail → insertion correcte dans la conversation), chacune avec un vrai bug trouvé et corrigé pendant le test :
+   - Guillemets doubles dans l'aperçu du message (Phase 2a).
+   - `RESEND_API_KEY` restreinte à l'envoi seulement, bloquant l'appel à l'API de réception (Phase 2b) — corrigé par une clé séparée `RESEND_RECEIVING_API_KEY` (moindre privilège).
+   - Ajustement supplémentaire après ces tests : adresse d'envoi passée de `no-reply@` à `messages@kabanalouer.ca`, texte de bas de page invitant explicitement à répondre au courriel.
+   - Vérifié explicitement (lecture seule) : le mécanisme est symétrique proprio ↔ voyageur (basé sur la correspondance d'adresse courriel, aucune branche de code par rôle) — un test dans le sens proprio → voyageur ne devrait rien révéler de nouveau que le sens déjà testé n'ait pas couvert.
+2. **3 points de l'audit de sécurité du 2026-07-02 réglés** — voir section 9 (Sécurité).
+3. **Bug PKCE du lien de réinitialisation de mot de passe** trouvé et corrigé — voir section 9 (Send Email Hook). Touchait FR et EN depuis toujours (probablement depuis la mise en place du Send Email Hook le 2026-07-07).
+4. **Confirmation d'achat boost et séquence win-back** : les deux re-vérifiées suite à des notes périmées qui les disaient encore en attente/à refaire — déjà fonctionnelles, aucun changement nécessaire (voir section 9, Module vedettes et win-back).
+5. **Leçon retenue, voir la note en tête de section 14** : plusieurs items de la liste "à faire" se sont révélés déjà faits ou périmés cette session (3 fois) — toujours vérifier l'état réel du code avant de proposer un prompt basé sur cette liste.
 
 ### Prochaine étape immédiate
 
@@ -480,6 +491,8 @@ Voir section 14 pour les autres points en suspens (findings structurels de la re
 ---
 
 ## 14. Points en suspens
+
+> ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
 
 ### Titre de test laissé sur une annonce brouillon (2026-07-09)
 
