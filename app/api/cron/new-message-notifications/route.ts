@@ -97,10 +97,11 @@ export async function GET(request: NextRequest) {
     const senderFirstName = (sender?.name?.trim() || "Un utilisateur").split(/\s+/)[0];
     const listingTitle = listing?.title || (lang === "en" ? "your listing" : "ce chalet");
 
-    const { error: emailError } = await sendNewMessageNotificationEmail({
+    const { error: emailError } = await sendNewMessageNotificationEmail(supabase, {
       email: receiver.email,
       preferredLanguage: lang,
       recipientFirstName: receiver.name?.split(" ")[0],
+      recipientId: group.receiverId,
       senderFirstName,
       listingTitle,
       messageCount: stillUnread.length,

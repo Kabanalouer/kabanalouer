@@ -2,12 +2,15 @@ import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { buildReplyToAddress, getOrCreateEmailReplyAddress } from "@/lib/emailReplyAddress";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-// no-reply, pas info@ — voir architecture Phase 2a : l'adresse de réponse
-// dédiée (conv-xxx@reply...) n'existe pas encore, ce sera la Phase 2b.
+// no-reply : le Reply-To (adresse conv-{token}@reply.kabanalouer.ca, voir
+// Phase 2b) est ce qui permet réellement de répondre à ce courriel.
 const FROM = "Kabanalouer <no-reply@kabanalouer.ca>";
+
+type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const PREVIEW_MAX_LENGTH = 150;
 
@@ -43,27 +46,32 @@ const TEMPLATE: Record<"fr" | "en", {
   },
 };
 
-export async function sendNewMessageNotificationEmail({
-  email,
-  preferredLanguage,
-  recipientFirstName,
-  senderFirstName,
-  listingTitle,
-  messageCount,
-  previewText,
-  listingId,
-  otherUserId,
-}: {
-  email: string;
-  preferredLanguage: "fr" | "en";
-  recipientFirstName?: string | null;
-  senderFirstName: string;
-  listingTitle: string;
-  messageCount: number;
-  previewText: string;
-  listingId: string;
-  otherUserId: string;
-}): Promise<{ error: Error | null }> {
+export async function sendNewMessageNotificationEmail(
+  admin: AdminClient,
+  {
+    email,
+    preferredLanguage,
+    recipientFirstName,
+    recipientId,
+    senderFirstName,
+    listingTitle,
+    messageCount,
+    previewText,
+    listingId,
+    otherUserId,
+  }: {
+    email: string;
+    preferredLanguage: "fr" | "en";
+    recipientFirstName?: string | null;
+    recipientId: string;
+    senderFirstName: string;
+    listingTitle: string;
+    messageCount: number;
+    previewText: string;
+    listingId: string;
+    otherUserId: string;
+  }
+): Promise<{ error: Error | null }> {
   const template = TEMPLATE[preferredLanguage];
   const trimmedFirstName = recipientFirstName?.trim() || undefined;
 
@@ -88,6 +96,19 @@ export async function sendNewMessageNotificationEmail({
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
   const buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
 
+  // Reply-To dédié (Phase 2b) — permet de répondre directement depuis
+  // Gmail/Outlook sans se connecter à l'app. Un échec ici ne doit jamais
+  // bloquer l'envoi de la notification elle-même (juste sans Reply-To).
+  const replyAddress = await getOrCreateEmailReplyAddress(admin, {
+    listingId,
+    userAId: recipientId,
+    userBId: otherUserId,
+  });
+  const replyTo = "token" in replyAddress ? buildReplyToAddress(replyAddress.token) : undefined;
+  if (!replyTo) {
+    console.error("sendNewMessageNotificationEmail: pas de Reply-To (listing", listingId, ")", replyAddress);
+  }
+
   const html = renderEmail({
     lang: preferredLanguage,
     greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
@@ -101,6 +122,7 @@ export async function sendNewMessageNotificationEmail({
   const { error } = await resend.emails.send({
     from: FROM,
     to: [email],
+    replyTo,
     // Sujet : texte brut, jamais rendu en HTML — pas besoin d'échappement ici.
     subject: messageCount > 1
       ? template.subjectMany(messageCount, senderFirstName, listingTitle)
