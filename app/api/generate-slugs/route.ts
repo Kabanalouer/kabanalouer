@@ -56,7 +56,10 @@ export async function POST(req: Request) {
     .update({ slug_fr: slugFr, slug_en: slugEn })
     .eq("id", listingId);
 
-  if (error) return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+  if (error) {
+    console.error("generate-slugs: échec mise à jour", error);
+    return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+  }
 
   return NextResponse.json({ slug_fr: slugFr, slug_en: slugEn });
 }

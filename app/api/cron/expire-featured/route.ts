@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error("[expire-featured] échec update featured_listings", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de la mise à jour des vedettes." }, { status: 500 });
   }
 
   // ── Rappel J-3 : vedettes actives se terminant dans 3 jours ────────────────

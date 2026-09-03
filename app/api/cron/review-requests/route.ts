@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
   if (msgError) {
     console.error("[review-requests] échec lecture messages", msgError);
-    return NextResponse.json({ error: msgError.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de la lecture des messages." }, { status: 500 });
   }
 
   const { data: listingsData, error: listingsError } = await supabase
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
   if (listingsError) {
     console.error("[review-requests] échec lecture listings", listingsError);
-    return NextResponse.json({ error: listingsError.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de la lecture des annonces." }, { status: 500 });
   }
 
   const hostByListing = new Map((listingsData ?? []).map((l) => [l.id as string, l.host_id as string]));

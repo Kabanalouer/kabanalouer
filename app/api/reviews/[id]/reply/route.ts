@@ -52,7 +52,10 @@ export async function PATCH(
     .update({ host_reply: reply?.trim() || null })
     .eq("id", id);
 
-  if (error) return NextResponse.json({ error: "Erreur lors de la sauvegarde." }, { status: 500 });
+  if (error) {
+    console.error("reviews/[id]/reply: échec sauvegarde", error);
+    return NextResponse.json({ error: "Erreur lors de la sauvegarde." }, { status: 500 });
+  }
 
   // Email notification to the traveler — failure must not block the response
   try {

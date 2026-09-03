@@ -56,7 +56,7 @@ async function syncOneListing(
     icalText = await res.text();
   } catch (err) {
     console.error(`[sync-ical] fetch error for listing ${listingId}:`, err);
-    return { ok: false, error: String(err) };
+    return { ok: false, error: "Impossible de récupérer le calendrier iCal." };
   }
 
   // Parse events → individual dates

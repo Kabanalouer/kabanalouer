@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
   }, { onConflict: "listing_id" });
 
   if (subError) {
-    return NextResponse.json({ error: subError.message }, { status: 500 });
+    console.error("subscriptions/activate-free: échec upsert subscriptions", subError);
+    return NextResponse.json({ error: "Erreur lors de l'activation." }, { status: 500 });
   }
 
   await admin.from("users").update({ role: "host", free_launch_claimed_at: new Date().toISOString() }).eq("id", user.id);

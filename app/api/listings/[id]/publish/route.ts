@@ -42,6 +42,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     .eq("host_id", user.id);
 
   if (error) {
+    console.error("listings/[id]/publish: échec publication", error);
     return NextResponse.json({ error: "Erreur lors de la publication" }, { status: 500 });
   }
 

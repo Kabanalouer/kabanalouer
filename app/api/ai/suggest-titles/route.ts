@@ -104,7 +104,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[suggest-titles]", err);
-    const message = err instanceof Error ? err.message : "Erreur inconnue.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
   }
 }

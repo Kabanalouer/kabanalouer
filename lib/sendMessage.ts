@@ -69,7 +69,8 @@ export async function insertMessageAndTranslate(
     .single();
 
   if (insertError || !message) {
-    return { error: insertError?.message ?? "Échec de l'envoi" };
+    console.error("sendMessage: échec insertion", insertError);
+    return { error: "Échec de l'envoi" };
   }
 
   // Traduction automatique — en arrière-plan après l'insertion, via update

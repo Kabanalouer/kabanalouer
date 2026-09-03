@@ -17,7 +17,8 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     .eq("host_id", user.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("listings/[id]: échec suppression", error);
+    return NextResponse.json({ error: "Erreur lors de la suppression de l'annonce." }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

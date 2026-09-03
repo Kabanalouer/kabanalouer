@@ -50,7 +50,10 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt.toISOString(),
       is_free_launch: true,
     }, { onConflict: "listing_id" });
-    if (subError) return NextResponse.json({ error: subError.message }, { status: 500 });
+    if (subError) {
+      console.error("admin/subscriptions: échec activate_free", subError);
+      return NextResponse.json({ error: "Erreur lors de l'activation." }, { status: 500 });
+    }
     await admin.from("users").update({ role: "host" }).eq("id", userId);
     return NextResponse.json({ ok: true });
   }
@@ -66,13 +69,19 @@ export async function POST(req: NextRequest) {
       status: "active",
       expires_at: base.toISOString(),
     }, { onConflict: "listing_id" });
-    if (extendError) return NextResponse.json({ error: extendError.message }, { status: 500 });
+    if (extendError) {
+      console.error("admin/subscriptions: échec extend", extendError);
+      return NextResponse.json({ error: "Erreur lors du renouvellement." }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   }
 
   if (action === "deactivate") {
     const { error: deactivateError } = await admin.from("subscriptions").update({ status: "canceled" }).eq("listing_id", listingId);
-    if (deactivateError) return NextResponse.json({ error: deactivateError.message }, { status: 500 });
+    if (deactivateError) {
+      console.error("admin/subscriptions: échec deactivate", deactivateError);
+      return NextResponse.json({ error: "Erreur lors de la désactivation." }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   }
 

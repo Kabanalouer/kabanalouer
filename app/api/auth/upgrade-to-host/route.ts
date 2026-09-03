@@ -31,7 +31,8 @@ export async function POST() {
     .eq("id", user.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("upgrade-to-host: échec mise à jour du rôle", error);
+    return NextResponse.json({ error: "Erreur lors de la mise à jour de votre profil." }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

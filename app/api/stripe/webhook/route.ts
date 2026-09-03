@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
         if (featuredError) {
           console.error("checkout.session.completed (vedette): échec insert featured_listings", featuredError);
-          return NextResponse.json({ error: featuredError.message }, { status: 500 });
+          return NextResponse.json({ error: "Erreur lors de l'enregistrement de la vedette." }, { status: 500 });
         }
 
         const { data: hostProfile } = await supabase
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
 
       if (subError) {
         console.error("checkout.session.completed: échec upsert subscriptions", subError);
-        return NextResponse.json({ error: subError.message }, { status: 500 });
+        return NextResponse.json({ error: "Erreur lors de l'enregistrement de l'abonnement." }, { status: 500 });
       }
 
       await supabase
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
 
       if (subUpdateError) {
         console.error("customer.subscription.updated: échec update subscriptions", subUpdateError);
-        return NextResponse.json({ error: subUpdateError.message }, { status: 500 });
+        return NextResponse.json({ error: "Erreur lors de la mise à jour de l'abonnement." }, { status: 500 });
       }
 
       break;

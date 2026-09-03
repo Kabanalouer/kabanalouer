@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
     if (insertError.code === "23505") {
       return NextResponse.json({ error: "Vous avez déjà laissé cet avis pour ce chalet." }, { status: 409 });
     }
+    console.error("reviews/token: échec insertion avis", insertError);
     return NextResponse.json({ error: "Erreur lors de la soumission." }, { status: 500 });
   }
 

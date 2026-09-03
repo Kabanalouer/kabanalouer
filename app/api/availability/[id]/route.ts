@@ -32,7 +32,10 @@ export async function POST(
     .eq("listing_id", id)
     .eq("source", "manual");
 
-  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
+  if (deleteError) {
+    console.error("availability/[id]: échec suppression blocages manuels", deleteError);
+    return NextResponse.json({ error: "Erreur lors de la mise à jour du calendrier." }, { status: 500 });
+  }
 
   if (dates.length > 0) {
     // Upsert: insert manual blocks, overwrite ical blocks on same date
@@ -48,7 +51,10 @@ export async function POST(
         { onConflict: "listing_id,date" }
       );
 
-    if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 500 });
+    if (upsertError) {
+      console.error("availability/[id]: échec upsert blocages manuels", upsertError);
+      return NextResponse.json({ error: "Erreur lors de la mise à jour du calendrier." }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true, count: dates.length });

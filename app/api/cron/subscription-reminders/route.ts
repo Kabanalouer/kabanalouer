@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error("[subscription-reminders] échec lecture subscriptions", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de la lecture des abonnements." }, { status: 500 });
   }
 
   let sent = 0;

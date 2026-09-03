@@ -66,7 +66,10 @@ export async function POST(req: NextRequest) {
       status: "active",
     });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("admin/featured: échec insert featured_listings", error);
+      return NextResponse.json({ error: "Erreur lors de la création." }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   }
 
@@ -79,7 +82,10 @@ export async function POST(req: NextRequest) {
       .update({ status: "expired" })
       .eq("id", featuredId);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("admin/featured: échec update featured_listings", error);
+      return NextResponse.json({ error: "Erreur lors de la mise à jour." }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   }
 
