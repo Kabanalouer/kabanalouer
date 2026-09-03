@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 const STAR_PATH =
   "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z";
 
-export default function ReviewForm({ listingId }: { listingId: string }) {
+// Formulaire d'avis "échange" — soumis via token (jamais de session requise).
+// Repris de components/chalets/ReviewForm.tsx, adapté pour POSTer vers
+// /api/reviews/token au lieu de /api/reviews.
+export default function EchangeReviewClient({ token }: { token: string }) {
   const t = useTranslations("reviewForm");
-  const router = useRouter();
   const LABELS = ["", t("veryBad"), t("bad"), t("average"), t("good"), t("excellent")];
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -24,10 +25,10 @@ export default function ReviewForm({ listingId }: { listingId: string }) {
     if (!rating) return;
     setSending(true);
     setError("");
-    const res = await fetch("/api/reviews", {
+    const res = await fetch("/api/reviews/token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listing_id: listingId, rating, comment: comment.trim() || null }),
+      body: JSON.stringify({ token, reviewType: "echange", rating, comment: comment.trim() || null }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -36,12 +37,11 @@ export default function ReviewForm({ listingId }: { listingId: string }) {
       return;
     }
     setDone(true);
-    router.refresh();
   };
 
   if (done) {
     return (
-      <div className="border border-[#ebebeb] rounded-2xl p-6 text-center mt-8">
+      <div className="border border-[#ebebeb] rounded-2xl p-6 text-center">
         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
           <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -54,9 +54,7 @@ export default function ReviewForm({ listingId }: { listingId: string }) {
   }
 
   return (
-    <div className="border border-[#ebebeb] rounded-2xl p-6 mt-8">
-      <h3 className="font-semibold text-charcoal-800 mb-5">{t("title")}</h3>
-
+    <div className="border border-[#ebebeb] rounded-2xl p-6">
       {/* Stars */}
       <div className="flex items-center gap-0.5 mb-5">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -95,7 +93,7 @@ export default function ReviewForm({ listingId }: { listingId: string }) {
       <button
         onClick={handleSubmit}
         disabled={!rating || sending}
-        className="bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {sending ? t("submitting") : t("submit")}
       </button>

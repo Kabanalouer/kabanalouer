@@ -18,7 +18,7 @@ import AmenitiesSection from "@/components/chalets/AmenitiesSection";
 import HostCard from "@/components/chalets/HostCard";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import ShareButton from "@/components/chalets/ShareButton";
-import ReviewForm from "@/components/chalets/ReviewForm";
+import ReviewsList from "@/components/chalets/ReviewsList";
 import { normalizePhotos } from "@/lib/photo";
 import { getRegionBySlug, getRegionSlugs } from "@/lib/regions";
 import { safeJsonLd } from "@/lib/jsonLd";
@@ -216,30 +216,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
   const { data: reviews } = await supabase
     .from("reviews")
-    .select("id, rating, comment, host_reply, created_at, author:author_id(name, avatar_url)")
+    .select("id, rating, comment, host_reply, created_at, review_type, author:author_id(name, avatar_url)")
     .eq("listing_id", id)
     .order("created_at", { ascending: false });
-
-  // Eligibility: check if current user has messaged this listing's host and hasn't reviewed yet
-  let canReview = false;
-  let hasMessaged = false;
-  if (user && user.id !== (listing.host_id as string)) {
-    const [msgRes, reviewRes] = await Promise.all([
-      supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("listing_id", id)
-        .eq("sender_id", user.id),
-      supabase
-        .from("reviews")
-        .select("id")
-        .eq("listing_id", id)
-        .eq("author_id", user.id)
-        .maybeSingle(),
-    ]);
-    hasMessaged = (msgRes.count ?? 0) > 0;
-    canReview = hasMessaged && !reviewRes.data;
-  }
 
   const rawPhotos = normalizePhotos(listing.photos);
   const photos = rawPhotos.length > 0 ? rawPhotos : [{ url: DEFAULT_PHOTO, caption: "" }];
@@ -616,64 +595,9 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
               )}
 
               {reviews && reviews.length > 0 ? (
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {reviews.map((review) => {
-                    type AuthorShape = { name: string | null; avatar_url: string | null } | null;
-                    const author = review.author as unknown as AuthorShape;
-                    const authorName = author?.name ?? "Voyageur";
-                    const authorFirst = authorName.split(" ")[0];
-                    const initial = authorFirst[0]?.toUpperCase() ?? "V";
-                    const reviewDate = new Date(review.created_at).toLocaleDateString("fr-CA", {
-                      month: "long", year: "numeric",
-                    });
-                    const hostReply = review.host_reply as string | null;
-                    return (
-                      <div key={review.id} className="space-y-2">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full shrink-0 bg-primary overflow-hidden flex items-center justify-center">
-                            {author?.avatar_url ? (
-                              <img src={author.avatar_url} alt={authorFirst} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-white font-bold text-sm">{initial}</span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-charcoal-800 leading-tight">{authorFirst}</p>
-                            <p className="text-xs text-charcoal-400 mb-1">{reviewDate}</p>
-                            <div className="flex gap-0.5">
-                              {[1, 2, 3, 4, 5].map((i) => (
-                                <svg key={i} className={`w-3 h-3 fill-current ${i <= review.rating ? "text-primary" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        {review.comment && (
-                          <p className="text-sm text-charcoal-500 leading-relaxed">
-                            {review.comment}
-                          </p>
-                        )}
-                        {hostReply && (
-                          <div className="pl-4 border-l-2 border-[#ebebeb] mt-2">
-                            <p className="text-xs font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
-                            <p className="text-sm text-charcoal-500 leading-relaxed">{hostReply}</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <ReviewsList reviews={reviews as unknown as Parameters<typeof ReviewsList>[0]["reviews"]} />
               ) : (
                 <p className="text-charcoal-400 text-sm">{t("noReviews")}</p>
-              )}
-
-              {/* Review form — visible if eligible */}
-              {canReview && <ReviewForm listingId={listing.id} />}
-              {user && !isOwner && !canReview && !hasMessaged && (
-                <p className="text-sm text-charcoal-400 mt-6 px-4 py-3 bg-charcoal-50 rounded-xl">
-                  {t("contactMeToReview")}
-                </p>
               )}
             </div>
 

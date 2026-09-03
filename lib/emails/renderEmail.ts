@@ -5,6 +5,8 @@ export function renderEmail({
   body,
   buttonLabel,
   buttonUrl,
+  secondaryButtonLabel,
+  secondaryButtonUrl,
   footerNote,
 }: {
   lang: "fr" | "en";
@@ -13,6 +15,8 @@ export function renderEmail({
   body: string;
   buttonLabel: string;
   buttonUrl: string;
+  secondaryButtonLabel?: string;
+  secondaryButtonUrl?: string;
   footerNote: string;
 }) {
   return `<!DOCTYPE html>
@@ -39,6 +43,12 @@ export function renderEmail({
                 <a href="${buttonUrl}" style="display:inline-block;background-color:#636e40;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 32px;border-radius:9999px;">${buttonLabel}</a>
               </td>
             </tr>
+            ${secondaryButtonLabel && secondaryButtonUrl ? `
+            <tr>
+              <td style="padding:12px 32px 0 32px;text-align:center;">
+                <a href="${secondaryButtonUrl}" style="display:inline-block;background-color:#ffffff;color:#636e40;text-decoration:none;font-weight:600;font-size:15px;padding:13px 32px;border-radius:9999px;border:1px solid #636e40;">${secondaryButtonLabel}</a>
+              </td>
+            </tr>` : ""}
             <tr>
               <td style="padding:28px 32px 32px 32px;">
                 <p style="margin:0;font-size:13px;line-height:1.6;color:#a8a29e;">${footerNote}</p>
