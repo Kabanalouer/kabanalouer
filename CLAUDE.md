@@ -365,6 +365,8 @@ Phase 1 de l'import d'annonces externes — **Airbnb seulement**, VRBO retiré (
   - **Limite connue, acceptée telle quelle par Simon** : `email-reply-parser` retire bien les citations du fil et les formules classiques ("Sent from my iPhone", etc.) mais pas une signature personnalisée sans séparateur standard (`--` sur sa propre ligne) — une signature Gmail avec mise en forme (nom en gras) peut donc se retrouver insérée avec le message.
   - **Testé et confirmé de bout en bout en conditions réelles** (message envoyé via l'app → notification reçue → réponse Gmail → insertion correcte, sender/receiver et listing corrects, citation du fil bien retirée).
 
+**Notification "message de contact"** (2026-09-04) : `app/contact/actions.ts` n'envoyait auparavant aucune notification à l'admin quand un visiteur soumettait le formulaire — ajouté `lib/emails/contactMessageNotification.ts` (même gabarit partagé `renderEmail.ts` que les autres emails du projet, contenu du visiteur échappé via `lib/escapeHtml.ts`), envoie à `simon.authentik@gmail.com` après l'insertion réussie dans `contact_messages`, jamais bloquant (try/catch, le formulaire reste un succès même si Resend échoue).
+
 ---
 
 ## 10. Variables d'environnement
@@ -526,6 +528,7 @@ Trois chantiers de fond, chacun testé en conditions réelles avant commit :
 5. **Cartographie des séquences email** : document de référence créé (20 séquences automatisées — nom, déclencheur, destinataire, objet FR/EN, statut), disponible en `.docx` hors du repo.
 6. **Google Search Console** configuré pour `kabanalouer.ca` (vérification DNS TXT), sitemap soumis — voir section 9 (SEO / public).
 7. **Google Analytics 4** configuré et vérifié en production — voir section 9 (Analytics).
+8. **2 corrections trouvées dans un audit des séquences email** (commit `3f4ea99`) : notification manquante sur `/contact` ajoutée (`lib/emails/contactMessageNotification.ts`, voir section 9, Messagerie par courriel), adresses admin incohérentes unifiées sur `simon.authentik@gmail.com` (notification import Airbnb vs formulaire "Import annonce externe" sur `/devenir-hote`, qui envoyait à `slemay@authentik.com`) — et un échappement HTML manquant corrigé au passage dans `app/devenir-hote/actions.ts` (`escapeHtml()` sur name/email/listingUrl, même pattern que le reste du projet).
 
 ### Prochaine étape immédiate
 
