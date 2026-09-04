@@ -1,0 +1,23 @@
+-- Retire la politique permissive "Lecture publique des profils" sur public.users
+-- (SELECT USING (true)) — elle rendait inutile la politique restrictive coexistante
+-- ("Les utilisateurs voient leur propre profil", USING (auth.uid() = id)), puisque
+-- des politiques permissives s'additionnent en OR : n'importe qui, connecté ou non,
+-- pouvait lire TOUTES les colonnes de TOUS les profils (email, téléphone,
+-- stripe_customer_id, free_launch_claimed_at, etc.), pas seulement les colonnes
+-- publiques voulues (nom, bio, avatar).
+--
+-- Remplacée par la vue public.public_profiles (voir create-public-profiles-view.sql),
+-- qui expose seulement id/name/bio/avatar_url/created_at, sans restriction de ligne,
+-- déjà utilisée par app/chalets/[slug]/page.tsx et app/dashboard/avis/page.tsx.
+--
+-- Vérifié avant exécution : fiche publique de chalet (nom/bio du proprio) et
+-- affichage des auteurs d'avis testés visuellement en conditions réelles via une
+-- annonce et un avis de test temporaires (créés puis nettoyés), fonctionnels via
+-- la vue avant ce DROP.
+--
+-- Après ce DROP, seule "Les utilisateurs voient leur propre profil"
+-- (USING (auth.uid() = id)) reste sur public.users en SELECT.
+--
+-- Exécuté et confirmé en production le 2026-09-04 (audit de sécurité).
+
+DROP POLICY "Lecture publique des profils" ON public.users;

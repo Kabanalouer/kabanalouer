@@ -66,13 +66,34 @@ export default async function MesAvisPage() {
     author: { name: string | null; avatar_url: string | null } | null;
   };
 
-  const { data: rawReviews } = listingIds.length > 0
+  // Jointure PostgREST retirée : "author:author_id(...)" suit la vraie clé
+  // étrangère vers public.users, dont la RLS ne permet plus la lecture
+  // publique — fetch séparé via la vue public_profiles, fusionné ici.
+  const { data: reviewsData } = listingIds.length > 0
     ? await supabase
         .from("reviews")
-        .select("id, listing_id, rating, comment, host_reply, created_at, author:author_id(name, avatar_url)")
+        .select("id, listing_id, rating, comment, host_reply, created_at, author_id")
         .in("listing_id", listingIds)
         .order("created_at", { ascending: false })
-    : { data: [] as ReviewRow[] };
+    : { data: [] as { id: string; listing_id: string; rating: number; comment: string | null; host_reply: string | null; created_at: string; author_id: string }[] };
+
+  const authorIds = [...new Set((reviewsData ?? []).map((r) => r.author_id))];
+  const { data: reviewAuthors } = authorIds.length > 0
+    ? await supabase.from("public_profiles").select("id, name, avatar_url").in("id", authorIds)
+    : { data: [] as { id: string; name: string | null; avatar_url: string | null }[] };
+  const authorById = new Map(
+    (reviewAuthors ?? []).map((a) => [a.id, { name: a.name, avatar_url: a.avatar_url }])
+  );
+
+  const rawReviews: ReviewRow[] = (reviewsData ?? []).map((r) => ({
+    id: r.id,
+    listing_id: r.listing_id,
+    rating: r.rating,
+    comment: r.comment,
+    host_reply: r.host_reply,
+    created_at: r.created_at,
+    author: authorById.get(r.author_id) ?? null,
+  }));
 
   const reviews = [...((rawReviews ?? []) as ReviewRow[])].sort((a, b) => {
     if (!a.host_reply && b.host_reply) return -1;

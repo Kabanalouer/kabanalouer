@@ -182,9 +182,11 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
 
   const id = listing.id as string; // UUID for all sub-queries
 
-  // Fetch host profile directly from public.users (avoids Supabase join ambiguity)
+  // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
+  // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
+  // public.users directement, dont la RLS ne permet plus la lecture publique.
   const { data: hostProfile } = await supabase
-    .from("users")
+    .from("public_profiles")
     .select("id, name, avatar_url, created_at, bio")
     .eq("id", listing.host_id as string)
     .single();
@@ -214,11 +216,26 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     .eq("listing_id", id)
     .order("sort_order");
 
-  const { data: reviews } = await supabase
+  // Jointure PostgREST retirée : "author:author_id(...)" suit la vraie clé
+  // étrangère vers public.users, dont la RLS ne permet plus la lecture
+  // publique — fetch séparé via la vue public_profiles, fusionné ici.
+  const { data: rawReviews } = await supabase
     .from("reviews")
-    .select("id, rating, comment, host_reply, created_at, review_type, author:author_id(name, avatar_url)")
+    .select("id, rating, comment, host_reply, created_at, review_type, author_id")
     .eq("listing_id", id)
     .order("created_at", { ascending: false });
+
+  const reviewAuthorIds = [...new Set((rawReviews ?? []).map((r) => r.author_id as string))];
+  const { data: reviewAuthors } = reviewAuthorIds.length > 0
+    ? await supabase.from("public_profiles").select("id, name, avatar_url").in("id", reviewAuthorIds)
+    : { data: [] as { id: string; name: string | null; avatar_url: string | null }[] };
+  const reviewAuthorById = new Map(
+    (reviewAuthors ?? []).map((a) => [a.id as string, { name: a.name as string | null, avatar_url: a.avatar_url as string | null }])
+  );
+  const reviews = (rawReviews ?? []).map((r) => ({
+    ...r,
+    author: reviewAuthorById.get(r.author_id as string) ?? null,
+  }));
 
   const rawPhotos = normalizePhotos(listing.photos);
   const photos = rawPhotos.length > 0 ? rawPhotos : [{ url: DEFAULT_PHOTO, caption: "" }];
