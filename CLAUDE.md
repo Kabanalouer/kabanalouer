@@ -40,7 +40,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Anthropic SDK | 0.96+ | Modèle : `claude-sonnet-4-6` |
 | Google Maps | `@vis.gl/react-google-maps` | Split-view sur /chalets |
 | Resend | 6.x | Emails transactionnels |
-| Stripe | 22.x | Abonnements propriétaires — intégration complète en prod |
+| Stripe | 22.x | Abonnements propriétaires + module vedettes — mode Production activé le 2026-09-04 |
 | Cloudflare Turnstile | — | Anti-bot sur signup et login |
 | Vercel | — | Auto-deploy depuis `main` |
 
@@ -105,7 +105,7 @@ Fichiers dans `public/` :
 
 | Table | Rôle |
 |---|---|
-| `users` | Profils (bio, avatar_url, name, email, role, stripe_customer_id, `free_launch_claimed_at` — offre de lancement réclamée une fois dans sa vie, permanent) |
+| `users` | Profils (bio, avatar_url, name, email, role, stripe_customer_id). Colonne `free_launch_claimed_at` conservée mais **plus utilisée** depuis le 2026-09-04 (voir section 9, offre de lancement par annonce) — candidate à un nettoyage futur. |
 | `listings` | Annonces chalets |
 | `rooms` | Chambres/salons liés à une annonce |
 | `availability` | Dates bloquées (manual + ical) |
@@ -191,12 +191,13 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
 
 - **Architecture** : `subscriptions.listing_id` (`UUID`, `UNIQUE`, `NOT NULL`) remplace `user_id` comme clé d'unicité — un proprio avec 3 chalets payants a 3 lignes `subscriptions` distinctes, chacune avec son propre `status`, `expires_at` et `stripe_subscription_id`. `user_id` reste présent sur la ligne (pour retrouver le proprio) mais n'est plus unique.
 - **Tarif dégressif** — `lib/subscriptionPricing.ts`, source unique de vérité pour les prix et les Price IDs (avant, dupliqués dans 5 fichiers) :
-  - 1ʳᵉ annonce payante : **299 $/an** (`tier1`, Price ID `price_1ToqE7EVlLGcAv4arl0TmOCz`)
-  - 2ᵉ et 3ᵉ : **249 $/an** chacune (`tier2_3`, Price ID `price_1TqeYhEVlLGcAv4aUUuiwT8R`)
-  - 4ᵉ et plus : **199 $/an** chacune (`tier4plus`, Price ID `price_1TqeYhEVlLGcAv4a9mPZ8H0T`)
+  - 1ʳᵉ annonce payante : **299 $/an** (`tier1`, Price ID test `price_1ToqE7EVlLGcAv4arl0TmOCz`)
+  - 2ᵉ et 3ᵉ : **249 $/an** chacune (`tier2_3`, Price ID test `price_1TqeYhEVlLGcAv4aUUuiwT8R`)
+  - 4ᵉ et plus : **199 $/an** chacune (`tier4plus`, Price ID test `price_1TqeYhEVlLGcAv4a9mPZ8H0T`)
+  - **Depuis le 2026-09-04** : Price IDs de production distincts, voir la sous-section "Stripe passé en mode Production" plus bas — bascule automatique via `VERCEL_ENV`, jamais un choix manuel dans le code.
   - Le rang (`getNextPaidRank()`) = nombre d'abonnements payants **actuellement actifs** de ce proprio (`is_free_launch: false`, `status: active`) + 1. C'est le compte actif, pas l'historique total — annuler une annonce libère son rang pour la prochaine ajoutée, confirmé volontairement ainsi.
   - Le prix est **verrouillé au moment du paiement** (`price_cents`/`price_tier` sur la ligne `subscriptions`, via la métadonnée Stripe `price_tier` posée au checkout) et **jamais recalculé rétroactivement** si le proprio ajoute ou annule d'autres annonces par la suite.
-- **Offre de lancement — une fois dans sa vie par proprio, sans limite de nombre** : `users.free_launch_claimed_at` (`TIMESTAMPTZ`, permanent, jamais effacé) bloque toute deuxième réclamation, même si la première annonce gratuite a été annulée depuis. L'annonce gratuite ne compte **jamais** dans le rang tarifaire des annonces payantes. **Mise à jour le 2026-09-01** : le plafond de 50 places (`FREE_LAUNCH_LIMIT`) a été retiré — voir la sous-section dédiée plus bas, qui détaille aussi pourquoi cette offre ne passe plus du tout par Stripe.
+- **Offre de lancement — une par annonce, sans limite de nombre** (modèle changé le 2026-09-04, voir la sous-section dédiée plus bas) : chaque annonce a droit à sa propre année gratuite, indépendamment des autres annonces du même proprio. L'éligibilité vient de l'existence d'une ligne `subscriptions` pour ce `listing_id` précis (peu importe son statut) — plus de `users.free_launch_claimed_at` (colonne conservée en base mais plus lue nulle part, voir section 5). L'annonce gratuite ne compte **jamais** dans le rang tarifaire des annonces payantes. **Mise à jour le 2026-09-01** : le plafond de 50 places (`FREE_LAUNCH_LIMIT`) a été retiré — voir la sous-section dédiée plus bas, qui détaille aussi pourquoi cette offre ne passe plus du tout par Stripe.
 - **Checkout** (`/api/stripe/checkout`) : `listingId` obligatoire dans le corps de la requête, vérifie la propriété de l'annonce et l'absence d'abonnement actif existant pour elle, calcule le rang/prix au moment de la requête, passe `listing_id` et `price_tier` en métadonnée Stripe.
 - **Webhook** `/api/stripe/webhook` :
   - `checkout.session.completed` : upsert par `listing_id` (`onConflict`), enregistre `price_cents`/`price_tier` verrouillés, republie uniquement l'annonce concernée (`id`), plus tout le portefeuille du proprio (`host_id`) comme avant. L'email de bienvenue "nouveau proprio payant" ne se déclenche qu'au `tier1` (rang 1) — le seul cas qui correspond à une première annonce payante active pour ce proprio, sans quoi une 2ᵉ/3ᵉ/4ᵉ annonce le redéclencherait à tort.
@@ -216,6 +217,33 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
 - **Emails mentionnent l'annonce et le prix verrouillé** (étape 9) : `welcomeSubscription`, `subscriptionReminder`, `winbackReminder` acceptent tous `listingTitle` (fallback "ton chalet"/"your listing" si vide) et affichent le prix verrouillé de la ligne `subscriptions` (`price_cents` → `formatPriceLabel()`) au lieu d'un "299 $" codé en dur.
 - **Bug critique corrigé en même temps** (étape 10) : `/dashboard/listings/[id]/edit` filtrait encore l'abonnement par `user_id` avec `.maybeSingle()` — plantait dès qu'un proprio avait plusieurs annonces (plusieurs lignes possibles). Filtre maintenant par `listing_id`, et affiche le vrai prix dynamique (`getNextPaidRank`/`priceForRank`) au lieu du texte "199 $/an" codé en dur qui ne correspondait à aucun des trois tarifs réels. `PublishUI.tsx` (code mort, jamais importé depuis que la vraie UI de publication a été déplacée dans `EditListingForm.tsx`) a été supprimé au passage.
 - **Migration de données** : vérifié au préalable qu'aucun proprio actif n'avait plusieurs annonces sous un même abonnement (requête de vérification, 0 ligne retournée) — un backfill simple a suffi, pas de cas "grandfathered" à gérer (`supabase/backfill-subscriptions-listing-id.sql`, exécuté et confirmé). Cutover structurel (`DROP CONSTRAINT`/`ADD CONSTRAINT UNIQUE(listing_id)`/`SET NOT NULL`) exécuté et confirmé le même jour (`supabase/restructure-subscriptions-per-listing-cutover.sql`).
+
+### Stripe passé en mode Production (2026-09-04)
+
+Compte Stripe activé en Production (Individual, numéro d'assurance sociale, sans NEQ — statut de travailleur autonome).
+
+- **Bascule automatique test/prod** dans le code via `VERCEL_ENV === "production"` (pas `NODE_ENV`, qui vaut `"production"` même sur les builds preview Vercel) : `lib/subscriptionPricing.ts` (Price IDs abonnement), `lib/featuredConfig.ts` (Price IDs vedettes), `lib/stripeTaxRates.ts` (nouveau fichier, taux de taxe).
+- **5 nouveaux Price IDs de production** :
+  - Abonnement `tier1` : `price_1UBvrfIRwZDgRnpbzWqem76f`
+  - Abonnement `tier2_3` : `price_1UBw6jIRwZDgRnpbZchs7QjF`
+  - Abonnement `tier4plus` : `price_1UBw7MIRwZDgRnpbMm4EijEW`
+  - Vedette accueil : `price_1UBw4qIRwZDgRnpbGHcRyVId`
+  - Vedette région : `price_1UBw5RIRwZDgRnpbHllKdZtT`
+- **Taux de taxe manuels créés dans Stripe** : TPS 5% (`txr_1UBv1gIRwZDgRnpbiwUXkMCp`) + TVQ 9,975% (`txr_1UBv3PIRwZDgRnpbGpby6teZ`) — spécifiques au mode Production, aucun équivalent test créé pour l'instant (`STRIPE_TAX_RATE_IDS` vaut `undefined` hors prod, donc pas de taxe ajoutée en test/dev). Appliqués au `line_item` de `stripe.checkout.sessions.create` (`tax_rates`, champ distinct de `subscription_data.default_tax_rates`) dans `app/api/stripe/checkout/route.ts` et `app/api/featured/checkout/route.ts`.
+- **Nouveau webhook production** configuré dans Stripe Dashboard (mode Live), `STRIPE_WEBHOOK_SECRET` mis à jour dans Vercel pour l'environnement Production (valeur distincte de celle utilisée en Preview/Development, même nom de variable).
+- **Clés API de production** (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) ajoutées dans Vercel → Settings → Environment Variables, scope Production uniquement.
+- **Branding Stripe Checkout** (logo, couleurs olive/coral) configuré côté Stripe Dashboard pour le mode Production.
+
+### Offre de lancement : éligibilité par annonce, pas par proprio (2026-09-04)
+
+Décision d'affaires : un proprio avec plusieurs chalets a droit à l'année gratuite séparément pour chacun, pas une seule fois pour tout son compte.
+
+- Remplace le verrou `users.free_launch_claimed_at` (une fois par proprio, permanent) par un check par annonce : l'existence d'une ligne `subscriptions` pour ce `listing_id` (peu importe son statut) suffit à prouver que cette annonce précise a déjà eu — ou a — un abonnement, gratuit ou payant.
+- `app/api/subscriptions/activate-free/route.ts` : fusionne l'ancien check host-level avec le check "abonnement actif" déjà présent, élargi à "toute ligne existante". N'écrit plus `free_launch_claimed_at`.
+- `app/api/admin/listings/[id]/publish/route.ts` : même changement (flux admin de révision des imports Airbnb).
+- `app/dashboard/listings/[id]/edit/page.tsx` : une requête de moins — l'éligibilité vient de la requête subscription déjà chargée.
+- `users.free_launch_claimed_at` reste en base (colonne non supprimée) mais n'est plus lue ni écrite nulle part — nettoyage potentiel futur (`DROP COLUMN`), pas fait aujourd'hui.
+- Commit `84b9f5e`.
 
 ### Offre de lancement gratuite illimitée, sans Stripe (2026-09-01)
 
@@ -256,6 +284,11 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 - **Fuite de messages d'erreur bruts dans les réponses API** : masquée dans 21 endroits (18 fichiers) — chaque `catch` renvoie désormais un message générique au client, jamais `error.message` brut (qui pouvait exposer des détails internes : structure de requête, noms de colonnes, etc.).
 - **`robots.txt`** : déjà conforme (exclut bien `/admin` et `/dashboard`) — correction mineure ajoutée en prime pour `/en/login` et `/en/signup`, qui manquaient à l'exclusion EN.
 
+**Audit du 2026-09-04 (sécurité complète de la marketplace, 3 failles corrigées)** :
+- **🔴 CRITIQUE — `public.users` entièrement lisible publiquement** : la politique RLS "Lecture publique des profils" (`SELECT USING (true)`) exposait email, téléphone, `stripe_customer_id` et toute autre colonne sensible de **tous** les utilisateurs à n'importe qui, connecté ou non — les politiques RLS permissives s'additionnent en OR, rendant inutile la politique restrictive coexistante (`auth.uid() = id`). Corrigé par une nouvelle vue `public.public_profiles` (`id`/`name`/`bio`/`avatar_url`/`created_at` seulement, `GRANT SELECT` à `anon`+`authenticated`, contourne intentionnellement la RLS via les privilèges du propriétaire de la vue) puis `DROP POLICY` sur la politique permissive. Deux dépendants adaptés (l'embed PostgREST `author:author_id(...)` suit la vraie FK vers `users`, cassé par la RLS — remplacé par un fetch séparé + merge JS) : `app/chalets/[slug]/page.tsx` (fiche publique + avis) et `app/dashboard/avis/page.tsx` ("Mes avis", auteurs voyageurs). Vérifié visuellement avant le `DROP` via une annonce + un avis de test temporaires, nettoyés après coup — aucune donnée de test laissée. Migrations : `supabase/create-public-profiles-view.sql`, `supabase/fix-users-public-select-policy.sql`.
+- **🟠 Upload de photos hors-dossier** : la politique RLS INSERT du bucket `listing-photos` ne vérifiait que `bucket_id`, jamais le dossier de destination — contrairement au bucket `avatars` et aux règles UPDATE/DELETE du même bucket. N'importe quel utilisateur connecté pouvait uploader dans le dossier d'un autre proprio. Corrigé (`(storage.foldername(name))[1] = auth.uid()::text`) — `supabase/fix-listing-photos-upload-policy.sql`.
+- **🟠 Injection JSON-LD non échappée** : `app/chalets/[slug]/RegionLanding.tsx` (page publique de région) utilisait encore `JSON.stringify()` brut pour 3 blocs JSON-LD au lieu de `safeJsonLd()` (`lib/jsonLd.ts`, déjà utilisé correctement ailleurs) — un titre d'annonce contenant `</script><script>...` aurait pu casser le bloc et exécuter du code sur la page.
+
 ### Cloudflare Turnstile (anti-bot)
 - Site Key : `0x4AAAAAADun6nA4SV0GHTM6` (hardcodée dans les pages login/signup)
 - Secret Key : configurée dans **Supabase Dashboard → Authentication → Bot Protection**
@@ -291,8 +324,12 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 
 ### SEO / public
 - 14 pages région statiques + pages villes dynamiques
-- Sitemap XML automatique
+- Sitemap XML automatique (`app/sitemap.ts`) — déjà dynamique, inclut automatiquement les fiches de chalets publiés (requête Supabase `is_published = true`) et les villes distinctes, pas seulement les pages statiques
 - Métadonnées Open Graph + Twitter sur toutes les pages clés
+- **Google Search Console** configuré pour `kabanalouer.ca` (vérification par enregistrement DNS TXT), sitemap soumis (2026-09-04)
+
+### Analytics
+- **Google Analytics 4** (`components/GoogleAnalytics.tsx`, nouveau, 2026-09-04) : script `gtag.js` via `next/script` (stratégie `afterInteractive`), rendu conditionnel sur `NEXT_PUBLIC_GA_MEASUREMENT_ID` — rien ne se charge si la variable n'est pas définie. ID de mesure : `G-SKLC68FPGV`. CSP (`next.config.ts`) mise à jour : `*.googletagmanager.com` ajouté à `script-src`, `*.google-analytics.com`/`*.googletagmanager.com` à `connect-src` (aucun domaine GA n'était autorisé avant). Vérifié en production : tag chargé, événement `page_view` envoyé, zéro erreur console.
 
 ### i18n (next-intl)
 - FR par défaut (`/`), EN via préfixe `/en/`
@@ -350,6 +387,7 @@ RESEND_RECEIVING_API_KEY           # "Full access" — utilisée uniquement par 
 RESEND_WEBHOOK_SECRET              # whsec_... — vérifie la signature Svix du webhook Resend Inbound
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
+NEXT_PUBLIC_GA_MEASUREMENT_ID       # Google Analytics 4 — ex. G-SKLC68FPGV
 ```
 
 ---
@@ -395,6 +433,9 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-review-request-system.sql` | Crée la table `review_requests` (système d'avis automatique en deux volets, échange/séjour) | Exécuté et confirmé en prod |
 | `add-message-notification-tracking.sql` | Ajoute `messages.notification_sent_at` (anti-doublon, cron de notification "nouveau message", Phase 2a) | Exécuté et confirmé en prod le 2026-09-03 |
 | `add-email-reply-addresses.sql` | Crée la table `email_reply_addresses` (adresses `conv-{token}@reply.kabanalouer.ca`, Phase 2b) | Exécuté et confirmé en prod le 2026-09-03 |
+| `fix-listing-photos-upload-policy.sql` | Corrige la politique storage INSERT du bucket `listing-photos` (upload hors-dossier, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
+| `create-public-profiles-view.sql` | Crée la vue `public.public_profiles` (id/name/bio/avatar_url/created_at, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
+| `fix-users-public-select-policy.sql` | Retire la politique RLS permissive "Lecture publique des profils" sur `public.users` (audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
@@ -476,11 +517,21 @@ Trois chantiers de fond, chacun testé en conditions réelles avant commit :
 4. **Confirmation d'achat boost et séquence win-back** : les deux re-vérifiées suite à des notes périmées qui les disaient encore en attente/à refaire — déjà fonctionnelles, aucun changement nécessaire (voir section 9, Module vedettes et win-back).
 5. **Leçon retenue, voir la note en tête de section 14** : plusieurs items de la liste "à faire" se sont révélés déjà faits ou périmés cette session (3 fois) — toujours vérifier l'état réel du code avant de proposer un prompt basé sur cette liste.
 
+### Session du 2026-09-04
+
+1. **Stripe passé en mode Production** — voir section 9 (Stripe passé en mode Production). Compte activé, taxes TPS/TVQ, 5 nouveaux Price IDs, nouveau webhook, clés API, branding Checkout, bascule automatique via `VERCEL_ENV`.
+2. **Correction majeure du modèle de tarification** — voir section 9 (Offre de lancement : éligibilité par annonce). L'offre "gratuit 1 an" s'applique maintenant par annonce, pas par proprio ; `users.free_launch_claimed_at` conservé en base mais plus lu nulle part.
+3. **Audit de sécurité complet, 3 failles corrigées** — voir section 9 (Sécurité, audit du 2026-09-04) : RLS `public.users` (critique), upload storage hors-dossier, injection JSON-LD non échappée.
+4. **QA complet** : bug responsive corrigé (recherche/filtres absents sur tablette 768-1023px dans `/chalets`, commit `5d6ee71`), traductions EN corrigées (8 fichiers de liens CTA vers `localePath()`, Turnstile suit `useLocale()`, 5 pages avec titres EN/FR via `generateMetadata()`, commit `3e87be6`), redirection `/dashboard/subscription` non-connecté maintenant consciente de la langue.
+5. **Cartographie des séquences email** : document de référence créé (20 séquences automatisées — nom, déclencheur, destinataire, objet FR/EN, statut), disponible en `.docx` hors du repo.
+6. **Google Search Console** configuré pour `kabanalouer.ca` (vérification DNS TXT), sitemap soumis — voir section 9 (SEO / public).
+7. **Google Analytics 4** configuré et vérifié en production — voir section 9 (Analytics).
+
 ### Prochaine étape immédiate
 
 **Grand test complet en attente (Simon)** — rien de ce qui suit n'a encore été testé en conditions réelles par un vrai clic bout en bout, seulement par des appels directs :
 - Flux de révision admin des imports Airbnb au complet : recevoir la notification, réviser via le formulaire, cliquer "Publier au nom du propriétaire", confirmer que le courriel de bienvenue part bien et que l'abonnement offre de lancement est bien créé.
-- QA fonctionnel du site (recherche, formulaires, navigation, erreurs console) — toujours pas fait depuis le 2026-07-10.
+- QA fonctionnel du site (recherche, formulaires, navigation, erreurs console) — toujours pas fait comme grand test humain complet depuis le 2026-07-10 ; QA automatisé partiel fait le 2026-09-04 (responsive tablette + traductions EN, voir section 13).
 - Sélecteur de langue FR/EN dans le profil + redirection automatique (section 14) — toujours pas testé depuis le 2026-07-07.
 - Version anglaise des emails Auth (signup + recovery) — toujours pas testée depuis le 2026-07-07 (bloqué à l'époque par une limite de débit Supabase, jamais repris).
 
