@@ -10,6 +10,7 @@ import { getRegionContent } from "@/lib/regionsContent";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
+import { safeJsonLd } from "@/lib/jsonLd";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
@@ -137,18 +138,18 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     <div className="flex flex-col min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {itemListJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
         />
       )}
       {faqJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
         />
       )}
       <Navbar />
