@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -55,7 +56,7 @@ const faqJsonLd = {
 };
 
 export default async function FaqHotesPage() {
-  const t = await getTranslations("faqHotes");
+  const [t, locale] = await Promise.all([getTranslations("faqHotes"), getLocale()]);
 
   const SECTIONS = [
     {
@@ -166,13 +167,13 @@ export default async function FaqHotesPage() {
           <p className="text-charcoal-500 mb-8">{t("ctaSubtitle")}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href="/devenir-hote"
+              href={localePath("/devenir-hote", locale)}
               className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors"
             >
               {t("ctaRegister")}
             </Link>
             <Link
-              href="/tarifs"
+              href={localePath("/tarifs", locale)}
               className="inline-flex items-center justify-center border border-[#ebebeb] text-charcoal-700 font-semibold px-8 py-4 rounded-full hover:border-primary hover:text-primary transition-colors"
             >
               {t("ctaPricing")}

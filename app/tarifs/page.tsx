@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -41,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarifsPage() {
-  const t = await getTranslations("tarifs");
+  const [t, locale] = await Promise.all([getTranslations("tarifs"), getLocale()]);
 
   const INCLUDED = [
     t("f0"), t("f1"), t("f2"), t("f3"), t("f4"), t("f5"), t("f6"), t("f7"), t("f8"),
@@ -112,7 +113,7 @@ export default async function TarifsPage() {
             </ul>
 
             <Link
-              href="/signup?role=host"
+              href={localePath("/signup?role=host", locale)}
               className="w-full inline-flex items-center justify-center bg-primary text-white font-bold py-4 rounded-full hover:bg-primary/90 transition-colors text-base"
             >
               {t("offerBtn")}
@@ -210,7 +211,7 @@ export default async function TarifsPage() {
             {t("ctaOfferSubtitle")}
           </p>
           <Link
-            href="/signup?role=host"
+            href={localePath("/signup?role=host", locale)}
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
             {t("ctaBtn")}

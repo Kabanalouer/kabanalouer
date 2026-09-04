@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { submitImportRequest, type ImportRequestState } from "@/app/devenir-hote/actions";
+import { localePath } from "@/lib/localePath";
 
 const initialState: ImportRequestState = { status: "idle" };
 
@@ -13,6 +14,7 @@ const inputCls =
 
 export default function CreationChoiceSection() {
   const t = useTranslations("creationChoice");
+  const locale = useLocale();
   const [formOpen, setFormOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitImportRequest, initialState);
 
@@ -42,7 +44,7 @@ export default function CreationChoiceSection() {
               {t("card1Desc")}
             </p>
             <Link
-              href="/signup?role=host"
+              href={localePath("/signup?role=host", locale)}
               className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
             >
               {t("card1Btn")}

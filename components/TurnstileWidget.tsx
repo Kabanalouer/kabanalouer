@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import Script from "next/script";
+import { useLocale } from "next-intl";
 
 declare global {
   interface Window {
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) {
+  const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
 
@@ -45,11 +47,11 @@ export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) 
         callback: (token: string) => onSuccessRef.current(token),
         "expired-callback": () => onResetRef.current(),
         "error-callback": () => onResetRef.current(),
-        language: "fr",
+        language: locale === "en" ? "en" : "fr",
         theme: "light",
       });
     }
-  }, [sitekey]);
+  }, [sitekey, locale]);
 
   useEffect(() => {
     // Handles the case where window.turnstile is already loaded (cached script,

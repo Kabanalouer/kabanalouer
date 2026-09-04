@@ -6,6 +6,7 @@ import HostCTA from "@/components/devenir-hote/HostCTA";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -61,7 +62,7 @@ const organizationJsonLd = {
 };
 
 export default async function DevenirHotePage() {
-  const t = await getTranslations("devenirHote");
+  const [t, locale] = await Promise.all([getTranslations("devenirHote"), getLocale()]);
 
   const FEATURES = [
     t("i0"), t("i1"), t("i2"), t("i3"), t("i4"), t("i5"), t("i6"), t("i7"),
@@ -109,7 +110,7 @@ export default async function DevenirHotePage() {
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary-dark transition-colors text-lg"
               />
               <Link
-                href="/chalets"
+                href={localePath("/chalets", locale)}
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-4 rounded-full hover:bg-white/20 transition-colors text-base"
               >
                 {t("heroSeeListings")}

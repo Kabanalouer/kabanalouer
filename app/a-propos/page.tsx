@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -52,7 +53,7 @@ const organizationJsonLd = {
 };
 
 export default async function AProposPage() {
-  const t = await getTranslations("aPropos");
+  const [t, locale] = await Promise.all([getTranslations("aPropos"), getLocale()]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -125,13 +126,13 @@ export default async function AProposPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/chalets"
+              href={localePath("/chalets", locale)}
               className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
             >
               {t("ctaExploreCabins")}
             </Link>
             <Link
-              href="/devenir-hote"
+              href={localePath("/devenir-hote", locale)}
               className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition-colors text-lg"
             >
               {t("ctaListCabin")}

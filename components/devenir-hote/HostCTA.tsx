@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { localePath } from "@/lib/localePath";
 
 type Props = {
   label: string;
@@ -11,6 +13,7 @@ type Props = {
 };
 
 export default function HostCTA({ label, className }: Props) {
+  const locale = useLocale();
   const [isTraveler, setIsTraveler] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,7 +50,7 @@ export default function HostCTA({ label, className }: Props) {
 
   if (!isTraveler) {
     return (
-      <Link href="/signup?role=host" className={className}>
+      <Link href={localePath("/signup?role=host", locale)} className={className}>
         {label}
       </Link>
     );

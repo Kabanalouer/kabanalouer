@@ -1,6 +1,11 @@
 import SubscriptionClient from "./SubscriptionClient";
+import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Mon abonnement" };
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "My subscription" : "Mon abonnement" };
+}
 
 export default function SubscriptionPage() {
   return <SubscriptionClient />;

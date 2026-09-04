@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -88,7 +89,7 @@ const faqJsonLd = {
 };
 
 export default async function CommentCaMarchePage() {
-  const t = await getTranslations("commentCaMarche");
+  const [t, locale] = await Promise.all([getTranslations("commentCaMarche"), getLocale()]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -121,7 +122,7 @@ export default async function CommentCaMarchePage() {
               number={1}
               title={t("step1Title")}
               description={t("step1Desc")}
-              action={{ label: t("step1Action"), href: "/chalets" }}
+              action={{ label: t("step1Action"), href: localePath("/chalets", locale) }}
             />
             <Step number={2} title={t("step2Title")} description={t("step2Desc")} />
             <Step number={3} title={t("step3Title")} description={t("step3Desc")} />
@@ -165,7 +166,7 @@ export default async function CommentCaMarchePage() {
           <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
           <p className="text-white/80 text-lg mb-10">{t("ctaSubtitle")}</p>
           <Link
-            href="/chalets"
+            href={localePath("/chalets", locale)}
             className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
           >
             {t("ctaBtn")}

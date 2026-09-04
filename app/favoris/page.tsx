@@ -7,6 +7,7 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { localePath } from "@/lib/localePath";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("favoris");
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FavorisPage() {
-  const [supabase, t] = await Promise.all([createClient(), getTranslations("favoris")]);
+  const [supabase, t, locale] = await Promise.all([createClient(), getTranslations("favoris"), getLocale()]);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
@@ -123,7 +124,7 @@ export default async function FavorisPage() {
               {t("emptyHint")}
             </p>
             <Link
-              href="/chalets"
+              href={localePath("/chalets", locale)}
               className="inline-block bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               {t("exploreCta")}
