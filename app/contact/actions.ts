@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotification";
 
 export type ContactFormState =
   | { status: "idle" }
@@ -43,6 +44,17 @@ export async function submitContactForm(
   if (error) {
     console.error("contact_messages insert error:", error.message);
     return { status: "error", message: "Une erreur est survenue. Veuillez réessayer." };
+  }
+
+  // Notification à l'admin — ne doit jamais faire échouer la soumission du
+  // formulaire si Resend est indisponible (le message est déjà en base).
+  try {
+    const { error: emailError } = await sendContactMessageNotification({ name, email, subject, message });
+    if (emailError) {
+      console.error("sendContactMessageNotification error:", emailError.message);
+    }
+  } catch (emailErr) {
+    console.error("sendContactMessageNotification threw:", emailErr);
   }
 
   return { status: "success" };

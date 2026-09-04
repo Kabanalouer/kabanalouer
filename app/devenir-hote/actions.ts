@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 export type ImportRequestState =
   | { status: "idle" }
@@ -50,15 +51,21 @@ export async function submitImportRequest(
 
   if (process.env.RESEND_API_KEY) {
     try {
+      // name/email/listingUrl viennent d'un visiteur non authentifié — jamais
+      // interpolés tels quels dans le HTML (voir lib/escapeHtml.ts).
+      const safeName = escapeHtml(name);
+      const safeEmail = escapeHtml(email);
+      const safeListingUrl = escapeHtml(listingUrl);
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
         from: "Kabanalouer <no-reply@kabanalouer.ca>",
-        to: "slemay@authentik.com",
+        to: "simon.authentik@gmail.com",
+        // Sujet : texte brut, jamais rendu en HTML — pas besoin d'échappement ici.
         subject: `Nouvelle demande d'import — ${name}`,
         html: `
-          <p><strong>Nom :</strong> ${name}</p>
-          <p><strong>Courriel :</strong> ${email}</p>
-          <p><strong>Lien de l'annonce :</strong> <a href="${listingUrl}">${listingUrl}</a></p>
+          <p><strong>Nom :</strong> ${safeName}</p>
+          <p><strong>Courriel :</strong> ${safeEmail}</p>
+          <p><strong>Lien de l'annonce :</strong> <a href="${safeListingUrl}">${safeListingUrl}</a></p>
         `,
       });
     } catch (emailErr) {
