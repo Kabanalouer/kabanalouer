@@ -141,7 +141,7 @@ export default function EditListingForm({
   initialLng,
   subscriptionStatus: initialSubStatus,
   subscriptionExpiresAt: initialSubExpiresAt,
-  hasClaimedFreeLaunch,
+  hasExistingSubscription,
   nextPaidPriceCents,
   initialBlocked,
   icalUrl,
@@ -160,7 +160,7 @@ export default function EditListingForm({
   initialLng: number | null;
   subscriptionStatus: string | null;
   subscriptionExpiresAt: string | null;
-  hasClaimedFreeLaunch: boolean;
+  hasExistingSubscription: boolean;
   nextPaidPriceCents: number;
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
@@ -1380,9 +1380,10 @@ export default function EditListingForm({
 
           {/* Section: Publier */}
           {activeSection === "publier" && (() => {
-            // L'offre gratuite n'est proposée que si ce proprio ne l'a jamais
-            // réclamée — une fois dans sa vie, définitivement, sans limite de nombre.
-            const isFree = !hasClaimedFreeLaunch;
+            // L'offre gratuite n'est proposée que si CETTE annonce n'a jamais
+            // eu d'abonnement — par annonce, pas par proprio. Un proprio avec
+            // plusieurs chalets a droit à l'offre séparément pour chacun.
+            const isFree = !hasExistingSubscription;
             const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate

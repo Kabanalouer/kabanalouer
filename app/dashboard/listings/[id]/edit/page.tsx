@@ -47,18 +47,17 @@ export default async function EditListingPage({ params }: Props) {
 
   const admin = adminSupabase();
 
-  const [{ data: subscription }, { data: hostRow }, nextPaidRank, { data: blockedDates }] = await Promise.all([
+  const [{ data: subscription }, nextPaidRank, { data: blockedDates }] = await Promise.all([
     // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
     // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
+    // Sert aussi à l'éligibilité de l'offre de lancement : l'existence d'une
+    // ligne pour CE listing_id (peu importe son statut) suffit à prouver que
+    // cette annonce précise a déjà eu un abonnement, gratuit ou payant.
     supabase
       .from("subscriptions")
       .select("status, expires_at")
       .eq("listing_id", id)
       .maybeSingle(),
-    // Toujours le propriétaire réel de l'annonce (hostId), jamais le viewer —
-    // sinon un admin en révision verrait ses propres données à la place de
-    // celles du proprio (offre gratuite déjà réclamée, rang tarifaire, etc.).
-    supabase.from("users").select("free_launch_claimed_at").eq("id", hostId).single(),
     getNextPaidRank(admin, hostId),
     supabase
       .from("availability")
@@ -83,7 +82,7 @@ export default async function EditListingPage({ params }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.expires_at ?? null}
-        hasClaimedFreeLaunch={!!hostRow?.free_launch_claimed_at}
+        hasExistingSubscription={!!subscription}
         nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}

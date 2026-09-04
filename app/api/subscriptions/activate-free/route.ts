@@ -36,26 +36,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
   }
 
-  const { data: userRow } = await admin
-    .from("users")
-    .select("free_launch_claimed_at")
-    .eq("id", user.id)
-    .single();
-
-  // Une seule fois dans sa vie — permanent, indépendant du statut actuel de
-  // n'importe laquelle de ses annonces (gratuite annulée ou non, payantes ajoutées depuis).
-  if (userRow?.free_launch_claimed_at) {
-    return NextResponse.json({ error: "Tu as déjà utilisé ton offre de lancement" }, { status: 409 });
-  }
-
+  // Éligibilité par ANNONCE, pas par proprio : l'existence d'une ligne
+  // subscriptions pour CE listing_id (peu importe son statut) prouve que
+  // cette annonce précise a déjà eu — ou a — un abonnement, gratuit ou
+  // payant. Un proprio avec plusieurs chalets réclame donc l'offre de
+  // lancement séparément pour chacun, tant que celui-ci n'y a jamais touché.
   const { data: existingSub } = await admin
     .from("subscriptions")
     .select("status")
     .eq("listing_id", listingId)
     .maybeSingle();
 
-  if (existingSub?.status === "active") {
-    return NextResponse.json({ error: "Cette annonce a déjà un abonnement actif" }, { status: 409 });
+  if (existingSub) {
+    const message = existingSub.status === "active"
+      ? "Cette annonce a déjà un abonnement actif"
+      : "Cette annonce a déjà eu un abonnement — l'offre de lancement ne s'applique plus";
+    return NextResponse.json({ error: message }, { status: 409 });
   }
 
   const expiresAt = new Date();
@@ -77,7 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Erreur lors de l'activation." }, { status: 500 });
   }
 
-  await admin.from("users").update({ role: "host", free_launch_claimed_at: new Date().toISOString() }).eq("id", user.id);
+  await admin.from("users").update({ role: "host" }).eq("id", user.id);
   await admin.from("listings").update({ is_published: true }).eq("id", listingId);
 
   if (user.email) {

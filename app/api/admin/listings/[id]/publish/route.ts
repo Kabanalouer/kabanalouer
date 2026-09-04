@@ -43,13 +43,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: hostRow } = await admin
     .from("users")
-    .select("email, name, preferred_language, free_launch_claimed_at")
+    .select("email, name, preferred_language")
     .eq("id", listing.host_id)
     .single();
 
   if (!hostRow?.email) {
     return NextResponse.json({ error: "Propriétaire introuvable" }, { status: 500 });
   }
+
+  // Éligibilité par ANNONCE, pas par proprio — voir /api/subscriptions/activate-free
+  // pour le même raisonnement. Une ligne subscriptions déjà existante pour CETTE
+  // annonce bloque une 2e création, peu importe l'état des autres annonces du proprio.
+  const { data: existingSub } = await admin
+    .from("subscriptions")
+    .select("id")
+    .eq("listing_id", id)
+    .maybeSingle();
 
   const { error: publishError } = await admin
     .from("listings")
@@ -61,13 +70,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Échec de la publication" }, { status: 500 });
   }
 
-  // Abonnement offre de lancement — seulement si ce proprio ne l'a jamais
-  // réclamée ailleurs (même règle "une fois dans sa vie" que
-  // /api/subscriptions/activate-free). S'il l'a déjà utilisée sur une autre
-  // annonce, on ne crée rien ici — laissé à une révision manuelle du prix
-  // plutôt que de contourner silencieusement cette règle.
+  // Abonnement offre de lancement — seulement si CETTE annonce n'en a jamais
+  // eu (voir le check existingSub ci-dessus). Si elle en a déjà eu un, on ne
+  // crée rien ici — laissé à une révision manuelle du prix plutôt que de
+  // contourner silencieusement cette règle.
   let subscriptionCreated = false;
-  if (!hostRow.free_launch_claimed_at) {
+  if (!existingSub) {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
@@ -88,10 +96,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (subError) {
       console.error("admin/listings/publish: échec upsert subscriptions", subError);
     } else {
-      await admin
-        .from("users")
-        .update({ free_launch_claimed_at: new Date().toISOString() })
-        .eq("id", listing.host_id);
       subscriptionCreated = true;
     }
   }
