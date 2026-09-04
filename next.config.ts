@@ -12,12 +12,14 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       // Next.js requires unsafe-inline + unsafe-eval; Google Maps needs *.googleapis.com
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com js.stripe.com challenges.cloudflare.com",
+      // *.googletagmanager.com : script gtag.js (Google Analytics 4)
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com *.googletagmanager.com js.stripe.com challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com challenges.cloudflare.com",
       "font-src 'self' fonts.gstatic.com data:",
       // img: allow HTTPS broadly (Unsplash, Supabase storage, Google Maps tiles)
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com api.stripe.com hooks.stripe.com challenges.cloudflare.com",
+      // *.google-analytics.com/*.googletagmanager.com : envoi des événements GA4
+      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com",
       "frame-src js.stripe.com hooks.stripe.com challenges.cloudflare.com",
       "worker-src blob:",
       "child-src blob:",

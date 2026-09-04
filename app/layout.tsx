@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { SITE_URL } from "@/lib/siteUrl";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -71,10 +72,12 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
     <html lang={locale} className={`h-full ${jakarta.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col">
+        {gaMeasurementId && <GoogleAnalytics measurementId={gaMeasurementId} />}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
