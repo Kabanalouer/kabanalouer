@@ -46,8 +46,9 @@ function Inner(props: Props) {
 
   return (
     <>
-      {/* Barre compacte sticky sous la navbar — mobile uniquement */}
-      <div className="md:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] px-4 py-2.5 flex items-center gap-2">
+      {/* Barre compacte sticky sous la navbar — mobile et tablette (<1024px),
+          NavSearchBar (navbar desktop) prend le relais à partir de lg: */}
+      <div className="lg:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] px-4 py-2.5 flex items-center gap-2">
         <button
           onClick={() => setOpen(true)}
           className="flex-1 flex items-center gap-2.5 bg-charcoal-50 hover:bg-charcoal-100 transition-colors rounded-full px-4 py-2 text-left min-w-0"
@@ -77,7 +78,7 @@ function Inner(props: Props) {
 
       {/* Overlay plein écran de recherche */}
       {open && (
-        <div className="fixed inset-0 z-[9999] bg-white flex flex-col md:hidden">
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col lg:hidden">
           <div className="flex items-center px-4 py-3 border-b border-[#ebebeb] shrink-0">
             <button
               onClick={() => setOpen(false)}
@@ -107,7 +108,7 @@ function Inner(props: Props) {
 export default function ChaletsSearchSubBar(props: Props) {
   return (
     <Suspense fallback={
-      <div className="md:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] h-[52px]" />
+      <div className="lg:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] h-[52px]" />
     }>
       <Inner {...props} />
     </Suspense>
