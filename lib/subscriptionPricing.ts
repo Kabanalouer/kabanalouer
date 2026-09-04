@@ -1,10 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const LISTING_PRICE_IDS = {
+// Bascule test/prod : VERCEL_ENV (pas NODE_ENV, qui vaut "production" même
+// sur les builds preview Vercel) — n'est "production" que sur le vrai
+// déploiement production, absent en local donc retombe sur les IDs test.
+const isProdEnv = process.env.VERCEL_ENV === "production";
+
+const LISTING_PRICE_IDS_TEST = {
   tier1: "price_1ToqE7EVlLGcAv4arl0TmOCz",
   tier2_3: "price_1TqeYhEVlLGcAv4aUUuiwT8R",
   tier4plus: "price_1TqeYhEVlLGcAv4a9mPZ8H0T",
 } as const;
+
+const LISTING_PRICE_IDS_PROD = {
+  tier1: "price_1UBvrfIRwZDgRnpbzWqem76f",
+  tier2_3: "price_1UBw6jIRwZDgRnpbZchs7QjF",
+  tier4plus: "price_1UBw7MIRwZDgRnpbMm4EijEW",
+} as const;
+
+export const LISTING_PRICE_IDS = isProdEnv ? LISTING_PRICE_IDS_PROD : LISTING_PRICE_IDS_TEST;
 
 export type PriceTier = "tier1" | "tier2_3" | "tier4plus";
 

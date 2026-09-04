@@ -9,6 +9,7 @@ import {
   STRIPE_PRICE_FEATURED_HOME,
   STRIPE_PRICE_FEATURED_REGION,
 } from "@/lib/featuredConfig";
+import { STRIPE_TAX_RATE_IDS } from "@/lib/stripeTaxRates";
 
 function allowedMonths(): string[] {
   const months: string[] = [];
@@ -94,6 +95,7 @@ export async function POST(request: Request) {
       {
         price,
         quantity: 1,
+        ...(STRIPE_TAX_RATE_IDS ? { tax_rates: STRIPE_TAX_RATE_IDS } : {}),
       },
     ],
     success_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?paid=1`,

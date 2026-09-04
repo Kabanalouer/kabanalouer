@@ -4,5 +4,13 @@ export const PRIX_VEDETTE_HOME = 99;
 export const PRIX_VEDETTE_REGION = 49;
 export const MAX_MONTHS_AHEAD = 3;
 
-export const STRIPE_PRICE_FEATURED_HOME = "price_1Tq8siEVlLGcAv4aUZyRM4NY";
-export const STRIPE_PRICE_FEATURED_REGION = "price_1Tq8uzEVlLGcAv4aLzV5I2Yw";
+// Bascule test/prod : voir lib/subscriptionPricing.ts pour le choix de VERCEL_ENV.
+const isProdEnv = process.env.VERCEL_ENV === "production";
+
+const STRIPE_PRICE_FEATURED_HOME_TEST = "price_1Tq8siEVlLGcAv4aUZyRM4NY";
+const STRIPE_PRICE_FEATURED_HOME_PROD = "price_1UBw4qIRwZDgRnpbGHcRyVId";
+const STRIPE_PRICE_FEATURED_REGION_TEST = "price_1Tq8uzEVlLGcAv4aLzV5I2Yw";
+const STRIPE_PRICE_FEATURED_REGION_PROD = "price_1UBw5RIRwZDgRnpbHllKdZtT";
+
+export const STRIPE_PRICE_FEATURED_HOME = isProdEnv ? STRIPE_PRICE_FEATURED_HOME_PROD : STRIPE_PRICE_FEATURED_HOME_TEST;
+export const STRIPE_PRICE_FEATURED_REGION = isProdEnv ? STRIPE_PRICE_FEATURED_REGION_PROD : STRIPE_PRICE_FEATURED_REGION_TEST;

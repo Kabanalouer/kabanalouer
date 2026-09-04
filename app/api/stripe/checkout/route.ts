@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
+import { STRIPE_TAX_RATE_IDS } from "@/lib/stripeTaxRates";
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
       {
         price: priceId,
         quantity: 1,
+        ...(STRIPE_TAX_RATE_IDS ? { tax_rates: STRIPE_TAX_RATE_IDS } : {}),
       },
     ],
     success_url: `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`,
