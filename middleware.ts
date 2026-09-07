@@ -15,9 +15,21 @@ export async function middleware(request: NextRequest) {
   // next-intl: locale detection, redirects (e.g. /fr/dashboard → /dashboard)
   const intlResponse = intlMiddleware(request);
 
-  // If next-intl returns a redirect, pass it through immediately
+  // If next-intl returns a redirect, pass it through immediately.
+  // next-intl always issues a 307 (temporary) here — but under
+  // localePrefix "as-needed", a prefix-normalization redirect like
+  // /fr/chalets → /chalets is a permanent URL change from an SEO
+  // standpoint, so force 308 to consolidate link equity correctly.
   if (intlResponse.status >= 300 && intlResponse.status < 400) {
-    return intlResponse;
+    const location = intlResponse.headers.get("location");
+    if (!location) return intlResponse;
+    const permanentResponse = NextResponse.redirect(location, 308);
+    intlResponse.headers.forEach((value, key) => {
+      if (key.toLowerCase() !== "location") {
+        permanentResponse.headers.set(key, value);
+      }
+    });
+    return permanentResponse;
   }
 
   // Pass-through: build a fresh response that forwards the updated request to Next.js,
