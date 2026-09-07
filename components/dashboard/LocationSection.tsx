@@ -10,28 +10,23 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { REGIONS } from "@/lib/regions";
 
-const REGIONS = [
-  "Charlevoix",
-  "Estrie (Cantons-de-l'Est)",
-  "Gaspésie",
-  "Lanaudière",
-  "Laurentides",
-  "Mauricie",
-  "Outaouais",
-  "Québec (ville et région)",
-  "Saguenay–Lac-Saint-Jean",
-  "Abitibi-Témiscamingue",
-  "Côte-Nord",
-  "Centre-du-Québec",
-];
+// Valeurs exactes stockées en base (listings.region) — mêmes 14 régions que
+// lib/regions.ts, seule source de vérité (pages région, sitemap, meta tags).
+// Avant, une liste locale de 12 régions codée en dur ici pouvait diverger :
+// une annonce pouvait se voir assigner "Bas-Saint-Laurent", "Montérégie" ou
+// "Chaudière-Appalaches" via un autre chemin (import Airbnb, correction
+// manuelle) sans jamais matcher ici, ou au contraire matcher "Centre-du-Québec"
+// qui n'a aucune page région correspondante sur le site.
+const REGION_DB_VALUES = REGIONS.map((r) => r.dbValue);
 
 function matchRegion(googleRegion: string): string {
   if (!googleRegion) return "";
   const norm = googleRegion.toLowerCase().trim();
   return (
-    REGIONS.find((r) => r.toLowerCase() === norm) ??
-    REGIONS.find(
+    REGION_DB_VALUES.find((r) => r.toLowerCase() === norm) ??
+    REGION_DB_VALUES.find(
       (r) =>
         norm.includes(r.toLowerCase().split(" (")[0].toLowerCase()) ||
         r.toLowerCase().includes(norm)
