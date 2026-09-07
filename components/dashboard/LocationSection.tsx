@@ -11,6 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { REGIONS } from "@/lib/regions";
+import { normalizeCityName } from "@/lib/normalizeCityName";
 
 // Valeurs exactes stockées en base (listings.region) — mêmes 14 régions que
 // lib/regions.ts, seule source de vérité (pages région, sitemap, meta tags).
@@ -121,11 +122,14 @@ function LocationForm({
   const handleSave = async () => {
     setSaving(true);
     setSaveError("");
+    // Normalisé avant l'écriture — la donnée en base doit déjà être propre,
+    // pas seulement corrigée à l'affichage (voir lib/normalizeCityName.ts).
+    const normalizedCity = city ? normalizeCityName(city) : "";
     const { error } = await supabase
       .from("listings")
       .update({
         address,
-        city: city || null,
+        city: normalizedCity || null,
         region,
         latitude: position?.lat ?? null,
         longitude: position?.lng ?? null,
@@ -136,6 +140,7 @@ function LocationForm({
     if (error) {
       setSaveError(t("saveError"));
     } else {
+      setCity(normalizedCity);
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
       onSaved?.(!!(position));
