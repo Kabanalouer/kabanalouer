@@ -1,10 +1,16 @@
 import type { MetadataRoute } from "next";
-import { getRegionSlugs } from "@/lib/regions";
+import { getRegionSlugs, getRegionBySlug } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE = SITE_URL;
+
+// SEO : même seuil que MIN_CHALETS_FOR_INDEX dans app/chalets/[slug]/page.tsx —
+// une région sous ce nombre de chalets actifs est en noindex, donc exclue du
+// sitemap aussi (pas de sens à soumettre à Google une page qu'on lui dit de ne
+// pas indexer).
+const MIN_CHALETS_FOR_INDEX = 1;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -36,7 +42,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // ── Region pages FR + EN ─────────────────────────────────────────────────────
-  const regionPages: MetadataRoute.Sitemap = getRegionSlugs().flatMap((slug) => [
+  // Défaut optimiste (toutes les régions) — écrasé ci-dessous une fois les
+  // comptes actifs connus. Reste tel quel si Supabase est injoignable (ne pas
+  // faire échouer le build, voir catch plus bas).
+  let regionPages: MetadataRoute.Sitemap = getRegionSlugs().flatMap((slug) => [
     { url: `${BASE}/chalets/${slug}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
     { url: `${BASE}/en/cabins/${slug}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
   ]);
@@ -52,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { data: listings } = await supabase
       .from("listings")
-      .select("id, city, slug_fr, slug_en, updated_at")
+      .select("id, region, city, slug_fr, slug_en, updated_at")
       .eq("is_published", true)
       .order("updated_at", { ascending: false });
 
@@ -90,8 +99,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.75,
       },
     ]);
+
+    // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
+    // (voir MIN_CHALETS_FOR_INDEX ci-dessus et dans app/chalets/[slug]/page.tsx).
+    const activeCountByRegion = new Map<string, number>();
+    for (const l of listings ?? []) {
+      const region = l.region as string | null;
+      if (!region) continue;
+      activeCountByRegion.set(region, (activeCountByRegion.get(region) ?? 0) + 1);
+    }
+    regionPages = getRegionSlugs().flatMap((slug) => {
+      const regionConfig = getRegionBySlug(slug);
+      const activeCount = regionConfig ? (activeCountByRegion.get(regionConfig.dbValue) ?? 0) : 0;
+      if (activeCount < MIN_CHALETS_FOR_INDEX) return [];
+      return [
+        { url: `${BASE}/chalets/${slug}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+        { url: `${BASE}/en/cabins/${slug}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+      ];
+    });
   } catch {
-    // Don't fail the build if Supabase is unreachable
+    // Don't fail the build if Supabase is unreachable — regionPages garde son
+    // défaut optimiste (toutes les régions) défini plus haut.
   }
 
   return [...staticPages, ...regionPages, ...cityPages, ...listingPages];

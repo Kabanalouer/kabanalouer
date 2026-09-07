@@ -32,6 +32,12 @@ import { getTranslations, getLocale } from "next-intl/server";
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
 
+// SEO : une région sans chalet actif publié est du contenu quasi vide/dupliqué
+// aux yeux de Google (même gabarit sur 14 pages région) — reste non-indexable
+// tant que ce seuil n'est pas atteint. Garder ce nombre synchronisé avec le
+// seuil équivalent dans app/sitemap.ts (régions exclues du sitemap).
+const MIN_CHALETS_FOR_INDEX = 1;
+
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string }>;
@@ -45,20 +51,34 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const locale = await getLocale();
   const isEn = locale === "en";
+  const supabase = await createClient();
 
   // Region landing page
   const region = getRegionBySlug(slug);
   if (region) {
     const rc = getRegionContent(slug);
+
+    const { count: activeListingCount } = await supabase
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("region", region.dbValue);
+
+    // Titre/description personnalisés (regionsContent.ts) en priorité —
+    // le format générique n'est qu'un filet pour une région qui n'en a pas encore.
     const title = isEn
-      ? (rc?.meta_title_en ?? `Cabin Rentals ${rc?.locative_en ?? `in ${region.name}`}, Quebec`)
-      : (rc?.meta_title_fr ?? `Chalets à louer ${region.locative}`);
+      ? (rc?.meta_title_en ?? `Cabin rental | ${region.name}`)
+      : (rc?.meta_title_fr ?? `Location de chalet | ${region.name}`);
     const description = isEn
-      ? (rc?.meta_description_en ?? `Find cabin rentals ${rc?.locative_en ?? `in ${region.name}`}, Quebec. Direct contact with local owners. No service fees.`)
-      : (rc?.meta_description_fr ?? `Découvrez nos chalets à louer ${region.locative}, Québec. Contact direct avec les propriétaires, aucun frais de service.`);
+      ? (rc?.meta_description_en ?? `Find your cabin for rent ${rc?.locative_en ?? `in ${region.name}`}, with no service fees.`)
+      : (rc?.meta_description_fr ?? `Trouvez votre chalet à louer ${region.locative}, sans frais de service.`);
+
     return {
       title,
       description,
+      ...((activeListingCount ?? 0) < MIN_CHALETS_FOR_INDEX
+        ? { robots: { index: false, follow: true } }
+        : {}),
       alternates: {
         canonical: `/chalets/${slug}`,
         languages: { fr: `/chalets/${slug}`, en: `/en/chalets/${slug}`, "x-default": `/chalets/${slug}` },
@@ -72,8 +92,6 @@ export async function generateMetadata({ params }: Props) {
       twitter: { title, description, images: [region.heroImage] },
     };
   }
-
-  const supabase = await createClient();
 
   // Try by slug first, then fall back to UUID
   const { data: bySlug } = await supabase
