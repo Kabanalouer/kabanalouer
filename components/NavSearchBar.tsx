@@ -5,32 +5,28 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { REGIONS } from "@/lib/regions";
+import municipalitiesData from "@/lib/municipalities.json";
 
 // ── Constants ────────────────────────────────────────────────────────────────
+// Avant : même liste de 14 régions codée en dur que l'ex-SearchBar.tsx
+// (divergente de lib/regions.ts, 15 régions — il manquait Bas-Saint-Laurent).
+// Maintenant dérivée de REGIONS (lib/regions.ts), comme SearchBar.tsx.
 
-const REGIONS = [
-  "Charlevoix", "Estrie (Cantons-de-l'Est)", "Gaspésie", "Lanaudière",
-  "Laurentides", "Mauricie", "Outaouais", "Québec (ville et région)",
-  "Saguenay–Lac-Saint-Jean", "Abitibi-Témiscamingue", "Côte-Nord",
-  "Montérégie", "Chaudière-Appalaches", "Centre-du-Québec",
-];
+// Même forme que Municipality dans components/dashboard/MunicipalityCombobox.tsx
+// et components/SearchBar.tsx (généré par scripts/generate-municipalities.js).
+interface Municipality {
+  name: string;
+  slug: string;
+  region: string;
+  officialCode: string;
+  mrc: string;
+}
+const MUNICIPALITIES = municipalitiesData as Municipality[];
 
-const REGION_SLUG_MAP: Record<string, string> = {
-  "Charlevoix": "charlevoix",
-  "Estrie (Cantons-de-l'Est)": "cantons-de-lest",
-  "Gaspésie": "gaspesie",
-  "Lanaudière": "lanaudiere",
-  "Laurentides": "laurentides",
-  "Mauricie": "mauricie",
-  "Outaouais": "outaouais",
-  "Québec (ville et région)": "capitale-nationale",
-  "Saguenay–Lac-Saint-Jean": "saguenay-lac-saint-jean",
-  "Abitibi-Témiscamingue": "abitibi-temiscamingue",
-  "Côte-Nord": "cote-nord",
-  "Montérégie": "monteregie",
-  "Chaudière-Appalaches": "chaudiere-appalaches",
-};
-
+const REGION_NAMES = REGIONS.map((r) => r.dbValue);
+const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
+const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
 const RECENT_KEY = "kbl_recent_dest";
@@ -174,6 +170,9 @@ function NavSearchBarInner() {
   const [recentSearches, setRecentSearches] = useState<DestItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Villes avec au moins une annonce publiée (pas la source des suggestions
+  // — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
+  // /chalets/ville/[slug] existe pour une municipalité donnée, voir handleSearch()).
   useEffect(() => {
     fetch("/api/listings/locations").then(r => r.json()).then(d => setCities(d.cities ?? [])).catch(() => {});
     setRecentSearches(loadRecent());
@@ -191,10 +190,10 @@ function NavSearchBarInner() {
   const suggestions = useMemo<DestItem[]>(() => {
     const q = destInput.trim().toLowerCase();
     if (!q) return [];
-    const regionHits = REGIONS.filter(r => r.toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: r, type: "region" as const, value: r }));
-    const cityHits = cities.filter(c => c.toLowerCase().includes(q)).slice(0, 4).map(c => ({ label: c, type: "city" as const, value: c }));
+    const regionHits = REGION_NAMES.filter(r => r.toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: r, type: "region" as const, value: r }));
+    const cityHits = MUNICIPALITIES.filter(m => m.name.toLowerCase().includes(q)).slice(0, 4).map(m => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
-  }, [destInput, cities]);
+  }, [destInput]);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
@@ -209,14 +208,31 @@ function NavSearchBarInner() {
     const active = destSelected ?? (() => {
       const q = destInput.trim();
       if (!q) return null;
-      const regionMatch = REGIONS.find(r => r.toLowerCase() === q.toLowerCase());
+      const regionMatch = REGION_NAMES.find(r => r.toLowerCase() === q.toLowerCase());
       if (regionMatch) return { label: regionMatch, type: "region" as const, value: regionMatch };
       return { label: q, type: "city" as const, value: q };
     })();
 
-    if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
-      const slug = REGION_SLUG_MAP[active.value];
+    const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
+
+    if (active?.type === "region" && noFilters) {
+      const slug = REGION_SLUG_BY_NAME.get(active.value);
       if (slug) { router.push(localePath(`/chalets/${slug}`, locale)); return; }
+    }
+
+    // Ville reconnue dans la liste officielle (no dates, no guests) → sa
+    // page SEO dédiée si elle a des annonces publiées (sinon
+    // /chalets/ville/[slug] ferait 404), sinon la page de sa région parente.
+    if (active?.type === "city" && noFilters) {
+      const municipality = MUNICIPALITY_BY_NAME.get(active.value);
+      if (municipality) {
+        if (cities.includes(municipality.name)) {
+          router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
+          return;
+        }
+        const regionSlug = REGION_SLUG_BY_NAME.get(municipality.region);
+        if (regionSlug) { router.push(localePath(`/chalets/${regionSlug}`, locale)); return; }
+      }
     }
 
     const params = new URLSearchParams();
@@ -248,7 +264,7 @@ function NavSearchBarInner() {
   const datesLabel = checkin ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}` : null;
   const totalGuests = adults + children + babies;
   const guestsLabel = totalGuests > 0 ? t("guestsCount", { count: totalGuests }) : null;
-  const popularRegions: DestItem[] = REGIONS.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
+  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
 
   const filtersCurrentParams = {
     region: initRegion || undefined,

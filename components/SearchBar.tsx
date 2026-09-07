@@ -4,43 +4,33 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { REGIONS } from "@/lib/regions";
+import municipalitiesData from "@/lib/municipalities.json";
 
 // ── Static data ──────────────────────────────────────────────────────────────
+// Avant : liste de 14 régions codée en dur ici, divergente à la fois de
+// lib/regions.ts (15, source de vérité) et de l'ancienne liste de
+// LocationSection.tsx (déjà corrigée) — il manquait Bas-Saint-Laurent.
+// Maintenant dérivée de REGIONS (lib/regions.ts) : toujours synchro avec les
+// pages région/sitemap/meta tags.
 
-const REGIONS = [
-  "Charlevoix",
-  "Estrie (Cantons-de-l'Est)",
-  "Gaspésie",
-  "Lanaudière",
-  "Laurentides",
-  "Mauricie",
-  "Outaouais",
-  "Québec (ville et région)",
-  "Saguenay–Lac-Saint-Jean",
-  "Abitibi-Témiscamingue",
-  "Côte-Nord",
-  "Montérégie",
-  "Chaudière-Appalaches",
-  "Centre-du-Québec",
-];
+// Même forme que Municipality dans components/dashboard/MunicipalityCombobox.tsx
+// (généré par scripts/generate-municipalities.js à partir du répertoire MAMH).
+interface Municipality {
+  name: string;
+  slug: string;
+  region: string;
+  officialCode: string;
+  mrc: string;
+}
+const MUNICIPALITIES = municipalitiesData as Municipality[];
 
-// Maps region display value → slug for SEO landing pages
-const REGION_SLUG_MAP: Record<string, string> = {
-  "Charlevoix": "charlevoix",
-  "Estrie (Cantons-de-l'Est)": "cantons-de-lest",
-  "Gaspésie": "gaspesie",
-  "Lanaudière": "lanaudiere",
-  "Laurentides": "laurentides",
-  "Mauricie": "mauricie",
-  "Outaouais": "outaouais",
-  "Québec (ville et région)": "capitale-nationale",
-  "Saguenay–Lac-Saint-Jean": "saguenay-lac-saint-jean",
-  "Abitibi-Témiscamingue": "abitibi-temiscamingue",
-  "Côte-Nord": "cote-nord",
-  "Montérégie": "monteregie",
-  "Chaudière-Appalaches": "chaudiere-appalaches",
-};
-
+const REGION_NAMES = REGIONS.map((r) => r.dbValue);
+// dbValue -> slug URL, pour le raccourci vers la page région SEO existante.
+const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
+// nom de municipalité -> fiche complète (région, slug), pour choisir entre
+// /chalets/ville/[slug] et la page région parente au moment de la recherche.
+const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
 
@@ -210,7 +200,10 @@ export default function SearchBar({
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch cities from DB on mount
+  // Villes avec au moins une annonce publiée (pas la source des suggestions
+  // de recherche — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
+  // /chalets/ville/[slug] existe pour une municipalité donnée au moment de
+  // rechercher, voir handleSearch()).
   useEffect(() => {
     fetch("/api/listings/locations")
       .then((r) => r.json())
@@ -258,16 +251,16 @@ export default function SearchBar({
   const suggestions = useMemo<DestItem[]>(() => {
     const q = destQuery.trim().toLowerCase();
     if (!q) return [];
-    const regionHits = REGIONS
+    const regionHits = REGION_NAMES
       .filter((r) => r.toLowerCase().includes(q))
       .slice(0, 4)
       .map((r) => ({ label: r, type: "region" as const, value: r }));
-    const cityHits = cities
-      .filter((c) => c.toLowerCase().includes(q))
+    const cityHits = MUNICIPALITIES
+      .filter((m) => m.name.toLowerCase().includes(q))
       .slice(0, 6)
-      .map((c) => ({ label: c, type: "city" as const, value: c }));
+      .map((m) => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
-  }, [destQuery, cities]);
+  }, [destQuery]);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
@@ -315,17 +308,38 @@ export default function SearchBar({
     const active = destSelected ?? (() => {
       const q = destQuery.trim();
       if (!q) return null;
-      const regionMatch = REGIONS.find((r) => r.toLowerCase() === q.toLowerCase());
+      const regionMatch = REGION_NAMES.find((r) => r.toLowerCase() === q.toLowerCase());
       if (regionMatch) return { label: regionMatch, type: "region" as const, value: regionMatch };
       return { label: q, type: "city" as const, value: q };
     })();
 
+    const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
+
     // Region-only search (no dates, no guests) → SEO landing page
-    if (active?.type === "region" && !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0) {
-      const slug = REGION_SLUG_MAP[active.value];
+    if (active?.type === "region" && noFilters) {
+      const slug = REGION_SLUG_BY_NAME.get(active.value);
       if (slug) {
         router.push(localePath(`/chalets/${slug}`, locale));
         return;
+      }
+    }
+
+    // Ville-only search reconnue dans la liste officielle (no dates, no
+    // guests) → sa page SEO dédiée si elle a des annonces publiées
+    // (sinon /chalets/ville/[slug] ferait 404), sinon la page de sa région
+    // parente, qui existe toujours.
+    if (active?.type === "city" && noFilters) {
+      const municipality = MUNICIPALITY_BY_NAME.get(active.value);
+      if (municipality) {
+        if (cities.includes(municipality.name)) {
+          router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
+          return;
+        }
+        const regionSlug = REGION_SLUG_BY_NAME.get(municipality.region);
+        if (regionSlug) {
+          router.push(localePath(`/chalets/${regionSlug}`, locale));
+          return;
+        }
       }
     }
 
@@ -348,7 +362,7 @@ export default function SearchBar({
   };
 
   // Popular regions for empty-query state (no recent searches)
-  const popularRegions: DestItem[] = REGIONS.slice(0, 5).map((r) => ({ label: r, type: "region", value: r }));
+  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: r, type: "region", value: r }));
 
   const showDropdown = destOpen && !calendarOpen;
 
