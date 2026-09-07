@@ -105,9 +105,15 @@ export const REGIONS: RegionConfig[] = [
     ],
   },
   {
+    // Slug URL volontairement inchangé ("gaspesie") pour ne pas casser les
+    // liens existants — seuls name/dbValue changent pour refléter le vrai
+    // découpage officiel MAMH (région 11 : Gaspésie--Îles-de-la-Madeleine),
+    // qui inclut aussi les 2 municipalités des Îles-de-la-Madeleine
+    // (voir lib/municipalities.json). seoText/locative pas retouchés ici —
+    // le contenu ne parle encore que de la péninsule gaspésienne.
     slug: "gaspesie",
-    name: "Gaspésie",
-    dbValue: "Gaspésie",
+    name: "Gaspésie–Îles-de-la-Madeleine",
+    dbValue: "Gaspésie–Îles-de-la-Madeleine",
     locative: "en Gaspésie",
     heroImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80",
     seoText: [
@@ -174,6 +180,21 @@ export const REGIONS: RegionConfig[] = [
       "La région de la Capitale-Nationale englobe Québec, la vieille ville fortifiée, mais aussi les magnifiques campagnes de la Côte-de-Beaupré, de l'Île d'Orléans et du nord jusqu'à la réserve faunique des Laurentides. Louer un chalet dans cette région, c'est combiner culture urbaine et nature sauvage à quelques kilomètres de distance.",
       "L'Île d'Orléans, surnommée le « jardin du Québec », offre des tables champêtres, des fromageries et des vergers dans un cadre pastoral unique. La Côte-de-Beaupré mène à la grandiose chute Montmorency et au mont Sainte-Anne, l'une des importantes stations de ski alpin de l'est du Canada.",
       "Le parc de la Jacques-Cartier, au nord de Québec, est un paradis de canot-camping l'été et de raquettes l'hiver. Un chalet dans la Capitale-Nationale vous place au cœur de l'histoire et de la nature québécoise.",
+    ],
+  },
+  {
+    // 15e région ajoutée — absente à tort des 14 précédentes alors que
+    // "Centre-du-Québec" est une vraie région administrative officielle
+    // (80 municipalités au répertoire MAMH, voir lib/municipalities.json).
+    slug: "centre-du-quebec",
+    name: "Centre-du-Québec",
+    dbValue: "Centre-du-Québec",
+    locative: "au Centre-du-Québec",
+    heroImage: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1920&q=80",
+    seoText: [
+      "Le Centre-du-Québec doit son nom à sa position géographique, à mi-chemin entre Montréal et Québec, sur la rive sud du Saint-Laurent. Région agricole et forestière, elle abrite la vaste plaine du lac Saint-Pierre — le plus grand lac fluvial du Saint-Laurent, reconnu Réserve mondiale de la biosphère par l'UNESCO — ainsi que les collines boisées des Bois-Francs, autour de Victoriaville.",
+      "Un chalet au Centre-du-Québec, c'est profiter d'une nature accessible et paisible : rives du lac Saint-Pierre pour l'observation d'oiseaux et la pêche, sentiers des Bois-Francs pour la randonnée et le vélo, et une tradition acéricole bien vivante avec de nombreuses cabanes à sucre familiales.",
+      "Drummondville, Victoriaville et Bécancour sont les principaux pôles de la région, mais la campagne environnante — rangs agricoles, villages tranquilles, rivières et forêts — reste l'attrait principal pour une escapade en chalet, à moins de deux heures de Montréal comme de Québec.",
     ],
   },
 ];
