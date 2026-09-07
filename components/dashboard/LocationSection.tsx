@@ -10,31 +10,23 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { REGIONS } from "@/lib/regions";
-import { normalizeCityName } from "@/lib/normalizeCityName";
+import { slugify } from "@/lib/slugify";
+import municipalitiesData from "@/lib/municipalities.json";
+import MunicipalityCombobox, { type Municipality } from "./MunicipalityCombobox";
 
-// Valeurs exactes stockées en base (listings.region) — mêmes 14 régions que
-// lib/regions.ts, seule source de vérité (pages région, sitemap, meta tags).
-// Avant, une liste locale de 12 régions codée en dur ici pouvait diverger :
-// une annonce pouvait se voir assigner "Bas-Saint-Laurent", "Montérégie" ou
-// "Chaudière-Appalaches" via un autre chemin (import Airbnb, correction
-// manuelle) sans jamais matcher ici, ou au contraire matcher "Centre-du-Québec"
-// qui n'a aucune page région correspondante sur le site.
-const REGION_DB_VALUES = REGIONS.map((r) => r.dbValue);
-
-function matchRegion(googleRegion: string): string {
-  if (!googleRegion) return "";
-  const norm = googleRegion.toLowerCase().trim();
-  return (
-    REGION_DB_VALUES.find((r) => r.toLowerCase() === norm) ??
-    REGION_DB_VALUES.find(
-      (r) =>
-        norm.includes(r.toLowerCase().split(" (")[0].toLowerCase()) ||
-        r.toLowerCase().includes(norm)
-    ) ??
-    ""
-  );
-}
+// Ville + région ne sont plus déduites d'un matching flou sur le texte brut
+// renvoyé par Google Places (administrative_area_level_2) — la ville est
+// choisie dans la liste officielle des municipalités du Québec
+// (lib/municipalities.json, généré depuis le répertoire MAMH), qui porte
+// déjà sa région correcte (une des 15 de lib/regions.ts). Cette table ne
+// sert qu'à pré-remplir automatiquement le bon choix quand Google renvoie
+// un nom de ville qui correspond exactement à une municipalité connue.
+// globalThis.Map (pas Map tout court) — "Map" est déjà importé plus haut
+// depuis @vis.gl/react-google-maps (le composant carte JSX), qui masquerait
+// sinon la classe Map native de JS.
+const MUNICIPALITY_BY_SLUG = new globalThis.Map<string, Municipality>(
+  (municipalitiesData as Municipality[]).map((m) => [m.slug, m])
+);
 
 interface LocationData {
   address: string;
@@ -93,17 +85,25 @@ function LocationForm({
       const get = (type: string) =>
         comps.find((c) => c.types.includes(type))?.long_name ?? "";
 
-      const detectedCity =
+      const detectedCityRaw =
         get("locality") || get("sublocality") || get("postal_town") || get("administrative_area_level_3");
-      const detectedRegion = matchRegion(get("administrative_area_level_2"));
+      // Correspondance exacte uniquement (par slug) — fini le matching flou
+      // sur le texte de Google : si aucune municipalité officielle ne
+      // correspond, on n'invente rien, le proprio choisit manuellement dans
+      // MunicipalityCombobox ci-dessous.
+      const matched = detectedCityRaw ? MUNICIPALITY_BY_SLUG.get(slugify(detectedCityRaw)) : undefined;
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
 
       setAddress(place.formatted_address ?? "");
-      setCity(detectedCity);
-      if (detectedRegion) {
-        setRegion(detectedRegion);
-        onRegionChange(detectedRegion);
+      if (matched) {
+        setCity(matched.name);
+        setRegion(matched.region);
+        onRegionChange(matched.region);
+      } else {
+        setCity("");
+        setRegion("");
+        onRegionChange("");
       }
       setPosition({ lat, lng });
     });
@@ -122,14 +122,13 @@ function LocationForm({
   const handleSave = async () => {
     setSaving(true);
     setSaveError("");
-    // Normalisé avant l'écriture — la donnée en base doit déjà être propre,
-    // pas seulement corrigée à l'affichage (voir lib/normalizeCityName.ts).
-    const normalizedCity = city ? normalizeCityName(city) : "";
+    // city vient toujours de MunicipalityCombobox (nom officiel exact,
+    // lib/municipalities.json) — plus de texte libre à normaliser ici.
     const { error } = await supabase
       .from("listings")
       .update({
         address,
-        city: normalizedCity || null,
+        city: city || null,
         region,
         latitude: position?.lat ?? null,
         longitude: position?.lng ?? null,
@@ -140,7 +139,6 @@ function LocationForm({
     if (error) {
       setSaveError(t("saveError"));
     } else {
-      setCity(normalizedCity);
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
       onSaved?.(!!(position));
@@ -174,13 +172,17 @@ function LocationForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("cityLabel")}</label>
-          <input
-            type="text"
+          <MunicipalityCombobox
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onSelect={(m) => {
+              setCity(m.name);
+              setRegion(m.region);
+              onRegionChange(m.region);
+            }}
             className={inputCls}
             placeholder={t("cityPlaceholder")}
           />
+          <p className="text-xs text-charcoal-400 mt-1">{t("cityHint")}</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
