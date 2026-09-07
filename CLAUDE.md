@@ -474,6 +474,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 - **Toute restructuration de contrainte d'unicité** (comme `subscriptions` par `user_id` → `listing_id` le 2026-07-07) doit être suivie d'un grep systématique de tous les `.eq("user_id", ...)` / `onConflict: "user_id"` sur la table concernée — le panneau admin avait été oublié lors du cutover initial.
 - **`<object type="image/svg+xml">` est bloqué par une CSP stricte** (`object-src 'none'`) — utiliser `<img>` pour des SVG statiques comme des logos.
 - **Skills plugin installés via `/plugin` + `/reload-plugins`** peuvent afficher "0 skills" dans le message de confirmation tout en étant réellement chargés et utilisables dans la session — vérifier directement l'accès au `SKILL.md` plutôt que de se fier au message.
+- **Toute nouvelle route ajoutée à `app/` (nouveau dossier + `page.tsx`) retourne 404 sur `next dev`** sur cet environnement, peu importe le bundler (Turbopack et webpack testés, tous deux échouent) et même après `rm -rf .next` + redémarrage complet — cause non identifiée (aucun bug GitHub public correspondant trouvé), modifier un fichier de route déjà existant fonctionne normalement (hot-reload instantané). Contournement : pour tester une nouvelle page pendant que le serveur tourne, modifier temporairement un fichier de route déjà existant (ex. `app/not-found.tsx`), tester, puis restaurer à l'identique avant de committer.
 
 ### Suite de session — 2026-07-09
 

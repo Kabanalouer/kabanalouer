@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import { normalizePhotos } from "@/lib/photo";
+import { isKnownMunicipality } from "@/lib/municipalities";
 import { REGIONS } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { slugify } from "@/lib/slugify";
@@ -28,14 +29,20 @@ function adminClient() {
   );
 }
 
-// Cached per request — shared between generateMetadata and the page component
+// Cached per request — shared between generateMetadata and the page component.
+// Ne retourne que des municipalités officielles (lib/municipalities.json) —
+// une ville issue du filet de sécurité "Je ne trouve pas ma localité"
+// (texte libre, TNO) n'a jamais de page /chalets/ville/[slug] dédiée : URL
+// imprévisible pour rien, l'annonce apparaît déjà sur la page de sa région.
 const getPublishedCities = cache(async (): Promise<string[]> => {
   const { data } = await adminClient()
     .from("listings")
     .select("city")
     .eq("is_published", true)
     .not("city", "is", null);
-  return [...new Set((data ?? []).map((d) => d.city as string).filter(Boolean))];
+  return [...new Set((data ?? []).map((d) => d.city as string).filter(Boolean))].filter(
+    isKnownMunicipality
+  );
 });
 
 function cityFromSlug(slug: string, cities: string[]): string | undefined {
@@ -141,6 +148,7 @@ export default async function CityPage({ params }: Props) {
       (regionCityData ?? [])
         .map((d) => d.city as string)
         .filter((c) => c && c !== cityName)
+        .filter(isKnownMunicipality) // jamais de lien vers une ville sans page dédiée
     ),
   ].slice(0, 10);
 

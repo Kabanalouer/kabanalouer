@@ -2,17 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import municipalitiesData from "@/lib/municipalities.json";
+import { MUNICIPALITIES, type Municipality } from "@/lib/municipalities";
+import { REGIONS } from "@/lib/regions";
 
-export interface Municipality {
-  name: string;
-  slug: string;
-  region: string;
-  officialCode: string;
-  mrc: string;
-}
+export type { Municipality };
 
-const ALL = municipalitiesData as Municipality[];
 const MAX_RESULTS = 8;
 
 // Comparaison insensible aux accents/casse pour la recherche uniquement —
@@ -25,17 +19,25 @@ function normalizeForSearch(str: string): string {
 export default function MunicipalityCombobox({
   value,
   onSelect,
+  onManualEntry,
   className,
   placeholder,
 }: {
   value: string;
   onSelect: (municipality: Municipality) => void;
+  // Filet de sécurité : proprio dont la localité n'est ni une municipalité
+  // constituée ni trouvée dans la liste (ex. TNO — voir CLAUDE.md/diagnostic,
+  // aucune source de données ouvertes fiable trouvée pour les TNO actuels).
+  onManualEntry?: (city: string, region: string) => void;
   className: string;
   placeholder?: string;
 }) {
   const t = useTranslations("listings.location");
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualCity, setManualCity] = useState("");
+  const [manualRegion, setManualRegion] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Garde le texte affiché synchro si le parent change `value` de l'extérieur
@@ -58,7 +60,7 @@ export default function MunicipalityCombobox({
     const q = normalizeForSearch(query.trim());
     if (!q) return [];
     const scored: { m: Municipality; rank: 0 | 1 }[] = [];
-    for (const m of ALL) {
+    for (const m of MUNICIPALITIES) {
       const n = normalizeForSearch(m.name);
       if (n.startsWith(q)) scored.push({ m, rank: 0 });
       else if (n.includes(q)) scored.push({ m, rank: 1 });
@@ -72,6 +74,62 @@ export default function MunicipalityCombobox({
     setOpen(false);
     onSelect(m);
   };
+
+  const openManualMode = () => {
+    setManualCity(query.trim());
+    setManualRegion("");
+    setManualMode(true);
+    setOpen(false);
+  };
+
+  const handleManualConfirm = () => {
+    if (!manualCity.trim() || !manualRegion) return;
+    onManualEntry?.(manualCity.trim(), manualRegion);
+  };
+
+  if (manualMode) {
+    return (
+      <div className="space-y-2">
+        <input
+          type="text"
+          value={manualCity}
+          onChange={(e) => setManualCity(e.target.value)}
+          className={className}
+          placeholder={t("manualCityPlaceholder")}
+        />
+        <select
+          value={manualRegion}
+          onChange={(e) => setManualRegion(e.target.value)}
+          className={className}
+        >
+          <option value="">{t("manualRegionPlaceholder")}</option>
+          {REGIONS.map((r) => (
+            <option key={r.slug} value={r.dbValue}>
+              {r.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-charcoal-400">{t("manualHint")}</p>
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            type="button"
+            onClick={handleManualConfirm}
+            disabled={!manualCity.trim() || !manualRegion}
+            className="text-sm font-semibold text-primary hover:text-primary/80 disabled:text-charcoal-300 disabled:cursor-not-allowed transition-colors"
+          >
+            {t("manualConfirm")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setManualMode(false)}
+            className="text-sm text-charcoal-400 hover:text-charcoal-600 transition-colors"
+          >
+            {t("manualBack")}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -88,7 +146,7 @@ export default function MunicipalityCombobox({
         autoComplete="off"
       />
       {open && query.trim() && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-white rounded-xl shadow-lg border border-[#ebebeb] z-20 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 w-full bg-white rounded-xl shadow-lg border border-[#ebebeb] z-20 max-h-72 overflow-y-auto">
           {matches.length > 0 ? (
             matches.map((m) => (
               <button
@@ -106,6 +164,18 @@ export default function MunicipalityCombobox({
             ))
           ) : (
             <div className="px-4 py-3 text-sm text-charcoal-400">{t("cityNoResults")}</div>
+          )}
+          {onManualEntry && (
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                openManualMode();
+              }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm text-primary font-medium hover:bg-charcoal-50 transition-colors border-t border-[#ebebeb]"
+            >
+              {t("notFoundOption")}
+            </button>
           )}
         </div>
       )}

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getRegionSlugs, getRegionBySlug } from "@/lib/regions";
+import { isKnownMunicipality } from "@/lib/municipalities";
 import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { createClient } from "@supabase/supabase-js";
@@ -83,6 +84,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         (listings ?? [])
           .map((l) => l.city as string | null)
           .filter((c): c is string => !!c)
+          // Filet de sécurité "Je ne trouve pas ma localité" (texte libre,
+          // TNO ou lieu non répertorié, voir MunicipalityCombobox) : jamais
+          // une page ville dédiée — URL imprévisible pour rien, l'annonce
+          // apparaît déjà normalement sur la page de sa région.
+          .filter(isKnownMunicipality)
       ),
     ];
     cityPages = distinctCities.flatMap((city) => [

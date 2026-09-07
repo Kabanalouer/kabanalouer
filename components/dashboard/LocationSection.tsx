@@ -11,22 +11,19 @@ import {
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/slugify";
-import municipalitiesData from "@/lib/municipalities.json";
-import MunicipalityCombobox, { type Municipality } from "./MunicipalityCombobox";
+import { getMunicipalityBySlug } from "@/lib/municipalities";
+import MunicipalityCombobox from "./MunicipalityCombobox";
 
 // Ville + région ne sont plus déduites d'un matching flou sur le texte brut
 // renvoyé par Google Places (administrative_area_level_2) — la ville est
 // choisie dans la liste officielle des municipalités du Québec
 // (lib/municipalities.json, généré depuis le répertoire MAMH), qui porte
-// déjà sa région correcte (une des 15 de lib/regions.ts). Cette table ne
-// sert qu'à pré-remplir automatiquement le bon choix quand Google renvoie
-// un nom de ville qui correspond exactement à une municipalité connue.
-// globalThis.Map (pas Map tout court) — "Map" est déjà importé plus haut
-// depuis @vis.gl/react-google-maps (le composant carte JSX), qui masquerait
-// sinon la classe Map native de JS.
-const MUNICIPALITY_BY_SLUG = new globalThis.Map<string, Municipality>(
-  (municipalitiesData as Municipality[]).map((m) => [m.slug, m])
-);
+// déjà sa région correcte (une des 15 de lib/regions.ts) — voir
+// getMunicipalityBySlug(). Sert à pré-remplir automatiquement le bon choix
+// quand Google renvoie un nom de ville qui correspond exactement à une
+// municipalité connue ; sinon (TNO, lieu non répertorié...) le proprio
+// choisit manuellement, via MunicipalityCombobox ci-dessous ou son filet de
+// sécurité "Je ne trouve pas ma localité".
 
 interface LocationData {
   address: string;
@@ -91,7 +88,7 @@ function LocationForm({
       // sur le texte de Google : si aucune municipalité officielle ne
       // correspond, on n'invente rien, le proprio choisit manuellement dans
       // MunicipalityCombobox ci-dessous.
-      const matched = detectedCityRaw ? MUNICIPALITY_BY_SLUG.get(slugify(detectedCityRaw)) : undefined;
+      const matched = detectedCityRaw ? getMunicipalityBySlug(slugify(detectedCityRaw)) : undefined;
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
 
@@ -178,6 +175,11 @@ function LocationForm({
               setCity(m.name);
               setRegion(m.region);
               onRegionChange(m.region);
+            }}
+            onManualEntry={(manualCity, manualRegion) => {
+              setCity(manualCity);
+              setRegion(manualRegion);
+              onRegionChange(manualRegion);
             }}
             className={inputCls}
             placeholder={t("cityPlaceholder")}
