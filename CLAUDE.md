@@ -222,14 +222,14 @@ Jusqu'au 2026-07-07, un proprio avait **un seul abonnement pour tout son compte*
 
 Compte Stripe activé en Production (Individual, numéro d'assurance sociale, sans NEQ — statut de travailleur autonome).
 
-- **Bascule automatique test/prod** dans le code via `VERCEL_ENV === "production"` (pas `NODE_ENV`, qui vaut `"production"` même sur les builds preview Vercel) : `lib/subscriptionPricing.ts` (Price IDs abonnement), `lib/featuredConfig.ts` (Price IDs vedettes), `lib/stripeTaxRates.ts` (nouveau fichier, taux de taxe).
+- **Bascule automatique test/prod** dans le code via `VERCEL_ENV === "production"` (pas `NODE_ENV`, qui vaut `"production"` même sur les builds preview Vercel) : `lib/subscriptionPricing.ts` (Price IDs abonnement), `lib/featuredConfig.ts` (Price IDs vedettes) — `lib/stripeTaxRates.ts` gérait aussi cette bascule pour les taux de taxe manuels à l'origine, mais ce fichier a été supprimé depuis (2026-09-08, commit `2f2ad45`) : voir section "Fiscalité Stripe (TPS/TVQ)", `automatic_tax` (Stripe Tax) l'a remplacé.
 - **5 nouveaux Price IDs de production** :
   - Abonnement `tier1` : `price_1UBvrfIRwZDgRnpbzWqem76f`
   - Abonnement `tier2_3` : `price_1UBw6jIRwZDgRnpbZchs7QjF`
   - Abonnement `tier4plus` : `price_1UBw7MIRwZDgRnpbMm4EijEW`
   - Vedette accueil : `price_1UBw4qIRwZDgRnpbGHcRyVId`
   - Vedette région : `price_1UBw5RIRwZDgRnpbHllKdZtT`
-- **Taux de taxe manuels créés dans Stripe** : TPS 5% (`txr_1UBv1gIRwZDgRnpbiwUXkMCp`) + TVQ 9,975% (`txr_1UBv3PIRwZDgRnpbGpby6teZ`) — spécifiques au mode Production, aucun équivalent test créé pour l'instant (`STRIPE_TAX_RATE_IDS` vaut `undefined` hors prod, donc pas de taxe ajoutée en test/dev). Appliqués au `line_item` de `stripe.checkout.sessions.create` (`tax_rates`, champ distinct de `subscription_data.default_tax_rates`) dans `app/api/stripe/checkout/route.ts` et `app/api/featured/checkout/route.ts`.
+- **Taux de taxe manuels créés dans Stripe** (approche initiale, remplacée depuis) : TPS 5% (`txr_1UBv1gIRwZDgRnpbiwUXkMCp`) + TVQ 9,975% (`txr_1UBv3PIRwZDgRnpbGpby6teZ`), appliqués au `line_item` de `stripe.checkout.sessions.create` (`tax_rates`) dans `app/api/stripe/checkout/route.ts` et `app/api/featured/checkout/route.ts`. **Remplacé depuis le 2026-09-08 par Stripe Tax** (`automatic_tax: { enabled: true }` + `billing_address_collection: "required"`) — `lib/stripeTaxRates.ts`/`STRIPE_TAX_RATE_IDS` supprimés (commit `2f2ad45`), voir section "Fiscalité Stripe (TPS/TVQ)" pour le système actuel.
 - **Nouveau webhook production** configuré dans Stripe Dashboard (mode Live), `STRIPE_WEBHOOK_SECRET` mis à jour dans Vercel pour l'environnement Production (valeur distincte de celle utilisée en Preview/Development, même nom de variable).
 - **Clés API de production** (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) ajoutées dans Vercel → Settings → Environment Variables, scope Production uniquement.
 - **Branding Stripe Checkout** (logo, couleurs olive/coral) configuré côté Stripe Dashboard pour le mode Production.
