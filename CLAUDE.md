@@ -234,6 +234,14 @@ Compte Stripe activé en Production (Individual, numéro d'assurance sociale, sa
 - **Clés API de production** (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) ajoutées dans Vercel → Settings → Environment Variables, scope Production uniquement.
 - **Branding Stripe Checkout** (logo, couleurs olive/coral) configuré côté Stripe Dashboard pour le mode Production.
 
+### Fiscalité Stripe (TPS/TVQ)
+
+- Le compte Stripe (mode Production) est immatriculé pour la TPS/TVH fédérale et la TVQ (Québec) depuis le 2026-09-08.
+- Tous les produits actifs (Abonnement annuel Kabanalouer et ses paliers, Vedette page région, Vedette page d'accueil) sont catégorisés **"Software as a service (SaaS) - business use"** dans Stripe, pas "Platform Fee" (Platform Fee est la catégorie par défaut de Stripe mais ne correspond pas à notre modèle — à assigner manuellement à chaque nouveau produit créé).
+- `app/api/stripe/checkout/route.ts` et `app/api/featured/checkout/route.ts` utilisent tous les deux `automatic_tax: { enabled: true }` + `billing_address_collection: "required"` pour calculer la taxe automatiquement selon la province du client.
+- L'ancien système de taux manuels codés en dur (`lib/stripeTaxRates.ts`, `STRIPE_TAX_RATE_IDS`) a été supprimé (commit `2f2ad45`) — ne pas le réintroduire.
+- **Rappel pour tout nouveau produit Stripe créé à l'avenir** : bien assigner une catégorie de produit fiscale appropriée (pas laisser "Platform Fee" par défaut), sinon le calcul de taxe risque d'être incorrect ou absent.
+
 ### Offre de lancement : éligibilité par annonce, pas par proprio (2026-09-04)
 
 Décision d'affaires : un proprio avec plusieurs chalets a droit à l'année gratuite séparément pour chacun, pas une seule fois pour tout son compte.
