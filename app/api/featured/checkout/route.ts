@@ -9,7 +9,6 @@ import {
   STRIPE_PRICE_FEATURED_HOME,
   STRIPE_PRICE_FEATURED_REGION,
 } from "@/lib/featuredConfig";
-import { STRIPE_TAX_RATE_IDS } from "@/lib/stripeTaxRates";
 
 function allowedMonths(): string[] {
   const months: string[] = [];
@@ -95,9 +94,20 @@ export async function POST(request: Request) {
       {
         price,
         quantity: 1,
-        ...(STRIPE_TAX_RATE_IDS ? { tax_rates: STRIPE_TAX_RATE_IDS } : {}),
       },
     ],
+    // Stripe Tax calcule maintenant la taxe automatiquement — remplace les
+    // tax_rates manuels codés en dur (lib/stripeTaxRates.ts), même
+    // changement que app/api/stripe/checkout/route.ts.
+    automatic_tax: { enabled: true },
+    billing_address_collection: "required",
+    // Pas de customer_update ici, contrairement à l'abonnement : cette
+    // session ne passe jamais de `customer` (aucun Stripe Customer
+    // réutilisé/créé pour un achat de vedette), et Stripe rejette
+    // customer_update si `customer` n'est pas fourni sur la session
+    // ("Can only be provided when customer is provided", doc API Stripe).
+    // Sans Customer existant, l'adresse de facturation collectée ici sert
+    // directement au calcul de taxe, aucune ambiguïté à résoudre.
     success_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?paid=1`,
     cancel_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?canceled=1`,
     metadata: {

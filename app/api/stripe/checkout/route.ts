@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
-import { STRIPE_TAX_RATE_IDS } from "@/lib/stripeTaxRates";
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -82,9 +81,24 @@ export async function POST(request: Request) {
       {
         price: priceId,
         quantity: 1,
-        ...(STRIPE_TAX_RATE_IDS ? { tax_rates: STRIPE_TAX_RATE_IDS } : {}),
       },
     ],
+    // Stripe Tax calcule maintenant la taxe automatiquement (produits déjà
+    // catégorisés dans le Dashboard Stripe) — remplace les tax_rates manuels
+    // codés en dur (lib/stripeTaxRates.ts, toujours utilisé par
+    // app/api/featured/checkout/route.ts, non touché ici). Les deux
+    // mécanismes sont incompatibles sur un même line_item.
+    automatic_tax: { enabled: true },
+    // Requis pour que Stripe Tax connaisse la province du client (TVQ
+    // Québec vs une autre taxe provinciale) — voir aussi customer_update
+    // ci-dessous : sans lui, un client existant sans adresse déjà
+    // enregistrée retomberait sur une adresse vide plutôt que celle saisie
+    // ici (documenté dans la hiérarchie d'adresse de Stripe Tax).
+    billing_address_collection: "required",
+    // Indique à Stripe d'utiliser (et d'enregistrer) l'adresse saisie dans
+    // cette session pour le calcul de taxe, plutôt que l'adresse déjà
+    // présente (ou absente) sur le Customer.
+    customer_update: { address: "auto" },
     success_url: `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`,
     cancel_url: `${appUrl}/dashboard/listings/${listingId}/publish?canceled=1`,
     allow_promotion_codes: true,
