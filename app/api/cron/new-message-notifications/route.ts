@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
+import { sendNewMessageSms } from "@/lib/sms";
 
 const FIVE_MIN_MS = 5 * 60 * 1000;
 
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
 
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
-      supabase.from("users").select("email, name, preferred_language").eq("id", group.receiverId).single(),
+      supabase.from("users").select("email, name, preferred_language, phone, notify_sms").eq("id", group.receiverId).single(),
       supabase.from("listings").select("title").eq("id", group.listingId).single(),
     ]);
 
@@ -113,6 +114,19 @@ export async function GET(request: NextRequest) {
     if (emailError) {
       console.error(`[new-message-notifications] échec envoi (listing ${group.listingId}, receiver ${group.receiverId})`, emailError);
       continue; // pas de flag posé — retenté au prochain passage
+    }
+
+    // SMS — bonus, jamais bloquant : n'affecte ni le message, ni le courriel
+    // déjà envoyé ci-dessus, ni le flag notification_sent_at plus bas.
+    if (receiver?.phone && receiver?.notify_sms) {
+      const { error: smsError } = await sendNewMessageSms({
+        to: receiver.phone,
+        senderFirstName,
+        preferredLanguage: lang,
+      });
+      if (smsError) {
+        console.error(`[new-message-notifications] échec envoi SMS (listing ${group.listingId}, receiver ${group.receiverId})`, smsError);
+      }
     }
 
     await supabase.from("messages").update({ notification_sent_at: nowIso }).in("id", group.messageIds);
