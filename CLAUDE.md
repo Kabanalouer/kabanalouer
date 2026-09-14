@@ -375,6 +375,18 @@ Phase 1 de l'import d'annonces externes — **Airbnb seulement**, VRBO retiré (
 
 **Notification "message de contact"** (2026-09-04) : `app/contact/actions.ts` n'envoyait auparavant aucune notification à l'admin quand un visiteur soumettait le formulaire — ajouté `lib/emails/contactMessageNotification.ts` (même gabarit partagé `renderEmail.ts` que les autres emails du projet, contenu du visiteur échappé via `lib/escapeHtml.ts`), envoie à `simon.authentik@gmail.com` après l'insertion réussie dans `contact_messages`, jamais bloquant (try/catch, le formulaire reste un succès même si Resend échoue).
 
+### Notifications SMS via Twilio (2026-09-14)
+
+En plus du courriel existant (Phase 2a ci-dessus), un SMS est envoyé au destinataire d'un nouveau message — proprio ou voyageur, une demande de devis étant un message comme un autre dans ce projet, donc automatiquement couverte sans code spécial. Envoyé par le même cron `/api/cron/new-message-notifications`, juste après le courriel, jamais à sa place.
+
+- **`lib/sms.ts`** (nouveau) : `sendNewMessageSms()`, SDK Twilio (`TWILIO_ACCOUNT_SID`/`AUTH_TOKEN`/`PHONE_NUMBER`), message court bilingue FR/EN (« Nouveau message sur Kabanalouer de {prénom}. Réponds ici : {SITE_URL}/messages »). Retourne `{ error }`, ne lance jamais d'exception.
+- **Conditions d'envoi** (`app/api/cron/new-message-notifications/route.ts`) : uniquement si `receiver.phone` n'est pas `NULL` **et** `receiver.notify_sms` est `true`. Un échec Twilio est logué (`console.error`) mais ne bloque jamais le message ni le courriel déjà envoyé — le SMS est un bonus, jamais une dépendance critique.
+- **`notify_email`/`notify_sms`** (`public.users`, booléens, défaut `true` tous les deux) : deux préférences de CANAL indépendantes, distinctes de `notifications_prefs` (jsonb, préférences de CONTENU : messages, favoris, rapport mensuel). `notify_email` n'est lu par aucun code applicatif pour l'instant — le courriel de notification est toujours envoyé, indépendamment de ce flag ; seul `notify_sms` est actuellement branché.
+- **Numéro de cellulaire** (`public.users.phone`, `TEXT` nullable — colonne déjà existante, réutilisée plutôt que d'en créer une nouvelle) : optionnel, demandé au signup (`app/(auth)/signup/SignupForm.tsx`, sous le champ courriel, validation format 10 chiffres nord-américain seulement si rempli, jamais obligatoire pour compléter l'inscription) et modifiable dans `/dashboard/profile` (`ProfileForm.tsx`, préexistant). Trigger `handle_new_user()` mis à jour pour le lire depuis les métadonnées d'inscription si fourni (`supabase/add-phone-notification-prefs-signup.sql`).
+- **Bannière de rappel** (`components/PhoneReminderBanner.tsx`, nouveau) : affichée sur `/messages` (proprio et voyageur — dans ce projet, c'est aussi la seule page où un proprio voit ses demandes de devis reçues, il n'existe pas de liste dédiée séparée) tant que `phone IS NULL`, fermable (X) pour la session en cours seulement (`sessionStorage`, pas de mémorisation permanente — réapparaît à la prochaine visite tant qu'aucun numéro n'est ajouté). Lien "Ajouter" vers `/dashboard/profile#phone`.
+- **Testé de bout en bout en conditions réelles** le 2026-09-14 : SMS reçu confirmé sur un vrai téléphone, courriel non affecté. Piège découvert pendant le test : le cron de production tourne sur la même base Supabase partagée (dev/prod, voir section 2) — un message de test inséré manuellement peut être traité par le vrai cron avant un test manuel local si on n'agit pas assez vite (fenêtre de 5 minutes).
+- **Déployé en production** le 2026-09-14, commit `af1cc79`. Variables Twilio déjà présentes dans l'environnement Production de Vercel au moment du déploiement (confirmé via `vercel env ls production` — noms et présence seulement, jamais les valeurs).
+
 ---
 
 ## 10. Variables d'environnement
@@ -396,6 +408,9 @@ RESEND_API_KEY                     # "Sending access" seulement — ne peut PAS 
 RESEND_RECEIVING_API_KEY           # "Full access" — utilisée uniquement par /api/webhooks/resend-inbound
 RESEND_WEBHOOK_SECRET              # whsec_... — vérifie la signature Svix du webhook Resend Inbound
 CRON_SECRET                        # openssl rand -hex 32 — protège /api/sync-ical
+TWILIO_ACCOUNT_SID                 # server-side uniquement — notifications SMS nouveau message (lib/sms.ts)
+TWILIO_AUTH_TOKEN                  # server-side uniquement
+TWILIO_PHONE_NUMBER                # numéro Twilio expéditeur, format +1XXXXXXXXXX
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
 NEXT_PUBLIC_GA_MEASUREMENT_ID       # Google Analytics 4 — ex. G-SKLC68FPGV
 ```
@@ -446,7 +461,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `fix-listing-photos-upload-policy.sql` | Corrige la politique storage INSERT du bucket `listing-photos` (upload hors-dossier, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
 | `create-public-profiles-view.sql` | Crée la vue `public.public_profiles` (id/name/bio/avatar_url/created_at, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
 | `fix-users-public-select-policy.sql` | Retire la politique RLS permissive "Lecture publique des profils" sur `public.users` (audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
-| `add-phone-notification-prefs-signup.sql` | Ajoute `users.notify_email`/`notify_sms` (défaut `true`) et met à jour `handle_new_user()` pour lire `phone` depuis les métadonnées d'inscription (réutilise la colonne `phone` existante, pas de nouvelle colonne — collecte seulement, aucun envoi de SMS) | Exécuté et confirmé en prod le 2026-09-14 |
+| `add-phone-notification-prefs-signup.sql` | Ajoute `users.notify_email`/`notify_sms` (défaut `true`) et met à jour `handle_new_user()` pour lire `phone` depuis les métadonnées d'inscription (réutilise la colonne `phone` existante, pas de nouvelle colonne). Migration = schéma seulement — la logique d'envoi SMS elle-même a été ajoutée séparément le 2026-09-14, voir section 9 "Notifications SMS via Twilio" | Exécuté et confirmé en prod le 2026-09-14 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
