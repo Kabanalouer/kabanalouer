@@ -511,7 +511,7 @@ export default function ProfileForm({
           />
           <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
         </div>
-        <div>
+        <div id="phone">
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
             {t("phone")} <span className="text-charcoal-400 font-normal">{t("optional")}</span>
           </label>

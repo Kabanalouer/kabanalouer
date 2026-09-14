@@ -447,6 +447,11 @@
     "translationToggleLabel": "Traduction automatique",
     "translatedBadge": "Traduit automatiquement"
   },
+  "phoneReminder": {
+    "message": "Ajoutez votre numéro de cellulaire pour recevoir vos alertes par texto.",
+    "addLink": "Ajouter",
+    "dismiss": "Fermer"
+  },
   "reviews": {
     "heading": "Mes avis",
     "count": "{count} avis reçus",
@@ -779,6 +784,11 @@
       "lastNameLabel": "Nom",
       "emailLabel": "Adresse courriel",
       "emailPlaceholder": "vous@exemple.com",
+      "phoneLabel": "Numéro de cellulaire",
+      "phoneOptionalTag": "(optionnel)",
+      "phonePlaceholder": "514 555-1234",
+      "phoneHelper": "Pour recevoir vos alertes par texto.",
+      "phoneInvalid": "Le numéro de cellulaire doit contenir 10 chiffres (indicatif nord-américain).",
       "passwordLabel": "Mot de passe",
       "passwordPlaceholder": "Minimum 8 caractères",
       "showPassword": "Afficher le mot de passe",

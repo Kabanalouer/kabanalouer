@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import QuoteCard from "./QuoteCard";
 import QuoteWidget from "./QuoteWidget";
+import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 
 type Message = {
@@ -46,11 +47,13 @@ export default function MessagesClient({
   currentUserLanguage,
   initialTranslationEnabled,
   initialConversations,
+  hasPhone,
 }: {
   currentUserId: string;
   currentUserLanguage: string;
   initialTranslationEnabled: boolean;
   initialConversations: Conversation[];
+  hasPhone: boolean;
 }) {
   const t = useTranslations("messages");
   const router = useRouter();
@@ -230,7 +233,17 @@ export default function MessagesClient({
 
   return (
     // Mobile: 100vh - navbar(80px) - bottom nav(64px). Desktop: 100vh - navbar(80px).
-    <div className="flex h-[calc(100vh-144px)] md:h-[calc(100vh-80px)]">
+    // Colonne : le bandeau (hauteur naturelle) puis la ligne sidebar/thread en
+    // flex-1, pour que la hauteur totale reste calée sur le viewport que le
+    // bandeau soit affiché ou non.
+    <div className="flex flex-col h-[calc(100vh-144px)] md:h-[calc(100vh-80px)]">
+      {!hasPhone && (
+        <div className="px-4 pt-4 shrink-0">
+          <PhoneReminderBanner show />
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0">
 
       {/* Sidebar: conversation list */}
       <div className={`flex-col bg-white border-r border-[#ebebeb] w-full md:w-80 ${mobileView === "list" ? "flex" : "hidden"} md:flex`}>
@@ -490,6 +503,7 @@ export default function MessagesClient({
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );

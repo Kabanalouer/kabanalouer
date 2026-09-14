@@ -446,6 +446,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `fix-listing-photos-upload-policy.sql` | Corrige la politique storage INSERT du bucket `listing-photos` (upload hors-dossier, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
 | `create-public-profiles-view.sql` | Crée la vue `public.public_profiles` (id/name/bio/avatar_url/created_at, audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
 | `fix-users-public-select-policy.sql` | Retire la politique RLS permissive "Lecture publique des profils" sur `public.users` (audit de sécurité) | Exécuté et confirmé en prod le 2026-09-04 |
+| `add-phone-notification-prefs-signup.sql` | Ajoute `users.notify_email`/`notify_sms` (défaut `true`) et met à jour `handle_new_user()` pour lire `phone` depuis les métadonnées d'inscription (réutilise la colonne `phone` existante, pas de nouvelle colonne — collecte seulement, aucun envoi de SMS) | À exécuter par Simon dans Supabase Dashboard |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |

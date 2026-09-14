@@ -447,6 +447,11 @@
     "translationToggleLabel": "Automatic translation",
     "translatedBadge": "Automatically translated"
   },
+  "phoneReminder": {
+    "message": "Add your cell phone number to receive your alerts by text message.",
+    "addLink": "Add",
+    "dismiss": "Close"
+  },
   "reviews": {
     "heading": "My reviews",
     "count": "{count} reviews received",
@@ -779,6 +784,11 @@
       "lastNameLabel": "Last name",
       "emailLabel": "Email address",
       "emailPlaceholder": "you@example.com",
+      "phoneLabel": "Cell phone number",
+      "phoneOptionalTag": "(optional)",
+      "phonePlaceholder": "514 555-1234",
+      "phoneHelper": "To receive your alerts by text message.",
+      "phoneInvalid": "Cell phone number must be 10 digits (North American format).",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Minimum 8 characters",
       "showPassword": "Show password",

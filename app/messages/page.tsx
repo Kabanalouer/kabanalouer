@@ -26,7 +26,7 @@ export default async function MessagesPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, preferred_language, translation_enabled")
+    .select("role, preferred_language, translation_enabled, phone")
     .eq("id", user.id)
     .single();
 
@@ -124,6 +124,7 @@ export default async function MessagesPage() {
         currentUserLanguage={currentUserLanguage}
         initialTranslationEnabled={translationEnabled}
         initialConversations={conversations}
+        hasPhone={!!profile?.phone}
       />
       {isHost && <DashboardBottomNav />}
     </>
