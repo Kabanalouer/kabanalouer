@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createBlankListing, submitImportRequest, type ImportState } from "@/app/dashboard/listings/new/actions";
 
 const initialState: ImportState = { status: "idle" };
@@ -8,8 +8,32 @@ const initialState: ImportState = { status: "idle" };
 const inputCls =
   "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
 
+// Le pipeline d'import ne renvoie aucune étape intermédiaire réelle — ces
+// messages ne font que rassurer pendant l'attente (jusqu'à 90s), sans
+// prétendre suivre un vrai statut technique.
+const PENDING_MESSAGES = [
+  "Récupération de l'annonce…",
+  "Analyse des photos…",
+  "Rédaction de la description…",
+  "Dernières touches…",
+];
+const PENDING_MESSAGE_INTERVAL_MS = 22000;
+
 export default function NewListingStepZero() {
   const [state, importAction, isPending] = useActionState(submitImportRequest, initialState);
+  const [photosConfirmed, setPhotosConfirmed] = useState(false);
+  const [pendingMessageIdx, setPendingMessageIdx] = useState(0);
+
+  useEffect(() => {
+    if (!isPending) {
+      setPendingMessageIdx(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setPendingMessageIdx((i) => Math.min(i + 1, PENDING_MESSAGES.length - 1));
+    }, PENDING_MESSAGE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isPending]);
 
   if (state.status === "success" || state.status === "duplicate") {
     const isDuplicate = state.status === "duplicate";
@@ -122,8 +146,21 @@ export default function NewListingStepZero() {
                 type="checkbox"
                 name="photos_rights_confirmed"
                 required
-                className="mt-0.5 w-4 h-4 rounded border-[#ebebeb] text-primary focus:ring-primary/30 shrink-0"
+                checked={photosConfirmed}
+                onChange={(e) => setPhotosConfirmed(e.target.checked)}
+                className="sr-only"
               />
+              <span
+                className={`mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-colors ${
+                  photosConfirmed ? "bg-primary border-primary" : "border-charcoal-300"
+                }`}
+              >
+                {photosConfirmed && (
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 6l3 3 5-5" />
+                  </svg>
+                )}
+              </span>
               <span>Je confirme détenir les droits sur les photos de cette annonce.</span>
             </label>
             {state.status === "error" && (
@@ -131,13 +168,30 @@ export default function NewListingStepZero() {
                 {state.message}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full inline-flex items-center justify-center gap-2 border border-primary text-primary font-bold px-6 py-3.5 rounded-full hover:bg-primary/5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
-            >
-              {isPending ? "Import en cours (jusqu'à 90 secondes)…" : "Envoyer →"}
-            </button>
+            <div>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full inline-flex items-center justify-center gap-2 border border-primary text-primary font-bold px-6 py-3.5 rounded-full hover:bg-primary/5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
+              >
+                {isPending ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {PENDING_MESSAGES[pendingMessageIdx]}
+                  </>
+                ) : (
+                  "Envoyer →"
+                )}
+              </button>
+              {isPending && (
+                <div className="mt-2 h-1 bg-primary/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full w-1/2 animate-[progressSlide_1.2s_ease-in-out_infinite]" />
+                </div>
+              )}
+            </div>
           </form>
         </div>
 
