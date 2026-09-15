@@ -7,7 +7,11 @@ import RoomPhotoManager from "./RoomPhotoManager";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { PhotoItem } from "@/lib/photo";
 
-type BedType = "simple" | "double" | "queen" | "king";
+// "sofa_bed" (divan-lit) est un type de lit comme les autres, sélectionnable
+// pour une chambre ou un salon — l'affichage public (RoomsCarousel, pages
+// /chalets) compte déjà séparément ce type depuis `beds[]`, donc aucun
+// changement nécessaire de ce côté.
+type BedType = "simple" | "double" | "queen" | "king" | "sofa_bed";
 
 type BedEntry = { type: BedType; quantity: number };
 
@@ -18,7 +22,6 @@ type RoomLocal = {
   name: string;
   capacity: number;
   beds: BedEntry[];
-  sofa_count: number;
   photos: string[];
 };
 
@@ -27,21 +30,14 @@ function uid() {
 }
 
 function fromDbRow(row: Record<string, unknown>): RoomLocal {
-  const bedsRaw = Array.isArray(row.beds) ? (row.beds as { type: string; quantity: number }[]) : [];
-  if (row.type === "living_room") {
-    const sofa = bedsRaw.find((b) => b.type === "sofa_bed");
-    return {
-      localId: uid(), serverId: row.id as string, type: "living_room",
-      name: row.name as string, capacity: row.capacity as number,
-      beds: [], sofa_count: sofa?.quantity ?? 0,
-      photos: Array.isArray(row.photos) ? (row.photos as string[]) : [],
-    };
-  }
+  const bedsRaw = Array.isArray(row.beds) ? (row.beds as BedEntry[]) : [];
   return {
-    localId: uid(), serverId: row.id as string, type: "bedroom",
-    name: row.name as string, capacity: row.capacity as number,
-    beds: bedsRaw.filter((b) => b.type !== "sofa_bed") as BedEntry[],
-    sofa_count: 0,
+    localId: uid(),
+    serverId: row.id as string,
+    type: row.type === "living_room" ? "living_room" : "bedroom",
+    name: row.name as string,
+    capacity: row.capacity as number,
+    beds: bedsRaw,
     photos: Array.isArray(row.photos) ? (row.photos as string[]) : [],
   };
 }
@@ -90,14 +86,14 @@ export default function RoomsSection({
     setRooms((prev) => [
       ...prev,
       { localId: uid(), serverId: null, type: "bedroom",
-        name: t("bedroomDefault", { n: bedrooms.length + 1 }), capacity: 2, beds: [], sofa_count: 0, photos: [] },
+        name: t("bedroomDefault", { n: bedrooms.length + 1 }), capacity: 2, beds: [], photos: [] },
     ]);
 
   const addLivingRoom = () =>
     setRooms((prev) => [
       ...prev,
       { localId: uid(), serverId: null, type: "living_room",
-        name: t("livingroomDefault", { n: livingRooms.length + 1 }), capacity: 2, beds: [], sofa_count: 0, photos: [] },
+        name: t("livingroomDefault", { n: livingRooms.length + 1 }), capacity: 2, beds: [], photos: [] },
     ]);
 
   const removeRoom   = (id: string) => setRooms((prev) => prev.filter((r) => r.localId !== id));
@@ -139,17 +135,13 @@ export default function RoomsSection({
     const newServerIds: Record<string, string> = {};
     for (let i = 0; i < rooms.length; i++) {
       const room = rooms[i];
-      const bedsDb: { type: string; quantity: number }[] =
-        room.type === "living_room"
-          ? room.sofa_count > 0 ? [{ type: "sofa_bed", quantity: room.sofa_count }] : []
-          : room.beds;
 
       const payload = {
         listing_id: listingId,
         type: room.type,
         name: room.name,
         capacity: room.capacity,
-        beds: bedsDb,
+        beds: room.beds,
         photos: room.photos,
         sort_order: i,
       };
@@ -238,6 +230,9 @@ export default function RoomsSection({
               t={t}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
+              onAddBed={() => addBed(room.localId)}
+              onUpdateBed={(i, p) => updateBed(room.localId, i, p)}
+              onRemoveBed={(i) => removeBed(room.localId, i)}
             />
           ))}
         </div>
@@ -268,6 +263,105 @@ export default function RoomsSection({
 
 type TRooms = ReturnType<typeof useTranslations>;
 
+// ── Beds editor (partagé chambres + salons) ─────────────────────────────────
+
+function BedsEditor({
+  beds, t, onAddBed, onUpdateBed, onRemoveBed,
+}: {
+  beds: BedEntry[];
+  t: TRooms;
+  onAddBed: () => void;
+  onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
+  onRemoveBed: (idx: number) => void;
+}) {
+  const BED_LABELS: Record<BedType, string> = {
+    simple: t("bedSingle"),
+    double: t("bedDouble"),
+    queen:  t("bedQueen"),
+    king:   t("bedKing"),
+    sofa_bed: t("bedSofa"),
+  };
+
+  return (
+    <div>
+      <span className="text-sm text-charcoal-500 block mb-2">{t("beds")}</span>
+      {beds.length === 0 && (
+        <p className="text-xs text-charcoal-300 mb-2">{t("bedsEmpty")}</p>
+      )}
+      <div className="space-y-2">
+        {beds.map((bed, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <select
+              value={bed.type}
+              onChange={(e) => onUpdateBed(i, { type: e.target.value as BedType })}
+              className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+            >
+              {(Object.keys(BED_LABELS) as BedType[]).map((k) => (
+                <option key={k} value={k}>{BED_LABELS[k]}</option>
+              ))}
+            </select>
+            <input
+              type="number" min={1} max={4}
+              value={bed.quantity}
+              onChange={(e) => onUpdateBed(i, { quantity: parseInt(e.target.value) || 1 })}
+              className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              onClick={() => onRemoveBed(i)}
+              className="text-charcoal-300 hover:text-red-400 transition-colors p-1"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={onAddBed}
+        className={`mt-2 text-xs ${TEXT_LINK_CLASSNAME}`}
+      >
+        {t("addBed")}
+      </button>
+    </div>
+  );
+}
+
+// ── Room header (partagé chambres + salons) ─────────────────────────────────
+
+function RoomHeader({
+  room, onUpdate, onRemove, t,
+}: {
+  room: RoomLocal;
+  onUpdate: (patch: Partial<RoomLocal>) => void;
+  onRemove: () => void;
+  t: TRooms;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        value={room.name}
+        onChange={(e) => onUpdate({ name: e.target.value })}
+        className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
+      />
+      {room.photos.length === 0 && (
+        <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+          {t("noPhotos")}
+        </span>
+      )}
+      <button
+        onClick={onRemove}
+        className="text-charcoal-300 hover:text-red-400 transition-colors"
+        aria-label="Supprimer"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 // ── Bedroom card ─────────────────────────────────────────────────────────────
 
 function BedroomCard({
@@ -284,37 +378,9 @@ function BedroomCard({
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
-  const BED_LABELS: Record<BedType, string> = {
-    simple: t("bedSingle"),
-    double: t("bedDouble"),
-    queen:  t("bedQueen"),
-    king:   t("bedKing"),
-  };
-
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <input
-          value={room.name}
-          onChange={(e) => onUpdate({ name: e.target.value })}
-          className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
-        />
-        {room.photos.length === 0 && (
-          <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
-            {t("noPhotos")}
-          </span>
-        )}
-        <button
-          onClick={onRemove}
-          className="text-charcoal-300 hover:text-red-400 transition-colors"
-          aria-label="Supprimer"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      </div>
+      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} />
 
       {/* Capacity */}
       <div className="flex items-center gap-3">
@@ -327,48 +393,7 @@ function BedroomCard({
         />
       </div>
 
-      {/* Beds */}
-      <div>
-        <span className="text-sm text-charcoal-500 block mb-2">{t("beds")}</span>
-        {room.beds.length === 0 && (
-          <p className="text-xs text-charcoal-300 mb-2">{t("bedsEmpty")}</p>
-        )}
-        <div className="space-y-2">
-          {room.beds.map((bed, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <select
-                value={bed.type}
-                onChange={(e) => onUpdateBed(i, { type: e.target.value as BedType })}
-                className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              >
-                {(Object.keys(BED_LABELS) as BedType[]).map((k) => (
-                  <option key={k} value={k}>{BED_LABELS[k]}</option>
-                ))}
-              </select>
-              <input
-                type="number" min={1} max={4}
-                value={bed.quantity}
-                onChange={(e) => onUpdateBed(i, { quantity: parseInt(e.target.value) || 1 })}
-                className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <button
-                onClick={() => onRemoveBed(i)}
-                className="text-charcoal-300 hover:text-red-400 transition-colors p-1"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={onAddBed}
-          className={`mt-2 text-xs ${TEXT_LINK_CLASSNAME}`}
-        >
-          {t("addBed")}
-        </button>
-      </div>
+      <BedsEditor beds={room.beds} t={t} onAddBed={onAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
 
       {/* Photos */}
       <div>
@@ -387,7 +412,8 @@ function BedroomCard({
 // ── Living room card ──────────────────────────────────────────────────────────
 
 function LivingRoomCard({
-  room, userId, listingPhotos, t, onUpdate, onRemove,
+  room, userId, listingPhotos, t,
+  onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
@@ -395,53 +421,26 @@ function LivingRoomCard({
   t: TRooms;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
+  onAddBed: () => void;
+  onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
+  onRemoveBed: (idx: number) => void;
 }) {
-
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      {/* Header */}
+      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} />
+
+      {/* Capacity */}
       <div className="flex items-center gap-3">
+        <label className="text-sm text-charcoal-500 w-36 shrink-0">{t("livingroomCapacity")}</label>
         <input
-          value={room.name}
-          onChange={(e) => onUpdate({ name: e.target.value })}
-          className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
+          type="number" min={1} max={10}
+          value={room.capacity}
+          onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
+          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        {room.photos.length === 0 && (
-          <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
-            {t("noPhotos")}
-          </span>
-        )}
-        <button
-          onClick={onRemove}
-          className="text-charcoal-300 hover:text-red-400 transition-colors"
-          aria-label="Supprimer"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-charcoal-500 shrink-0">{t("sofaBeds")}</label>
-          <input
-            type="number" min={0} max={10}
-            value={room.sofa_count}
-            onChange={(e) => onUpdate({ sofa_count: parseInt(e.target.value) || 0 })}
-            className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-charcoal-500 shrink-0">{t("livingroomCapacity")}</label>
-          <input
-            type="number" min={1} max={10}
-            value={room.capacity}
-            onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
-            className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-      </div>
+      <BedsEditor beds={room.beds} t={t} onAddBed={onAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
 
       {/* Photos */}
       <div>

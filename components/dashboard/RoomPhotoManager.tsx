@@ -179,17 +179,6 @@ export default function RoomPhotoManager({
         </div>
       )}
 
-      {/* Choisir parmi les photos déjà présentes dans la galerie de l'annonce */}
-      {canUpload && availablePhotos.some((p) => !photos.includes(p.url)) && (
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="mb-3 text-sm font-medium text-primary hover:text-primary-700 hover:underline transition-colors"
-        >
-          Choisir parmi les photos de l&apos;annonce
-        </button>
-      )}
-
       {pickerOpen && (
         <RoomPhotoPickerModal
           availablePhotos={availablePhotos}
@@ -232,6 +221,24 @@ export default function RoomPhotoManager({
               <p className="text-xs text-charcoal-400">ou cliquez pour sélectionner</p>
             </>
           )}
+        </div>
+      )}
+
+      {/* Choisir parmi les photos déjà présentes dans la galerie de l'annonce */}
+      {canUpload && availablePhotos.some((p) => !photos.includes(p.url)) && (
+        <div className="flex items-center gap-3 mt-3">
+          <span className="text-xs text-charcoal-400 shrink-0">ou</span>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-[#636e40] bg-white px-4 py-2 text-sm font-medium text-[#636e40] hover:bg-[#f5f6ec] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 8.25V7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 16.5v-.75m0-7.5v7.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            </svg>
+            Choisir parmi les photos de l&apos;annonce
+          </button>
         </div>
       )}
 
