@@ -10,6 +10,16 @@ export function cleanDescription(text: string): string {
   return filtered.join("\n").trimEnd();
 }
 
+// Pour les textes courts sans ponctuation fiable (légendes de photo) — coupe
+// au dernier espace plutôt qu'à la dernière phrase.
+export function truncateToLastWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const truncated = text.slice(0, max);
+  const lastSpace = truncated.lastIndexOf(" ");
+  if (lastSpace > max * 0.5) return truncated.slice(0, lastSpace).trimEnd();
+  return truncated.trimEnd();
+}
+
 export function truncateToLastSentence(text: string, max: number): string {
   if (text.length <= max) return text;
   const truncated = text.slice(0, max);

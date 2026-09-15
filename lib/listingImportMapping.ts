@@ -10,6 +10,10 @@
 
 import { AMENITIES } from "@/lib/amenities";
 import { REGIONS } from "@/lib/regions";
+import { truncateToLastWord } from "@/lib/aiText";
+
+// Doit rester synchronisé avec CAPTION_MAX dans components/dashboard/PhotoUpload.tsx.
+const CAPTION_MAX_LENGTH = 200;
 
 export type ImportedListingData = {
   title: string | null;
@@ -136,7 +140,7 @@ export function mapAirbnbItem(item: Record<string, unknown>): ImportedListingDat
   const photos = images
     .map((img) => ({
       url: typeof img.imageUrl === "string" ? img.imageUrl : "",
-      caption: typeof img.caption === "string" ? img.caption : "",
+      caption: truncateToLastWord(typeof img.caption === "string" ? img.caption : "", CAPTION_MAX_LENGTH),
     }))
     .filter((p) => p.url);
 
