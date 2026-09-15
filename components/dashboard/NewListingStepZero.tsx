@@ -47,15 +47,29 @@ export default function NewListingStepZero() {
 
         {/* Card 1 — Créer manuellement */}
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-7 flex flex-col hover:border-primary/30 transition-colors">
+          <span className="inline-flex self-start rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 mb-5">
+            Contrôle total
+          </span>
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <PencilIcon />
           </div>
           <h2 className="text-lg font-bold text-charcoal-800 mb-2">
             Créer mon annonce manuellement
           </h2>
-          <p className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1">
-            Remplissez le formulaire en 12 étapes guidées. Photos, description, disponibilités — tout en un seul endroit.
-          </p>
+          <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Contrôle total du contenu</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Aucune limite</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Partir de zéro</span>
+            </li>
+          </ul>
           <form action={createBlankListing}>
             <button
               type="submit"
@@ -68,15 +82,29 @@ export default function NewListingStepZero() {
 
         {/* Card 2 — Import depuis Airbnb */}
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-7 flex flex-col hover:border-primary/30 transition-colors">
+          <span className="inline-flex self-start rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 mb-5">
+            Le plus rapide
+          </span>
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <LinkIcon />
           </div>
           <h2 className="text-lg font-bold text-charcoal-800 mb-2">
-            J&apos;ai déjà une annonce Airbnb ou Chalets.com
+            J&apos;ai déjà une annonce Airbnb
           </h2>
-          <p className="text-charcoal-500 text-sm leading-relaxed mb-7">
-            Collez le lien de votre annonce existante et on s&apos;occupe de tout. Votre annonce sera prête dans 24h.
-          </p>
+          <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Annonce prête en 24h</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Photos et description déjà remplies</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon />
+              <span>Aucune ressaisie</span>
+            </li>
+          </ul>
           <form action={importAction} className="space-y-3 mt-auto">
             <div>
               <label htmlFor="listing-url" className="block text-sm font-medium text-charcoal-700 mb-1.5">
@@ -123,6 +151,14 @@ function LinkIcon() {
   return (
     <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   );
 }
