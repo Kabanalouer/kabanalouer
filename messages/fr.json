@@ -284,7 +284,8 @@
       "livingroomCapacity": "Capacité",
       "livingroomPhotos": "Photos du salon",
       "bedroomDefault": "Chambre {n}",
-      "livingroomDefault": "Salon {n}"
+      "livingroomDefault": "Salon {n}",
+      "saveError": "Erreur lors de l'enregistrement. Réessayez."
     },
     "quote": {
       "intro": "Remplissez cette section une seule fois — elle vous servira à générer rapidement un devis structuré pour chaque demande, directement dans votre messagerie.",

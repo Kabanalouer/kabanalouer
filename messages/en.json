@@ -284,7 +284,8 @@
       "livingroomCapacity": "Capacity",
       "livingroomPhotos": "Living space photos",
       "bedroomDefault": "Bedroom {n}",
-      "livingroomDefault": "Living room {n}"
+      "livingroomDefault": "Living room {n}",
+      "saveError": "Error while saving. Please try again."
     },
     "quote": {
       "intro": "Fill in this section once — it'll let you quickly generate a structured quote for each request, right from your messaging.",

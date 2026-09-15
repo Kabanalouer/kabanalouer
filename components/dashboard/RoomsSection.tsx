@@ -129,7 +129,12 @@ export default function RoomsSection({
     const deletedIds = [...originalIds].filter((id) => !currentIds.has(id));
 
     if (deletedIds.length > 0) {
-      await supabase.from("rooms").delete().in("id", deletedIds);
+      const { error: deleteError } = await supabase.from("rooms").delete().in("id", deletedIds);
+      if (deleteError) {
+        setSaving(false);
+        setError(t("saveError"));
+        return;
+      }
     }
 
     const newServerIds: Record<string, string> = {};
@@ -147,10 +152,20 @@ export default function RoomsSection({
       };
 
       if (room.serverId) {
-        await supabase.from("rooms").update(payload).eq("id", room.serverId);
+        const { error: updateError } = await supabase.from("rooms").update(payload).eq("id", room.serverId);
+        if (updateError) {
+          setSaving(false);
+          setError(t("saveError"));
+          return;
+        }
       } else {
-        const { data } = await supabase.from("rooms").insert(payload).select("id").single();
-        if (data) newServerIds[room.localId] = data.id;
+        const { data, error: insertError } = await supabase.from("rooms").insert(payload).select("id").single();
+        if (insertError || !data) {
+          setSaving(false);
+          setError(t("saveError"));
+          return;
+        }
+        newServerIds[room.localId] = data.id;
       }
     }
 
