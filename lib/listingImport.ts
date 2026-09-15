@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
-import { cleanDescription, truncateToLastSentence } from "@/lib/aiText";
+import { cleanDescription, truncateToLastSentence, truncateToLastWord } from "@/lib/aiText";
 import { detectImportPlatform, runApifyActor, ApifyImportError } from "@/lib/apify";
 import { mapAirbnbItem, type ImportedListingData } from "@/lib/listingImportMapping";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
@@ -64,6 +64,64 @@ function buildRewriteUserMessage(data: ImportedListingData): string {
     "2500 caractères, espaces compris. Arrête-toi à une phrase complète avant la limite. Commence par une phrase " +
     "d'accroche forte.\n\nContexte :\n" + lines.join("\n")
   );
+}
+
+const TITLE_MAX_LENGTH = 50;
+
+const REWRITE_TITLE_SYSTEM_PROMPT =
+  "Tu es une experte en rédaction d'annonces de location touristique au Québec ET spécialiste en référencement (SEO). " +
+  "On te donne les données brutes d'une annonce importée depuis Airbnb — ta tâche est de reformuler le titre pour " +
+  "Kabanalouer, pas de recopier le titre source mot pour mot. " +
+  "Reste strictement fidèle au contenu réel de l'annonce : n'invente aucun équipement, lieu ou caractéristique qui " +
+  "n'est pas confirmé dans le contexte fourni. " +
+  "Si un nom propre de chalet apparaît dans le titre original (ex. \"Chalet Authentik 50\"), garde-le en premier — " +
+  "c'est le mot-clé SEO le plus important pour les voyageurs qui cherchent ce chalet par son nom. " +
+  "Tu rédiges en français québécois, avec un ton chaleureux et professionnel. Pas d'emojis. Sentence case — ne " +
+  "capitalise pas chaque mot comme un titre marketing, seulement les noms propres. " +
+  "N'utilise jamais le mot \"hôte\" — dis \"propriétaire\". " +
+  "CONTRAINTE ABSOLUE : le titre doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les " +
+  "caractères avant de répondre.";
+
+function buildRewriteTitleUserMessage(data: ImportedListingData): string {
+  const lines = [
+    data.title ? `Titre original (Airbnb) : ${data.title}` : null,
+    data.region ? `Région : ${data.region}` : null,
+    data.city ? `Ville : ${data.city}` : null,
+    data.capacity ? `Capacité : ${data.capacity} personnes` : null,
+    data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
+    data.amenities.length > 0 ? `Équipements reconnus : ${data.amenities.join(", ")}` : null,
+  ].filter(Boolean);
+
+  return (
+    "Reformule ce titre d'annonce de chalet importée, sans le recopier mot pour mot. Retourne UNIQUEMENT le " +
+    "nouveau titre, sans guillemets, sans explication, sans markdown. CONTRAINTE ABSOLUE : le titre doit faire " +
+    "STRICTEMENT moins de 50 caractères, espaces compris. Compte les caractères avant de répondre.\n\n" +
+    "Contexte :\n" + lines.join("\n")
+  );
+}
+
+async function rewriteTitle(data: ImportedListingData): Promise<string | null> {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 128,
+      system: [{ type: "text", text: REWRITE_TITLE_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: buildRewriteTitleUserMessage(data) }],
+    });
+    const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
+    if (!raw) return null;
+    const cleaned = raw.replace(/^["«»"]+|["«»"]+$/g, "").trim();
+    if (!cleaned) return null;
+    // Garde-fou : même si l'IA dépasse légèrement la limite demandée, on ne
+    // coupe jamais un mot en plein milieu (même logique que les légendes de
+    // photo — voir lib/aiText.ts).
+    return truncateToLastWord(cleaned, TITLE_MAX_LENGTH);
+  } catch (err) {
+    console.error("listingImport: échec réécriture IA du titre", err);
+    return null;
+  }
 }
 
 async function rewriteDescription(data: ImportedListingData): Promise<string | null> {
@@ -209,14 +267,20 @@ export async function importAirbnbListing(
 
   let aiRewriteApplied = false;
   if (await checkAiRateLimit(supabase, userId, "listings-import")) {
-    const rewritten = await rewriteDescription(mapped);
-    if (rewritten) {
+    const [rewrittenDescription, rewrittenTitle] = await Promise.all([
+      rewriteDescription(mapped),
+      rewriteTitle(mapped),
+    ]);
+    const updates: { description?: string; title?: string } = {};
+    if (rewrittenDescription) updates.description = rewrittenDescription;
+    if (rewrittenTitle) updates.title = rewrittenTitle;
+    if (Object.keys(updates).length > 0) {
       const { error: updateError } = await admin
         .from("listings")
-        .update({ description: rewritten })
+        .update(updates)
         .eq("id", listing.id);
       if (updateError) {
-        console.error("listingImport: échec update description IA", updateError);
+        console.error("listingImport: échec update titre/description IA", updateError);
       } else {
         aiRewriteApplied = true;
       }
