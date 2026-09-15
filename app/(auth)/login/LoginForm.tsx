@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
-import TurnstileWidget from "@/components/TurnstileWidget";
+import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 
@@ -26,6 +26,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -45,6 +46,9 @@ function LoginForm() {
     if (error) {
       setError(t("invalidCredentials"));
       setLoading(false);
+      // The widget's "Success" state doesn't know its token was just consumed —
+      // force a fresh challenge so the button can become clickable again.
+      turnstileRef.current?.reset();
       return;
     }
     router.push(next);
@@ -139,6 +143,7 @@ function LoginForm() {
           </div>
 
           <TurnstileWidget
+            ref={turnstileRef}
             sitekey={TURNSTILE_SITE_KEY}
             onSuccess={(token) => setTurnstileToken(token)}
             onReset={() => setTurnstileToken(null)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import Script from "next/script";
 import { useLocale } from "next-intl";
 
@@ -19,6 +19,7 @@ declare global {
         }
       ) => string;
       remove: (widgetId: string) => void;
+      reset: (widgetId: string) => void;
     };
   }
 }
@@ -29,7 +30,17 @@ interface Props {
   onReset: () => void;
 }
 
-export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) {
+export interface TurnstileWidgetHandle {
+  // Forces a fresh challenge/token — the widget's own "Success" visual doesn't
+  // know when its token was consumed server-side (e.g. after a failed login),
+  // so it must be told explicitly to re-challenge.
+  reset: () => void;
+}
+
+const TurnstileWidget = forwardRef<TurnstileWidgetHandle, Props>(function TurnstileWidget(
+  { sitekey, onSuccess, onReset },
+  ref
+) {
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
@@ -52,6 +63,14 @@ export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) 
       });
     }
   }, [sitekey, locale]);
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      if (widgetId.current && window.turnstile) {
+        window.turnstile.reset(widgetId.current);
+      }
+    },
+  }));
 
   useEffect(() => {
     // Handles the case where window.turnstile is already loaded (cached script,
@@ -81,4 +100,6 @@ export default function TurnstileWidget({ sitekey, onSuccess, onReset }: Props) 
       <div ref={containerRef} className="flex justify-center" />
     </>
   );
-}
+});
+
+export default TurnstileWidget;
