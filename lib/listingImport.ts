@@ -106,17 +106,21 @@ export async function importAirbnbListing(
   const admin = adminSupabase();
   const normalizedUrl = normalizeListingUrl(rawUrl);
 
-  // Défense contre les doubles soumissions (double-clic, nouvelle tentative
-  // après un délai perçu comme un échec) — évite un deuxième brouillon et un
-  // appel Apify gaspillé pour une annonce déjà importée par ce propriétaire.
+  // Empêche la réimportation d'une annonce déjà importée par ce propriétaire
+  // — évite un brouillon dupliqué et un appel Apify inutile.
   const { data: existingRows } = await admin
     .from("listings")
     .select("id, import_source_url")
     .eq("host_id", userId)
     .eq("import_source", platform);
-  const duplicate = (existingRows ?? []).find(
-    (row) => row.import_source_url && normalizeListingUrl(row.import_source_url) === normalizedUrl
-  );
+  const duplicate = (existingRows ?? []).find((row) => {
+    if (!row.import_source_url) return false;
+    try {
+      return normalizeListingUrl(row.import_source_url) === normalizedUrl;
+    } catch {
+      return false;
+    }
+  });
   if (duplicate) {
     return { ok: true, status: "duplicate", listingId: duplicate.id };
   }
