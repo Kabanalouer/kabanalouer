@@ -95,6 +95,7 @@ export default function PhotoUpload({
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const [generatingIdx, setGeneratingIdx] = useState<number | null>(null);
+  const [positionEditIdx, setPositionEditIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean } | null>(null);
@@ -105,6 +106,49 @@ export default function PhotoUpload({
   const totalCount = photos.length + processing.length;
   const canUpload = totalCount < MAX_PHOTOS;
 
+  // ── Auto-scroll pendant le glisser-déposer ──────────────────────────────────
+  // Nécessaire à la main (pas de librairie DnD ici) : sur 80 photos, la liste
+  // dépasse largement l'écran, donc déplacer une photo loin dans le tableau
+  // sans défilement automatique demanderait de glisser-relâcher en boucle.
+  const AUTO_SCROLL_EDGE_PX = 120;
+  const AUTO_SCROLL_MAX_SPEED = 22;
+  const autoScrollState = useRef<{ direction: 0 | 1 | -1; speed: number }>({ direction: 0, speed: 0 });
+  const autoScrollRaf = useRef<number | null>(null);
+
+  const updateAutoScrollFromPointer = (clientY: number) => {
+    const vh = window.innerHeight;
+    if (clientY < AUTO_SCROLL_EDGE_PX) {
+      const intensity = (AUTO_SCROLL_EDGE_PX - clientY) / AUTO_SCROLL_EDGE_PX;
+      autoScrollState.current = { direction: -1, speed: Math.max(3, AUTO_SCROLL_MAX_SPEED * intensity) };
+    } else if (clientY > vh - AUTO_SCROLL_EDGE_PX) {
+      const intensity = (clientY - (vh - AUTO_SCROLL_EDGE_PX)) / AUTO_SCROLL_EDGE_PX;
+      autoScrollState.current = { direction: 1, speed: Math.max(3, AUTO_SCROLL_MAX_SPEED * intensity) };
+    } else {
+      autoScrollState.current = { direction: 0, speed: 0 };
+    }
+  };
+
+  useEffect(() => {
+    if (dragIdx === null) return;
+
+    const step = () => {
+      const { direction, speed } = autoScrollState.current;
+      if (direction !== 0) window.scrollBy(0, direction * speed);
+      autoScrollRaf.current = requestAnimationFrame(step);
+    };
+    autoScrollRaf.current = requestAnimationFrame(step);
+
+    const onWindowDragOver = (e: DragEvent) => updateAutoScrollFromPointer(e.clientY);
+    window.addEventListener("dragover", onWindowDragOver);
+
+    return () => {
+      if (autoScrollRaf.current !== null) cancelAnimationFrame(autoScrollRaf.current);
+      autoScrollRaf.current = null;
+      autoScrollState.current = { direction: 0, speed: 0 };
+      window.removeEventListener("dragover", onWindowDragOver);
+    };
+  }, [dragIdx]);
+
   // Passive-false touchmove for reorder drag
   useEffect(() => {
     const container = containerRef.current;
@@ -113,6 +157,7 @@ export default function PhotoUpload({
       if (!touchState.current?.dragging) return;
       e.preventDefault();
       const touch = e.touches[0];
+      updateAutoScrollFromPointer(touch.clientY);
       const el = document.elementFromPoint(touch.clientX, touch.clientY);
       const item = el?.closest("[data-photo-idx]");
       if (item) {
@@ -244,6 +289,19 @@ export default function PhotoUpload({
     savePhotos(next);
   };
 
+  // Saisie directe d'une position (alternative au glisser-déposer, utile sur
+  // de longues galeries) — un numéro hors bornes est ramené à la borne la
+  // plus proche plutôt que rejeté ; un numéro illisible ferme simplement le
+  // mini-champ sans rien déplacer ; la position actuelle est un no-op.
+  const movePhotoToPosition = (from: number, rawValue: string) => {
+    setPositionEditIdx(null);
+    const parsed = Number.parseInt(rawValue, 10);
+    if (!Number.isFinite(parsed)) return;
+    const total = photos.length;
+    const clamped = Math.min(Math.max(parsed, 1), total);
+    applyReorder(from, clamped - 1);
+  };
+
   const onDragStart = (i: number) => setDragIdx(i);
   const onDragEnd = () => { setDragIdx(null); setOverIdx(null); };
   const onDragOver = (e: React.DragEvent, i: number) => { e.preventDefault(); setOverIdx(i); };
@@ -311,10 +369,35 @@ export default function PhotoUpload({
           <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-6 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
         </svg>
       </div>
-      {/* Badge */}
-      <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">
-        {badge}
-      </span>
+      {/* Badge — cliquer dessus permet de taper une position directement */}
+      {positionEditIdx === i ? (
+        <input
+          type="number"
+          min={1}
+          max={photos.length}
+          defaultValue={i + 1}
+          autoFocus
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") movePhotoToPosition(i, e.currentTarget.value);
+            if (e.key === "Escape") setPositionEditIdx(null);
+          }}
+          onBlur={(e) => movePhotoToPosition(i, e.currentTarget.value)}
+          aria-label="Déplacer à la position"
+          className="absolute bottom-1.5 left-1.5 w-11 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+      ) : (
+        <button
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
+          title="Taper un numéro pour déplacer cette photo"
+          className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full hover:bg-black/75 transition-colors"
+        >
+          {badge}
+        </button>
+      )}
       {/* Size */}
       {item.sizeMb !== undefined && (
         <span className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full pointer-events-none">
@@ -559,7 +642,7 @@ export default function PhotoUpload({
         </p>
         <p><span className="font-semibold text-charcoal-500">Minimum de photos :</span> {MIN_PHOTOS}</p>
         <p><span className="font-semibold text-charcoal-500">Maximum de photos :</span> {MAX_PHOTOS}</p>
-        <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage.</p>
+        <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage, ou cliquez sur le numéro d&apos;une photo pour saisir directement sa nouvelle position.</p>
       </div>
     </div>
   );
