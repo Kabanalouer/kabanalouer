@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { importAirbnbListing } from "@/lib/listingImport";
 
 export async function createBlankListing() {
   const supabase = await createClient();
@@ -43,7 +43,8 @@ export async function createBlankListing() {
 
 export type ImportState =
   | { status: "idle" }
-  | { status: "success" }
+  | { status: "success"; listingId: string }
+  | { status: "duplicate"; listingId: string }
   | { status: "error"; message: string };
 
 export async function submitImportRequest(
@@ -51,6 +52,7 @@ export async function submitImportRequest(
   formData: FormData
 ): Promise<ImportState> {
   const listingUrl = (formData.get("listing_url") as string | null)?.trim() ?? "";
+  const photosRightsConfirmed = formData.get("photos_rights_confirmed") === "on";
 
   if (!listingUrl) {
     return { status: "error", message: "Veuillez coller le lien de votre annonce." };
@@ -60,33 +62,21 @@ export async function submitImportRequest(
   } catch {
     return { status: "error", message: "Le lien n'est pas valide." };
   }
+  if (!photosRightsConfirmed) {
+    return { status: "error", message: "Vous devez confirmer détenir les droits sur les photos de cette annonce." };
+  }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { status: "error", message: "Session expirée, veuillez vous reconnecter." };
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("name")
-    .eq("id", user.id)
-    .single();
+  const outcome = await importAirbnbListing(supabase, user.id, listingUrl);
 
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { error } = await admin.from("contact_messages").insert({
-    name: profile?.name ?? user.email ?? "Propriétaire",
-    email: user.email ?? "",
-    subject: "Import annonce - proprio connecté",
-    message: `Lien de l'annonce : ${listingUrl}`,
-  });
-
-  if (error) {
-    console.error("contact_messages insert error:", error.message);
-    return { status: "error", message: "Une erreur est survenue. Veuillez réessayer." };
+  if (!outcome.ok) {
+    return { status: "error", message: outcome.error };
   }
-
-  return { status: "success" };
+  if (outcome.status === "duplicate") {
+    return { status: "duplicate", listingId: outcome.listingId };
+  }
+  return { status: "success", listingId: outcome.listingId };
 }
