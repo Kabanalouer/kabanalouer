@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { safeHttpUrl } from "@/lib/safeUrl";
 
 export const metadata = { title: "Imports en attente — Administration" };
 
@@ -26,7 +27,7 @@ export default async function AdminImportsPage() {
       id: r.id as string,
       title: (r.title as string) || "Annonce sans titre",
       source: (r.import_source as string) ?? "—",
-      sourceUrl: (r.import_source_url as string | null) ?? null,
+      sourceUrl: safeHttpUrl(r.import_source_url as string | null),
       createdAt: (r.created_at as string) ?? "",
       hostName: (host?.name as string) || "—",
       hostEmail: (host?.email as string) || "—",

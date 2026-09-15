@@ -21,6 +21,7 @@ import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import { safeHttpUrl } from "@/lib/safeUrl";
 
 
 type FormState = {
@@ -583,6 +584,8 @@ export default function EditListingForm({
     return map[id] ?? id;
   };
 
+  const safeImportSourceUrl = safeHttpUrl(importSourceUrl);
+
   const PUBLISH_FEATURES = [
     t("publish.feature1"),
     t("publish.feature2"),
@@ -605,12 +608,12 @@ export default function EditListingForm({
         onDeleted={() => router.push("/dashboard/listings?deleted=1")}
       />
     )}
-    {isAdminReview && localImportStatus === "pending_review" && importSourceUrl && (
+    {isAdminReview && localImportStatus === "pending_review" && safeImportSourceUrl && (
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3 mb-6">
         <p className="text-sm text-charcoal-700">
           Annonce importée depuis Airbnb —{" "}
           <a
-            href={importSourceUrl}
+            href={safeImportSourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-primary hover:text-primary-700 hover:underline transition-colors"
