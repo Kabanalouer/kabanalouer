@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
-import TurnstileWidget from "@/components/TurnstileWidget";
+import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 // 10 chiffres, indicatif nord-américain — accepte les formats courants
@@ -39,6 +39,7 @@ function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const supabase = createClient();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -74,6 +75,9 @@ function SignupForm() {
     if (error) {
       setError(error.message);
       setLoading(false);
+      // The widget's "Success" state doesn't know its token was just consumed —
+      // force a fresh challenge so the button can become clickable again.
+      turnstileRef.current?.reset();
       return;
     }
     // Supabase renvoie un user "fantôme" sans erreur quand l'email existe déjà
@@ -81,6 +85,7 @@ function SignupForm() {
     if (data.user && data.user.identities && data.user.identities.length === 0) {
       setAccountExists(true);
       setLoading(false);
+      turnstileRef.current?.reset();
       return;
     }
     setSuccess(true);
@@ -280,6 +285,7 @@ function SignupForm() {
           </div>
 
           <TurnstileWidget
+            ref={turnstileRef}
             sitekey={TURNSTILE_SITE_KEY}
             onSuccess={(token) => setTurnstileToken(token)}
             onReset={() => setTurnstileToken(null)}
