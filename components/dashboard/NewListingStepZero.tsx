@@ -12,7 +12,8 @@ const inputCls =
 export default function NewListingStepZero() {
   const [state, importAction, isPending] = useActionState(submitImportRequest, initialState);
 
-  if (state.status === "success") {
+  if (state.status === "success" || state.status === "duplicate") {
+    const isDuplicate = state.status === "duplicate";
     return (
       <div className="max-w-lg mx-auto text-center py-16">
         <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
@@ -20,15 +21,19 @@ export default function NewListingStepZero() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-charcoal-800 mb-3">Demande envoyée</h2>
+        <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
+          {isDuplicate ? "Déjà importée" : "Annonce importée"}
+        </h2>
         <p className="text-charcoal-500 leading-relaxed mb-8">
-          On s&apos;occupe de tout — vous recevrez votre annonce par email dans 24h.
+          {isDuplicate
+            ? "Vous avez déjà importé cette annonce."
+            : "Elle est en révision — comptez généralement 24h avant sa publication."}
         </p>
         <Link
-          href="/dashboard/listings"
+          href={`/dashboard/listings/${state.listingId}/edit`}
           className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
         >
-          Retour vers mes chalets
+          Voir le brouillon →
         </Link>
       </div>
     );
@@ -119,6 +124,15 @@ export default function NewListingStepZero() {
                 className={inputCls}
               />
             </div>
+            <label className="flex items-start gap-2.5 text-sm text-charcoal-600 cursor-pointer">
+              <input
+                type="checkbox"
+                name="photos_rights_confirmed"
+                required
+                className="mt-0.5 w-4 h-4 rounded border-[#ebebeb] text-primary focus:ring-primary/30 shrink-0"
+              />
+              <span>Je confirme détenir les droits sur les photos de cette annonce.</span>
+            </label>
             {state.status === "error" && (
               <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
                 {state.message}
@@ -129,7 +143,7 @@ export default function NewListingStepZero() {
               disabled={isPending}
               className="w-full inline-flex items-center justify-center gap-2 border border-primary text-primary font-bold px-6 py-3.5 rounded-full hover:bg-primary/5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm"
             >
-              {isPending ? "Envoi en cours…" : "Envoyer →"}
+              {isPending ? "Import en cours (jusqu'à 90 secondes)…" : "Envoyer →"}
             </button>
           </form>
         </div>
