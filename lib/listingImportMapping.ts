@@ -140,6 +140,18 @@ export function mapAirbnbItem(item: Record<string, unknown>): ImportedListingDat
     }))
     .filter((p) => p.url);
 
+  // `images[]` n'est pas dans l'ordre d'affichage réel d'Airbnb (vérifié sur
+  // un import réel : la vraie couverture s'y trouvait à l'index 54, pas 0) —
+  // `thumbnail` est un champ séparé qui reflète fidèlement la vraie
+  // couverture Airbnb. Sans lui, on retombe sur images[0] (comportement
+  // inchangé).
+  const thumbnailUrl = typeof item.thumbnail === "string" ? item.thumbnail.trim() : "";
+  if (thumbnailUrl) {
+    const existingIdx = photos.findIndex((p) => p.url === thumbnailUrl);
+    const cover = existingIdx >= 0 ? photos.splice(existingIdx, 1)[0] : { url: thumbnailUrl, caption: "" };
+    photos.unshift(cover);
+  }
+
   // Le prix n'est renvoyé que si checkIn/checkOut sont fournis en input —
   // forme exacte non confirmée sur un run réel avec dates, donc extraction
   // défensive plutôt que de présumer une forme précise.
