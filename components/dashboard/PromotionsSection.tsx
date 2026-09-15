@@ -189,8 +189,6 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             <span className="text-sm font-medium text-charcoal-700">{t("noPromoCheckbox")}</span>
           </label>
 
-          {!noPromoChecked && (
-          <>
           {expiredDate ? (
             <p className="text-sm text-charcoal-400 mb-5">
               {t("expired", {
@@ -203,13 +201,13 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </p>
           )}
 
-          <div className="flex flex-col gap-3">
+          <div className={`flex flex-col gap-3 transition-opacity ${noPromoChecked ? "opacity-50" : ""}`}>
 
             {/* Card: Rabais */}
             <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "rabais" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
-                onClick={() => { setFormType("rabais"); setError(""); }}
+                onClick={() => { setFormType("rabais"); setError(""); setNoPromoChecked(false); }}
                 className={`w-full text-left p-4 transition-colors ${formType === "rabais" ? "bg-primary/5" : "bg-white"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -272,7 +270,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "duree" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
-                onClick={() => { setFormType("duree"); setError(""); }}
+                onClick={() => { setFormType("duree"); setError(""); setNoPromoChecked(false); }}
                 className={`w-full text-left p-4 transition-colors ${formType === "duree" ? "bg-primary/5" : "bg-white"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -314,7 +312,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "lastminute" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
-                onClick={() => { setFormType("lastminute"); setError(""); }}
+                onClick={() => { setFormType("lastminute"); setError(""); setNoPromoChecked(false); }}
                 className={`w-full text-left p-4 transition-colors ${formType === "lastminute" ? "bg-primary/5" : "bg-white"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -389,8 +387,6 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </div>
 
           </div>
-          </>
-          )}
         </div>
       )}
     </div>

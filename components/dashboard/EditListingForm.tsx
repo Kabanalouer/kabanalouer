@@ -1241,6 +1241,28 @@ export default function EditListingForm({
             <SectionShell title={t("sections.pricing")}>
               <div className="flex flex-col gap-3 mb-6">
 
+                {/* Card: Sur demande */}
+                <div className={`rounded-xl border-2 transition-colors ${form.price_on_request ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+                  <button
+                    type="button"
+                    onClick={() => set("price_on_request", true)}
+                    className={`w-full text-left p-4 rounded-xl transition-colors ${form.price_on_request ? "bg-primary/5 rounded-b-none" : "bg-white"}`}
+                  >
+                    <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingRequestTitle")}</p>
+                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingRequestDesc")}</p>
+                  </button>
+                  {form.price_on_request && (
+                    <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
+                      <p className="text-sm text-charcoal-600 leading-relaxed">
+                        {tEdit("pricingRequestDisplay")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Card: À partir de */}
                 <div className={`rounded-xl border-2 transition-colors ${!form.price_on_request ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
                   <button
@@ -1277,28 +1299,6 @@ export default function EditListingForm({
                           <span className="font-semibold text-charcoal-800">{tEdit("pricingPreviewValue", { price: form.price_low })}</span>
                         </div>
                       )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Card: Sur demande */}
-                <div className={`rounded-xl border-2 transition-colors ${form.price_on_request ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
-                  <button
-                    type="button"
-                    onClick={() => set("price_on_request", true)}
-                    className={`w-full text-left p-4 rounded-xl transition-colors ${form.price_on_request ? "bg-primary/5 rounded-b-none" : "bg-white"}`}
-                  >
-                    <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                    </svg>
-                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingRequestTitle")}</p>
-                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingRequestDesc")}</p>
-                  </button>
-                  {form.price_on_request && (
-                    <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
-                      <p className="text-sm text-charcoal-600 leading-relaxed">
-                        {tEdit("pricingRequestDisplay")}
-                      </p>
                     </div>
                   )}
                 </div>
