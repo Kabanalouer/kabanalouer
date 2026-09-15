@@ -223,14 +223,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     <div className="flex gap-2 mb-3">
                       <button
                         type="button"
-                        onClick={() => setRabaisUnit("percent")}
+                        onClick={() => { setRabaisUnit("percent"); setNoPromoChecked(false); }}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
-                        onClick={() => setRabaisUnit("amount")}
+                        onClick={() => { setRabaisUnit("amount"); setNoPromoChecked(false); }}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
@@ -239,14 +239,19 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     <div className="max-w-xs flex items-center gap-2">
                       <input
                         type="number" min={1} max={rabaisUnit === "percent" ? 100 : undefined}
-                        value={rabaisValue} onChange={(e) => setRabaisValue(e.target.value)}
+                        value={rabaisValue} onChange={(e) => { setRabaisValue(e.target.value); setNoPromoChecked(false); }}
                         className={inputCls} placeholder={rabaisUnit === "percent" ? "ex. 20" : "ex. 50"}
                       />
                       <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
                   </div>
                   <p className="text-sm text-charcoal-400">{t("discountApplicable")}</p>
-                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} t={t} />
+                  <DateRangeFields
+                    start={startDate} end={endDate}
+                    onStart={(v) => { setStartDate(v); setNoPromoChecked(false); }}
+                    onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
+                    t={t}
+                  />
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <button
                     type="button"
@@ -288,7 +293,12 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     </p>
                   </div>
                   <p className="text-sm text-charcoal-400">{t("freeNightApplicable")}</p>
-                  <DateRangeFields start={startDate} end={endDate} onStart={setStartDate} onEnd={setEndDate} t={t} />
+                  <DateRangeFields
+                    start={startDate} end={endDate}
+                    onStart={(v) => { setStartDate(v); setNoPromoChecked(false); }}
+                    onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
+                    t={t}
+                  />
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <button
                     type="button"
@@ -328,14 +338,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     <div className="flex gap-2 mb-3">
                       <button
                         type="button"
-                        onClick={() => setLmUnit("percent")}
+                        onClick={() => { setLmUnit("percent"); setNoPromoChecked(false); }}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
-                        onClick={() => setLmUnit("amount")}
+                        onClick={() => { setLmUnit("amount"); setNoPromoChecked(false); }}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
@@ -344,7 +354,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     <div className="max-w-xs flex items-center gap-2">
                       <input
                         type="number" min={1} max={lmUnit === "percent" ? 100 : undefined}
-                        value={lmValue} onChange={(e) => setLmValue(e.target.value)}
+                        value={lmValue} onChange={(e) => { setLmValue(e.target.value); setNoPromoChecked(false); }}
                         className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
                       />
                       <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : t("perNight")}</span>
@@ -358,6 +368,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                         onChange={(e) => {
                           const v = parseInt(e.target.value) || 7;
                           setLmDays(String(Math.min(21, Math.max(7, v))));
+                          setNoPromoChecked(false);
                         }}
                         className={inputCls} placeholder="ex. 7"
                       />
