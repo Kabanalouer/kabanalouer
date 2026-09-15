@@ -30,6 +30,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: outcome.error }, { status: outcome.status });
   }
 
+  if (outcome.status === "duplicate") {
+    return NextResponse.json(
+      { listingId: outcome.listingId },
+      { status: 200 }
+    );
+  }
+
   return NextResponse.json(
     { listingId: outcome.listingId, aiRewriteApplied: outcome.aiRewriteApplied },
     { status: 201 }

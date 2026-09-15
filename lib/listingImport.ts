@@ -14,7 +14,16 @@ const APIFY_TIMEOUT_MS = 60000;
 
 export type ImportOutcome =
   | { ok: true; status: "created"; listingId: string; aiRewriteApplied: boolean }
+  | { ok: true; status: "duplicate"; listingId: string }
   | { ok: false; status: number; error: string };
+
+// Ignore la casse et les paramètres de requête (dates de séjour, nombre
+// d'adultes, etc. — voir le lien airbnb.fr testé le 2026-09-15, qui en
+// portait plusieurs) : seul le domaine + le chemin identifient l'annonce.
+export function normalizeListingUrl(url: string): string {
+  const u = new URL(url);
+  return `${u.hostname.toLowerCase()}${u.pathname.replace(/\/+$/, "")}`;
+}
 
 function adminSupabase() {
   return createAdminClient(
@@ -94,11 +103,27 @@ export async function importAirbnbListing(
     return { ok: false, status: 403, error: "Accès réservé aux propriétaires" };
   }
 
+  const admin = adminSupabase();
+  const normalizedUrl = normalizeListingUrl(rawUrl);
+
+  // Défense contre les doubles soumissions (double-clic, nouvelle tentative
+  // après un délai perçu comme un échec) — évite un deuxième brouillon et un
+  // appel Apify gaspillé pour une annonce déjà importée par ce propriétaire.
+  const { data: existingRows } = await admin
+    .from("listings")
+    .select("id, import_source_url")
+    .eq("host_id", userId)
+    .eq("import_source", platform);
+  const duplicate = (existingRows ?? []).find(
+    (row) => row.import_source_url && normalizeListingUrl(row.import_source_url) === normalizedUrl
+  );
+  if (duplicate) {
+    return { ok: true, status: "duplicate", listingId: duplicate.id };
+  }
+
   if (!(await checkAiRateLimit(supabase, userId, "listings-import-apify"))) {
     return { ok: false, status: 429, error: "Vous avez atteint la limite de 20 imports par heure. Réessayez plus tard." };
   }
-
-  const admin = adminSupabase();
 
   let items: unknown[];
   try {
