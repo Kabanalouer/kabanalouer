@@ -5,8 +5,6 @@ import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 const ADMIN_EMAIL = "simon.authentik@gmail.com";
 
@@ -21,6 +19,15 @@ export async function sendImportReviewNotification({
   platform: "airbnb" | "vrbo";
   hostName: string;
 }): Promise<{ error: Error | null }> {
+  // Construction paresseuse — jamais au chargement du module (voir
+  // app/devenir-hote/actions.ts) : sinon une clé absente/invalide ferait
+  // planter tout module qui importe ce fichier, y compris le pipeline
+  // d'import Airbnb qui ne devrait jamais échouer pour une notification.
+  if (!process.env.RESEND_API_KEY) {
+    return { error: new Error("RESEND_API_KEY manquant — notification non envoyée") };
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   const platformLabel = platform === "airbnb" ? "Airbnb" : "VRBO";
   const reviewUrl = `${SITE_URL}/dashboard/listings/${listingId}/edit`;
 
