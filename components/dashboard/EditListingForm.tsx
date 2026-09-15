@@ -206,7 +206,7 @@ export default function EditListingForm({
     min_age: 21,
     checkin_type: "autonomous" as const,
     nearby_activities: [],
-    price_on_request: false,
+    price_on_request: true,
     quote_inclusions: [],
     quote_exclusions: [],
     quote_booking_instructions: "",
@@ -231,7 +231,6 @@ export default function EditListingForm({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [roomsHasBeds, setRoomsHasBeds] = useState(false);
   const [roomsAllHavePhotos, setRoomsAllHavePhotos] = useState(false);
-  const [promotionsHasActive, setPromotionsHasActive] = useState(false);
   const [scoreDbData, setScoreDbData] = useState({ bioFilled: false, avatarFilled: false, reviewCount: 0, recentReviewCount: 0 });
   const [scoreDbLoaded, setScoreDbLoaded] = useState(false);
   const [locationValid, setLocationValid] = useState(!!(initialLat && initialLng));
@@ -276,8 +275,7 @@ export default function EditListingForm({
     void Promise.all([
       supabase.from("users").select("bio, avatar_url").eq("id", userId).single(),
       supabase.from("reviews").select("created_at").eq("listing_id", listingId),
-      supabase.from("promotions").select("id").eq("listing_id", listingId).eq("is_active", true).limit(1),
-    ]).then(([userRes, reviewsRes, promoRes]) => {
+    ]).then(([userRes, reviewsRes]) => {
       const u = userRes.data;
       const reviews = reviewsRes.data ?? [];
       setScoreDbData({
@@ -286,7 +284,6 @@ export default function EditListingForm({
         reviewCount: reviews.length,
         recentReviewCount: reviews.filter((r) => new Date(r.created_at) >= sixMonthsAgo).length,
       });
-      setPromotionsHasActive((promoRes.data?.length ?? 0) > 0);
       setScoreDbLoaded(true);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -304,11 +301,9 @@ export default function EditListingForm({
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const REQUIRED_SECTION_IDS = new Set<SectionId>([
-    "photos", "titre", "description", "capacite", "chambres",
-    "equipements", "tarifs", "localisation", "infos",
-  ]);
-
+  // Le numéro CITQ (voir "infos" plus bas) reste un signal visuel incomplet
+  // dans le menu, mais ne bloque plus la publication — un proprio doit
+  // pouvoir publier sans CITQ renseigné.
   const sectionValid: Partial<Record<SectionId, boolean>> = {
     photos: form.photos.length >= MIN_PHOTOS,
     titre: form.title.trim().length > 0,
@@ -318,7 +313,6 @@ export default function EditListingForm({
     equipements: form.amenities.length >= 3,
     tarifs: form.price_on_request || form.price_low >= 50,
     localisation: locationValid,
-    infos: form.citq_number.length === 6,
   };
 
   const incompleteSectionIds = (Object.entries(sectionValid) as [SectionId, boolean][])
@@ -336,8 +330,18 @@ export default function EditListingForm({
     ...sectionValid,
     chambres: roomsHasBeds && roomsAllHavePhotos,
     proximite: form.nearby_activities.length > 0,
-    calendrier: hasAvailability,
-    promotions: promotionsHasActive,
+    // Le mode manuel (par défaut) est toujours considéré complet, même sans
+    // aucune date bloquée — bloquer des dates est une action optionnelle, pas
+    // une étape obligatoire. Le mode iCal reste conditionné à une synchro
+    // effective.
+    calendrier: calendarMode === "manual" || hasAvailability,
+    // "Aucune promotion en ce moment" (case cochée par défaut dans
+    // PromotionsSection) est un état volontaire et valide — la section
+    // n'exige jamais d'action du proprio.
+    promotions: true,
+    // Signal visuel uniquement (voir sectionValid ci-dessus, qui ne bloque
+    // plus la publication) : CITQ manquant reste affiché comme incomplet.
+    infos: form.citq_number.length === 6,
   };
 
   const sidebarScore = scoreDbLoaded

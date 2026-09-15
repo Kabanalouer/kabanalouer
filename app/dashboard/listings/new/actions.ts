@@ -31,7 +31,7 @@ export async function createBlankListing() {
       smoking_allowed: false,
       checkin_type: "autonomous",
       nearby_activities: [],
-      price_on_request: false,
+      price_on_request: true,
     })
     .select("id")
     .single();

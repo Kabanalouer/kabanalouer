@@ -39,6 +39,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [activePromo, setActivePromo] = useState<PromoRow | null>(null);
   const [expiredDate, setExpiredDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noPromoChecked, setNoPromoChecked] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
   const [error, setError] = useState("");
@@ -178,6 +179,18 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
         </div>
       ) : (
         <div>
+          <label className="flex items-center gap-2.5 mb-5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={noPromoChecked}
+              onChange={(e) => setNoPromoChecked(e.target.checked)}
+              className="w-4 h-4 rounded border-[#ebebeb] accent-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <span className="text-sm font-medium text-charcoal-700">{t("noPromoCheckbox")}</span>
+          </label>
+
+          {!noPromoChecked && (
+          <>
           {expiredDate ? (
             <p className="text-sm text-charcoal-400 mb-5">
               {t("expired", {
@@ -376,6 +389,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </div>
 
           </div>
+          </>
+          )}
         </div>
       )}
     </div>

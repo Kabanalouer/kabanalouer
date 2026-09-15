@@ -352,6 +352,7 @@
       "deactivateError": "Error deactivating promotion.",
       "expired": "This promotion expired on {date}.",
       "noPromo": "No active promotion. Choose a type and set up your offer.",
+      "noPromoCheckbox": "I don't have a promotion right now",
       "discountTitle": "Discount",
       "discountDesc": "Reduce the nightly price",
       "discountAmountLabel": "Discount amount",

@@ -352,6 +352,7 @@
       "deactivateError": "Erreur lors de la désactivation.",
       "expired": "Cette promotion a expiré le {date}.",
       "noPromo": "Aucune promotion active. Choisissez un type et configurez votre offre.",
+      "noPromoCheckbox": "Je n'ai pas de promotion en ce moment",
       "discountTitle": "Rabais",
       "discountDesc": "Réduire le prix par nuit",
       "discountAmountLabel": "Montant du rabais",
