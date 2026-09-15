@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RoomPhotoManager from "./RoomPhotoManager";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import type { PhotoItem } from "@/lib/photo";
 
 type BedType = "simple" | "double" | "queen" | "king";
 
@@ -48,9 +49,13 @@ function fromDbRow(row: Record<string, unknown>): RoomLocal {
 export default function RoomsSection({
   userId,
   listingId,
+  listingPhotos = [],
 }: {
   userId: string;
   listingId: string;
+  /** Photos déjà présentes dans la galerie générale de l'annonce, pour les
+   * réutiliser dans une chambre sans réupload. */
+  listingPhotos?: PhotoItem[];
 }) {
   const t = useTranslations("listings.rooms");
   const tCommon = useTranslations("common");
@@ -194,6 +199,7 @@ export default function RoomsSection({
               key={room.localId}
               room={room}
               userId={userId}
+              listingPhotos={listingPhotos}
               t={t}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
@@ -228,6 +234,7 @@ export default function RoomsSection({
               key={room.localId}
               room={room}
               userId={userId}
+              listingPhotos={listingPhotos}
               t={t}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
@@ -264,11 +271,12 @@ type TRooms = ReturnType<typeof useTranslations>;
 // ── Bedroom card ─────────────────────────────────────────────────────────────
 
 function BedroomCard({
-  room, userId, t,
+  room, userId, listingPhotos, t,
   onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
+  listingPhotos: PhotoItem[];
   t: TRooms;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
@@ -368,6 +376,7 @@ function BedroomCard({
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}
+          availablePhotos={listingPhotos}
           onChange={(photos) => onUpdate({ photos })}
         />
       </div>
@@ -378,10 +387,11 @@ function BedroomCard({
 // ── Living room card ──────────────────────────────────────────────────────────
 
 function LivingRoomCard({
-  room, userId, t, onUpdate, onRemove,
+  room, userId, listingPhotos, t, onUpdate, onRemove,
 }: {
   room: RoomLocal;
   userId: string;
+  listingPhotos: PhotoItem[];
   t: TRooms;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
@@ -439,6 +449,7 @@ function LivingRoomCard({
         <RoomPhotoManager
           photos={room.photos}
           userId={userId}
+          availablePhotos={listingPhotos}
           onChange={(photos) => onUpdate({ photos })}
         />
       </div>

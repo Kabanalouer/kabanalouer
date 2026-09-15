@@ -15,7 +15,7 @@ export default async function AdminImportsPage() {
 
   const { data: rows } = await admin
     .from("listings")
-    .select("id, title, import_source, created_at, host:host_id(name, email)")
+    .select("id, title, import_source, import_source_url, created_at, host:host_id(name, email)")
     .eq("import_status", "pending_review")
     .order("created_at", { ascending: false });
 
@@ -26,6 +26,7 @@ export default async function AdminImportsPage() {
       id: r.id as string,
       title: (r.title as string) || "Annonce sans titre",
       source: (r.import_source as string) ?? "—",
+      sourceUrl: (r.import_source_url as string | null) ?? null,
       createdAt: (r.created_at as string) ?? "",
       hostName: (host?.name as string) || "—",
       hostEmail: (host?.email as string) || "—",
@@ -55,6 +56,19 @@ export default async function AdminImportsPage() {
                   {row.hostName} · {row.hostEmail} · importée depuis {row.source === "airbnb" ? "Airbnb" : row.source}
                   {row.createdAt && (
                     <> · {new Date(row.createdAt).toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" })}</>
+                  )}
+                  {row.sourceUrl && (
+                    <>
+                      {" · "}
+                      <a
+                        href={row.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:text-primary-700 hover:underline transition-colors"
+                      >
+                        Voir l&apos;annonce originale ↗
+                      </a>
+                    </>
                   )}
                 </p>
               </div>

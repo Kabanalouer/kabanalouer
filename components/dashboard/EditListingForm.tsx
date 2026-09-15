@@ -150,6 +150,7 @@ export default function EditListingForm({
   viewsListing,
   isAdminReview,
   importStatus,
+  importSourceUrl,
 }: {
   userId: string;
   listingId: string;
@@ -172,6 +173,9 @@ export default function EditListingForm({
   // annonce, même si son compte a le rôle admin par ailleurs.
   isAdminReview?: boolean;
   importStatus?: string | null;
+  // Lien Airbnb original soumis par le proprio — visible en révision admin
+  // pour compléter la fiche (ex. section Chambres) avec les bonnes infos.
+  importSourceUrl?: string | null;
 }) {
   const t = useTranslations("listings");
   const tEdit = useTranslations("listings.edit");
@@ -600,6 +604,21 @@ export default function EditListingForm({
         onClose={() => setDeleteModalOpen(false)}
         onDeleted={() => router.push("/dashboard/listings?deleted=1")}
       />
+    )}
+    {isAdminReview && localImportStatus === "pending_review" && importSourceUrl && (
+      <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3 mb-6">
+        <p className="text-sm text-charcoal-700">
+          Annonce importée depuis Airbnb —{" "}
+          <a
+            href={importSourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary hover:text-primary-700 hover:underline transition-colors"
+          >
+            voir l&apos;annonce originale ↗
+          </a>
+        </p>
+      </div>
     )}
     <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
 
@@ -1098,7 +1117,7 @@ export default function EditListingForm({
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-5">
                 {tEdit("roomsAtLeastOne")} <Req />
               </p>
-              <RoomsSection userId={userId} listingId={listingId} />
+              <RoomsSection userId={userId} listingId={listingId} listingPhotos={form.photos} />
             </SectionShell>
           )}
 

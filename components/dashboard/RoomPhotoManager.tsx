@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { PhotoItem } from "@/lib/photo";
+import RoomPhotoPickerModal from "./RoomPhotoPickerModal";
 
 const MAX_PHOTOS = 5;
 
@@ -56,20 +58,30 @@ export default function RoomPhotoManager({
   photos,
   userId,
   onChange,
+  availablePhotos = [],
 }: {
   photos: string[];
   userId: string;
   onChange: (photos: string[]) => void;
+  /** Photos déjà présentes dans la galerie générale de l'annonce — permet de
+   * les réutiliser pour une chambre sans réuploader le fichier. */
+  availablePhotos?: PhotoItem[];
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   const canUpload = photos.length < MAX_PHOTOS;
+
+  const handlePickExisting = (urls: string[]) => {
+    onChange([...photos, ...urls]);
+    setPickerOpen(false);
+  };
 
   const uploadFiles = async (files: FileList | File[]) => {
     setUploading(true);
@@ -165,6 +177,27 @@ export default function RoomPhotoManager({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Choisir parmi les photos déjà présentes dans la galerie de l'annonce */}
+      {canUpload && availablePhotos.some((p) => !photos.includes(p.url)) && (
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="mb-3 text-sm font-medium text-primary hover:text-primary-700 hover:underline transition-colors"
+        >
+          Choisir parmi les photos de l&apos;annonce
+        </button>
+      )}
+
+      {pickerOpen && (
+        <RoomPhotoPickerModal
+          availablePhotos={availablePhotos}
+          alreadyInRoom={photos}
+          remainingSlots={MAX_PHOTOS - photos.length}
+          onConfirm={handlePickExisting}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
 
       {/* Drop zone */}
