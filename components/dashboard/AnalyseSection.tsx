@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 type DbData = {
   roomsAllHavePhotos: boolean;
@@ -258,7 +259,7 @@ export default function AnalyseSection({
                     <button
                       type="button"
                       onClick={() => onNavigate(c.section!)}
-                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
+                      className={`text-xs whitespace-nowrap ${TEXT_LINK_CLASSNAME}`}
                     >
                       {t("complete")}
                     </button>

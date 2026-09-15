@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getScoreLevel } from "@/lib/listingScore";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type ListingRow = {
   id: string;
@@ -224,7 +225,7 @@ export default function AdminListingsClient({
                       <div className="flex items-center justify-end gap-3">
                         <Link
                           href={`/dashboard/listings/${l.id}/edit`}
-                          className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+                          className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                         >
                           Modifier
                         </Link>

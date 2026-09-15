@@ -93,11 +93,11 @@ function EmptySlot({ onAdd }: { onAdd: () => void }) {
       className="flex items-center gap-3 w-full border border-dashed border-[#ebebeb] rounded-xl p-3 hover:border-primary/40 hover:bg-[#f5f6ec]/50 transition-colors group"
     >
       <div className="w-14 h-14 rounded-lg bg-charcoal-50 shrink-0 flex items-center justify-center group-hover:bg-[#f5f6ec]">
-        <svg className="w-5 h-5 text-charcoal-300 group-hover:text-primary/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <svg className="w-5 h-5 text-charcoal-300 group-hover:text-primary-700 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       </div>
-      <span className="text-sm text-charcoal-400 group-hover:text-primary/70">Emplacement libre — Ajouter un boost</span>
+      <span className="text-sm font-medium text-charcoal-400 group-hover:text-primary-700 group-hover:underline group-hover:font-semibold transition-colors duration-150">Emplacement libre — Ajouter un boost</span>
     </button>
   );
 }

@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
 import TurnstileWidget from "@/components/TurnstileWidget";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 
@@ -63,7 +64,7 @@ function ForgotPasswordForm() {
               ),
             })}
           </p>
-          <Link href={loginHref} className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+          <Link href={loginHref} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("backToLogin")}
           </Link>
         </div>
@@ -121,7 +122,7 @@ function ForgotPasswordForm() {
         </form>
 
         <p className="mt-6 text-center text-sm text-charcoal-500">
-          <Link href={loginHref} className="text-primary font-semibold hover:underline">
+          <Link href={loginHref} className={TEXT_LINK_CLASSNAME}>
             {t("backToLogin")}
           </Link>
         </p>

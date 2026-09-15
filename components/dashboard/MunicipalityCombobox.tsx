@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { MUNICIPALITIES, type Municipality } from "@/lib/municipalities";
 import { REGIONS } from "@/lib/regions";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type { Municipality };
 
@@ -115,7 +116,7 @@ export default function MunicipalityCombobox({
             type="button"
             onClick={handleManualConfirm}
             disabled={!manualCity.trim() || !manualRegion}
-            className="text-sm font-semibold text-primary hover:text-primary/80 disabled:text-charcoal-300 disabled:cursor-not-allowed transition-colors"
+            className={`text-sm disabled:text-charcoal-300 disabled:cursor-not-allowed ${TEXT_LINK_CLASSNAME}`}
           >
             {t("manualConfirm")}
           </button>

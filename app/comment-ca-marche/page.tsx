@@ -5,6 +5,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
 import { localePath } from "@/lib/localePath";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -204,7 +205,7 @@ function Step({
         {action && (
           <Link
             href={action.href}
-            className="inline-flex items-center gap-1.5 mt-4 text-primary font-semibold text-sm hover:underline"
+            className={`inline-flex items-center gap-1.5 mt-4 text-sm ${TEXT_LINK_CLASSNAME}`}
           >
             {action.label} →
           </Link>

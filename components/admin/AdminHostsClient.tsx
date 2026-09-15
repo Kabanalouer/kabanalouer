@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type HostSubscription = {
   listingId: string;
@@ -205,7 +206,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                         </Link>
                         <Link
                           href={`/admin/subscriptions?q=${encodeURIComponent(h.name)}`}
-                          className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+                          className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                         >
                           Gérer les abonnements
                         </Link>

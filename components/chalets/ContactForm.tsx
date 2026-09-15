@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -230,7 +231,7 @@ export default function ContactForm({
         <p className="text-xs text-charcoal-400">
           Votre demande a été envoyée au propriétaire. Il vous répondra directement par message.
         </p>
-        <Link href={`/messages?listing=${listingId}&with=${hostId}`} className="mt-3 block text-xs text-primary hover:underline">
+        <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-xs ${TEXT_LINK_CLASSNAME}`}>
           Voir la messagerie →
         </Link>
       </div>

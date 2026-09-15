@@ -10,6 +10,7 @@ import { getRegionContent } from "@/lib/regionsContent";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { safeJsonLd } from "@/lib/jsonLd";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
@@ -228,7 +229,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           </div>
           <Link
             href={localePath("/chalets", locale)}
-            className="text-primary font-semibold text-sm hover:underline hidden md:block"
+            className={`text-sm hidden md:block ${TEXT_LINK_CLASSNAME}`}
           >
             {isEn ? "All regions →" : "Voir toutes les régions →"}
           </Link>

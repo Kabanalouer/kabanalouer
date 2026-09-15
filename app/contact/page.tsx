@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "./ContactForm";
 import { getTranslations, getLocale } from "next-intl/server";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -83,7 +84,7 @@ export default async function ContactPage() {
                 </div>
                 <a
                   href="mailto:info@kabanalouer.ca"
-                  className="text-primary hover:underline text-sm font-medium"
+                  className={`text-sm ${TEXT_LINK_CLASSNAME}`}
                 >
                   info@kabanalouer.ca
                 </a>

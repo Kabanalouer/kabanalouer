@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 // Section "Devis" — remplie une seule fois par le proprio, réutilisée pour
 // chaque devis structuré envoyé dans la messagerie. Suit le pattern d'ajout/
@@ -53,7 +54,7 @@ function DynamicStringList({
       </div>
       <button
         onClick={add}
-        className="mt-2 text-xs text-primary font-medium hover:text-primary-dark transition-colors"
+        className={`mt-2 text-xs ${TEXT_LINK_CLASSNAME}`}
       >
         {addLabel}
       </button>

@@ -16,6 +16,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { safeJsonLd } from "@/lib/jsonLd";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { Metadata } from "next";
 
 export const revalidate = 86400;
@@ -258,7 +259,7 @@ export default async function CityPage({ params }: Props) {
           {regionConfig && (
             <Link
               href={localePath(`/chalets/${regionConfig.slug}`, locale)}
-              className="text-primary font-semibold text-sm hover:underline hidden md:block"
+              className={`text-sm hidden md:block ${TEXT_LINK_CLASSNAME}`}
             >
               {isEn
                 ? `See all cabins ${regionContent?.locative_en ?? `in ${regionConfig.name}`} →`

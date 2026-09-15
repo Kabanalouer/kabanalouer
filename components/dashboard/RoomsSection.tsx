@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RoomPhotoManager from "./RoomPhotoManager";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 type BedType = "simple" | "double" | "queen" | "king";
 
@@ -205,7 +206,7 @@ export default function RoomsSection({
 
         <button
           onClick={addBedroom}
-          className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+          className={`mt-4 flex items-center gap-1.5 text-sm ${TEXT_LINK_CLASSNAME}`}
         >
           <span className="text-base font-bold">+</span> {t("addBedroom").replace("+ ", "")}
         </button>
@@ -236,7 +237,7 @@ export default function RoomsSection({
 
         <button
           onClick={addLivingRoom}
-          className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+          className={`mt-4 flex items-center gap-1.5 text-sm ${TEXT_LINK_CLASSNAME}`}
         >
           <span className="text-base font-bold">+</span> {t("addLivingroom").replace("+ ", "")}
         </button>
@@ -355,7 +356,7 @@ function BedroomCard({
         </div>
         <button
           onClick={onAddBed}
-          className="mt-2 text-xs text-primary font-medium hover:text-primary-dark transition-colors"
+          className={`mt-2 text-xs ${TEXT_LINK_CLASSNAME}`}
         >
           {t("addBed")}
         </button>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 
@@ -136,7 +137,7 @@ function LoginForm() {
               </button>
             </div>
             <div className="flex justify-end mt-1.5">
-              <Link href={localePath("/forgot-password", locale)} className="text-xs font-medium text-primary hover:underline">
+              <Link href={localePath("/forgot-password", locale)} className={`text-xs ${TEXT_LINK_CLASSNAME}`}>
                 {t("forgotPasswordLink")}
               </Link>
             </div>
@@ -160,7 +161,7 @@ function LoginForm() {
 
         <p className="mt-6 text-center text-sm text-charcoal-500">
           {t("noAccount")}{" "}
-          <Link href={signupHref} className="text-primary font-semibold hover:underline">
+          <Link href={signupHref} className={TEXT_LINK_CLASSNAME}>
             {t("signupLink")}
           </Link>
         </p>

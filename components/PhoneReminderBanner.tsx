@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 // sessionStorage (pas localStorage) — le bandeau doit réapparaître à la
 // prochaine visite tant que le numéro n'a pas été ajouté, fermer ne fait
@@ -40,7 +41,7 @@ export default function PhoneReminderBanner({ show }: { show: boolean }) {
       <div className="flex items-center gap-4 shrink-0">
         <Link
           href={`${localePath("/dashboard/profile", locale)}#phone`}
-          className="text-sm font-semibold text-primary hover:underline whitespace-nowrap"
+          className={`text-sm whitespace-nowrap ${TEXT_LINK_CLASSNAME}`}
         >
           {t("addLink")}
         </Link>

@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getTranslations, getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,7 +55,7 @@ export default async function ConditionsPage() {
           <ol className="space-y-2">
             {TOC.map(({ id, label }) => (
               <li key={id}>
-                <a href={`#${id}`} className="text-sm text-primary hover:underline">{label}</a>
+                <a href={`#${id}`} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>{label}</a>
               </li>
             ))}
           </ol>
@@ -199,7 +200,7 @@ export default async function ConditionsPage() {
             <H2>{t("s12Title")}</H2>
             <p className="text-sm leading-relaxed">
               {t("s12P1")}{" "}
-              <a href="mailto:support@kabanalouer.ca" className="text-primary hover:underline">
+              <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
                 support@kabanalouer.ca
               </a>
             </p>
@@ -209,7 +210,7 @@ export default async function ConditionsPage() {
 
         {/* Back links */}
         <div className="mt-16 pt-8 border-t border-[#ebebeb] flex flex-col sm:flex-row gap-3">
-          <Link href={localePath("/confidentialite", locale)} className="text-sm text-primary hover:underline">
+          <Link href={localePath("/confidentialite", locale)} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("backPrivacy")}
           </Link>
           <Link href={localePath("/", locale)} className="text-sm text-charcoal-400 hover:text-charcoal-600">

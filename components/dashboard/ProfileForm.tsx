@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
@@ -396,7 +397,7 @@ export default function ProfileForm({
               type="button"
               onClick={() => avatarInputRef.current?.click()}
               disabled={avatarUploading}
-              className="text-sm font-medium text-primary hover:text-primary-dark transition-colors disabled:opacity-50"
+              className={`text-sm disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
             >
               {avatarUrl ? t("changePhoto") : t("addPhoto")}
             </button>
@@ -459,7 +460,7 @@ export default function ProfileForm({
                 type="button"
                 onClick={generateBio}
                 disabled={bioGenerating}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-dark transition-colors disabled:opacity-50"
+                className={`inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
               >
                 {bioGenerating ? (
                   <>

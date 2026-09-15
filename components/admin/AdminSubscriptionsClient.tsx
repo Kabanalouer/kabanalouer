@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type SubType = "free_launch" | "annual" | "degressive";
 export type SubStatus = "active" | "expired" | "canceled";
@@ -347,7 +348,7 @@ export default function AdminSubscriptionsClient({
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => { setModalRow(s); setActionError(""); }}
-                        className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+                        className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                       >
                         Gérer
                       </button>

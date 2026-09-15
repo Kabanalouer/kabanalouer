@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { firstPhotoUrl } from "@/lib/photo";
 import { getScoreLevel } from "@/lib/listingScore";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 type Listing = {
   id: string;
@@ -89,7 +90,7 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
 
                 <Link
                   href={`/dashboard/listings/${listing.id}/edit`}
-                  className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
+                  className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                 >
                   {t("editLink")}
                 </Link>

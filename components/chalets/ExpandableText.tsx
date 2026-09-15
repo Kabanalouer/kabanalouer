@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const LINE_HEIGHT = 24; // px — matches leading-relaxed at text-base
 const VISIBLE_LINES = 6;
@@ -34,7 +35,7 @@ export default function ExpandableText({ text }: { text: string }) {
       {needsTruncation && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+          className={`mt-3 text-sm ${TEXT_LINK_CLASSNAME}`}
         >
           {expanded ? "Voir moins ↑" : "Voir la suite ↓"}
         </button>

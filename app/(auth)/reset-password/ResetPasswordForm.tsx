@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 type Status = "checking" | "ready" | "invalid";
 
@@ -89,7 +90,7 @@ function ResetPasswordForm() {
         <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md text-center">
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">{t("invalidTitle")}</h2>
           <p className="text-charcoal-500 text-sm leading-relaxed mb-6">{t("invalidDesc")}</p>
-          <Link href={forgotPasswordHref} className="text-primary font-semibold text-sm hover:underline">
+          <Link href={forgotPasswordHref} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("requestNewLink")}
           </Link>
         </div>

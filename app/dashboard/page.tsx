@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { firstPhotoUrl } from "@/lib/photo";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -178,7 +179,7 @@ export default async function DashboardPage() {
                   )}
                   <Link
                     href={`/dashboard/listings/${listing.id}/edit`}
-                    className="text-xs text-primary font-semibold hover:text-primary-dark transition-colors"
+                    className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                   >
                     {t("edit")}
                   </Link>

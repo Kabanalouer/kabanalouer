@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 interface Props {
   reviewId: string;
@@ -45,7 +46,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
         {allowEdit && (
           <button
             onClick={() => setOpen(true)}
-            className="mt-2 text-xs text-primary hover:underline"
+            className={`mt-2 text-xs ${TEXT_LINK_CLASSNAME}`}
           >
             {t("replyEdit")}
           </button>

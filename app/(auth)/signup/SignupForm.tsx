@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
 // 10 chiffres, indicatif nord-américain — accepte les formats courants
@@ -126,11 +127,11 @@ function SignupForm() {
             })}
           </p>
           {next !== defaultHome ? (
-            <Link href={next} className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+            <Link href={next} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
               {t("backToListing")}
             </Link>
           ) : (
-            <Link href={defaultHome} className="mt-6 inline-block text-primary font-semibold text-sm hover:underline">
+            <Link href={defaultHome} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
               {t("backToHome")}
             </Link>
           )}
@@ -302,7 +303,7 @@ function SignupForm() {
 
         <p className="mt-6 text-center text-xs text-charcoal-500">
           {t("alreadyAccount")}{" "}
-          <Link href={loginHref} className="text-primary font-semibold hover:underline">
+          <Link href={loginHref} className={TEXT_LINK_CLASSNAME}>
             {t("loginLink")}
           </Link>
         </p>

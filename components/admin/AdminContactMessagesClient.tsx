@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type ContactMessage = {
   id: string;
@@ -235,7 +236,7 @@ export default function AdminContactMessagesClient({
                   <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => openModal(m)}
-                      className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+                      className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                     >
                       Voir
                     </button>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ReviewReplyForm from "@/components/dashboard/ReviewReplyForm";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export const metadata = { title: "Mes avis" };
 
@@ -146,7 +147,7 @@ export default async function MesAvisPage() {
                 <div className="mb-3">
                   <Link
                     href={`/chalets/${review.listing_id}`}
-                    className="text-xs font-semibold text-primary hover:underline"
+                    className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                   >
                     {listingTitle}
                   </Link>

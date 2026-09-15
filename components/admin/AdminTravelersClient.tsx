@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type TravelerRow = {
   id: string;
@@ -202,7 +203,7 @@ export default function AdminTravelersClient({ travelers }: { travelers: Travele
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <Link
                       href={`/admin/messages?traveler_id=${t.id}`}
-                      className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+                      className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                     >
                       Voir les messages
                     </Link>
