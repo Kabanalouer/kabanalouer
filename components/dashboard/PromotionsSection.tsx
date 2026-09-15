@@ -44,7 +44,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [deactivating, setDeactivating] = useState(false);
   const [error, setError] = useState("");
 
-  const [formType, setFormType] = useState<PromoFormType>("rabais");
+  const [formType, setFormType] = useState<PromoFormType | null>(null);
   const [rabaisUnit, setRabaisUnit] = useState<"percent" | "amount">("percent");
   const [rabaisValue, setRabaisValue] = useState("");
   const [startDate, setStartDate] = useState("");
