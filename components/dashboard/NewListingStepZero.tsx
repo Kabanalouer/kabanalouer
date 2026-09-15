@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { createBlankListing, submitImportRequest, type ImportState } from "@/app/dashboard/listings/new/actions";
 
@@ -24,17 +23,11 @@ export default function NewListingStepZero() {
         <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
           {isDuplicate ? "Déjà importée" : "Annonce importée"}
         </h2>
-        <p className="text-charcoal-500 leading-relaxed mb-8">
+        <p className="text-charcoal-500 leading-relaxed">
           {isDuplicate
-            ? "Vous avez déjà importé cette annonce."
-            : "Elle est en révision — comptez généralement 24h avant sa publication."}
+            ? "Vous avez déjà importé cette annonce. Vous recevrez un courriel dès qu'elle sera publiée par notre équipe."
+            : "Vous recevrez un courriel dès qu'elle sera publiée par notre équipe."}
         </p>
-        <Link
-          href={`/dashboard/listings/${state.listingId}/edit`}
-          className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
-        >
-          Voir le brouillon →
-        </Link>
       </div>
     );
   }

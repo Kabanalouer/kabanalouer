@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "fgdwhbemzmccchemtzog.supabase.co" },
+      // Correctif temporaire — les annonces importées d'Airbnb stockent les
+      // URLs brutes de son CDN (a0, a1, a2... .muscache.com) sans les
+      // réhéberger sur Supabase Storage. À retirer une fois le téléchargement
+      // + réupload des photos à l'import implémenté séparément.
+      { protocol: "https", hostname: "*.muscache.com" },
     ],
   },
   async headers() {
