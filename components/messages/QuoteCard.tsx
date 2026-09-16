@@ -18,7 +18,7 @@ export default function QuoteCard({
   quote: QuoteData;
   listingTitle: string;
 }) {
-  const { checkIn, checkOut, numGuests, priceCents, inclusions, exclusions, bookingInstructions } = quote;
+  const { checkIn, checkOut, numGuests, priceCents } = quote;
   const hasDates = !!checkIn;
 
   return (
@@ -47,50 +47,6 @@ export default function QuoteCard({
         <p className="text-xs text-charcoal-400 mb-0.5">Prix total (taxes incluses)</p>
         <p className="text-2xl font-bold text-charcoal-800">{formatPriceCad(priceCents)}</p>
       </div>
-
-      {/* Compris / non compris */}
-      {(inclusions.length > 0 || exclusions.length > 0) && (
-        <div className="px-4 py-3 border-b border-[#ebebeb] space-y-3">
-          {inclusions.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-charcoal-600 mb-1.5">Ce qui est compris</p>
-              <ul className="space-y-1">
-                {inclusions.map((item, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-charcoal-700">
-                    <svg className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {exclusions.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-charcoal-600 mb-1.5">Ce qui n'est pas compris</p>
-              <ul className="space-y-1">
-                {exclusions.map((item, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-charcoal-500">
-                    <svg className="w-3.5 h-3.5 text-charcoal-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Modalités de réservation */}
-      {bookingInstructions?.trim() && (
-        <div className="px-4 py-3 border-b border-[#ebebeb]">
-          <p className="text-xs font-semibold text-charcoal-600 mb-1">Comment réserver</p>
-          <p className="text-xs text-charcoal-500 whitespace-pre-wrap leading-relaxed">{bookingInstructions}</p>
-        </div>
-      )}
 
       {/* Zone d'actions — accueillera un bouton de paiement sécurisé une fois Stripe Express en place */}
       <div className="px-4 py-3 flex justify-end">

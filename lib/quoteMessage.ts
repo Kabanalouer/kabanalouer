@@ -8,9 +8,6 @@ export type QuoteData = {
   checkOut: string | null;
   numGuests: number | null;
   priceCents: number;
-  inclusions: string[];
-  exclusions: string[];
-  bookingInstructions: string | null;
   travelerFirstName: string | null;
 };
 
@@ -53,15 +50,9 @@ export function buildQuoteMessage(
     checkOut: string | null;
     numGuests: number | null;
     priceCents: number;
-    inclusions: string[];
-    exclusions: string[];
-    bookingInstructions: string | null;
   }
 ): string {
-  const {
-    travelerFirstName, listingTitle, checkIn, checkOut, numGuests,
-    priceCents, inclusions, exclusions, bookingInstructions,
-  } = params;
+  const { travelerFirstName, listingTitle, checkIn, checkOut, numGuests, priceCents } = params;
   const price = formatPriceCad(priceCents);
 
   if (lang === "en") {
@@ -69,20 +60,12 @@ export function buildQuoteMessage(
     const datesLine = checkIn
       ? `Here's your quote for ${listingTitle}, from ${formatDateEn(checkIn)}${checkOut ? ` to ${formatDateEn(checkOut)}` : ""}${numGuests ? ` for ${numGuests} traveler${numGuests > 1 ? "s" : ""}` : ""}.`
       : `Here's your quote for ${listingTitle}.`;
-    const lines = [greeting, "", datesLine, "", `Total price (taxes included): ${price}`];
-    if (inclusions.length > 0) lines.push("", "What's included:", ...inclusions.map((i) => `- ${i}`));
-    if (exclusions.length > 0) lines.push("", "What's not included:", ...exclusions.map((i) => `- ${i}`));
-    if (bookingInstructions?.trim()) lines.push("", "How to book:", bookingInstructions.trim());
-    return lines.join("\n");
+    return [greeting, "", datesLine, "", `Total price (taxes included): ${price}`].join("\n");
   }
 
   const greeting = travelerFirstName ? `Bonjour ${travelerFirstName},` : "Bonjour,";
   const datesLine = checkIn
     ? `Voici votre devis pour ${listingTitle}, du ${formatDateFr(checkIn)}${checkOut ? ` au ${formatDateFr(checkOut)}` : ""}${numGuests ? ` pour ${numGuests} voyageur${numGuests > 1 ? "s" : ""}` : ""}.`
     : `Voici votre devis pour ${listingTitle}.`;
-  const lines = [greeting, "", datesLine, "", `Prix total (taxes incluses) : ${price}`];
-  if (inclusions.length > 0) lines.push("", "Ce qui est compris :", ...inclusions.map((i) => `- ${i}`));
-  if (exclusions.length > 0) lines.push("", "Ce qui n'est pas compris :", ...exclusions.map((i) => `- ${i}`));
-  if (bookingInstructions?.trim()) lines.push("", "Comment réserver :", bookingInstructions.trim());
-  return lines.join("\n");
+  return [greeting, "", datesLine, "", `Prix total (taxes incluses) : ${price}`].join("\n");
 }

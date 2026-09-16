@@ -4,8 +4,8 @@ import { adminSupabase, insertMessageAndTranslate, toLang } from "@/lib/sendMess
 import { buildQuoteMessage, type QuoteData } from "@/lib/quoteMessage";
 
 // Devis structuré — le proprio n'entre que le prix total (taxes incluses).
-// Le reste (dates/voyageurs de la demande initiale, prénom du voyageur,
-// section "Devis" de l'annonce) est assemblé automatiquement ici.
+// Le reste (dates/voyageurs de la demande initiale, prénom du voyageur) est
+// assemblé automatiquement ici.
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("host_id, title, quote_inclusions, quote_exclusions, quote_booking_instructions")
+    .select("host_id, title")
     .eq("id", listingId)
     .single();
 
@@ -47,9 +47,6 @@ export async function POST(request: NextRequest) {
 
   const senderLang = toLang(sender?.preferred_language);
   const travelerFirstName = receiver?.name?.split(" ")[0] ?? null;
-  const inclusions = Array.isArray(listing.quote_inclusions) ? (listing.quote_inclusions as string[]) : [];
-  const exclusions = Array.isArray(listing.quote_exclusions) ? (listing.quote_exclusions as string[]) : [];
-  const bookingInstructions = (listing.quote_booking_instructions as string | null) ?? null;
   const checkIn = (initialRequest?.check_in as string | null) ?? null;
   const checkOut = (initialRequest?.check_out as string | null) ?? null;
   const numGuests = (initialRequest?.num_guests as number | null) ?? null;
@@ -61,14 +58,10 @@ export async function POST(request: NextRequest) {
     checkOut,
     numGuests,
     priceCents,
-    inclusions,
-    exclusions,
-    bookingInstructions,
   });
 
   const quoteData: QuoteData = {
-    checkIn, checkOut, numGuests, priceCents,
-    inclusions, exclusions, bookingInstructions, travelerFirstName,
+    checkIn, checkOut, numGuests, priceCents, travelerFirstName,
   };
 
   const result = await insertMessageAndTranslate(admin, {
