@@ -38,17 +38,27 @@ export async function GET(request: NextRequest) {
 
   const supabase = adminSupabase();
 
-  const { data: listings } = await supabase
+  const { data: listings, error: listingsError } = await supabase
     .from("listings")
     .select("id, title, title_en, description, description_en, photos")
     .eq("is_published", true)
-    .order("updated_at", { ascending: true });
+    .order("created_at", { ascending: true });
+
+  if (listingsError) {
+    console.error("[cron translate-listings] échec requête listings", listingsError);
+    return NextResponse.json({ error: "Erreur lors de la récupération des annonces." }, { status: 500 });
+  }
 
   const listingIds = (listings ?? []).map((l) => l.id as string);
 
-  const { data: rooms } = listingIds.length > 0
+  const { data: rooms, error: roomsError } = listingIds.length > 0
     ? await supabase.from("rooms").select("id, listing_id, name, name_en").in("listing_id", listingIds)
-    : { data: [] as { id: string; listing_id: string; name: string; name_en: string | null }[] };
+    : { data: [] as { id: string; listing_id: string; name: string; name_en: string | null }[], error: null };
+
+  if (roomsError) {
+    console.error("[cron translate-listings] échec requête rooms", roomsError);
+    return NextResponse.json({ error: "Erreur lors de la récupération des chambres." }, { status: 500 });
+  }
 
   const roomsByListing = new Map<string, { id: string; name: string; name_en: string | null }[]>();
   for (const room of rooms ?? []) {
@@ -76,15 +86,17 @@ export async function GET(request: NextRequest) {
     }
 
     const photos = normalizePhotos(listing.photos);
-    let photosChanged = false;
     for (const photo of photos) {
       if (fieldsTranslated >= FIELD_CAP) break;
       if (photo.caption?.trim() && !photo.caption_en) {
         const translated = await tryTranslate({ text: photo.caption, sourceLang: "fr", targetLang: "en", fieldType: "caption" });
-        if (translated) { photo.caption_en = translated; photosChanged = true; fieldsTranslated++; }
+        if (translated) {
+          photo.caption_en = translated;
+          fieldsTranslated++;
+          await supabase.from("listings").update({ photos }).eq("id", listing.id);
+        }
       }
     }
-    if (photosChanged) updates.photos = photos;
 
     if (Object.keys(updates).length > 0) {
       await supabase.from("listings").update(updates).eq("id", listing.id);

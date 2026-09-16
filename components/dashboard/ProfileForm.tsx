@@ -421,7 +421,7 @@ export default function ProfileForm({
   );
 
   const bioEnBlock = (
-    <div className="mt-4">
+    <div>
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-sm font-medium text-charcoal-700">{t("bioLabelEn")}</label>
         <TranslateButton
@@ -542,7 +542,7 @@ export default function ProfileForm({
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
       {(role === "host" || role === "admin") && (
         <Section title={t("ownerPresentation")} description={t("ownerPresentationDesc")}>
-          {orderedBioBlocks.map((block, i) => <div key={i}>{block}</div>)}
+          {orderedBioBlocks.map((block, i) => <div key={i} className={i > 0 ? "mt-4" : undefined}>{block}</div>)}
           <div className="flex items-center gap-3">
             <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
             <ErrorMsg msg={bioError} />

@@ -221,11 +221,23 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
   // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
   // public.users directement, dont la RLS ne permet plus la lecture publique.
-  const { data: hostProfile } = await supabase
+  let { data: hostProfile } = await supabase
     .from("public_profiles")
     .select("id, name, avatar_url, created_at, bio, bio_en")
     .eq("id", listing.host_id as string)
     .single();
+
+  if (!hostProfile) {
+    // bio_en n'existe peut-être pas encore sur public_profiles (migration Tâche 7
+    // en attente d'exécution manuelle par Simon) — repli sans cette colonne pour
+    // ne jamais faire échouer toute la requête à cause d'elle.
+    const fallback = await supabase
+      .from("public_profiles")
+      .select("id, name, avatar_url, created_at, bio")
+      .eq("id", listing.host_id as string)
+      .single();
+    hostProfile = fallback.data as typeof hostProfile;
+  }
 
   // Increment view count (fire and forget — don't block page render)
   void supabase.rpc("increment_listing_views", { p_listing_id: id });
