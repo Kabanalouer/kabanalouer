@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { PhotoItem } from "@/lib/photo";
+import TranslateButton from "./TranslateButton";
 
 const MAX_PHOTOS = 80;
 const MAX_DIM = 3840;
@@ -102,6 +104,8 @@ export default function PhotoUpload({
   const photosRef = useRef(photos);
   useEffect(() => { photosRef.current = photos; }, [photos]);
   const supabase = createClient();
+  const locale = useLocale();
+  const tEdit = useTranslations("listings.edit");
 
   const totalCount = photos.length + processing.length;
   const canUpload = totalCount < MAX_PHOTOS;
@@ -253,6 +257,11 @@ export default function PhotoUpload({
 
   const updateCaption = (i: number, caption: string) => {
     const next = photos.map((p, j) => (j === i ? { ...p, caption } : p));
+    onChange(next);
+  };
+
+  const updateCaptionEn = (i: number, caption_en: string) => {
+    const next = photos.map((p, j) => (j === i ? { ...p, caption_en } : p));
     onChange(next);
   };
 
@@ -519,14 +528,19 @@ export default function PhotoUpload({
         {photos[0] && (
           <CaptionField
             value={photos[0].caption}
+            valueEn={photos[0].caption_en ?? ""}
             placeholder="Légende (optionnel)"
+            placeholderEn={tEdit("captionEnPlaceholder")}
             disabled={generatingIdx === 0}
             onChange={(v) => updateCaption(0, v)}
+            onChangeEn={(v) => updateCaptionEn(0, v)}
             onBlur={() => savePhotos()}
             onMouseDown={(e) => e.stopPropagation()}
             i={0}
             generatingIdx={generatingIdx}
             onGenerate={() => void generateCaption(0)}
+            locale={locale}
+            tEdit={tEdit}
           />
         )}
       </div>
@@ -559,14 +573,19 @@ export default function PhotoUpload({
                 {renderPhotoTile(photo, photoIdx, label, "aspect-square")}
                 <CaptionField
                   value={photo.caption}
+                  valueEn={photo.caption_en ?? ""}
                   placeholder={`Légende ${photoIdx}`}
+                  placeholderEn={tEdit("captionEnPlaceholder")}
                   disabled={generatingIdx === photoIdx}
                   onChange={(v) => updateCaption(photoIdx, v)}
+                  onChangeEn={(v) => updateCaptionEn(photoIdx, v)}
                   onBlur={() => savePhotos()}
                   onMouseDown={(e) => e.stopPropagation()}
                   i={photoIdx}
                   generatingIdx={generatingIdx}
                   onGenerate={() => void generateCaption(photoIdx)}
+                  locale={locale}
+                  tEdit={tEdit}
                 />
               </div>
             );
@@ -594,14 +613,19 @@ export default function PhotoUpload({
                   {renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square")}
                   <CaptionField
                     value={item.caption}
+                    valueEn={item.caption_en ?? ""}
                     placeholder="Légende"
+                    placeholderEn={tEdit("captionEnPlaceholder")}
                     disabled={generatingIdx === i}
                     onChange={(v) => updateCaption(i, v)}
+                    onChangeEn={(v) => updateCaptionEn(i, v)}
                     onBlur={() => savePhotos()}
                     onMouseDown={(e) => e.stopPropagation()}
                     i={i}
                     generatingIdx={generatingIdx}
                     onGenerate={() => void generateCaption(i)}
+                    locale={locale}
+                    tEdit={tEdit}
                   />
                 </div>
               );
@@ -650,26 +674,38 @@ export default function PhotoUpload({
 
 function CaptionField({
   value,
+  valueEn,
   placeholder,
+  placeholderEn,
   disabled,
   onChange,
+  onChangeEn,
   onBlur,
   onMouseDown,
   i,
   generatingIdx,
   onGenerate,
+  locale,
+  tEdit,
 }: {
   value: string;
+  valueEn: string;
   placeholder: string;
+  placeholderEn: string;
   disabled: boolean;
   onChange: (v: string) => void;
+  onChangeEn: (v: string) => void;
   onBlur: () => void;
   onMouseDown: (e: React.MouseEvent) => void;
   i: number;
   generatingIdx: number | null;
   onGenerate: () => void;
+  locale: string;
+  tEdit: (key: string) => string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const refEn = useRef<HTMLTextAreaElement>(null);
+  const [showEn, setShowEn] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -678,10 +714,19 @@ function CaptionField({
     el.style.height = el.scrollHeight + "px";
   }, [value]);
 
-  const near = value.length >= CAPTION_MAX - 15;
+  useEffect(() => {
+    if (!showEn) return;
+    const el = refEn.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [valueEn, showEn]);
 
-  return (
-    <div className="mt-1.5">
+  const near = value.length >= CAPTION_MAX - 15;
+  const nearEn = valueEn.length >= CAPTION_MAX - 15;
+
+  const frField = (
+    <div>
       <div className="flex items-start gap-1">
         <textarea
           ref={ref}
@@ -700,6 +745,52 @@ function CaptionField({
       <p className={`text-right text-[10px] mt-0.5 tabular-nums ${near ? "text-[#f04e45]" : "text-charcoal-300"}`}>
         {value.length}/{CAPTION_MAX}
       </p>
+    </div>
+  );
+
+  const enField = (
+    <div className="mt-1">
+      <div className="flex items-start gap-1">
+        <textarea
+          ref={refEn}
+          value={valueEn}
+          maxLength={CAPTION_MAX}
+          placeholder={placeholderEn}
+          rows={1}
+          onMouseDown={onMouseDown}
+          onChange={(e) => onChangeEn(e.target.value.slice(0, CAPTION_MAX))}
+          onBlur={onBlur}
+          className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition resize-none overflow-hidden"
+        />
+        <TranslateButton
+          sourceText={value}
+          sourceLang="fr"
+          targetLang="en"
+          fieldType="caption"
+          variant="icon"
+          disabled={!value.trim()}
+          onTranslated={(en) => { onChangeEn(en); onBlur(); }}
+        />
+      </div>
+      <p className={`text-right text-[10px] mt-0.5 tabular-nums ${nearEn ? "text-[#f04e45]" : "text-charcoal-300"}`}>
+        {valueEn.length}/{CAPTION_MAX}
+      </p>
+    </div>
+  );
+
+  const orderedFields = locale === "en" ? [enField, frField] : [frField, enField];
+
+  return (
+    <div className="mt-1.5">
+      {orderedFields[0]}
+      <button
+        type="button"
+        onClick={() => setShowEn((s) => !s)}
+        className="mt-1 text-[10px] font-medium text-primary hover:underline"
+      >
+        {showEn ? tEdit("captionEnHide") : (valueEn ? tEdit("captionEnEdit") : tEdit("captionEnAdd"))}
+      </button>
+      {showEn && orderedFields[1]}
     </div>
   );
 }

@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import type { PhotoItem } from "@/lib/photo";
+
+function displayCaption(photo: PhotoItem, locale: string): string {
+  return (locale === "en" && photo.caption_en) ? photo.caption_en : photo.caption;
+}
 
 interface Props {
   photos: PhotoItem[];
@@ -13,6 +18,7 @@ export default function PhotoGallery({ photos, title }: Props) {
   const [open, setOpen] = useState(false);
   const [idx, setIdx] = useState(0);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const locale = useLocale();
 
   const close = () => setOpen(false);
 
@@ -45,7 +51,8 @@ export default function PhotoGallery({ photos, title }: Props) {
     thumbRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [idx, open]);
 
-  const caption = photos[idx]?.caption ?? "";
+  const activePhoto = photos[idx];
+  const caption = activePhoto ? displayCaption(activePhoto, locale) : "";
 
   return (
     <>
@@ -57,7 +64,7 @@ export default function PhotoGallery({ photos, title }: Props) {
           className="md:hidden relative h-72 overflow-hidden rounded-xl cursor-zoom-in"
           onClick={() => { setIdx(0); setOpen(true); }}
         >
-          <Image src={photos[0].url} alt={photos[0].caption || title} fill className="object-cover" sizes="100vw" priority />
+          <Image src={photos[0].url} alt={displayCaption(photos[0], locale) || title} fill className="object-cover" sizes="100vw" priority />
           <div className="absolute inset-0 bg-black/0 active:bg-black/10 transition-colors pointer-events-none" />
           {photos.length > 1 && (
             <button
@@ -79,12 +86,12 @@ export default function PhotoGallery({ photos, title }: Props) {
             onClick={() => { setIdx(0); setOpen(true); }}
           >
             <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
-              <Image src={photos[0].url} alt={photos[0].caption || title} fill className="object-cover" sizes="50vw" priority />
+              <Image src={photos[0].url} alt={displayCaption(photos[0], locale) || title} fill className="object-cover" sizes="50vw" priority />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
             </div>
             {photos.slice(1, 5).map((p, i) => (
               <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
-                <Image src={p.url} alt={p.caption || `Chalet ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+                <Image src={p.url} alt={displayCaption(p, locale) || `Chalet ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
               </div>
             ))}
@@ -131,7 +138,7 @@ export default function PhotoGallery({ photos, title }: Props) {
               <div className="relative w-full h-full">
                 <Image
                   src={photos[idx].url}
-                  alt={photos[idx].caption || `Chalet ${title} – photo ${idx + 1}`}
+                  alt={displayCaption(photos[idx], locale) || `Chalet ${title} – photo ${idx + 1}`}
                   fill
                   className="object-contain"
                   sizes="100vw"

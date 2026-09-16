@@ -1,4 +1,4 @@
-export type PhotoItem = { url: string; caption: string; sizeMb?: number };
+export type PhotoItem = { url: string; caption: string; caption_en?: string; sizeMb?: number };
 
 /** Handles both legacy string[] and new {url,caption}[] from the DB. */
 export function normalizePhotos(raw: unknown): PhotoItem[] {
@@ -6,10 +6,11 @@ export function normalizePhotos(raw: unknown): PhotoItem[] {
   return raw.map((item) => {
     if (typeof item === "string") return { url: item, caption: "" };
     if (item && typeof item === "object" && "url" in item) {
-      const obj = item as { url: unknown; caption?: unknown; sizeMb?: unknown };
+      const obj = item as { url: unknown; caption?: unknown; caption_en?: unknown; sizeMb?: unknown };
       return {
         url: String(obj.url),
         caption: String(obj.caption ?? ""),
+        ...(typeof obj.caption_en === "string" ? { caption_en: obj.caption_en } : {}),
         ...(typeof obj.sizeMb === "number" ? { sizeMb: obj.sizeMb } : {}),
       };
     }
