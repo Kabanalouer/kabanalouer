@@ -593,7 +593,7 @@
     "ogDesc": "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel."
   },
   "listing": {
-    "draftPreviewBanner": "Aperçu — cette annonce n'est pas encore publiée. Seuls vous et les administrateurs pouvez la voir.",
+    "draftPreviewBanner": "Aperçu — cette annonce n'est pas encore publiée. Vous seul pouvez la voir.",
     "breadcrumbCabins": "Chalets",
     "descriptionTitle": "Description du chalet",
     "roomsTitle": "Où vous dormirez",
