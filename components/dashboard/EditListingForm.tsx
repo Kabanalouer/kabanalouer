@@ -851,34 +851,9 @@ export default function EditListingForm({
                 {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
               </div>
 
-              {locale === "en" ? (
-                <>
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-sm font-medium text-charcoal-700">{tEdit("titleLabelEn")}</label>
-                      <TranslateButton
-                        sourceText={form.title_en}
-                        sourceLang="en"
-                        targetLang="fr"
-                        fieldType="title"
-                        variant="pill"
-                        disabled={!form.title_en.trim()}
-                        onTranslated={(fr) => handleTitleChange(fr)}
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={form.title_en}
-                      onChange={(e) => set("title_en", e.target.value.slice(0, TITLE_MAX))}
-                      className={inputCls}
-                      placeholder={tEdit("titleEnPlaceholder")}
-                    />
-                    <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">
-                      {form.title_en.length}/{TITLE_MAX}
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
+              {(() => {
+                const titleFrBlock = (
+                  <>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">
                         {tEdit("titleLabelFr")} <Req />
@@ -903,38 +878,11 @@ export default function EditListingForm({
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                       {form.title.length}/{TITLE_MAX}
                     </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-sm font-medium text-charcoal-700">
-                        {tEdit("titleLabelFr")} <Req />
-                      </label>
-                      <TranslateButton
-                        sourceText={form.title}
-                        sourceLang="fr"
-                        targetLang="en"
-                        fieldType="title"
-                        variant="pill"
-                        disabled={!form.title.trim()}
-                        onTranslated={(en) => set("title_en", en.slice(0, TITLE_MAX))}
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={form.title}
-                      onChange={(e) => { if (savedTitle !== null) setSavedTitle(null); handleTitleChange(e.target.value); }}
-                      className={inputCls}
-                      placeholder={tEdit("titlePlaceholder")}
-                    />
-                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
-                      {form.title.length}/{TITLE_MAX}
-                    </p>
-                  </div>
+                  </>
+                );
 
-                  <div className="mt-4">
+                const titleEnBlock = (
+                  <>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">{tEdit("titleLabelEn")}</label>
                       <TranslateButton
@@ -957,9 +905,19 @@ export default function EditListingForm({
                     <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">
                       {form.title_en.length}/{TITLE_MAX}
                     </p>
+                  </>
+                );
+
+                const orderedTitleBlocks = locale === "en"
+                  ? [titleEnBlock, titleFrBlock]
+                  : [titleFrBlock, titleEnBlock];
+
+                return orderedTitleBlocks.map((block, i) => (
+                  <div key={i} className={i > 0 ? "mt-4" : undefined}>
+                    {block}
                   </div>
-                </>
-              )}
+                ));
+              })()}
 
               {titleSuggestions.length > 0 && (
                 <div className="mt-4 space-y-2">
