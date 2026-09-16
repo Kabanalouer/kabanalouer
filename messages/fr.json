@@ -1303,5 +1303,10 @@
     "s10P2": "Si vous estimez que vos droits ne sont pas respectés, vous pouvez également déposer une plainte auprès de la Commission d'accès à l'information du Québec (CAI).",
     "backTerms": "Conditions d'utilisation →",
     "backHome": "Retour à l'accueil"
+  },
+  "translateButton": {
+    "translate": "Traduire",
+    "translating": "Traduction…",
+    "error": "Erreur lors de la traduction. Réessayez."
   }
 }

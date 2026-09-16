@@ -1303,5 +1303,10 @@
     "s10P2": "If you believe your rights are not being respected, you may also file a complaint with the Commission d'accès à l'information du Québec (CAI).",
     "backTerms": "Terms of use →",
     "backHome": "Back to home"
+  },
+  "translateButton": {
+    "translate": "Translate",
+    "translating": "Translating…",
+    "error": "Error while translating. Please try again."
   }
 }
