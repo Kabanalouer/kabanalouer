@@ -20,7 +20,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       // *.google-analytics.com/*.googletagmanager.com : envoi des événements GA4
       "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com",
-      "frame-src js.stripe.com hooks.stripe.com challenges.cloudflare.com",
+      "frame-src 'self' js.stripe.com hooks.stripe.com challenges.cloudflare.com",
       "worker-src blob:",
       "child-src blob:",
       "object-src 'none'",
