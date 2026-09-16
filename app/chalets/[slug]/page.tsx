@@ -25,6 +25,7 @@ import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getRegionContent } from "@/lib/regionsContent";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
+import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
 import RegionLanding from "./RegionLanding";
 import ViewTracker from "@/components/chalets/ViewTracker";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -293,24 +294,6 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     "4 saisons": t("nearbyAllSeason"),
   };
 
-  const NEARBY_CATEGORIES: Record<string, string[]> = {
-    "Été": [
-      "Glissades d'eau / Parc aquatique", "Vélo de montagne", "Piste cyclable",
-      "Randonnée pédestre", "Pêche", "Accès à un lac",
-      "Accès à un lac avec embarcation à moteur", "Plage", "Parcours arbre-en-arbre",
-      "Tyrolienne", "Paintball", "Go Kart", "Cinéparc", "Équitation",
-      "Golf", "Escalade", "Croisière / Excursion nautique",
-    ],
-    "Hiver": [
-      "Ski alpin", "Motoneige", "Traîneau à chiens", "Sentiers de raquettes",
-      "Ski de fond", "Pêche sur glace", "Glissade sur tube", "Équitation",
-      "Patinage / Hockey extérieur", "Fatbike",
-    ],
-    "4 saisons": [
-      "Cabane à sucre", "Magasinage (shopping)", "Musée", "Restaurant / Bistro",
-      "Microbrasserie", "Spa nordique", "Casino", "Cinéma", "Village touristique",
-    ],
-  };
   const avgRating =
     reviews && reviews.length > 0
       ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
@@ -602,7 +585,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                   <h2 className="font-semibold text-charcoal-800 mb-1">{t("nearbyTitle")}</h2>
                   <p className="text-sm text-charcoal-400 mb-4">{t("nearbySubtitle")}</p>
                   <div className="space-y-5">
-                    {Object.entries(NEARBY_CATEGORIES).map(([cat, items]) => {
+                    {Object.entries(NEARBY_BY_CATEGORY).map(([cat, items]) => {
                       const catItems = items.filter((i) => nearbyActivities.includes(i));
                       if (catItems.length === 0) return null;
                       return (
@@ -612,7 +595,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                             {catItems.map((a) => (
                               <div key={a} className="flex items-center gap-2 text-sm text-charcoal-700">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                                {a}
+                                {getNearbyLabel(a, locale)}
                               </div>
                             ))}
                           </div>

@@ -1,4 +1,5 @@
-import { AMENITY_GROUPS } from "@/lib/amenities";
+import { AMENITY_GROUPS, getAmenityLabel } from "@/lib/amenities";
+import { useLocale } from "next-intl";
 
 export default function AmenitiesPicker({
   selected,
@@ -7,6 +8,7 @@ export default function AmenitiesPicker({
   selected: string[];
   onChange: (amenities: string[]) => void;
 }) {
+  const locale = useLocale();
   const toggle = (amenity: string) => {
     if (selected.includes(amenity)) {
       onChange(selected.filter((a) => a !== amenity));
@@ -51,7 +53,7 @@ export default function AmenitiesPicker({
                       </svg>
                     )}
                   </div>
-                  <span className={`text-sm ${active ? "font-medium" : ""}`}>{item}</span>
+                  <span className={`text-sm ${active ? "font-medium" : ""}`}>{getAmenityLabel(item, locale)}</span>
                 </label>
               );
             })}

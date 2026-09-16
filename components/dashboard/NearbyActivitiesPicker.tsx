@@ -1,49 +1,7 @@
 "use client";
 
-const NEARBY_BY_CATEGORY: Record<string, string[]> = {
-  "Été": [
-    "Glissades d'eau / Parc aquatique",
-    "Vélo de montagne",
-    "Piste cyclable",
-    "Randonnée pédestre",
-    "Pêche",
-    "Accès à un lac",
-    "Accès à un lac avec embarcation à moteur",
-    "Plage",
-    "Parcours arbre-en-arbre",
-    "Tyrolienne",
-    "Paintball",
-    "Go Kart",
-    "Cinéparc",
-    "Équitation",
-    "Golf",
-    "Escalade",
-    "Croisière / Excursion nautique",
-  ],
-  "Hiver": [
-    "Ski alpin",
-    "Motoneige",
-    "Traîneau à chiens",
-    "Sentiers de raquettes",
-    "Ski de fond",
-    "Pêche sur glace",
-    "Glissade sur tube",
-    "Équitation",
-    "Patinage / Hockey extérieur",
-    "Fatbike",
-  ],
-  "4 saisons": [
-    "Cabane à sucre",
-    "Magasinage (shopping)",
-    "Musée",
-    "Restaurant / Bistro",
-    "Microbrasserie",
-    "Spa nordique",
-    "Casino",
-    "Cinéma",
-    "Village touristique",
-  ],
-};
+import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
+import { useLocale } from "next-intl";
 
 export default function NearbyActivitiesPicker({
   selected,
@@ -52,6 +10,7 @@ export default function NearbyActivitiesPicker({
   selected: string[];
   onChange: (activities: string[]) => void;
 }) {
+  const locale = useLocale();
   const toggle = (activity: string) => {
     if (selected.includes(activity)) {
       onChange(selected.filter((a) => a !== activity));
@@ -96,7 +55,7 @@ export default function NearbyActivitiesPicker({
                       </svg>
                     )}
                   </div>
-                  <span className={`text-sm ${active ? "font-medium" : ""}`}>{item}</span>
+                  <span className={`text-sm ${active ? "font-medium" : ""}`}>{getNearbyLabel(item, locale)}</span>
                 </label>
               );
             })}
