@@ -40,7 +40,7 @@ const MIN_CHALETS_FOR_INDEX = 1;
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string }>;
+  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; preview?: string }>;
 }
 
 export async function generateStaticParams() {
@@ -160,7 +160,14 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   const [t, locale] = await Promise.all([getTranslations("listing"), getLocale()]);
   const isEn = locale === "en";
 
-  const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
+  const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity, preview } = await searchParams;
+  // Purement cosmétique : masque le header/footer partagés quand la page est
+  // chargée dans l'iframe de PreviewModal.tsx. N'affecte ni la RLS, ni le
+  // bandeau "brouillon" (isDraftPreview, basé uniquement sur is_published),
+  // ni aucune autre logique de sécurité ou de données — un visiteur qui
+  // ajoute ?preview=1 à une URL publiée ou à un brouillon qu'il n'a pas le
+  // droit de voir n'obtient rien de plus qu'avant.
+  const isPreviewFrame = preview === "1";
   const supabase = await createClient();
 
   // Try slug-based lookup first, then fall back to UUID (backward compat).
@@ -486,7 +493,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}
       />
-      <Navbar />
+      {!isPreviewFrame && <Navbar />}
 
       {isDraftPreview && (
         <div className="bg-primary/10 border-b border-primary/20">
@@ -807,7 +814,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
       </main>
 
       <div className="lg:hidden h-24" />
-      <Footer />
+      {!isPreviewFrame && <Footer />}
     </div>
   );
 }

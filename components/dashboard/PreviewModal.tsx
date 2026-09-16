@@ -67,7 +67,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
             <div className="flex-1 rounded-xl overflow-hidden shadow-2xl">
               <iframe
                 key="desktop"
-                src={`/chalets/${listingId}`}
+                src={`/chalets/${listingId}?preview=1`}
                 className="w-full h-full border-none block bg-white"
                 title="Aperçu desktop"
               />
@@ -88,7 +88,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
               <div className="overflow-hidden rounded-[36px]" style={{ height: 780 }}>
                 <iframe
                   key="mobile"
-                  src={`/chalets/${listingId}`}
+                  src={`/chalets/${listingId}?preview=1`}
                   className="border-none block bg-white"
                   style={{ width: 390, height: 780 }}
                   title="Aperçu mobile"
