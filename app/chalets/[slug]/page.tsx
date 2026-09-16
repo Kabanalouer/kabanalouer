@@ -163,13 +163,18 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = await searchParams;
   const supabase = await createClient();
 
-  // Try slug-based lookup first, then fall back to UUID (backward compat)
+  // Try slug-based lookup first, then fall back to UUID (backward compat).
+  // Pas de filtre is_published ici : la RLS sur `listings` s'en charge déjà
+  // ("Tout le monde voit les listings publiés" = is_published OR host_id =
+  // auth.uid(), + "Les admins gèrent tous les listings") — un visiteur non
+  // concerné reçoit simplement zéro ligne pour un brouillon, exactement
+  // comme avant. Ça permet au proprio et à l'admin de prévisualiser un
+  // brouillon via cette même page (voir isDraftPreview plus bas).
   const [{ data: listingBySlug }, { data: { user } }] = await Promise.all([
     supabase
       .from("listings")
       .select("*")
       .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
-      .eq("is_published", true)
       .maybeSingle(),
     supabase.auth.getUser(),
   ]);
@@ -181,7 +186,6 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
       .from("listings")
       .select("*")
       .eq("id", slug)
-      .eq("is_published", true)
       .maybeSingle();
 
     if (byId) {
@@ -197,6 +201,12 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   }
 
   if (!listing) notFound();
+
+  // Si la ligne a pu être lue alors qu'elle n'est pas publiée, c'est
+  // uniquement parce que la RLS a laissé passer le propriétaire ou un
+  // admin (voir le commentaire plus haut) — sert de signal pour le bandeau
+  // d'aperçu ci-dessous, sans avoir à recalculer isOwner/isAdmin ici.
+  const isDraftPreview = !listing.is_published;
 
   const id = listing.id as string; // UUID for all sub-queries
 
@@ -477,6 +487,14 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
         dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}
       />
       <Navbar />
+
+      {isDraftPreview && (
+        <div className="bg-primary/10 border-b border-primary/20">
+          <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 text-sm font-medium text-primary text-center">
+            {t("draftPreviewBanner")}
+          </p>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}

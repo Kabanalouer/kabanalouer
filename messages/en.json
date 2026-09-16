@@ -593,6 +593,7 @@
     "ogDesc": "Find your ideal cabin in Quebec. Filter by region, dates and amenities. Real-time availability."
   },
   "listing": {
+    "draftPreviewBanner": "Preview — this listing isn't published yet. Only you and admins can see it.",
     "breadcrumbCabins": "Cabins",
     "descriptionTitle": "Cabin description",
     "roomsTitle": "Where you'll sleep",
