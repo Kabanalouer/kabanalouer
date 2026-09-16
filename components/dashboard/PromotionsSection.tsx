@@ -201,7 +201,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </p>
           )}
 
-          <div className={`flex flex-col gap-3 transition-opacity ${noPromoChecked ? "opacity-50" : ""}`}>
+          <div className="flex flex-col gap-3">
 
             {/* Card: Rabais */}
             <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "rabais" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
