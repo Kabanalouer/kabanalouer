@@ -28,6 +28,7 @@ type FormState = {
   title: string;
   title_en: string;
   description: string;
+  description_en: string;
   region: string;
   address: string;
   capacity: number;
@@ -102,7 +103,7 @@ const SECTIONS: Array<{
 const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   photos:       ["photos"],
   titre:        ["title", "title_en"],
-  description:  ["description"],
+  description:  ["description", "description_en"],
   capacite:     ["capacity", "bedrooms", "bathrooms"],
   equipements:  ["amenities"],
   proximite:    ["nearby_activities"],
@@ -184,6 +185,7 @@ export default function EditListingForm({
     title: "",
     title_en: "",
     description: "",
+    description_en: "",
     region: "",
     address: "",
     capacity: 4,
@@ -1006,22 +1008,74 @@ export default function EditListingForm({
                 {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
               </div>
 
-              <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                {t("sections.description")} <Req />
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => {
-                  if (showDescRestoreButtons) { setShowDescRestoreButtons(false); setSavedDescription(null); }
-                  handleDescriptionChange(e.target.value);
-                }}
-                className={`${inputCls} resize-none`}
-                rows={32}
-                placeholder={tEdit("descPlaceholder")}
-              />
-              <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
-                {form.description.length}/{DESC_MAX}
-              </p>
+              {(() => {
+                const descFrBlock = (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-sm font-medium text-charcoal-700">
+                        {tEdit("descLabelFr")} <Req />
+                      </label>
+                      <TranslateButton
+                        sourceText={form.description}
+                        sourceLang="fr"
+                        targetLang="en"
+                        fieldType="description"
+                        variant="pill"
+                        disabled={!form.description.trim()}
+                        onTranslated={(en) => set("description_en", en)}
+                      />
+                    </div>
+                    <textarea
+                      value={form.description}
+                      onChange={(e) => {
+                        if (showDescRestoreButtons) { setShowDescRestoreButtons(false); setSavedDescription(null); }
+                        handleDescriptionChange(e.target.value);
+                      }}
+                      className={`${inputCls} resize-none`}
+                      rows={32}
+                      placeholder={tEdit("descPlaceholder")}
+                    />
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
+                      {form.description.length}/{DESC_MAX}
+                    </p>
+                  </div>
+                );
+
+                const descEnBlock = (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-sm font-medium text-charcoal-700">{tEdit("descLabelEn")}</label>
+                      <TranslateButton
+                        sourceText={form.description_en}
+                        sourceLang="en"
+                        targetLang="fr"
+                        fieldType="description"
+                        variant="pill"
+                        disabled={!form.description_en.trim()}
+                        onTranslated={(fr) => handleDescriptionChange(fr)}
+                      />
+                    </div>
+                    <textarea
+                      value={form.description_en}
+                      onChange={(e) => set("description_en", e.target.value.slice(0, DESC_MAX))}
+                      className={`${inputCls} resize-none`}
+                      rows={32}
+                      placeholder={tEdit("descEnPlaceholder")}
+                    />
+                    <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">{form.description_en.length}/{DESC_MAX}</p>
+                  </div>
+                );
+
+                const orderedDescBlocks = locale === "en"
+                  ? [descEnBlock, descFrBlock]
+                  : [descFrBlock, descEnBlock];
+
+                return orderedDescBlocks.map((block, i) => (
+                  <div key={i} className={i > 0 ? "mt-4" : undefined}>
+                    {block}
+                  </div>
+                ));
+              })()}
 
               {showDescRestoreButtons && savedDescription !== null && (
                 <div className="mt-4 flex flex-wrap gap-2">

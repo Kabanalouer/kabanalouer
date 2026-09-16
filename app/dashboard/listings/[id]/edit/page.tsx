@@ -96,6 +96,7 @@ export default async function EditListingPage({ params }: Props) {
           title: listing.title ?? "",
           title_en: (listing.title_en as string | null) ?? "",
           description: listing.description ?? "",
+          description_en: (listing.description_en as string | null) ?? "",
           region: listing.region ?? "",
           address: listing.address ?? "",
           capacity: listing.capacity ?? 4,
