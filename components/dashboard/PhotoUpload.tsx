@@ -778,11 +778,10 @@ function CaptionField({
     </div>
   );
 
-  const orderedFields = locale === "en" ? [enField, frField] : [frField, enField];
-
   return (
     <div className="mt-1.5">
-      {orderedFields[0]}
+      {showEn && locale === "en" && enField}
+      {frField}
       <button
         type="button"
         onClick={() => setShowEn((s) => !s)}
@@ -790,7 +789,7 @@ function CaptionField({
       >
         {showEn ? tEdit("captionEnHide") : (valueEn ? tEdit("captionEnEdit") : tEdit("captionEnAdd"))}
       </button>
-      {showEn && orderedFields[1]}
+      {showEn && locale !== "en" && enField}
     </div>
   );
 }
