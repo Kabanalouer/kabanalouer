@@ -94,6 +94,7 @@ export default async function EditListingPage({ params }: Props) {
         importSourceUrl={(listing.import_source_url as string | null) ?? null}
         initialData={{
           title: listing.title ?? "",
+          title_en: (listing.title_en as string | null) ?? "",
           description: listing.description ?? "",
           region: listing.region ?? "",
           address: listing.address ?? "",
