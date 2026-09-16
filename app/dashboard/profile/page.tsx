@@ -14,7 +14,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, avatar_url, phone, notifications_prefs, role, bio, preferred_language")
+    .select("name, avatar_url, phone, notifications_prefs, role, bio, bio_en, preferred_language")
     .eq("id", user.id)
     .single();
 
@@ -35,6 +35,7 @@ export default async function ProfilePage() {
         initialNotifPrefs={p?.notifications_prefs as Record<string, boolean> ?? {}}
         role={p?.role as string ?? "traveler"}
         initialBio={p?.bio as string ?? ""}
+        initialBioEn={p?.bio_en as string ?? ""}
         initialPreferredLanguage={p?.preferred_language === "en" ? "en" : "fr"}
       />
     </div>

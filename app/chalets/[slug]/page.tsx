@@ -223,7 +223,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
   // public.users directement, dont la RLS ne permet plus la lecture publique.
   const { data: hostProfile } = await supabase
     .from("public_profiles")
-    .select("id, name, avatar_url, created_at, bio")
+    .select("id, name, avatar_url, created_at, bio, bio_en")
     .eq("id", listing.host_id as string)
     .single();
 
@@ -314,7 +314,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
     } catch { /* silently fail */ }
   }
 
-  const host = hostProfile as { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null } | null;
+  const host = hostProfile as { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null; bio_en?: string | null } | null;
 
   // Host stats (for HostCard)
   let hostReviewCount = 0;

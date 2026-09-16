@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import TranslateButton from "./TranslateButton";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
@@ -155,6 +156,7 @@ export default function ProfileForm({
   initialNotifPrefs,
   role,
   initialBio,
+  initialBioEn,
   initialPreferredLanguage,
 }: {
   userId: string;
@@ -165,6 +167,7 @@ export default function ProfileForm({
   initialNotifPrefs: Record<string, boolean>;
   role: string;
   initialBio: string;
+  initialBioEn: string;
   initialPreferredLanguage: "fr" | "en";
 }) {
   const supabase = createClient();
@@ -228,6 +231,7 @@ export default function ProfileForm({
 
   // ── Bio ──────────────────────────────────────────────────────────────────────
   const [bio, setBio] = useState(initialBio);
+  const [bioEn, setBioEn] = useState(initialBioEn);
   const [bioSaving, setBioSaving] = useState(false);
   const [bioSaved, setBioSaved] = useState(false);
   const [bioError, setBioError] = useState("");
@@ -236,7 +240,7 @@ export default function ProfileForm({
   const saveBio = async () => {
     setBioSaving(true);
     setBioError("");
-    const { error } = await supabase.from("users").update({ bio: bio.trim() || null }).eq("id", userId);
+    const { error } = await supabase.from("users").update({ bio: bio.trim() || null, bio_en: bioEn.trim() || null }).eq("id", userId);
     setBioSaving(false);
     if (error) setBioError(t("errorSaving"));
     else { setBioSaved(true); setTimeout(() => setBioSaved(false), 2500); }
@@ -362,6 +366,91 @@ export default function ProfileForm({
 
   const initial = (firstName[0] ?? lastName[0] ?? "?").toUpperCase();
 
+  const bioFrBlock = (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-sm font-medium text-charcoal-700">{t("bioLabelFr")}</label>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={generateBio}
+            disabled={bioGenerating}
+            className={`inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
+          >
+            {bioGenerating ? (
+              <>
+                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {t("bioGenerating")}
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+                {t("bioGenerate")}
+              </>
+            )}
+          </button>
+          <TranslateButton
+            sourceText={bio}
+            sourceLang="fr"
+            targetLang="en"
+            fieldType="bio"
+            variant="link"
+            disabled={!bio.trim()}
+            onTranslated={(en) => setBioEn(en.slice(0, 300))}
+          />
+        </div>
+      </div>
+      <div className="relative">
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value.slice(0, 300))}
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          placeholder={t("bioPlaceholder")}
+          maxLength={300}
+        />
+        <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
+          {bio.length} / 300
+        </span>
+      </div>
+    </div>
+  );
+
+  const bioEnBlock = (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-sm font-medium text-charcoal-700">{t("bioLabelEn")}</label>
+        <TranslateButton
+          sourceText={bioEn}
+          sourceLang="en"
+          targetLang="fr"
+          fieldType="bio"
+          variant="link"
+          disabled={!bioEn.trim()}
+          onTranslated={(fr) => setBio(fr.slice(0, 300))}
+        />
+      </div>
+      <div className="relative">
+        <textarea
+          value={bioEn}
+          onChange={(e) => setBioEn(e.target.value.slice(0, 300))}
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          placeholder={t("bioEnPlaceholder")}
+          maxLength={300}
+        />
+        <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
+          {bioEn.length} / 300
+        </span>
+      </div>
+    </div>
+  );
+
+  const orderedBioBlocks = preferredLanguage === "en" ? [bioEnBlock, bioFrBlock] : [bioFrBlock, bioEnBlock];
+
   return (
     <div className="space-y-6">
 
@@ -453,46 +542,7 @@ export default function ProfileForm({
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
       {(role === "host" || role === "admin") && (
         <Section title={t("ownerPresentation")} description={t("ownerPresentationDesc")}>
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-charcoal-700">{t("bio")}</label>
-              <button
-                type="button"
-                onClick={generateBio}
-                disabled={bioGenerating}
-                className={`inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
-              >
-                {bioGenerating ? (
-                  <>
-                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    {t("bioGenerating")}
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                    </svg>
-                    {t("bioGenerate")}
-                  </>
-                )}
-              </button>
-            </div>
-            <div className="relative">
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value.slice(0, 300))}
-                className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
-                placeholder={t("bioPlaceholder")}
-                maxLength={300}
-              />
-              <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
-                {bio.length} / 300
-              </span>
-            </div>
-          </div>
+          {orderedBioBlocks.map((block, i) => <div key={i}>{block}</div>)}
           <div className="flex items-center gap-3">
             <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
             <ErrorMsg msg={bioError} />
