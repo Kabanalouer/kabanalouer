@@ -94,7 +94,9 @@ const SECTIONS: Array<{
   { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
   { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
   { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
-  { id: "devis",        sectionKey: "quote",     isComplete: () => true },
+  // "devis" retiré temporairement du menu (composant, route et données
+  // conservés intacts) — à réintégrer plus tard dans le contexte de la
+  // messagerie. Voir components/dashboard/QuoteSection.tsx.
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
   { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
