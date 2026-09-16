@@ -294,7 +294,11 @@
       "livingroomPhotos": "Photos du salon",
       "bedroomDefault": "Chambre {n}",
       "livingroomDefault": "Salon {n}",
-      "saveError": "Erreur lors de l'enregistrement. Réessayez."
+      "saveError": "Erreur lors de l'enregistrement. Réessayez.",
+      "nameEnAdd": "Ajouter un nom en anglais",
+      "nameEnEdit": "Modifier le nom en anglais",
+      "nameEnHide": "Masquer le nom en anglais",
+      "nameEnPlaceholder": "Nom en anglais (optionnel)"
     },
     "photos": {
       "errorUnreadable": "Fichier illisible.",

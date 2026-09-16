@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RoomPhotoManager from "./RoomPhotoManager";
+import TranslateButton from "./TranslateButton";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { PhotoItem } from "@/lib/photo";
 
@@ -20,6 +21,7 @@ type RoomLocal = {
   serverId: string | null;
   type: "bedroom" | "living_room";
   name: string;
+  name_en?: string;
   capacity: number;
   beds: BedEntry[];
   photos: string[];
@@ -36,6 +38,7 @@ function fromDbRow(row: Record<string, unknown>): RoomLocal {
     serverId: row.id as string,
     type: row.type === "living_room" ? "living_room" : "bedroom",
     name: row.name as string,
+    name_en: (row.name_en as string | null) ?? undefined,
     capacity: row.capacity as number,
     beds: bedsRaw,
     photos: Array.isArray(row.photos) ? (row.photos as string[]) : [],
@@ -55,6 +58,7 @@ export default function RoomsSection({
 }) {
   const t = useTranslations("listings.rooms");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const supabase = createClient();
 
   const [rooms, setRooms] = useState<RoomLocal[]>([]);
@@ -145,6 +149,7 @@ export default function RoomsSection({
         listing_id: listingId,
         type: room.type,
         name: room.name,
+        name_en: room.name_en ?? null,
         capacity: room.capacity,
         beds: room.beds,
         photos: room.photos,
@@ -208,6 +213,7 @@ export default function RoomsSection({
               userId={userId}
               listingPhotos={listingPhotos}
               t={t}
+              locale={locale}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
               onAddBed={() => addBed(room.localId)}
@@ -243,6 +249,7 @@ export default function RoomsSection({
               userId={userId}
               listingPhotos={listingPhotos}
               t={t}
+              locale={locale}
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
               onAddBed={() => addBed(room.localId)}
@@ -345,14 +352,18 @@ function BedsEditor({
 // ── Room header (partagé chambres + salons) ─────────────────────────────────
 
 function RoomHeader({
-  room, onUpdate, onRemove, t,
+  room, onUpdate, onRemove, t, locale,
 }: {
   room: RoomLocal;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   t: TRooms;
+  locale: string;
 }) {
-  return (
+  const [showEn, setShowEn] = useState(false);
+  const nameEn = room.name_en ?? "";
+
+  const nameRow = (
     <div className="flex items-center gap-3">
       <input
         value={room.name}
@@ -375,18 +386,54 @@ function RoomHeader({
       </button>
     </div>
   );
+
+  const enNameRow = (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      <input
+        value={nameEn}
+        onChange={(e) => onUpdate({ name_en: e.target.value })}
+        placeholder={t("nameEnPlaceholder")}
+        className="flex-1 text-sm border border-[#ebebeb] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300"
+      />
+      <TranslateButton
+        sourceText={room.name}
+        sourceLang="fr"
+        targetLang="en"
+        fieldType="roomName"
+        variant="icon"
+        disabled={!room.name.trim()}
+        onTranslated={(en) => onUpdate({ name_en: en })}
+      />
+    </div>
+  );
+
+  return (
+    <div>
+      {showEn && locale === "en" && enNameRow}
+      {nameRow}
+      <button
+        type="button"
+        onClick={() => setShowEn((s) => !s)}
+        className="mt-1 text-[10px] font-medium text-primary hover:underline"
+      >
+        {showEn ? t("nameEnHide") : (nameEn ? t("nameEnEdit") : t("nameEnAdd"))}
+      </button>
+      {showEn && locale !== "en" && enNameRow}
+    </div>
+  );
 }
 
 // ── Bedroom card ─────────────────────────────────────────────────────────────
 
 function BedroomCard({
-  room, userId, listingPhotos, t,
+  room, userId, listingPhotos, t, locale,
   onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
   listingPhotos: PhotoItem[];
   t: TRooms;
+  locale: string;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   onAddBed: () => void;
@@ -395,7 +442,7 @@ function BedroomCard({
 }) {
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} />
+      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} locale={locale} />
 
       {/* Capacity */}
       <div className="flex items-center gap-3">
@@ -427,13 +474,14 @@ function BedroomCard({
 // ── Living room card ──────────────────────────────────────────────────────────
 
 function LivingRoomCard({
-  room, userId, listingPhotos, t,
+  room, userId, listingPhotos, t, locale,
   onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
   listingPhotos: PhotoItem[];
   t: TRooms;
+  locale: string;
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   onAddBed: () => void;
@@ -442,7 +490,7 @@ function LivingRoomCard({
 }) {
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} />
+      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} locale={locale} />
 
       {/* Capacity */}
       <div className="flex items-center gap-3">

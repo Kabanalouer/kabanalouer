@@ -548,6 +548,7 @@ export default async function ListingOrRegionPage({ params, searchParams }: Prop
                       id: r.id,
                       type: r.type,
                       name: r.name,
+                      name_en: (r.name_en as string | null) ?? null,
                       capacity: r.capacity,
                       beds: Array.isArray(r.beds) ? r.beds as { type: string; quantity: number }[] : [],
                       photos: Array.isArray(r.photos) ? r.photos as string[] : [],

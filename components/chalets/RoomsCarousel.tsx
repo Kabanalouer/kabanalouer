@@ -1,12 +1,14 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useLocale } from "next-intl";
 
 interface BedEntry { type: string; quantity: number; }
 interface Room {
   id: string;
   type: string;
   name: string;
+  name_en?: string | null;
   capacity: number;
   beds: BedEntry[];
   photos: string[];
@@ -16,7 +18,12 @@ const BED_FR: Record<string, string> = {
   simple: "lit simple", double: "lit double", queen: "lit queen", king: "lit king",
 };
 
+function displayRoomName(room: Room, locale: string): string {
+  return (locale === "en" && room.name_en) ? room.name_en : room.name;
+}
+
 export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
+  const locale = useLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -68,7 +75,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
             key={room.id}
             className="snap-start shrink-0 w-[calc(50%-8px)]"
           >
-            <RoomCard room={room} />
+            <RoomCard room={room} locale={locale} />
           </div>
         ))}
       </div>
@@ -120,7 +127,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
   );
 }
 
-function RoomCard({ room }: { room: Room }) {
+function RoomCard({ room, locale }: { room: Room; locale: string }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const beds = Array.isArray(room.beds) ? room.beds : [];
   const photos = Array.isArray(room.photos) ? room.photos as string[] : [];
@@ -136,7 +143,7 @@ function RoomCard({ room }: { room: Room }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photos[photoIdx]}
-            alt={`${room.name} – photo ${photoIdx + 1}`}
+            alt={`${displayRoomName(room, locale)} – photo ${photoIdx + 1}`}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -202,7 +209,7 @@ function RoomCard({ room }: { room: Room }) {
 
       {/* Info */}
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <p className="font-semibold text-charcoal-800 text-sm">{room.name}</p>
+        <p className="font-semibold text-charcoal-800 text-sm">{displayRoomName(room, locale)}</p>
         <p className="text-xs text-charcoal-400">
           {isBedroom ? `${room.capacity} pers.` : `Capacité : ${room.capacity} pers.`}
         </p>

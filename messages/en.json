@@ -294,7 +294,11 @@
       "livingroomPhotos": "Living space photos",
       "bedroomDefault": "Bedroom {n}",
       "livingroomDefault": "Living room {n}",
-      "saveError": "Error while saving. Please try again."
+      "saveError": "Error while saving. Please try again.",
+      "nameEnAdd": "Add an English name",
+      "nameEnEdit": "Edit English name",
+      "nameEnHide": "Hide English name",
+      "nameEnPlaceholder": "Name in English (optional)"
     },
     "photos": {
       "errorUnreadable": "File could not be read.",
