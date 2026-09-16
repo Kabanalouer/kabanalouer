@@ -87,6 +87,7 @@
     "countPlural": "{count} cabins",
     "published": "Published",
     "draft": "Draft",
+    "translationPending": "Translation in progress",
     "score": "Score: {score}",
     "viewListing": "View listing ↗",
     "editLink": "Edit",

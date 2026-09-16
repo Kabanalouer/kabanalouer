@@ -10,6 +10,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 type Listing = {
   id: string;
   title: string | null;
+  title_en?: string | null;
   region: string | null;
   is_published: boolean | null;
   price_low: number | null;
@@ -22,9 +23,10 @@ interface Props {
   listings: Listing[];
   reviews: Record<string, ReviewInfo>;
   scores: Record<string, number>;
+  translationPending: Record<string, boolean>;
 }
 
-export default function ListingsClient({ listings, reviews, scores }: Props) {
+export default function ListingsClient({ listings, reviews, scores, translationPending }: Props) {
   const t = useTranslations("listings");
 
   return (
@@ -62,6 +64,11 @@ export default function ListingsClient({ listings, reviews, scores }: Props) {
                   }`}>
                     {listing.is_published ? t("published") : t("draft")}
                   </span>
+                  {translationPending[listing.id] && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700">
+                      {t("translationPending")}
+                    </span>
+                  )}
                   {(() => { const s = scores[listing.id] ?? 0; return (
                     <span className="text-xs font-semibold" style={{ color: getScoreLevel(s).color }}>{t("score", { score: s })}</span>
                   ); })()}

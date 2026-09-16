@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
 import { computeScore } from "@/lib/listingScore";
+import { normalizePhotos } from "@/lib/photo";
 
 export const metadata = { title: "Mes chalets" };
 
@@ -32,7 +33,7 @@ export default async function ListingsPage({
   const [{ data: reviews }, { data: rooms }, { data: futureAvail }] = listingIds.length > 0
     ? await Promise.all([
         supabase.from("reviews").select("listing_id, rating, created_at").in("listing_id", listingIds),
-        supabase.from("rooms").select("listing_id, photos").in("listing_id", listingIds),
+        supabase.from("rooms").select("listing_id, photos, name, name_en").in("listing_id", listingIds),
         supabase.from("availability").select("listing_id").in("listing_id", listingIds).gte("date", today).eq("source", "manual"),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }];
@@ -47,14 +48,28 @@ export default async function ListingsPage({
     reviewCounts[r.listing_id] = { total: pc.total + 1, recent: pc.recent + (new Date(r.created_at) >= sixMonthsAgo ? 1 : 0) };
   }
 
-  const roomsPerListing: Record<string, { listing_id: string; photos: unknown }[]> = {};
+  const roomsPerListing: Record<string, { listing_id: string; photos: unknown; name: string | null; name_en: string | null }[]> = {};
   for (const room of (rooms ?? [])) {
     (roomsPerListing[room.listing_id] ??= []).push(room);
   }
 
   const futureAvailSet = new Set((futureAvail ?? []).map((a) => a.listing_id as string));
 
+  function needsTranslation(
+    listing: Record<string, unknown>,
+    listingRooms: { name?: unknown; name_en?: unknown }[]
+  ): boolean {
+    if (!listing.is_published) return false;
+    if (!(listing.title_en as string | null)) return true;
+    if (!(listing.description_en as string | null)) return true;
+    const photos = normalizePhotos(listing.photos);
+    if (photos.some((p) => p.caption?.trim() && !p.caption_en)) return true;
+    if (listingRooms.some((r) => (r.name as string | null)?.trim() && !r.name_en)) return true;
+    return false;
+  }
+
   const scoreRecord: Record<string, number> = {};
+  const translationPendingRecord: Record<string, boolean> = {};
   for (const listing of (listings ?? [])) {
     const id = listing.id as string;
     const photoList = Array.isArray(listing.photos) ? listing.photos as string[] : [];
@@ -76,6 +91,7 @@ export default async function ListingsPage({
       reviewCount: rc.total,
       recentReviewCount: rc.recent,
     });
+    translationPendingRecord[id] = needsTranslation(listing, listingRooms);
   }
 
   const count = listings?.length ?? 0;
@@ -109,7 +125,7 @@ export default async function ListingsPage({
       </div>
 
       {listings && listings.length > 0 ? (
-        <ListingsClient listings={listings} reviews={reviewRecord} scores={scoreRecord} />
+        <ListingsClient listings={listings} reviews={reviewRecord} scores={scoreRecord} translationPending={translationPendingRecord} />
       ) : (
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-12 text-center">
           <div className="w-16 h-16 rounded-full bg-charcoal-50 flex items-center justify-center mx-auto mb-4">

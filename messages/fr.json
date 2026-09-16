@@ -87,6 +87,7 @@
     "countPlural": "{count} chalets",
     "published": "Publié",
     "draft": "Brouillon",
+    "translationPending": "Traduction en cours",
     "score": "Score : {score}",
     "viewListing": "Voir la fiche ↗",
     "editLink": "Modifier",
