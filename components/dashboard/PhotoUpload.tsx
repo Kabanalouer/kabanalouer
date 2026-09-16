@@ -532,9 +532,9 @@ export default function PhotoUpload({
       </div>
 
       {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
-      <div>
+      <div className="bg-[#f5f6ec] rounded-2xl p-4">
         <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
-        <p className="text-xs text-charcoal-400 mb-3">Ces 4 photos s&apos;affichent à côté de la photo de couverture sur votre fiche.</p>
+        <p className="text-xs text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
