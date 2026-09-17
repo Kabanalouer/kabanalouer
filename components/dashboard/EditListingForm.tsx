@@ -441,13 +441,19 @@ export default function EditListingForm({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSaveSection = async () => {
-    const fields = SECTION_FIELDS[activeSection];
-    if (!fields.length) return;
+  // Accepte une section explicite (au lieu de toujours lire activeSection) —
+  // nécessaire pour les flush déclenchés par useAutosave au moment où l'hôte
+  // vient de changer de section : à cet instant, activeSection a déjà
+  // basculé vers la nouvelle section, donc s'y fier sauvegarderait les
+  // mauvais champs. Retourne true/false pour permettre d'attendre le
+  // résultat avant de publier (voir flushBeforePublish).
+  const handleSaveSection = async (sectionId: SectionId = activeSection): Promise<boolean> => {
+    const fields = SECTION_FIELDS[sectionId];
+    if (!fields.length) return true;
 
-    if (activeSection === "infos" && form.citq_number.length !== 6) {
+    if (sectionId === "infos" && form.citq_number.length !== 6) {
       setSaveError(tEdit("citqError"));
-      return;
+      return false;
     }
 
     setSaving(true);
@@ -467,11 +473,21 @@ export default function EditListingForm({
     setSaving(false);
     if (error) {
       setSaveError(tEdit("saveError"));
-    } else {
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2500);
-      setSavedDescription(null);
+      return false;
     }
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 2500);
+    setSavedDescription(null);
+    return true;
+  };
+
+  // Suit la sauvegarde la plus récente (manuelle, autosave, ou flush au
+  // changement de section) pour que la publication puisse l'attendre.
+  const lastSaveRef = useRef<Promise<boolean>>(Promise.resolve(true));
+  const triggerSave = (sectionId: SectionId) => {
+    const promise = handleSaveSection(sectionId);
+    lastSaveRef.current = promise;
+    return promise;
   };
 
   const handleActivateFree = async () => {
@@ -640,9 +656,34 @@ export default function EditListingForm({
   const { pending: autosavePending } = useAutosave(
     activeSection,
     autosaveTrigger,
-    () => { void handleSaveSection(); },
+    (sectionId) => { void triggerSave(sectionId as SectionId); },
     { enabled: autosaveEnabled }
   );
+
+  // Force le flush d'une sauvegarde en attente et attend sa confirmation —
+  // appelé juste avant de publier, pour ne jamais publier une fiche avec des
+  // changements pas encore en base. N'appelle jamais elle-même une nouvelle
+  // sauvegarde : elle attend simplement la plus récente déjà déclenchée
+  // (clic manuel, autosave, ou flush de changement de section ci-dessus).
+  const flushBeforePublish = async (): Promise<boolean> => {
+    return await lastSaveRef.current;
+  };
+
+  // Point d'entrée commun pour les 3 déclencheurs de publication
+  // (handleActivateFree, handleAdminPublish, handleStripeCheckout) — n'y
+  // touche pas lui-même, se contente d'attendre la confirmation du flush
+  // juste avant de les appeler.
+  const runPublishAction = async (action: () => Promise<void>) => {
+    setPublishLoading(true);
+    setPublishError("");
+    const flushed = await flushBeforePublish();
+    if (!flushed) {
+      setPublishLoading(false);
+      setPublishError(tEdit("flushBeforePublishError"));
+      return;
+    }
+    await action();
+  };
 
   // Garde-fou de sortie : une sauvegarde en attente, en cours, ou échouée
   // signifie que des changements ne sont pas encore confirmés en base —
@@ -1625,7 +1666,7 @@ export default function EditListingForm({
                     <button
                       onClick={() => {
                         if (!canPublish) { setShowPublishErrors(true); return; }
-                        void handleAdminPublish();
+                        void runPublishAction(handleAdminPublish);
                       }}
                       disabled={publishLoading}
                       className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
@@ -1764,7 +1805,7 @@ export default function EditListingForm({
                       <button
                         onClick={() => {
                           if (!canPublish) { setShowPublishErrors(true); return; }
-                          void handleActivateFree();
+                          void runPublishAction(handleActivateFree);
                         }}
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
@@ -1782,7 +1823,7 @@ export default function EditListingForm({
                       <button
                         onClick={() => {
                           if (!canPublish) { setShowPublishErrors(true); return; }
-                          void handleStripeCheckout();
+                          void runPublishAction(handleStripeCheckout);
                         }}
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
@@ -1843,7 +1884,7 @@ export default function EditListingForm({
                   // de se déclencher avant le clic — même correctif que
                   // TranslateButton pour le même conflit focus/blur.
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleSaveSection}
+                  onClick={() => void triggerSave(activeSection)}
                   disabled={saving || descBelowMin}
                   className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
                 >

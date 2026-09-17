@@ -175,6 +175,7 @@
       "featuredSectionTitle": "Boost de l'annonce",
       "citqError": "Le numéro CITQ doit contenir exactement 6 chiffres.",
       "saveError": "Erreur lors de l'enregistrement. Réessayez.",
+      "flushBeforePublishError": "Impossible d'enregistrer tes derniers changements — réessaie avant de publier.",
       "activateError": "Une erreur s'est produite.",
       "stripeError": "Impossible de démarrer le paiement. Réessayez.",
       "stripeUrlMissing": "URL de paiement manquante."

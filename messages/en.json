@@ -175,6 +175,7 @@
       "featuredSectionTitle": "Listing boost",
       "citqError": "CITQ number must be exactly 6 digits.",
       "saveError": "Error saving. Please try again.",
+      "flushBeforePublishError": "We couldn't save your latest changes — try again before publishing.",
       "activateError": "An error occurred.",
       "stripeError": "Unable to start payment. Please try again.",
       "stripeUrlMissing": "Payment URL missing."

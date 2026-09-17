@@ -7,10 +7,16 @@ import { useEffect, useRef, useState } from "react";
 // clé stable (sectionKey) : un changement de clé "réarme" le hook sans
 // déclencher de sauvegarde (on ne veut pas sauvegarder juste parce que
 // l'hôte a changé d'onglet, seulement quand il modifie un champ).
+//
+// `save` reçoit la clé de section à sauvegarder — indispensable pour les
+// flush (changement de section, démontage) : au moment où l'effet de
+// changement de section s'exécute, l'état `activeSection` du composant
+// appelant a déjà basculé vers la NOUVELLE section, donc le rappeler sans
+// argument sauvegarderait les champs de la mauvaise section (souvent vide).
 export function useAutosave(
   sectionKey: string,
   trigger: unknown,
-  save: () => void,
+  save: (sectionKey: string) => void,
   options: { delay?: number; enabled?: boolean } = {}
 ): { pending: boolean } {
   const { delay = 1750, enabled = true } = options;
@@ -24,9 +30,11 @@ export function useAutosave(
   saveRef.current = save;
 
   // Changement de section : on ne perd pas une sauvegarde encore en attente
-  // — on la déclenche immédiatement plutôt que de l'abandonner en silence.
+  // — on la déclenche immédiatement (pour la section qu'on quitte, pas la
+  // nouvelle) plutôt que de l'abandonner en silence.
   useEffect(() => {
     if (prevSectionRef.current !== sectionKey) {
+      const leavingSection = prevSectionRef.current;
       prevSectionRef.current = sectionKey;
       skipNextRef.current = true;
       const hadPending = timerRef.current !== null;
@@ -35,7 +43,7 @@ export function useAutosave(
         timerRef.current = null;
       }
       setPending(false);
-      if (hadPending) saveRef.current();
+      if (hadPending) saveRef.current(leavingSection);
     }
   }, [sectionKey]);
 
@@ -45,9 +53,10 @@ export function useAutosave(
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
-        saveRef.current();
+        saveRef.current(prevSectionRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -61,7 +70,7 @@ export function useAutosave(
     timerRef.current = setTimeout(() => {
       timerRef.current = null;
       setPending(false);
-      save();
+      save(sectionKey);
     }, delay);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
