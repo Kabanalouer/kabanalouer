@@ -402,7 +402,7 @@ export default function PhotoUpload({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
           title="Taper un numéro pour déplacer cette photo"
-          className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full hover:bg-black/75 transition-colors"
+          className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full cursor-pointer hover:bg-black/75 transition-colors"
         >
           {badge}
         </button>
@@ -547,7 +547,8 @@ export default function PhotoUpload({
       {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
       <div className="bg-[#f5f6ec] rounded-2xl p-4">
         <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
-        <p className="text-xs text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
+        <p className="text-xs text-charcoal-600 mb-1">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
+        <p className="text-xs text-charcoal-400 mb-3">Glissez une photo ou cliquez sur son numéro pour changer sa position.</p>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
@@ -602,7 +603,8 @@ export default function PhotoUpload({
       {others.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
+          <p className="text-xs text-charcoal-400 mb-1">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
+          <p className="text-xs text-charcoal-400 mb-3">Glissez une photo ou cliquez sur son numéro pour changer sa position.</p>
           <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
@@ -720,7 +722,7 @@ function CaptionField({
 
   const frField = (
     <div>
-      <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-wide mb-0.5">FR</p>
+      <p className="text-[10px] font-semibold text-charcoal-400 mb-0.5">Légende (français)</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={ref}
@@ -744,7 +746,7 @@ function CaptionField({
 
   const enField = (
     <div className="mt-1.5">
-      <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-wide mb-0.5">EN</p>
+      <p className="text-[10px] font-semibold text-charcoal-400 mb-0.5">Légende (anglais)</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={refEn}
