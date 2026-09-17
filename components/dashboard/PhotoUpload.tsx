@@ -402,8 +402,11 @@ export default function PhotoUpload({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
           title="Taper un numéro pour déplacer cette photo"
-          className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full cursor-pointer hover:bg-black/75 transition-colors"
+          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full cursor-pointer hover:bg-black/75 transition-colors"
         >
+          <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+          </svg>
           {badge}
         </button>
       )}
@@ -547,8 +550,7 @@ export default function PhotoUpload({
       {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
       <div className="bg-[#f5f6ec] rounded-2xl p-4">
         <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
-        <p className="text-xs text-charcoal-600 mb-1">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
-        <p className="text-xs text-charcoal-400 mb-3">Glissez une photo ou cliquez sur son numéro pour changer sa position.</p>
+        <p className="text-xs text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
@@ -603,8 +605,7 @@ export default function PhotoUpload({
       {others.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-charcoal-400 mb-1">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
-          <p className="text-xs text-charcoal-400 mb-3">Glissez une photo ou cliquez sur son numéro pour changer sa position.</p>
+          <p className="text-xs text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
           <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
