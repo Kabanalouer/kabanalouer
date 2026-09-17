@@ -18,7 +18,7 @@ import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
-import TranslateButton from "./TranslateButton";
+import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { safeHttpUrl } from "@/lib/safeUrl";
@@ -368,6 +368,8 @@ export default function EditListingForm({
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
+  const [titleEnAutoTranslated, setTitleEnAutoTranslated] = useState(false);
+  const [savedTitleEn, setSavedTitleEn] = useState<string | null>(null);
 
   const [descGenerating, setDescGenerating] = useState(false);
   const [descGenError, setDescGenError] = useState("");
@@ -808,67 +810,31 @@ export default function EditListingForm({
             <SectionShell title={t("sections.title")}>
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("titleMaxChars", { count: TITLE_MAX })}</p>
 
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => void handleGenerateTitles()}
-                  disabled={titleGenerating}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-full px-4 py-2 transition-colors disabled:opacity-50"
-                >
-                  {titleGenerating ? (
-                    <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                    </svg>
-                  )}
-                  {titleGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
-                </button>
-
-                {showTitleContextWarning && !titleGenerating && (
-                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void handleGenerateTitles(true)}
-                        className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
-                      >
-                        {tEdit("aiGenerateAnyway")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowTitleContextWarning(false); goToNextIncompleteSection(); }}
-                        className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
-                      >
-                        {tEdit("continueForm")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
-              </div>
-
               {(() => {
                 const titleFrBlock = (
                   <>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between gap-4 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">
                         {tEdit("titleLabelFr")} <Req />
                       </label>
-                      <TranslateButton
-                        sourceText={form.title}
-                        sourceLang="fr"
-                        targetLang="en"
-                        fieldType="title"
-                        variant="pill"
-                        disabled={!form.title.trim()}
-                        onTranslated={(en) => set("title_en", en.slice(0, TITLE_MAX))}
-                      />
+                      <button
+                        type="button"
+                        onClick={() => void handleGenerateTitles()}
+                        disabled={titleGenerating}
+                        className={HELPER_BUTTON_CLASSNAME}
+                      >
+                        {titleGenerating ? (
+                          <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                          </svg>
+                        )}
+                        {titleGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
+                      </button>
                     </div>
                     <input
                       type="text"
@@ -880,33 +846,91 @@ export default function EditListingForm({
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                       {form.title.length}/{TITLE_MAX}
                     </p>
+
+                    {showTitleContextWarning && !titleGenerating && (
+                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                        <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleGenerateTitles(true)}
+                            className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                          >
+                            {tEdit("aiGenerateAnyway")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowTitleContextWarning(false); goToNextIncompleteSection(); }}
+                            className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                          >
+                            {tEdit("continueForm")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
                   </>
                 );
 
                 const titleEnBlock = (
                   <>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between gap-4 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">{tEdit("titleLabelEn")}</label>
                       <TranslateButton
-                        sourceText={form.title_en}
-                        sourceLang="en"
-                        targetLang="fr"
+                        sourceText={form.title}
+                        sourceLang="fr"
+                        targetLang="en"
                         fieldType="title"
-                        variant="pill"
-                        disabled={!form.title_en.trim()}
-                        onTranslated={(fr) => handleTitleChange(fr)}
+                        variant="text"
+                        label={tEdit("translateFromFrench")}
+                        errorMessage={tEdit("translateTitleError")}
+                        disabled={!form.title.trim()}
+                        onTranslated={(en) => {
+                          if (form.title_en.trim()) setSavedTitleEn(form.title_en);
+                          set("title_en", en.slice(0, TITLE_MAX));
+                          setTitleEnAutoTranslated(true);
+                        }}
                       />
                     </div>
+                    <p className="text-xs text-charcoal-400 mt-1 mb-2">
+                      {form.title.trim() ? tEdit("titleEnHelperNote") : tEdit("translateDisabledReason")}
+                    </p>
                     <input
                       type="text"
                       value={form.title_en}
-                      onChange={(e) => set("title_en", e.target.value.slice(0, TITLE_MAX))}
+                      onChange={(e) => {
+                        if (savedTitleEn !== null) setSavedTitleEn(null);
+                        setTitleEnAutoTranslated(false);
+                        set("title_en", e.target.value.slice(0, TITLE_MAX));
+                      }}
                       className={inputCls}
                       placeholder={tEdit("titleEnPlaceholder")}
                     />
-                    <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">
-                      {form.title_en.length}/{TITLE_MAX}
-                    </p>
+                    <div className="flex items-center justify-between gap-3 mt-1.5">
+                      <p className="text-xs font-semibold text-teal-500">
+                        {titleEnAutoTranslated && tEdit("titleEnAutoTranslatedStatus")}
+                      </p>
+                      <p className="text-xs tabular-nums text-charcoal-400">
+                        {form.title_en.length}/{TITLE_MAX}
+                      </p>
+                    </div>
+
+                    {savedTitleEn !== null && (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            set("title_en", savedTitleEn);
+                            setTitleEnAutoTranslated(false);
+                            setSavedTitleEn(null);
+                          }}
+                          className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
+                        >
+                          {tEdit("titleEnRestore")}
+                        </button>
+                      </div>
+                    )}
                   </>
                 );
 

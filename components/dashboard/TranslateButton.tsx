@@ -6,7 +6,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 type Lang = "fr" | "en";
 type FieldType = "title" | "description" | "caption" | "roomName" | "bio";
-type Variant = "pill" | "link" | "icon";
+type Variant = "pill" | "link" | "icon" | "text";
 
 interface TranslateButtonProps {
   sourceText: string;
@@ -16,19 +16,33 @@ interface TranslateButtonProps {
   onTranslated: (translation: string) => void;
   disabled?: boolean;
   variant?: Variant;
+  // Libellé au repos (hors chargement) — sinon le texte générique "Traduire".
+  // Permet à un usage précis (ex. "Traduire depuis le français") de rester
+  // cohérent avec le reste du formulaire sans dupliquer ce composant.
+  label?: string;
+  // Message d'erreur personnalisé — sinon le message générique.
+  errorMessage?: string;
 }
+
+// Bouton texte discret réutilisé pour toute action d'aide sur un champ
+// (traduction, génération IA...) — même composant, même poids visuel,
+// voir design_handoff_traduction_titre/README.md.
+export const HELPER_BUTTON_CLASSNAME =
+  "inline-flex items-center gap-[7px] h-8 px-2.5 rounded-lg text-sm font-semibold text-primary-600 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed shrink-0";
 
 const VARIANT_CLASSNAME: Record<Variant, string> = {
   pill:
     "inline-flex items-center gap-2 text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-full px-4 py-2 transition-colors disabled:opacity-50",
   link: `inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`,
   icon: "shrink-0 p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-40",
+  text: HELPER_BUTTON_CLASSNAME,
 };
 
 const ICON_SIZE: Record<Variant, string> = {
   pill: "w-4 h-4",
   link: "w-3.5 h-3.5",
   icon: "w-3.5 h-3.5",
+  text: "w-4 h-4",
 };
 
 // Icône "traduction" (Heroicons outline "language"), cohérente avec le reste
@@ -62,12 +76,15 @@ export default function TranslateButton({
   onTranslated,
   disabled = false,
   variant = "pill",
+  label,
+  errorMessage,
 }: TranslateButtonProps) {
   const t = useTranslations("translateButton");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isDisabled = disabled || loading || sourceText.trim().length === 0;
+  const idleLabel = label ?? t("translate");
 
   const handleClick = async () => {
     if (isDisabled) return;
@@ -83,26 +100,26 @@ export default function TranslateButton({
       if (!res.ok) throw new Error(data.error ?? t("error"));
       onTranslated(data.translation);
     } catch {
-      setError(t("error"));
+      setError(errorMessage ?? t("error"));
     } finally {
       setLoading(false);
     }
   };
 
   const iconClass = ICON_SIZE[variant];
-  const label = loading ? t("translating") : t("translate");
+  const displayLabel = loading ? t("translating") : idleLabel;
 
   return (
     <div className={variant === "icon" ? "inline-flex flex-col" : "inline-flex flex-col items-start"}>
       <button
         type="button"
-        title={t("translate")}
+        title={idleLabel}
         onClick={handleClick}
         disabled={isDisabled}
         className={VARIANT_CLASSNAME[variant]}
       >
         {loading ? <Spinner className={iconClass} /> : <TranslateIcon className={iconClass} />}
-        {variant !== "icon" && label}
+        {variant !== "icon" && displayLabel}
       </button>
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
