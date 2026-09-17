@@ -26,12 +26,16 @@ export default function CustomSlugField({
   listingNumber,
   region,
   city,
+  onSaved,
 }: {
   listingId: string;
   initialCustomSlug: string | null;
   listingNumber: number | null;
   region: string | null;
   city: string | null;
+  // Notifie le parent (indicateur du menu gauche, voir EditListingForm.tsx)
+  // une fois la sauvegarde confirmée par le serveur.
+  onSaved?: (value: string | null) => void;
 }) {
   const tEdit = useTranslations("listings.edit");
   const [value, setValue] = useState(initialCustomSlug ?? "");
@@ -65,8 +69,10 @@ export default function CustomSlugField({
         else setError(tEdit("customSlugErrorGeneric"));
         return;
       }
+      const saved = value.trim() || null;
       setSavedValue(value.trim());
       setJustSaved(true);
+      onSaved?.(saved);
     } catch {
       setError(tEdit("customSlugErrorGeneric"));
     } finally {

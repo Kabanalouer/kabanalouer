@@ -139,6 +139,7 @@
       "pricingRequestDesc": "Aucun prix affiché sur votre fiche. Les voyageurs vous contactent pour obtenir une soumission personnalisée.",
       "pricingRequestDisplay": "« Prix sur demande — Contactez le propriétaire »",
       "citqLabel": "Numéro CITQ",
+      "customSlugSectionIntro": "Personnalisez la dernière partie de l'URL publique de votre annonce. Par défaut, elle utilise votre numéro d'annonce (ex. kabanalouer.ca/chalets/laurentides/mille-isles/48347). Vous pouvez la remplacer par un lien de votre choix (ex. kabanalouer.ca/chalets/laurentides/mille-isles/mon-lien).",
       "customSlugLabel": "Lien personnalisé",
       "customSlugHelp": "Remplacez le numéro d'annonce par un lien de votre choix dans l'URL de votre fiche. Le même lien est utilisé pour les versions française et anglaise.",
       "customSlugPlaceholder": "ex. mon-chalet-au-bord-du-lac",
@@ -205,6 +206,7 @@
       "calendar": "Calendrier",
       "location": "Localisation",
       "general": "Infos générales",
+      "customSlug": "Lien personnalisé",
       "promotions": "Promotions",
       "analysis": "Analyse de mon annonce"
     },

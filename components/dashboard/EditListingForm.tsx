@@ -76,6 +76,7 @@ type SectionId =
   | "localisation"
   | "tarifs"
   | "infos"
+  | "lienPersonnalise"
   | "promotions"
   | "analyse"
   | "vedette"
@@ -97,6 +98,7 @@ const SECTIONS: Array<{
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
   { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
+  { id: "lienPersonnalise", sectionKey: "customSlug", isComplete: () => true },
   { id: "promotions",   sectionKey: "promotions", isComplete: () => true },
   { id: "analyse",      sectionKey: "analysis",  isComplete: () => true },
 ];
@@ -114,6 +116,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
   infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
+  lienPersonnalise: [],
   promotions:   [],
   analyse:      [],
   vedette:      [],
@@ -125,7 +128,8 @@ const inputCls =
 
 const INDICATOR_SECTION_IDS = new Set<SectionId>([
   "photos", "titre", "description", "capacite", "chambres",
-  "equipements", "proximite", "tarifs", "calendrier", "localisation", "infos", "promotions",
+  "equipements", "proximite", "tarifs", "calendrier", "localisation", "infos",
+  "lienPersonnalise", "promotions",
 ]);
 const TITLE_MAX = 50;
 const DESC_MAX = 2500;
@@ -235,6 +239,7 @@ export default function EditListingForm({
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [localImportStatus, setLocalImportStatus] = useState(importStatus ?? null);
+  const [customSlug, setCustomSlug] = useState(initialCustomSlug);
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -351,6 +356,11 @@ export default function EditListingForm({
     // Signal visuel uniquement (voir sectionValid ci-dessus, qui ne bloque
     // plus la publication) : CITQ manquant reste affiché comme incomplet.
     infos: form.citq_number.length === 6,
+    // Optionnel, jamais bloquant pour la publication (voir SECTIONS
+    // ci-dessus) — indique simplement si un lien personnalisé est défini,
+    // sinon la fiche utilise son numéro d'annonce par défaut, un état
+    // parfaitement valide.
+    lienPersonnalise: !!customSlug,
   };
 
   const sidebarScore = scoreDbLoaded
@@ -720,6 +730,7 @@ export default function EditListingForm({
       calendrier:   t("sections.calendar"),
       localisation: t("sections.location"),
       infos:        t("sections.general"),
+      lienPersonnalise: t("sections.customSlug"),
       promotions:   t("sections.promotions"),
       analyse:      t("sections.analysis"),
     };
@@ -1624,18 +1635,25 @@ export default function EditListingForm({
                     </button>
                   </div>
                 </div>
-
-                <div className="pt-2 border-t border-[#ebebeb]">
-                  <CustomSlugField
-                    listingId={listingId}
-                    initialCustomSlug={initialCustomSlug}
-                    listingNumber={listingNumber}
-                    region={form.region || null}
-                    city={initialCity || null}
-                  />
-                </div>
               </div>
               <RequiredNote tEdit={tEdit} />
+            </SectionShell>
+          )}
+
+          {/* Section: Lien personnalisé */}
+          {activeSection === "lienPersonnalise" && (
+            <SectionShell title={t("sections.customSlug")}>
+              <div className="space-y-5">
+                <p className="text-sm text-charcoal-500">{tEdit("customSlugSectionIntro")}</p>
+                <CustomSlugField
+                  listingId={listingId}
+                  initialCustomSlug={initialCustomSlug}
+                  listingNumber={listingNumber}
+                  region={form.region || null}
+                  city={initialCity || null}
+                  onSaved={setCustomSlug}
+                />
+              </div>
             </SectionShell>
           )}
 

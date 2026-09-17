@@ -139,6 +139,7 @@
       "pricingRequestDesc": "No price displayed on your listing. Travelers contact you for a personalized quote.",
       "pricingRequestDisplay": "\"Price on request — Contact the owner\"",
       "citqLabel": "CITQ number",
+      "customSlugSectionIntro": "Customize the last part of your listing's public URL. By default, it uses your listing number (e.g. kabanalouer.ca/chalets/laurentides/mille-isles/48347). You can replace it with a link of your choice (e.g. kabanalouer.ca/chalets/laurentides/mille-isles/my-link).",
       "customSlugLabel": "Custom link",
       "customSlugHelp": "Replace the listing number with a link of your choice in your listing's URL. The same link is used for the French and English versions.",
       "customSlugPlaceholder": "e.g. my-lakefront-cabin",
@@ -205,6 +206,7 @@
       "calendar": "Calendar",
       "location": "Location",
       "general": "General info",
+      "customSlug": "Custom link",
       "promotions": "Promotions",
       "analysis": "Listing analysis"
     },
