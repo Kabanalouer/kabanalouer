@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
 
 const inputCls =
@@ -245,6 +246,29 @@ export default function ProfileForm({
     if (error) setBioError(t("errorSaving"));
     else { setBioSaved(true); setTimeout(() => setBioSaved(false), 2500); }
   };
+
+  // Sauvegarde automatique ~1,75 s après la dernière frappe — réutilise
+  // saveBio() tel quel (même écriture Supabase, même validation), même
+  // mécanisme que EditListingForm.tsx. Une seule "section" ici (pas d'onglets
+  // à changer comme dans le formulaire d'annonce), donc une clé constante.
+  const bioAutosaveTrigger = JSON.stringify([bio, bioEn]);
+  const { pending: bioAutosavePending } = useAutosave(
+    "bio",
+    bioAutosaveTrigger,
+    () => { void saveBio(); }
+  );
+
+  // Garde-fou de sortie : sauvegarde en attente, en cours, ou échouée.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (bioAutosavePending || bioSaving || bioError) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [bioAutosavePending, bioSaving, bioError]);
 
   const generateBio = async () => {
     setBioGenerating(true);
