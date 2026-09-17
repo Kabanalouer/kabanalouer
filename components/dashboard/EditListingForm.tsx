@@ -393,7 +393,24 @@ export default function EditListingForm({
   const [descGenError, setDescGenError] = useState("");
   const [showDescContextWarning, setShowDescContextWarning] = useState(false);
   const [savedDescription, setSavedDescription] = useState<string | null>(null);
-  const [showDescRestoreButtons, setShowDescRestoreButtons] = useState(false);
+  const descFrTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const descEnTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Auto-resize des textareas Description — même technique que les légendes
+  // de photo (PhotoUpload.tsx) : hauteur recalculée depuis scrollHeight.
+  useEffect(() => {
+    const el = descFrTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [form.description]);
+
+  useEffect(() => {
+    const el = descEnTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [form.description_en]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -428,7 +445,6 @@ export default function EditListingForm({
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
       setSavedDescription(null);
-      setShowDescRestoreButtons(false);
     }
   };
 
@@ -555,6 +571,7 @@ export default function EditListingForm({
     setShowDescContextWarning(false);
     setDescGenerating(true);
     setDescGenError("");
+    const hadOriginal = form.description.trim().length > 0;
     try {
       const res = await fetch("/api/ai/generate-description", {
         method: "POST",
@@ -564,6 +581,7 @@ export default function EditListingForm({
           capacity: form.capacity, bedrooms: form.bedrooms, bathrooms: form.bathrooms,
           amenities: form.amenities, nearby_activities: form.nearby_activities,
           price_low: form.price_low, price_on_request: form.price_on_request,
+          current_description: hadOriginal ? form.description : undefined,
           locale,
         }),
       });
@@ -571,10 +589,8 @@ export default function EditListingForm({
       if (!res.ok) {
         setDescGenError(data.error ?? tEdit("aiError"));
       } else {
-        const hadOriginal = form.description.trim().length > 0;
         if (hadOriginal) setSavedDescription(form.description);
         handleDescriptionChange(data.description ?? "");
-        if (hadOriginal) setShowDescRestoreButtons(true);
       }
     } catch { setDescGenError(tEdit("aiError")); }
     setDescGenerating(false);
@@ -963,103 +979,116 @@ export default function EditListingForm({
             <SectionShell title={t("sections.description")}>
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("descMaxChars", { count: DESC_MAX })}</p>
 
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => void handleGenerateDescription()}
-                  disabled={descGenerating}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-full px-4 py-2 transition-colors disabled:opacity-50"
-                >
-                  {descGenerating ? (
-                    <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                    </svg>
-                  )}
-                  {descGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
-                </button>
-
-                {showDescContextWarning && !descGenerating && (
-                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void handleGenerateDescription(true)}
-                        className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
-                      >
-                        {tEdit("aiGenerateAnyway")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowDescContextWarning(false); goToNextIncompleteSection(); }}
-                        className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
-                      >
-                        {tEdit("continueForm")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
-              </div>
-
               {(() => {
                 const descFrBlock = (
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between gap-4 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">
                         {tEdit("descLabelFr")} <Req />
                       </label>
-                      <TranslateButton
-                        sourceText={form.description}
-                        sourceLang="fr"
-                        targetLang="en"
-                        fieldType="description"
-                        variant="pill"
-                        disabled={!form.description.trim()}
-                        onTranslated={(en) => set("description_en", en)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => void handleGenerateDescription()}
+                          disabled={descGenerating}
+                          className={HELPER_BUTTON_CLASSNAME}
+                        >
+                          {descGenerating ? (
+                            <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                            </svg>
+                          )}
+                          {descGenerating ? tEdit("aiGenerating") : form.description.trim() ? tEdit("aiOptimize") : tEdit("aiGenerate")}
+                        </button>
+                        <TranslateButton
+                          sourceText={form.description}
+                          sourceLang="fr"
+                          targetLang="en"
+                          fieldType="description"
+                          variant="text"
+                          disabled={!form.description.trim()}
+                          onTranslated={(en) => set("description_en", en)}
+                        />
+                      </div>
                     </div>
                     <textarea
+                      ref={descFrTextareaRef}
                       value={form.description}
                       onChange={(e) => {
-                        if (showDescRestoreButtons) { setShowDescRestoreButtons(false); setSavedDescription(null); }
+                        if (savedDescription !== null) setSavedDescription(null);
                         handleDescriptionChange(e.target.value);
                       }}
-                      className={`${inputCls} resize-none`}
-                      rows={32}
+                      className={`${inputCls} resize-none overflow-hidden min-h-[160px]`}
+                      rows={1}
                       placeholder={tEdit("descPlaceholder")}
                     />
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                       {form.description.length}/{DESC_MAX}
                     </p>
+
+                    {showDescContextWarning && !descGenerating && (
+                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                        <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleGenerateDescription(true)}
+                            className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                          >
+                            {tEdit("aiGenerateAnyway")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowDescContextWarning(false); goToNextIncompleteSection(); }}
+                            className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                          >
+                            {tEdit("continueForm")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
+
+                    {savedDescription !== null && (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => { handleDescriptionChange(savedDescription); setSavedDescription(null); }}
+                          className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
+                        >
+                          {tEdit("descRestore")}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
 
                 const descEnBlock = (
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between gap-4 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">{tEdit("descLabelEn")}</label>
                       <TranslateButton
                         sourceText={form.description_en}
                         sourceLang="en"
                         targetLang="fr"
                         fieldType="description"
-                        variant="pill"
+                        variant="text"
                         disabled={!form.description_en.trim()}
                         onTranslated={(fr) => handleDescriptionChange(fr)}
                       />
                     </div>
                     <textarea
+                      ref={descEnTextareaRef}
                       value={form.description_en}
                       onChange={(e) => set("description_en", e.target.value.slice(0, DESC_MAX))}
-                      className={`${inputCls} resize-none`}
-                      rows={32}
+                      className={`${inputCls} resize-none overflow-hidden min-h-[160px]`}
+                      rows={1}
                       placeholder={tEdit("descEnPlaceholder")}
                     />
                     <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">{form.description_en.length}/{DESC_MAX}</p>
@@ -1077,28 +1106,6 @@ export default function EditListingForm({
                 ));
               })()}
 
-              {showDescRestoreButtons && savedDescription !== null && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setShowDescRestoreButtons(false); setSavedDescription(null); }}
-                    className="text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-full px-5 py-2.5 transition-colors"
-                  >
-                    {tEdit("descUseNew")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleDescriptionChange(savedDescription);
-                      setShowDescRestoreButtons(false);
-                      setSavedDescription(null);
-                    }}
-                    className="text-sm font-medium text-charcoal-600 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-5 py-2.5 transition-colors"
-                  >
-                    {tEdit("descRestoreOriginal")}
-                  </button>
-                </div>
-              )}
               <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}

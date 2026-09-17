@@ -39,6 +39,18 @@ const SYSTEM_PROMPT_EN =
   NO_GENERIC_ADJECTIVES_EN + " " +
   PRIORITIZE_DIFFERENTIATING_AMENITIES_EN;
 
+const SYSTEM_PROMPT_OPTIMIZE_SUFFIX_FR =
+  "MODE OPTIMISATION : le proprio a déjà rédigé un texte, fourni dans le message utilisateur — retravaille-le, ne repars pas de zéro. Conserve tout détail narratif propre qu'il contient (ex. un nom donné au chalet ou au domaine, une anecdote, un ton personnel) même s'il n'apparaît dans aucune donnée structurée fournie.";
+
+const SYSTEM_PROMPT_OPTIMIZE_SUFFIX_EN =
+  "OPTIMIZATION MODE: the owner has already written a text, provided in the user message — rework it, don't start from scratch. Keep any distinctive narrative detail it contains (e.g. a name given to the cabin or property, an anecdote, a personal touch) even if it isn't part of any structured data provided.";
+
+const DESC_OUTPUT_RULES_FR =
+  "Retourne UNIQUEMENT le texte de la description, sans titre, sans en-tête, sans label, sans section, sans markdown, sans astérisques, sans dièse (#), sans comptage. Commence directement par la première phrase de la description. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de 2500 caractères, espaces compris. Arrête-toi à une phrase complète avant la limite. Ne jamais couper une phrase en plein milieu. Commence par une phrase d'accroche forte. Ne tutoie jamais le voyageur, utilise \"vous\".";
+
+const DESC_OUTPUT_RULES_EN =
+  "Return ONLY the description text, no title, no header, no label, no section, no markdown, no asterisks, no hash (#), no counting. Start directly with the first sentence. ABSOLUTE CONSTRAINT: the description must be STRICTLY less than 2500 characters including spaces. Stop at a complete sentence before the limit. Never cut a sentence mid-way. Start with a strong hook sentence. Never address the traveler informally, keep a polite tone.";
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -66,11 +78,15 @@ export async function POST(request: Request) {
     nearby_activities,
     price_low,
     price_on_request,
+    current_description,
     locale,
   } = await request.json();
 
   const isEn = locale === "en";
-  const SYSTEM_PROMPT = isEn ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT_FR;
+  const isOptimizing = typeof current_description === "string" && current_description.trim().length > 0;
+  const SYSTEM_PROMPT =
+    (isEn ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT_FR) +
+    (isOptimizing ? " " + (isEn ? SYSTEM_PROMPT_OPTIMIZE_SUFFIX_EN : SYSTEM_PROMPT_OPTIMIZE_SUFFIX_FR) : "");
 
   const lines = isEn
     ? [
@@ -108,9 +124,13 @@ export async function POST(request: Request) {
           : null,
       ].filter(Boolean).join("\n");
 
-  const userPrompt = isEn
-    ? `${NO_GENERIC_ADJECTIVES_EN} Generate a complete description for this cabin listing. Return ONLY the description text, no title, no header, no label, no section, no markdown, no asterisks, no hash (#), no counting. Start directly with the first sentence. ABSOLUTE CONSTRAINT: the description must be STRICTLY less than 2500 characters including spaces. Stop at a complete sentence before the limit. Never cut a sentence mid-way. Start with a strong hook sentence. Describe the atmosphere, highlights, and nearby activities.\n\nContext:\n${lines}`
-    : `${NO_GENERIC_ADJECTIVES_FR} Génère une description complète pour cette annonce de chalet. Retourne UNIQUEMENT le texte de la description, sans titre, sans en-tête, sans label, sans section, sans markdown, sans astérisques, sans dièse (#), sans comptage. Commence directement par la première phrase de la description. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de 2500 caractères, espaces compris. Arrête-toi à une phrase complète avant la limite. Ne jamais couper une phrase en plein milieu. Commence par une phrase d'accroche forte. Décris l'ambiance, les points forts, les activités à proximité. Ne tutoie jamais le voyageur, utilise "vous".\n\nContexte :\n${lines}`;
+  const userPrompt = isOptimizing
+    ? (isEn
+        ? `${NO_GENERIC_ADJECTIVES_EN} Improve and rework the following existing cabin listing description. Keep any distinctive narrative detail it contains that isn't part of the structured context below (e.g. a name given to the property, a personal anecdote) — never delete those. Fix it so it follows all the rules above (block order, no repeated facts, no generic adjectives, prioritize differentiating amenities). ${DESC_OUTPUT_RULES_EN}\n\nExisting description to improve:\n${current_description}\n\nStructured context (for reference — the existing text may already cover things not listed here):\n${lines}`
+        : `${NO_GENERIC_ADJECTIVES_FR} Améliore et retravaille la description existante suivante pour cette annonce de chalet. Conserve tout détail narratif distinctif qu'elle contient et qui n'apparaît pas dans le contexte structuré ci-dessous (ex. un nom donné au chalet, une anecdote personnelle) — ne les supprime jamais. Corrige-la pour respecter toutes les règles ci-dessus (ordre des blocs, aucune répétition de fait, aucun adjectif générique, priorisation des équipements différenciants). ${DESC_OUTPUT_RULES_FR}\n\nDescription actuelle à améliorer :\n${current_description}\n\nContexte structuré (pour référence — le texte existant peut déjà couvrir des éléments qui n'y figurent pas) :\n${lines}`)
+    : (isEn
+        ? `${NO_GENERIC_ADJECTIVES_EN} Generate a complete description for this cabin listing. ${DESC_OUTPUT_RULES_EN} Describe the atmosphere, highlights, and nearby activities.\n\nContext:\n${lines}`
+        : `${NO_GENERIC_ADJECTIVES_FR} Génère une description complète pour cette annonce de chalet. ${DESC_OUTPUT_RULES_FR} Décris l'ambiance, les points forts, les activités à proximité.\n\nContexte :\n${lines}`);
 
   const genericWords = isEn ? GENERIC_ADJECTIVE_WORDS_EN : GENERIC_ADJECTIVE_WORDS_FR;
 
