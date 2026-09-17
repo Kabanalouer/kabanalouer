@@ -1807,6 +1807,11 @@ export default function EditListingForm({
             <div className="mt-6 pt-5 border-t border-[#ebebeb] flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <button
+                  type="button"
+                  // Empêche le blur d'un champ voisin (ex. légende de photo)
+                  // de se déclencher avant le clic — même correctif que
+                  // TranslateButton pour le même conflit focus/blur.
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={handleSaveSection}
                   disabled={saving || descBelowMin}
                   className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
