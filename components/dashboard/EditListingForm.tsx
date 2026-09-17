@@ -86,7 +86,7 @@ const SECTIONS: Array<{
 }> = [
   { id: "photos",       sectionKey: "photos",    isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
   { id: "titre",        sectionKey: "title",     isComplete: (f) => f.title.trim().length > 0 },
-  { id: "description",  sectionKey: "description", isComplete: (f) => f.description.trim().length > 0 },
+  { id: "description",  sectionKey: "description", isComplete: (f) => f.description.trim().length >= DESC_MIN },
   { id: "capacite",     sectionKey: "capacity",  isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
   { id: "chambres",     sectionKey: "rooms",     isComplete: () => true },
   { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
@@ -127,6 +127,11 @@ const INDICATOR_SECTION_IDS = new Set<SectionId>([
 ]);
 const TITLE_MAX = 50;
 const DESC_MAX = 2500;
+const DESC_MIN = 500;
+// Échantillon réaliste (~490 caractères) utilisé uniquement pour mesurer la
+// hauteur qu'occuperait un texte de cette longueur, jamais affiché.
+const DESC_MIN_HEIGHT_SAMPLE =
+  "Ce chalet en bois rond vous accueille avec un spa extérieur, une piscine intérieure chauffée et un accès direct au lac pour des séjours mémorables en groupe. Cinq chambres spacieuses et trois salles de bain complètes permettent de loger confortablement une grande famille ou un groupe d'amis, dans un cadre chaleureux au cœur des Laurentides, entouré de forêt et à quelques minutes des pistes de ski, des sentiers de randonnée et d'un lac où pratiquer la pêche ou le canot toute l'année.";
 
 export default function EditListingForm({
   userId,
@@ -302,7 +307,7 @@ export default function EditListingForm({
   const sectionValid: Partial<Record<SectionId, boolean>> = {
     photos: form.photos.length >= MIN_PHOTOS,
     titre: form.title.trim().length > 0,
-    description: form.description.trim().length > 0,
+    description: form.description.trim().length >= DESC_MIN,
     capacite: form.capacity >= 1 && form.bedrooms >= 1,
     chambres: roomsHasBeds,
     equipements: form.amenities.length >= 3,
@@ -395,6 +400,8 @@ export default function EditListingForm({
   const [savedDescription, setSavedDescription] = useState<string | null>(null);
   const descFrTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const descEnTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const descMeasureRef = useRef<HTMLTextAreaElement | null>(null);
+  const [descMinHeightPx, setDescMinHeightPx] = useState<number | null>(null);
 
   // Auto-resize des textareas Description — même technique que les légendes
   // de photo (PhotoUpload.tsx) : hauteur recalculée depuis scrollHeight.
@@ -411,6 +418,20 @@ export default function EditListingForm({
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   }, [form.description_en]);
+
+  // Hauteur minimale du champ Description = hauteur réelle d'un texte
+  // d'environ DESC_MIN caractères à la largeur actuelle du champ (mesurée via
+  // un textarea miroir invisible), pas un nombre de pixels arbitraire.
+  // Réévalué automatiquement si la largeur change (sidebar, mobile...).
+  useEffect(() => {
+    const el = descMeasureRef.current;
+    if (!el) return;
+    const measure = () => setDescMinHeightPx(el.scrollHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -597,6 +618,10 @@ export default function EditListingForm({
   };
 
   const hasSaveButton = SECTION_FIELDS[activeSection].length > 0;
+  // Le français doit atteindre le minimum avant de pouvoir enregistrer ou
+  // publier — l'anglais reste facultatif (traduit automatiquement à la
+  // publication s'il est vide), jamais bloquant ici.
+  const descBelowMin = activeSection === "description" && form.description.trim().length < DESC_MIN;
 
   const getSectionLabel = (id: string): string => {
     const map: Partial<Record<string, string>> = {
@@ -979,6 +1004,19 @@ export default function EditListingForm({
             <SectionShell title={t("sections.description")}>
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("descMaxChars", { count: DESC_MAX })}</p>
 
+              {/* Miroir invisible — sert uniquement à mesurer la hauteur d'environ
+                  DESC_MIN caractères à la largeur actuelle, jamais affiché. */}
+              <div aria-hidden="true" className="h-0 overflow-hidden">
+                <textarea
+                  ref={descMeasureRef}
+                  readOnly
+                  tabIndex={-1}
+                  rows={1}
+                  value={DESC_MIN_HEIGHT_SAMPLE}
+                  className={`${inputCls} resize-none`}
+                />
+              </div>
+
               {(() => {
                 const descFrBlock = (
                   <div>
@@ -1023,12 +1061,13 @@ export default function EditListingForm({
                         if (savedDescription !== null) setSavedDescription(null);
                         handleDescriptionChange(e.target.value);
                       }}
-                      className={`${inputCls} resize-none overflow-hidden min-h-[160px]`}
+                      className={`${inputCls} resize-none overflow-hidden`}
+                      style={descMinHeightPx ? { minHeight: `${descMinHeightPx}px` } : undefined}
                       rows={1}
                       placeholder={tEdit("descPlaceholder")}
                     />
-                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
-                      {form.description.length}/{DESC_MAX}
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit || form.description.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
+                      {tEdit("descCounter", { count: form.description.length, max: DESC_MAX, min: DESC_MIN })}
                     </p>
 
                     {showDescContextWarning && !descGenerating && (
@@ -1087,11 +1126,14 @@ export default function EditListingForm({
                       ref={descEnTextareaRef}
                       value={form.description_en}
                       onChange={(e) => set("description_en", e.target.value.slice(0, DESC_MAX))}
-                      className={`${inputCls} resize-none overflow-hidden min-h-[160px]`}
+                      className={`${inputCls} resize-none overflow-hidden`}
+                      style={descMinHeightPx ? { minHeight: `${descMinHeightPx}px` } : undefined}
                       rows={1}
                       placeholder={tEdit("descEnPlaceholder")}
                     />
-                    <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">{form.description_en.length}/{DESC_MAX}</p>
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${form.description_en.trim().length > 0 && form.description_en.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
+                      {tEdit("descCounter", { count: form.description_en.length, max: DESC_MAX, min: DESC_MIN })}
+                    </p>
                   </div>
                 );
 
@@ -1752,21 +1794,28 @@ export default function EditListingForm({
 
           {/* Save bar */}
           {hasSaveButton && (
-            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex items-center gap-3">
-              <button
-                onClick={handleSaveSection}
-                disabled={saving}
-                className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {saving ? (
-                  <><Spinner />{tCommon("saving")}</>
-                ) : justSaved ? (
-                  tCommon("saved")
-                ) : (
-                  tCommon("save")
-                )}
-              </button>
-              {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSaveSection}
+                  disabled={saving || descBelowMin}
+                  className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saving ? (
+                    <><Spinner />{tCommon("saving")}</>
+                  ) : justSaved ? (
+                    tCommon("saved")
+                  ) : (
+                    tCommon("save")
+                  )}
+                </button>
+                {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+              </div>
+              {descBelowMin && (
+                <p className="text-sm text-red-500">
+                  {tEdit("descMinReason", { count: DESC_MIN - form.description.trim().length, min: DESC_MIN })}
+                </p>
+              )}
             </div>
           )}
         </div>

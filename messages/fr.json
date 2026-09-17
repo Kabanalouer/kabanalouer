@@ -109,6 +109,8 @@
       "titleEnHelperNote": "Vous pouvez laisser ce champ vide — il sera traduit automatiquement à la publication.",
       "translateDisabledReason": "Écrivez d'abord le titre français.",
       "descMaxChars": "Maximum de {count} caractères.",
+      "descCounter": "{count}/{max} caractères — minimum {min}",
+      "descMinReason": "Ajoutez encore {count} caractères pour atteindre le minimum de {min}.",
       "descPlaceholder": "Décrivez l'atmosphère, les points forts, les activités à proximité…",
       "descLabelFr": "Description (français)",
       "descLabelEn": "Description (anglais)",

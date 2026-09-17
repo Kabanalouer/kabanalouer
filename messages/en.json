@@ -109,6 +109,8 @@
       "titleEnHelperNote": "You can leave this field empty — it will be translated automatically when you publish.",
       "translateDisabledReason": "Write the French title first.",
       "descMaxChars": "Maximum {count} characters.",
+      "descCounter": "{count}/{max} characters — minimum {min}",
+      "descMinReason": "Add {count} more characters to reach the {min} minimum.",
       "descPlaceholder": "Describe the atmosphere, highlights, nearby activities…",
       "descLabelFr": "Description (French)",
       "descLabelEn": "Description (English)",
