@@ -369,8 +369,6 @@ export default function EditListingForm({
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
-  const [titleEnAutoTranslated, setTitleEnAutoTranslated] = useState(false);
-  const [savedTitleEn, setSavedTitleEn] = useState<string | null>(null);
 
   // Popover de suggestions IA (titre) — se ferme sans rien changer au clic
   // en dehors ou à Échap, jamais en remplissant le champ.
@@ -929,11 +927,7 @@ export default function EditListingForm({
                         label={tEdit("translateFromFrench")}
                         errorMessage={tEdit("translateTitleError")}
                         disabled={!form.title.trim()}
-                        onTranslated={(en) => {
-                          if (form.title_en.trim()) setSavedTitleEn(form.title_en);
-                          set("title_en", en.slice(0, TITLE_MAX));
-                          setTitleEnAutoTranslated(true);
-                        }}
+                        onTranslated={(en) => set("title_en", en.slice(0, TITLE_MAX))}
                       />
                     </div>
                     <p className="text-xs text-charcoal-400 mt-1 mb-2">
@@ -942,38 +936,13 @@ export default function EditListingForm({
                     <input
                       type="text"
                       value={form.title_en}
-                      onChange={(e) => {
-                        if (savedTitleEn !== null) setSavedTitleEn(null);
-                        setTitleEnAutoTranslated(false);
-                        set("title_en", e.target.value.slice(0, TITLE_MAX));
-                      }}
+                      onChange={(e) => set("title_en", e.target.value.slice(0, TITLE_MAX))}
                       className={inputCls}
                       placeholder={tEdit("titleEnPlaceholder")}
                     />
-                    <div className="flex items-center justify-between gap-3 mt-1.5">
-                      <p className="text-xs font-semibold text-teal-500">
-                        {titleEnAutoTranslated && tEdit("titleEnAutoTranslatedStatus")}
-                      </p>
-                      <p className="text-xs tabular-nums text-charcoal-400">
-                        {form.title_en.length}/{TITLE_MAX}
-                      </p>
-                    </div>
-
-                    {savedTitleEn !== null && (
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            set("title_en", savedTitleEn);
-                            setTitleEnAutoTranslated(false);
-                            setSavedTitleEn(null);
-                          }}
-                          className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
-                        >
-                          {tEdit("titleEnRestore")}
-                        </button>
-                      </div>
-                    )}
+                    <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">
+                      {form.title_en.length}/{TITLE_MAX}
+                    </p>
                   </>
                 );
 

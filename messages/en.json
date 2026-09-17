@@ -109,8 +109,6 @@
       "translateTitleError": "The translation didn't work — try again or leave it blank, it'll be translated automatically when you publish.",
       "titleEnHelperNote": "You can leave this field empty — it will be translated automatically when you publish.",
       "translateDisabledReason": "Write the French title first.",
-      "titleEnAutoTranslatedStatus": "Automatically translated — review before publishing",
-      "titleEnRestore": "Restore previous version",
       "descMaxChars": "Maximum {count} characters.",
       "descPlaceholder": "Describe the atmosphere, highlights, nearby activities…",
       "descLabelFr": "Description (French)",
