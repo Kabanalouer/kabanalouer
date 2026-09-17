@@ -718,9 +718,6 @@ function CaptionField({
     el.style.height = el.scrollHeight + "px";
   }, [valueEn]);
 
-  const near = value.length >= CAPTION_MAX - 15;
-  const nearEn = valueEn.length >= CAPTION_MAX - 15;
-
   const frField = (
     <div>
       <p className="text-[10px] font-semibold text-charcoal-400 mb-0.5">Légende (français)</p>
@@ -739,7 +736,7 @@ function CaptionField({
         />
         <CaptionButton i={i} generatingIdx={generatingIdx} onClick={onGenerate} />
       </div>
-      <p className={`text-right text-[10px] mt-0.5 tabular-nums ${near ? "text-[#f04e45]" : "text-charcoal-300"}`}>
+      <p className="text-right text-[10px] mt-0.5 tabular-nums text-charcoal-300">
         {value.length}/{CAPTION_MAX}
       </p>
     </div>
@@ -770,7 +767,7 @@ function CaptionField({
           onTranslated={(en) => { onChangeEn(en); onBlur(); }}
         />
       </div>
-      <p className={`text-right text-[10px] mt-0.5 tabular-nums ${nearEn ? "text-[#f04e45]" : "text-charcoal-300"}`}>
+      <p className="text-right text-[10px] mt-0.5 tabular-nums text-charcoal-300">
         {valueEn.length}/{CAPTION_MAX}
       </p>
     </div>
