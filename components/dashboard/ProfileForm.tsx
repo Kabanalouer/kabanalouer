@@ -230,6 +230,13 @@ export default function ProfileForm({
     else { setInfoSaved(true); setTimeout(() => setInfoSaved(false), 2500); }
   };
 
+  const infoAutosaveTrigger = JSON.stringify([firstName, lastName]);
+  const { pending: infoAutosavePending } = useAutosave(
+    "info",
+    infoAutosaveTrigger,
+    () => { void saveInfo(); }
+  );
+
   // ── Bio ──────────────────────────────────────────────────────────────────────
   const [bio, setBio] = useState(initialBio);
   const [bioEn, setBioEn] = useState(initialBioEn);
@@ -257,18 +264,6 @@ export default function ProfileForm({
     bioAutosaveTrigger,
     () => { void saveBio(); }
   );
-
-  // Garde-fou de sortie : sauvegarde en attente, en cours, ou échouée.
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (bioAutosavePending || bioSaving || bioError) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [bioAutosavePending, bioSaving, bioError]);
 
   const generateBio = async () => {
     setBioGenerating(true);
@@ -303,6 +298,12 @@ export default function ProfileForm({
     if (error) setContactError(t("errorSaving"));
     else { setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); }
   };
+
+  const { pending: contactAutosavePending } = useAutosave(
+    "contact",
+    phone,
+    () => { void saveContact(); }
+  );
 
   // ── Langue ───────────────────────────────────────────────────────────────────
   const [preferredLanguage, setPreferredLanguage] = useState<"fr" | "en">(initialPreferredLanguage);
@@ -360,10 +361,12 @@ export default function ProfileForm({
   const [notifMonthly, setNotifMonthly] = useState(initialNotifPrefs.notif_monthly_report ?? false);
   const [notifSaving, setNotifSaving] = useState(false);
   const [notifSaved, setNotifSaved] = useState(false);
+  const [notifError, setNotifError] = useState("");
 
   const saveNotifs = async () => {
     setNotifSaving(true);
-    await supabase.from("users").update({
+    setNotifError("");
+    const { error } = await supabase.from("users").update({
       notifications_prefs: {
         notif_messages: notifMessages,
         notif_favorites: notifFavorites,
@@ -371,9 +374,45 @@ export default function ProfileForm({
       },
     }).eq("id", userId);
     setNotifSaving(false);
-    setNotifSaved(true);
-    setTimeout(() => setNotifSaved(false), 2500);
+    if (error) setNotifError(t("errorSaving"));
+    else { setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2500); }
   };
+
+  // Cases à cocher : pas de frappe à attendre — sauvegarde dès le changement
+  // d'état plutôt qu'après un délai (delay: 0, mais toujours via le même
+  // hook partagé pour rester couvert par le beforeunload ci-dessous).
+  const notifAutosaveTrigger = JSON.stringify([notifMessages, notifFavorites, notifMonthly]);
+  const { pending: notifAutosavePending } = useAutosave(
+    "notifications",
+    notifAutosaveTrigger,
+    () => { void saveNotifs(); },
+    { delay: 0 }
+  );
+
+  // Garde-fou de sortie unique pour les 4 sections à autosave (Bio, Infos,
+  // Coordonnées, Notifications) — en attente, en cours, ou échouée sur
+  // n'importe laquelle. La section Sécurité (mot de passe) reste volontairement
+  // hors de ce mécanisme, à sauvegarde manuelle uniquement.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const unsaved =
+        bioAutosavePending || bioSaving || bioError ||
+        infoAutosavePending || infoSaving || infoError ||
+        contactAutosavePending || contactSaving || contactError ||
+        notifAutosavePending || notifSaving || notifError;
+      if (unsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [
+    bioAutosavePending, bioSaving, bioError,
+    infoAutosavePending, infoSaving, infoError,
+    contactAutosavePending, contactSaving, contactError,
+    notifAutosavePending, notifSaving, notifError,
+  ]);
 
   // ── Danger zone ──────────────────────────────────────────────────────────────
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
@@ -664,8 +703,9 @@ export default function ProfileForm({
             description={t("notifMonthlyDesc")}
           />
         </div>
-        <div className="pt-2">
+        <div className="pt-2 flex items-center gap-3">
           <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
+          <ErrorMsg msg={notifError} />
         </div>
       </Section>
 
