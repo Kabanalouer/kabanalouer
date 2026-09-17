@@ -97,9 +97,16 @@ export default function TranslateButton({
         body: JSON.stringify({ text: sourceText, sourceLang, targetLang, fieldType }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? t("error"));
+      if (!res.ok) {
+        // Message précis du serveur (ex. limite de débit atteinte) plutôt que
+        // le texte générique — plus utile pour comprendre un vrai échec.
+        setError(data.error ?? errorMessage ?? t("error"));
+        return;
+      }
       onTranslated(data.translation);
     } catch {
+      // Échec réseau/parsing sans message exploitable côté serveur — le texte
+      // générique reste préférable à une erreur JS brute.
       setError(errorMessage ?? t("error"));
     } finally {
       setLoading(false);

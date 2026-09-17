@@ -12,7 +12,7 @@ const FIELD_TYPES: FieldType[] = ["title", "description", "caption", "roomName",
 const MAX_LENGTH: Record<FieldType, number> = {
   title: 50,
   description: 2500,
-  caption: 200,
+  caption: 100,
   roomName: 60,
   bio: 300,
 };
