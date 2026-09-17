@@ -785,20 +785,25 @@ export default function EditListingForm({
                 </p>
               )}
             </div>
-            <button
-              onClick={() => setPreviewOpen(true)}
-              disabled={!canPreview}
-              title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
-              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-            >
-              {tEdit("previewButton")}
-            </button>
-            <button
-              onClick={() => setDeleteModalOpen(true)}
-              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
-            >
-              {tEdit("deleteButton")}
-            </button>
+            {/* pt-4 seul (pas de mt) : le conteneur parent applique déjà
+                space-y-2, dont la marge de séparation entre enfants a une
+                spécificité CSS plus forte qu'un mt-* posé ici et l'écraserait. */}
+            <div className="pt-4 border-t border-[#ebebeb] space-y-2">
+              <button
+                onClick={() => setPreviewOpen(true)}
+                disabled={!canPreview}
+                title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
+                className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+              >
+                {tEdit("previewButton")}
+              </button>
+              <button
+                onClick={() => setDeleteModalOpen(true)}
+                className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1"
+              >
+                {tEdit("deleteButton")}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -834,20 +839,22 @@ export default function EditListingForm({
               </p>
             )}
           </div>
-          <button
-            onClick={() => setPreviewOpen(true)}
-            disabled={!canPreview}
-            title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
-            className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-          >
-            {tEdit("previewButton")}
-          </button>
-          <button
-            onClick={() => setDeleteModalOpen(true)}
-            className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
-          >
-            {tEdit("deleteButton")}
-          </button>
+          <div className="mt-2 pt-4 border-t border-[#ebebeb] space-y-2">
+            <button
+              onClick={() => setPreviewOpen(true)}
+              disabled={!canPreview}
+              title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
+              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+            >
+              {tEdit("previewButton")}
+            </button>
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
+            >
+              {tEdit("deleteButton")}
+            </button>
+          </div>
         </div>
       </aside>
 
