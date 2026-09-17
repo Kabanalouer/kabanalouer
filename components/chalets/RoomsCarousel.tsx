@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface BedEntry { type: string; quantity: number; }
 interface Room {
@@ -14,9 +14,18 @@ interface Room {
   photos: string[];
 }
 
-const BED_FR: Record<string, string> = {
-  simple: "lit simple", double: "lit double", queen: "lit queen", king: "lit king",
+const BED_LABEL: Record<string, { fr: string; en: string }> = {
+  simple: { fr: "lit simple", en: "single bed" },
+  double: { fr: "lit double", en: "double bed" },
+  queen: { fr: "lit queen", en: "queen bed" },
+  king: { fr: "lit king", en: "king bed" },
 };
+
+function bedLabel(type: string, locale: string): string {
+  const entry = BED_LABEL[type];
+  if (!entry) return type;
+  return locale === "en" ? entry.en : entry.fr;
+}
 
 function displayRoomName(room: Room, locale: string): string {
   return (locale === "en" && room.name_en) ? room.name_en : room.name;
@@ -24,6 +33,7 @@ function displayRoomName(room: Room, locale: string): string {
 
 export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
   const locale = useLocale();
+  const t = useTranslations("listing");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -85,7 +95,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
           <button
             onClick={() => scroll("left")}
             disabled={!canLeft}
-            aria-label="Précédent"
+            aria-label={t("previousRoom")}
             className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
           >
             <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,7 +105,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
           <button
             onClick={() => scroll("right")}
             disabled={!canRight}
-            aria-label="Suivant"
+            aria-label={t("nextRoom")}
             className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
           >
             <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,7 +127,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
                 const items = Array.from(el.children) as HTMLElement[];
                 if (items[i]) el.scrollTo({ left: items[i].offsetLeft, behavior: "smooth" });
               }}
-              aria-label={`Chambre ${i + 1}`}
+              aria-label={t("goToRoom", { number: i + 1 })}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeRoomIdx ? "bg-primary" : "bg-[#ebebeb]"}`}
             />
           ))}
@@ -128,6 +138,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
 }
 
 function RoomCard({ room, locale }: { room: Room; locale: string }) {
+  const t = useTranslations("listing");
   const [photoIdx, setPhotoIdx] = useState(0);
   const beds = Array.isArray(room.beds) ? room.beds : [];
   const photos = Array.isArray(room.photos) ? room.photos as string[] : [];
@@ -151,7 +162,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
             <svg className="w-8 h-8 text-charcoal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
-            <span className="text-xs text-charcoal-300">Aucune photo</span>
+            <span className="text-xs text-charcoal-300">{t("noPhoto")}</span>
           </div>
         )}
 
@@ -160,7 +171,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
             <button
               onClick={() => setPhotoIdx((i) => i - 1)}
               disabled={photoIdx === 0}
-              aria-label="Photo précédente"
+              aria-label={t("photoPrevious")}
               className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
             >
               <svg className="w-3.5 h-3.5 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,7 +181,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
             <button
               onClick={() => setPhotoIdx((i) => i + 1)}
               disabled={photoIdx === photos.length - 1}
-              aria-label="Photo suivante"
+              aria-label={t("photoNext")}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow transition-opacity disabled:opacity-25"
             >
               <svg className="w-3.5 h-3.5 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,7 +193,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
                 <button
                   key={i}
                   onClick={() => setPhotoIdx(i)}
-                  aria-label={`Photo ${i + 1}`}
+                  aria-label={t("goToPhoto", { number: i + 1 })}
                   className={`w-1.5 h-1.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
                 />
               ))}
@@ -198,7 +209,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
             <button
               key={i}
               onClick={() => setPhotoIdx(i)}
-              aria-label={`Photo ${i + 1}`}
+              aria-label={t("goToPhoto", { number: i + 1 })}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
                 i === photoIdx ? "bg-primary" : "bg-[#ebebeb]"
               }`}
@@ -211,20 +222,20 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
       <div className="p-4 flex flex-col gap-1.5 flex-1">
         <p className="font-semibold text-charcoal-800 text-sm">{displayRoomName(room, locale)}</p>
         <p className="text-xs text-charcoal-400">
-          {isBedroom ? `${room.capacity} pers.` : `Capacité : ${room.capacity} pers.`}
+          {isBedroom ? t("roomCapacity", { count: room.capacity }) : t("roomCapacityLabel", { count: room.capacity })}
         </p>
         {isBedroom && beds.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-0.5">
             {beds.map((b, i) => (
               <span key={i} className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600">
-                {b.quantity}× {BED_FR[b.type] ?? b.type}
+                {b.quantity}× {bedLabel(b.type, locale)}
               </span>
             ))}
           </div>
         )}
         {!isBedroom && sofaBeds && (
           <span className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600 self-start mt-0.5">
-            {sofaBeds.quantity} divan{sofaBeds.quantity > 1 ? "s" : ""}-lit
+            {t("sofaBedCount", { count: sofaBeds.quantity })}
           </span>
         )}
       </div>

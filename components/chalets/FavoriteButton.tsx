@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 export default function FavoriteButton({
@@ -15,6 +16,7 @@ export default function FavoriteButton({
   currentUserId: string | null;
   className?: string;
 }) {
+  const t = useTranslations("listing");
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -43,7 +45,7 @@ export default function FavoriteButton({
     <button
       onClick={toggle}
       disabled={loading}
-      aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+      aria-label={isFavorite ? t("removeFromFavorites") : t("addToFavorites")}
       className={`p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors disabled:opacity-60 ${className ?? ""}`}
     >
       {isFavorite ? (

@@ -2,23 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { getMonthNames, getDayNames } from "@/lib/dateLocale";
 
-function getMonthNames(locale: string): string[] {
-  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
-  return Array.from({ length: 12 }, (_, i) =>
-    new Date(2024, i, 1).toLocaleDateString(intlLocale, { month: "long" })
-      .replace(/^./, (c) => c.toUpperCase())
-  );
-}
-
-function getDayNames(locale: string): string[] {
-  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
-  return Array.from({ length: 7 }, (_, i) =>
-    new Date(2025, 0, 5 + i).toLocaleDateString(intlLocale, { weekday: "short" })
-      .replace(".", "").slice(0, 3)
-      .replace(/^./, (c) => c.toUpperCase())
-  );
-}
 const MAX_OFFSET = 17;
 
 const BLOCKED_COLOR = "#FECACA"; // red-200
@@ -154,7 +139,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
         <button
           onClick={() => setStartOffset((o) => o - 1)}
           disabled={!canLeft}
-          aria-label="Mois précédent"
+          aria-label={t("previousMonth")}
           className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
         >
           <svg className="w-4 h-4 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,7 +149,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
         <button
           onClick={() => setStartOffset((o) => o + 1)}
           disabled={!canRight}
-          aria-label="Mois suivant"
+          aria-label={t("nextMonth")}
           className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
         >
           <svg className="w-4 h-4 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

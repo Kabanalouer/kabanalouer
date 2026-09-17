@@ -104,7 +104,7 @@ export default function ListingCard({
         {photos.length > 1 && idx > 0 && (
           <button
             onClick={prev}
-            aria-label="Photo précédente"
+            aria-label={t("prevPhoto")}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-gray-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -117,7 +117,7 @@ export default function ListingCard({
         {photos.length > 1 && idx < photos.length - 1 && (
           <button
             onClick={next}
-            aria-label="Photo suivante"
+            aria-label={t("nextPhoto")}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-gray-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

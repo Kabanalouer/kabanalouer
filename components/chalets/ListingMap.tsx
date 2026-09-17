@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 
 // Circle overlay using native Maps API (no built-in Circle in @vis.gl)
@@ -41,6 +42,7 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
+  const t = useTranslations("listing");
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   if (!apiKey) return null;
 
@@ -50,7 +52,7 @@ export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
         <MapInner lat={lat} lng={lng} />
       </div>
       <p className="text-xs text-gray-400 mt-2">
-        La position exacte est communiquée après confirmation de la réservation.
+        {t("exactLocationNote")}
       </p>
     </APIProvider>
   );

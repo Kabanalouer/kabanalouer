@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const LINE_HEIGHT = 24; // px — matches leading-relaxed at text-base
@@ -8,6 +9,7 @@ const VISIBLE_LINES = 6;
 const THRESHOLD = LINE_HEIGHT * (VISIBLE_LINES + 1); // don't truncate if barely over
 
 export default function ExpandableText({ text }: { text: string }) {
+  const t = useTranslations("listing");
   const ref = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [needsTruncation, setNeedsTruncation] = useState(false);
@@ -37,7 +39,7 @@ export default function ExpandableText({ text }: { text: string }) {
           onClick={() => setExpanded((v) => !v)}
           className={`mt-3 text-sm ${TEXT_LINK_CLASSNAME}`}
         >
-          {expanded ? "Voir moins ↑" : "Voir la suite ↓"}
+          {expanded ? t("showLess") : t("showMore")}
         </button>
       )}
     </div>

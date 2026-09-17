@@ -202,6 +202,7 @@ export default function ChaletsMap({
   isExpanded: boolean;
   onToggleExpand: () => void;
 }) {
+  const tMap = useTranslations("chaletsMap");
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [hasMoved, setHasMoved] = useState(false);
   const [pendingBounds, setPendingBounds] = useState<MapBounds | null>(null);
@@ -276,7 +277,7 @@ export default function ChaletsMap({
           <button
             onClick={onToggleExpand}
             className={btnCls}
-            aria-label={isExpanded ? "Réduire la carte" : "Agrandir la carte"}
+            aria-label={isExpanded ? tMap("collapseMap") : tMap("expandMap")}
           >
             {isExpanded ? (
               <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -288,12 +289,12 @@ export default function ChaletsMap({
               </svg>
             )}
           </button>
-          <button onClick={zoomIn} className={btnCls} aria-label="Zoom avant">
+          <button onClick={zoomIn} className={btnCls} aria-label={tMap("zoomIn")}>
             <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </button>
-          <button onClick={zoomOut} className={btnCls} aria-label="Zoom arrière">
+          <button onClick={zoomOut} className={btnCls} aria-label={tMap("zoomOut")}>
             <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
             </svg>

@@ -18,7 +18,11 @@ export default async function HostCard({
   host, reviewCount, avgRating, responseRate, avgResponseMs,
   listingId, listingTitle, currentUserId, isOwner,
 }: Props) {
-  const [t, locale] = await Promise.all([getTranslations("hostCard"), getLocale()]);
+  const [t, tListing, locale] = await Promise.all([
+    getTranslations("hostCard"),
+    getTranslations("listing"),
+    getLocale(),
+  ]);
 
   function responseSpeedLabel(avgMs: number): string {
     if (avgMs < 3_600_000) return t("responseSpeedHour");
@@ -118,13 +122,13 @@ export default async function HostCard({
           </div>
           {isOwner ? (
             <button disabled className="w-full py-3 rounded-full bg-charcoal-50 text-charcoal-300 font-medium text-sm cursor-not-allowed">
-              {locale === "en" ? "This is your cabin" : "C'est votre chalet"}
+              {tListing("isYourCabin")}
             </button>
           ) : (
             <ContactButton
               listingId={listingId}
               hostId={host.id}
-              hostName={host.name ?? (locale === "en" ? "the owner" : "le propriétaire")}
+              hostName={host.name ?? tListing("fallbackOwnerName")}
               listingTitle={listingTitle}
               currentUserId={currentUserId}
             />

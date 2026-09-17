@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function ShareButton() {
+  const t = useTranslations("listing");
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -25,7 +27,7 @@ export default function ShareButton() {
   return (
     <button
       onClick={handleShare}
-      aria-label="Copier le lien de la fiche"
+      aria-label={t("shareAriaLabel")}
       className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#ebebeb] rounded-full text-sm text-charcoal-600 hover:bg-charcoal-50 transition-colors shadow-sm"
     >
       {copied ? (
@@ -33,14 +35,14 @@ export default function ShareButton() {
           <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-primary font-medium">Lien copié !</span>
+          <span className="text-primary font-medium">{t("shareLinkCopied")}</span>
         </>
       ) : (
         <>
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>
-          <span>Partager</span>
+          <span>{t("shareButton")}</span>
         </>
       )}
     </button>

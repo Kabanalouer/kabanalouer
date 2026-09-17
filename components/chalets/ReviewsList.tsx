@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 type Review = {
   id: string;
@@ -18,6 +18,7 @@ const STAR_PATH =
 
 export default function ReviewsList({ reviews }: { reviews: Review[] }) {
   const t = useTranslations("listing");
+  const locale = useLocale();
   const [filter, setFilter] = useState<"all" | "echange" | "sejour">("all");
   const filtered = filter === "all" ? reviews : reviews.filter((r) => r.review_type === filter);
 
@@ -43,10 +44,10 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
       ) : (
         <div className="grid sm:grid-cols-2 gap-6">
           {filtered.map((review) => {
-            const authorName = review.author?.name ?? "Voyageur";
+            const authorName = review.author?.name ?? t("reviewsDefaultAuthor");
             const authorFirst = authorName.split(" ")[0];
-            const initial = authorFirst[0]?.toUpperCase() ?? "V";
-            const reviewDate = new Date(review.created_at).toLocaleDateString("fr-CA", {
+            const initial = authorFirst[0]?.toUpperCase() ?? "?";
+            const reviewDate = new Date(review.created_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", {
               month: "long", year: "numeric",
             });
             return (

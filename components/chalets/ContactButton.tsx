@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function ContactButton({
   listingId,
@@ -16,6 +17,8 @@ export default function ContactButton({
   listingTitle: string;
   currentUserId: string | null;
 }) {
+  const t = useTranslations("listing");
+  const tc = useTranslations("common");
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -25,7 +28,7 @@ export default function ContactButton({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-4 rounded-xl font-bold text-center hover:bg-primary-dark transition-colors"
       >
-        Contacter le propriétaire
+        {t("mobileContactCta")}
       </a>
     );
   }
@@ -36,7 +39,7 @@ export default function ContactButton({
         href="/dashboard"
         className="block w-full bg-gray-100 text-gray-600 py-4 rounded-xl font-bold text-center hover:bg-gray-200 transition-colors text-sm"
       >
-        C&apos;est votre chalet → Tableau de bord
+        {t("ownListingCta")}
       </a>
     );
   }
@@ -47,7 +50,7 @@ export default function ContactButton({
         onClick={() => setOpen(true)}
         className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary-dark transition-colors"
       >
-        Contacter le propriétaire
+        {t("mobileContactCta")}
       </button>
 
       {open && (
@@ -79,6 +82,8 @@ function ContactModal({
   onClose: () => void;
   onSent: () => void;
 }) {
+  const t = useTranslations("listing");
+  const tc = useTranslations("common");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -96,7 +101,7 @@ function ContactModal({
     });
 
     if (!res.ok) {
-      setError("Erreur lors de l'envoi. Réessayez.");
+      setError(t("sendError"));
       setSending(false);
       return;
     }
@@ -115,14 +120,14 @@ function ContactModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">Message envoyé !</h3>
-            <p className="text-gray-500 text-sm">Redirection vers votre messagerie…</p>
+            <h3 className="font-bold text-gray-900 text-lg mb-1">{t("messageSent")}</h3>
+            <p className="text-gray-500 text-sm">{t("redirectingToMessages")}</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="font-bold text-gray-900">Contacter {hostName.split(" ")[0]}</h3>
+                <h3 className="font-bold text-gray-900">{t("contactModalTitle", { name: hostName.split(" ")[0] })}</h3>
                 <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{listingTitle}</p>
               </div>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -136,7 +141,7 @@ function ContactModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
-              placeholder="Votre message"
+              placeholder={t("yourMessagePlaceholder")}
               className="w-full border border-gray-200 rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
             />
 
@@ -147,14 +152,14 @@ function ContactModal({
                 onClick={onClose}
                 className="flex-1 border border-gray-200 text-gray-600 py-3 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
               >
-                Annuler
+                {tc("cancel")}
               </button>
               <button
                 onClick={handleSend}
                 disabled={sending || !message.trim()}
                 className="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
               >
-                {sending ? "Envoi…" : "Envoyer →"}
+                {sending ? t("sending") : t("sendCta")}
               </button>
             </div>
           </>

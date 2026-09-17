@@ -2,20 +2,18 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale";
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
-
-const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const MONTHS_SHORT = ["jan","fév","mar","avr","mai","jun","jul","aoû","sep","oct","nov","déc"];
-const DAYS_FR = ["dim","lun","mar","mer","jeu","ven","sam"];
 
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
-function formatShort(iso: string) {
+function formatShort(iso: string, monthsShort: string[]) {
   const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS_SHORT[m - 1]}`;
+  return `${d} ${monthsShort[m - 1]}`;
 }
 function getGrid(y: number, m: number): (number | null)[] {
   const first = new Date(y, m, 1).getDay();
@@ -27,11 +25,13 @@ function CalendarMonth({
   year, month, today, checkin, checkout, hoverDate,
   onDayClick, onDayEnter, onDayLeave,
   showPrev, showNext, onPrev, onNext,
+  monthNames, dayNames,
 }: {
   year: number; month: number; today: string;
   checkin: string; checkout: string; hoverDate: string;
   onDayClick: (d: string) => void; onDayEnter: (d: string) => void; onDayLeave: () => void;
   showPrev: boolean; showNext: boolean; onPrev: () => void; onNext: () => void;
+  monthNames: string[]; dayNames: string[];
 }) {
   const days = getGrid(year, month);
   const effectiveEnd = checkout || (checkin && hoverDate > checkin ? hoverDate : "");
@@ -41,13 +41,13 @@ function CalendarMonth({
         <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-charcoal-800">{MONTHS_FR[month]} {year}</p>
+        <p className="flex-1 text-center text-sm font-semibold text-charcoal-800">{monthNames[month]} {year}</p>
         <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {DAYS_FR.map((d) => (
+        {dayNames.map((d) => (
           <div key={d} className="h-7 flex items-center justify-center text-[10px] font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
@@ -105,14 +105,17 @@ interface Props {
   priceOnRequest?: boolean;
 }
 
-function hostSinceDuration(createdAt: string): string {
+function hostSinceDuration(
+  createdAt: string,
+  t: ReturnType<typeof useTranslations>
+): { isNew: boolean; label: string } {
   const created = new Date(createdAt);
   const now = new Date();
   const months = (now.getFullYear() - created.getFullYear()) * 12 + (now.getMonth() - created.getMonth());
-  if (months < 1) return "Nouveau";
-  if (months < 12) return `${months} mois`;
+  if (months < 1) return { isNew: true, label: t("hostSinceNew") };
+  if (months < 12) return { isNew: false, label: t("hostSinceMonths", { count: months }) };
   const years = Math.floor(months / 12);
-  return `${years} an${years > 1 ? "s" : ""}`;
+  return { isNew: false, label: t("hostSinceYears", { count: years }) };
 }
 
 export default function ContactForm({
@@ -121,6 +124,13 @@ export default function ContactForm({
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
 }: Props) {
+  const t = useTranslations("listing");
+  const ts = useTranslations("searchBar");
+  const locale = useLocale();
+  const monthNames = getMonthNames(locale);
+  const monthNamesShort = getMonthNamesShort(locale);
+  const dayNames = getDayNames(locale);
+
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
@@ -163,7 +173,7 @@ export default function ContactForm({
   };
 
   const datesLabel = checkin
-    ? `${formatShort(checkin)} → ${checkout ? formatShort(checkout) : "Départ"}`
+    ? `${formatShort(checkin, monthNamesShort)} → ${checkout ? formatShort(checkout, monthNamesShort) : t("departureLabel")}`
     : null;
 
   const guestTotal = adults + children + babies;
@@ -174,15 +184,17 @@ export default function ContactForm({
     setError("");
 
     const guestDetail = [
-      adults > 0 ? `${adults} adulte${adults > 1 ? "s" : ""}` : null,
-      children > 0 ? `${children} enfant${children > 1 ? "s" : ""}` : null,
-      babies > 0 ? `${babies} bébé${babies > 1 ? "s" : ""}` : null,
-      pets > 0 ? `${pets} animal${pets > 1 ? "aux" : ""}` : null,
+      adults > 0 ? t("guestAdultsCount", { count: adults }) : null,
+      children > 0 ? t("guestChildrenCount", { count: children }) : null,
+      babies > 0 ? t("guestBabiesCount", { count: babies }) : null,
+      pets > 0 ? t("guestPetsCount", { count: pets }) : null,
     ].filter(Boolean).join(", ");
 
     const lines = [
-      checkin ? `Dates : ${formatShort(checkin)}${checkout ? ` → ${formatShort(checkout)}` : " (arrivée seulement)"}` : null,
-      guestDetail ? `Voyageurs : ${guestDetail}` : null,
+      checkin ? t("datesLine", {
+        range: `${formatShort(checkin, monthNamesShort)}${checkout ? ` → ${formatShort(checkout, monthNamesShort)}` : ` (${t("departureOnly")})`}`,
+      }) : null,
+      guestDetail ? t("guestsLine", { detail: guestDetail }) : null,
       "",
       message.trim(),
     ].filter((l) => l !== null).join("\n");
@@ -199,7 +211,7 @@ export default function ContactForm({
     });
 
     if (!res.ok) {
-      setError("Erreur lors de l'envoi. Réessayez.");
+      setError(t("sendError"));
       setSending(false);
       return;
     }
@@ -213,7 +225,7 @@ export default function ContactForm({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-3.5 rounded-full font-bold text-center hover:bg-primary/90 transition-colors text-sm"
       >
-        Contacter le propriétaire
+        {t("mobileContactCta")}
       </Link>
     );
   }
@@ -227,20 +239,20 @@ export default function ContactForm({
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="font-semibold text-charcoal-800 text-sm mb-1">Demande envoyée !</p>
+        <p className="font-semibold text-charcoal-800 text-sm mb-1">{t("requestSent")}</p>
         <p className="text-xs text-charcoal-400">
-          Votre demande a été envoyée au propriétaire. Il vous répondra directement par message.
+          {t("requestSentDetail")}
         </p>
         <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-xs ${TEXT_LINK_CLASSNAME}`}>
-          Voir la messagerie →
+          {t("viewMessagesArrow")}
         </Link>
       </div>
     );
   }
 
   // ── Form ───────────────────────────────────────────────────────────────────
-  // hostName is "l'hôte" when the host has no name set in their profile
-  const resolvedName = hostName && hostName !== "le propriétaire" ? hostName : null;
+  // hostName falls back to the localized "the owner" string when unset — see HostCard.tsx
+  const resolvedName = hostName && hostName !== t("fallbackOwnerName") ? hostName : null;
   const hostFirstName = resolvedName ? resolvedName.split(" ")[0] : null;
   const hostInitials = hostFirstName ? hostFirstName[0].toUpperCase() : "H";
 
@@ -250,20 +262,20 @@ export default function ContactForm({
       <div className="flex items-center gap-3 pb-1">
         <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
           {hostAvatarUrl ? (
-            <img src={hostAvatarUrl} alt={hostFirstName ?? "Propriétaire"} className="w-full h-full object-cover" />
+            <img src={hostAvatarUrl} alt={hostFirstName ?? t("ownerLabel")} className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-bold text-lg">{hostInitials}</span>
           )}
         </div>
         <div>
           <p className="font-semibold text-charcoal-800 text-sm">
-            {hostFirstName ? `Propriétaire : ${hostFirstName}` : "Propriétaire"}
+            {hostFirstName ? t("ownerLabelWithName", { name: hostFirstName }) : t("ownerLabel")}
           </p>
           {hostCreatedAt && (() => {
-            const duration = hostSinceDuration(hostCreatedAt);
+            const duration = hostSinceDuration(hostCreatedAt, t);
             return (
               <p className="text-sm text-charcoal-400 mt-0.5">
-                {duration === "Nouveau" ? "Nouveau" : `Propriétaire depuis ${duration}`}
+                {duration.isNew ? duration.label : t("ownerSinceLabel", { duration: duration.label })}
               </p>
             );
           })()}
@@ -274,19 +286,19 @@ export default function ContactForm({
 
       {/* Price */}
       <div className="py-1">
-        <p className="text-xs text-charcoal-400 mb-0.5">À partir de</p>
+        <p className="text-xs text-charcoal-400 mb-0.5">{t("startingFromLabel")}</p>
         {price && price > 0 && !priceOnRequest ? (
           <p>
             <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
-            <span className="text-charcoal-400 text-sm font-semibold"> /nuit</span>
+            <span className="text-charcoal-400 text-sm font-semibold"> {t("perNight")}</span>
           </p>
         ) : (
-          <span className="text-xl font-bold text-charcoal-800">Sur demande</span>
+          <span className="text-xl font-bold text-charcoal-800">{t("priceOnRequest")}</span>
         )}
       </div>
 
       {/* Dates */}
-      <p className="text-sm font-semibold text-charcoal-800 pt-1">Demander mon prix</p>
+      <p className="text-sm font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
       <div ref={calRef} className="relative">
         <button
           type="button"
@@ -298,7 +310,7 @@ export default function ContactForm({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span className={`text-sm ${datesLabel ? "text-charcoal-800" : "text-charcoal-400"}`}>
-            {datesLabel ?? "Dates (arrivée — départ)"}
+            {datesLabel ?? t("datesPlaceholder")}
           </span>
         </button>
 
@@ -309,6 +321,7 @@ export default function ContactForm({
               checkin={checkin} checkout={checkout} hoverDate={hoverDate}
               onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
               showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
+              monthNames={monthNames} dayNames={dayNames}
             />
             {(checkin || checkout) && (
               <div className="mt-3 pt-2.5 border-t border-[#ebebeb] flex justify-end">
@@ -316,7 +329,7 @@ export default function ContactForm({
                   onClick={() => { setCheckin(""); setCheckout(""); setHoverDate(""); }}
                   className="text-xs text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2"
                 >
-                  Effacer
+                  {t("clearDates")}
                 </button>
               </div>
             )}
@@ -327,22 +340,22 @@ export default function ContactForm({
       {/* Guests */}
       <div className="rounded-xl border border-[#ebebeb]">
         {([
-          { label: "Adultes", sub: "13 ans et plus", val: adults,
+          { label: ts("adults"), sub: ts("adultsSub"), val: adults,
             onDecr: () => setAdults((v) => Math.max(0, v - 1)),
             onIncr: () => setAdults((v) => v + 1),
             decrDis: adults === 0 || (adults === 1 && children + babies > 0),
             incrDis: guestTotal >= 40 },
-          { label: "Enfants", sub: "De 2 à 12 ans", val: children,
+          { label: ts("children"), sub: ts("childrenSub"), val: children,
             onDecr: () => setChildren((v) => Math.max(0, v - 1)),
             onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
             decrDis: children === 0,
             incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-          { label: "Bébés", sub: "Moins de 2 ans", val: babies,
+          { label: ts("babies"), sub: ts("babiesSub"), val: babies,
             onDecr: () => setBabies((v) => Math.max(0, v - 1)),
             onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
             decrDis: babies === 0,
             incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-          { label: "Animaux", sub: "Chiens, chats, etc.", val: pets,
+          { label: ts("pets"), sub: ts("petsSub"), val: pets,
             onDecr: () => setPets((v) => Math.max(0, v - 1)),
             onIncr: () => setPets((v) => v + 1),
             decrDis: pets === 0, incrDis: pets >= 5 },
@@ -379,7 +392,7 @@ export default function ContactForm({
 
       {/* Message */}
       <textarea
-        placeholder="Votre message (optionnel)"
+        placeholder={t("messagePlaceholderOptional")}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={3}
@@ -393,7 +406,7 @@ export default function ContactForm({
         disabled={sending || !canSubmit}
         className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {sending ? "Envoi en cours…" : "Envoyer la demande"}
+        {sending ? t("sendingRequest") : t("sendRequestCta")}
       </button>
     </div>
   );
