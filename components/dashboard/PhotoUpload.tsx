@@ -540,7 +540,6 @@ export default function PhotoUpload({
             generatingIdx={generatingIdx}
             onGenerate={() => void generateCaption(0)}
             locale={locale}
-            tEdit={tEdit}
           />
         )}
       </div>
@@ -585,7 +584,6 @@ export default function PhotoUpload({
                   generatingIdx={generatingIdx}
                   onGenerate={() => void generateCaption(photoIdx)}
                   locale={locale}
-                  tEdit={tEdit}
                 />
               </div>
             );
@@ -625,7 +623,6 @@ export default function PhotoUpload({
                     generatingIdx={generatingIdx}
                     onGenerate={() => void generateCaption(i)}
                     locale={locale}
-                    tEdit={tEdit}
                   />
                 </div>
               );
@@ -686,7 +683,6 @@ function CaptionField({
   generatingIdx,
   onGenerate,
   locale,
-  tEdit,
 }: {
   value: string;
   valueEn: string;
@@ -701,11 +697,9 @@ function CaptionField({
   generatingIdx: number | null;
   onGenerate: () => void;
   locale: string;
-  tEdit: (key: string) => string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const refEn = useRef<HTMLTextAreaElement>(null);
-  const [showEn, setShowEn] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -715,18 +709,18 @@ function CaptionField({
   }, [value]);
 
   useEffect(() => {
-    if (!showEn) return;
     const el = refEn.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
-  }, [valueEn, showEn]);
+  }, [valueEn]);
 
   const near = value.length >= CAPTION_MAX - 15;
   const nearEn = valueEn.length >= CAPTION_MAX - 15;
 
   const frField = (
     <div>
+      <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-wide mb-0.5">FR</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={ref}
@@ -749,7 +743,8 @@ function CaptionField({
   );
 
   const enField = (
-    <div className="mt-1">
+    <div className="mt-1.5">
+      <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-wide mb-0.5">EN</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={refEn}
@@ -780,16 +775,17 @@ function CaptionField({
 
   return (
     <div className="mt-1.5">
-      {showEn && locale === "en" && enField}
-      {frField}
-      <button
-        type="button"
-        onClick={() => setShowEn((s) => !s)}
-        className="mt-1 text-[10px] font-medium text-primary hover:underline"
-      >
-        {showEn ? tEdit("captionEnHide") : (valueEn ? tEdit("captionEnEdit") : tEdit("captionEnAdd"))}
-      </button>
-      {showEn && locale !== "en" && enField}
+      {locale === "en" ? (
+        <>
+          {enField}
+          {frField}
+        </>
+      ) : (
+        <>
+          {frField}
+          {enField}
+        </>
+      )}
     </div>
   );
 }
