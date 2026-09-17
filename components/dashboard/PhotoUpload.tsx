@@ -96,7 +96,6 @@ export default function PhotoUpload({
   const [saving, setSaving] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
-  const [generatingIdx, setGeneratingIdx] = useState<number | null>(null);
   const [positionEditIdx, setPositionEditIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -263,28 +262,6 @@ export default function PhotoUpload({
   const updateCaptionEn = (i: number, caption_en: string) => {
     const next = photos.map((p, j) => (j === i ? { ...p, caption_en } : p));
     onChange(next);
-  };
-
-  const generateCaption = async (i: number) => {
-    const photo = photosRef.current[i];
-    if (!photo || generatingIdx !== null) return;
-    setGeneratingIdx(i);
-    try {
-      const res = await fetch("/api/ai/generate-caption", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: photo.url }),
-      });
-      const data = await res.json() as { caption?: string };
-      if (data.caption) {
-        const caption = (data.caption as string).slice(0, CAPTION_MAX);
-        const next = photosRef.current.map((p, j) => (j === i ? { ...p, caption } : p));
-        onChange(next);
-        savePhotos(next);
-      }
-    } finally {
-      setGeneratingIdx(null);
-    }
   };
 
   // ── Reorder ────────────────────────────────────────────────────────────────
@@ -534,14 +511,10 @@ export default function PhotoUpload({
             valueEn={photos[0].caption_en ?? ""}
             placeholder="Légende (optionnel)"
             placeholderEn={tEdit("captionEnPlaceholder")}
-            disabled={generatingIdx === 0}
             onChange={(v) => updateCaption(0, v)}
             onChangeEn={(v) => updateCaptionEn(0, v)}
             onBlur={() => savePhotos()}
             onMouseDown={(e) => e.stopPropagation()}
-            i={0}
-            generatingIdx={generatingIdx}
-            onGenerate={() => void generateCaption(0)}
             locale={locale}
           />
         )}
@@ -578,14 +551,10 @@ export default function PhotoUpload({
                   valueEn={photo.caption_en ?? ""}
                   placeholder={`Légende ${photoIdx}`}
                   placeholderEn={tEdit("captionEnPlaceholder")}
-                  disabled={generatingIdx === photoIdx}
                   onChange={(v) => updateCaption(photoIdx, v)}
                   onChangeEn={(v) => updateCaptionEn(photoIdx, v)}
                   onBlur={() => savePhotos()}
                   onMouseDown={(e) => e.stopPropagation()}
-                  i={photoIdx}
-                  generatingIdx={generatingIdx}
-                  onGenerate={() => void generateCaption(photoIdx)}
                   locale={locale}
                 />
               </div>
@@ -617,14 +586,10 @@ export default function PhotoUpload({
                     valueEn={item.caption_en ?? ""}
                     placeholder="Légende"
                     placeholderEn={tEdit("captionEnPlaceholder")}
-                    disabled={generatingIdx === i}
                     onChange={(v) => updateCaption(i, v)}
                     onChangeEn={(v) => updateCaptionEn(i, v)}
                     onBlur={() => savePhotos()}
                     onMouseDown={(e) => e.stopPropagation()}
-                    i={i}
-                    generatingIdx={generatingIdx}
-                    onGenerate={() => void generateCaption(i)}
                     locale={locale}
                   />
                 </div>
@@ -677,28 +642,20 @@ function CaptionField({
   valueEn,
   placeholder,
   placeholderEn,
-  disabled,
   onChange,
   onChangeEn,
   onBlur,
   onMouseDown,
-  i,
-  generatingIdx,
-  onGenerate,
   locale,
 }: {
   value: string;
   valueEn: string;
   placeholder: string;
   placeholderEn: string;
-  disabled: boolean;
   onChange: (v: string) => void;
   onChangeEn: (v: string) => void;
   onBlur: () => void;
   onMouseDown: (e: React.MouseEvent) => void;
-  i: number;
-  generatingIdx: number | null;
-  onGenerate: () => void;
   locale: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -731,12 +688,10 @@ function CaptionField({
           onMouseDown={onMouseDown}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
-          disabled={disabled}
           spellCheck
           lang="fr-CA"
           className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50 resize-none overflow-hidden"
         />
-        <CaptionButton i={i} generatingIdx={generatingIdx} onClick={onGenerate} />
       </div>
       <p className="text-right text-[10px] mt-0.5 tabular-nums text-charcoal-300">
         {value.length}/{CAPTION_MAX}
@@ -794,33 +749,3 @@ function CaptionField({
   );
 }
 
-function CaptionButton({
-  i,
-  generatingIdx,
-  onClick,
-}: {
-  i: number;
-  generatingIdx: number | null;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      title="Générer une légende avec l'IA"
-      onClick={onClick}
-      disabled={generatingIdx !== null}
-      className="shrink-0 p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors disabled:opacity-40"
-    >
-      {generatingIdx === i ? (
-        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-      ) : (
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-        </svg>
-      )}
-    </button>
-  );
-}
