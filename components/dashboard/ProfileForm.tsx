@@ -394,15 +394,6 @@ export default function ProfileForm({
               </>
             )}
           </button>
-          <TranslateButton
-            sourceText={bio}
-            sourceLang="fr"
-            targetLang="en"
-            fieldType="bio"
-            variant="link"
-            disabled={!bio.trim()}
-            onTranslated={(en) => setBioEn(en.slice(0, 300))}
-          />
         </div>
       </div>
       <div className="relative">
@@ -425,13 +416,13 @@ export default function ProfileForm({
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-sm font-medium text-charcoal-700">{t("bioLabelEn")}</label>
         <TranslateButton
-          sourceText={bioEn}
-          sourceLang="en"
-          targetLang="fr"
+          sourceText={bio}
+          sourceLang="fr"
+          targetLang="en"
           fieldType="bio"
           variant="link"
-          disabled={!bioEn.trim()}
-          onTranslated={(fr) => setBio(fr.slice(0, 300))}
+          disabled={!bio.trim()}
+          onTranslated={(en) => setBioEn(en.slice(0, 300))}
         />
       </div>
       <div className="relative">
