@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 import { getRegionBySlug, getRegionByEnSlug, getRegionSlugs } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { buildListingPath } from "@/lib/listingUrl";
-import RegionLanding from "./RegionLanding";
-import ListingDetail from "./ListingDetail";
+import RegionLanding from "./_components/RegionLanding";
+import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
 // SEO : une région sans chalet actif publié est du contenu quasi vide/dupliqué

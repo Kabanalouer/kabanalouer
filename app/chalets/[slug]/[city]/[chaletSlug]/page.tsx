@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 import { getRegionBySlug, getRegionByEnSlug } from "@/lib/regions";
 import { buildListingPath } from "@/lib/listingUrl";
 import { normalizePhotos } from "@/lib/photo";
-import ListingDetail from "../../ListingDetail";
+import ListingDetail from "../../_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
 const DEFAULT_PHOTO =
