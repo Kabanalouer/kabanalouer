@@ -63,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { data: listings } = await supabase
       .from("listings")
-      .select("id, region, city, slug_fr, slug_en, updated_at")
+      .select("id, region, city, listing_number, custom_slug, updated_at")
       .eq("is_published", true)
       .order("updated_at", { ascending: false });
 
@@ -72,14 +72,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const listingRow = {
         region: l.region as string | null,
         city: l.city as string | null,
-        slug_fr: l.slug_fr as string | null,
-        slug_en: l.slug_en as string | null,
+        listing_number: l.listing_number as number | null,
+        custom_slug: l.custom_slug as string | null,
       };
       const pathFr = buildListingPath(listingRow, "fr");
       const pathEn = buildListingPath(listingRow, "en");
-      // Une annonce sans région connue ou sans slug généré (voir
-      // ensureListingSlugs()) n'a pas de chemin canonique fiable — jamais
-      // soumise à Google sous son UUID brut.
+      // Une annonce sans région connue ou sans listing_number (ne devrait
+      // arriver que pour une fiche créée avant cette colonne, jamais backfillée)
+      // n'a pas de chemin canonique fiable — jamais soumise à Google sous son UUID brut.
       const entries: MetadataRoute.Sitemap = [];
       if (pathFr) entries.push({ url: `${BASE}${pathFr}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 });
       if (pathEn) entries.push({ url: `${BASE}${pathEn}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 });

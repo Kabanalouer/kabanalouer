@@ -92,6 +92,8 @@ export default async function EditListingPage({ params }: Props) {
         isAdminReview={isAdminReview}
         importStatus={(listing.import_status as string | null) ?? null}
         importSourceUrl={(listing.import_source_url as string | null) ?? null}
+        listingNumber={(listing.listing_number as number | null) ?? null}
+        initialCustomSlug={(listing.custom_slug as string | null) ?? null}
         initialData={{
           title: listing.title ?? "",
           title_en: (listing.title_en as string | null) ?? "",

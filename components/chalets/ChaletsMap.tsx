@@ -172,7 +172,7 @@ function MapContent({
             <a
               href={
                 buildListingPath(
-                  { region: selected.region, city: selected.city ?? null, slug_fr: selected.slug_fr ?? null, slug_en: selected.slug_en ?? null },
+                  { region: selected.region, city: selected.city ?? null, listing_number: selected.listing_number ?? null, custom_slug: selected.custom_slug ?? null },
                   locale === "en" ? "en" : "fr"
                 ) ?? localePath(`/chalets/${selected.id}`, locale)
               }

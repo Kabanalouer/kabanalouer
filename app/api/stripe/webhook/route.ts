@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendFeaturedConfirmationEmail, type FeaturedType } from "@/lib/emails/featuredListing";
 import { centsForTier, type PriceTier } from "@/lib/subscriptionPricing";
-import { ensureListingSlugs } from "@/lib/generateSlug";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
 function adminSupabase() {
@@ -190,8 +189,6 @@ export async function POST(request: NextRequest) {
           reminder_winback_14d_sent: false,
         })
         .eq("id", listingId);
-
-      await ensureListingSlugs(supabase, listingId);
 
       // Email de bienvenue "nouveau proprio payant" : uniquement au tier1 (rang 1),
       // qui ne peut survenir que si ce proprio n'a aucune autre annonce payante

@@ -15,8 +15,8 @@ export interface Listing {
   title: string;
   region: string;
   city?: string | null;
-  slug_fr?: string | null;
-  slug_en?: string | null;
+  listing_number?: number | null;
+  custom_slug?: string | null;
   price: number;
   priceOnRequest?: boolean;
   capacity: number;
@@ -56,7 +56,7 @@ export default function ListingCard({
     if (capacity) qs.set("capacity", capacity);
     const s = qs.toString();
     const path = buildListingPath(
-      { region: listing.region, city: listing.city ?? null, slug_fr: listing.slug_fr ?? null, slug_en: listing.slug_en ?? null },
+      { region: listing.region, city: listing.city ?? null, listing_number: listing.listing_number ?? null, custom_slug: listing.custom_slug ?? null },
       locale === "en" ? "en" : "fr"
     ) ?? localePath(`/chalets/${listing.id}`, locale);
     return `${path}${s ? `?${s}` : ""}`;

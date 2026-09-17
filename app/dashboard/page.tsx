@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                     <Link
                       href={
                         buildListingPath(
-                          { region: listing.region, city: listing.city ?? null, slug_fr: listing.slug_fr ?? null, slug_en: listing.slug_en ?? null },
+                          { region: listing.region, city: listing.city ?? null, listing_number: listing.listing_number ?? null, custom_slug: listing.custom_slug ?? null },
                           locale === "en" ? "en" : "fr"
                         ) ?? `/chalets/${listing.id}`
                       }

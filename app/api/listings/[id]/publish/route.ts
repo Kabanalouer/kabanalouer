@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { ensureListingSlugs } from "@/lib/generateSlug";
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,8 +44,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     console.error("listings/[id]/publish: échec publication", error);
     return NextResponse.json({ error: "Erreur lors de la publication" }, { status: 500 });
   }
-
-  await ensureListingSlugs(supabase, id);
 
   return NextResponse.json({ success: true });
 }

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
-import { ensureListingSlugs } from "@/lib/generateSlug";
 import { buildListingPath } from "@/lib/listingUrl";
 
 function adminSupabase() {
@@ -72,8 +71,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Échec de la publication" }, { status: 500 });
   }
 
-  await ensureListingSlugs(admin, id);
-
   // Abonnement offre de lancement — seulement si CETTE annonce n'en a jamais
   // eu (voir le check existingSub ci-dessus). Si elle en a déjà eu un, on ne
   // crée rien ici — laissé à une révision manuelle du prix plutôt que de
@@ -110,7 +107,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const lang: "fr" | "en" = hostRow.preferred_language === "en" ? "en" : "fr";
     const { data: freshListing } = await admin
       .from("listings")
-      .select("region, city, slug_fr, slug_en")
+      .select("region, city, listing_number, custom_slug")
       .eq("id", id)
       .single();
     const listingPath = (freshListing && buildListingPath(freshListing, lang)) ?? `/chalets/${id}`;

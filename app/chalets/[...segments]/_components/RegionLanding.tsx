@@ -26,7 +26,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, slug_fr, slug_en"
+      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
     )
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
@@ -38,8 +38,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     title: l.title ?? "",
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
-    slug_fr: (l.slug_fr as string | null) ?? null,
-    slug_en: (l.slug_en as string | null) ?? null,
+    listing_number: (l.listing_number as number | null) ?? null,
+    custom_slug: (l.custom_slug as string | null) ?? null,
     price: (l.price_low as number) ?? 0,
     priceOnRequest: (l.price_on_request as boolean) ?? false,
     capacity: (l.capacity as number) ?? 1,
@@ -63,7 +63,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawVedette } = vedetteIds.length > 0
     ? await supabase
         .from("listings")
-        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, slug_fr, slug_en")
+        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
         .in("id", vedetteIds)
         .eq("is_published", true)
     : { data: [] as typeof rawListings };
@@ -72,8 +72,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     title: l.title ?? "",
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
-    slug_fr: (l.slug_fr as string | null) ?? null,
-    slug_en: (l.slug_en as string | null) ?? null,
+    listing_number: (l.listing_number as number | null) ?? null,
+    custom_slug: (l.custom_slug as string | null) ?? null,
     price: (l.price_low as number) ?? 0,
     priceOnRequest: (l.price_on_request as boolean) ?? false,
     capacity: (l.capacity as number) ?? 1,
@@ -121,7 +121,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             "@type": "ListItem",
             position: i + 1,
             url: `${SITE_URL}${buildListingPath(
-              { region: l.region as string | null, city: l.city as string | null, slug_fr: l.slug_fr as string | null, slug_en: l.slug_en as string | null },
+              { region: l.region as string | null, city: l.city as string | null, listing_number: l.listing_number as number | null, custom_slug: l.custom_slug as string | null },
               isEn ? "en" : "fr"
             ) ?? `/chalets/${l.id}`}`,
             name: l.title,

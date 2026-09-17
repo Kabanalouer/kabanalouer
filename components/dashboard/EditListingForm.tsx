@@ -18,6 +18,7 @@ import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
 import AnalyseSection from "./AnalyseSection";
+import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
@@ -154,6 +155,8 @@ export default function EditListingForm({
   isAdminReview,
   importStatus,
   importSourceUrl,
+  listingNumber,
+  initialCustomSlug,
 }: {
   userId: string;
   listingId: string;
@@ -179,6 +182,11 @@ export default function EditListingForm({
   // Lien Airbnb original soumis par le proprio — visible en révision admin
   // pour compléter la fiche (ex. section Chambres) avec les bonnes infos.
   importSourceUrl?: string | null;
+  // Numéro d'annonce stable (assigné à la création, jamais modifiable) et
+  // lien personnalisé optionnel — voir CLAUDE.md section 9 et
+  // components/dashboard/CustomSlugField.tsx.
+  listingNumber: number | null;
+  initialCustomSlug: string | null;
 }) {
   const t = useTranslations("listings");
   const tEdit = useTranslations("listings.edit");
@@ -1615,6 +1623,16 @@ export default function EditListingForm({
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     </button>
                   </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#ebebeb]">
+                  <CustomSlugField
+                    listingId={listingId}
+                    initialCustomSlug={initialCustomSlug}
+                    listingNumber={listingNumber}
+                    region={form.region || null}
+                    city={initialCity || null}
+                  />
                 </div>
               </div>
               <RequiredNote tEdit={tEdit} />

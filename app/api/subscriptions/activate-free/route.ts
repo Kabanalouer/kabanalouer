@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
-import { ensureListingSlugs } from "@/lib/generateSlug";
 
 function adminSupabase() {
   return createAdminClient(
@@ -76,7 +75,6 @@ export async function POST(request: NextRequest) {
 
   await admin.from("users").update({ role: "host" }).eq("id", user.id);
   await admin.from("listings").update({ is_published: true }).eq("id", listingId);
-  await ensureListingSlugs(admin, listingId);
 
   if (user.email) {
     const { data: profile } = await admin

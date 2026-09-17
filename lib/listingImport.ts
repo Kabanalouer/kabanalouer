@@ -6,6 +6,7 @@ import { cleanDescription, truncateToLastSentence, truncateToLastWord } from "@/
 import { detectImportPlatform, runApifyActor, ApifyImportError } from "@/lib/apify";
 import { mapAirbnbItem, type ImportedListingData } from "@/lib/listingImportMapping";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
+import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -214,11 +215,13 @@ export async function importAirbnbListing(
   }
 
   const mapped = mapAirbnbItem(firstItem as Record<string, unknown>);
+  const listingNumber = await generateUniqueListingNumber(admin);
 
   const { data: listing, error: insertError } = await admin
     .from("listings")
     .insert({
       host_id: userId,
+      listing_number: listingNumber,
       title: mapped.title,
       description: mapped.description,
       photos: mapped.photos,

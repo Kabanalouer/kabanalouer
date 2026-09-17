@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { importAirbnbListing } from "@/lib/listingImport";
+import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
 
 export async function createBlankListing() {
   const supabase = await createClient();
@@ -10,10 +11,13 @@ export async function createBlankListing() {
 
   if (!user) redirect("/login");
 
+  const listingNumber = await generateUniqueListingNumber(supabase);
+
   const { data, error } = await supabase
     .from("listings")
     .insert({
       host_id: user.id,
+      listing_number: listingNumber,
       title: "",
       description: "",
       is_published: false,

@@ -112,7 +112,7 @@ export default async function CityPage({ params }: Props) {
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, slug_fr, slug_en"
+      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
     )
     .eq("is_published", true)
     .eq("city", cityName)
@@ -125,8 +125,8 @@ export default async function CityPage({ params }: Props) {
     title: l.title ?? "",
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
-    slug_fr: (l.slug_fr as string | null) ?? null,
-    slug_en: (l.slug_en as string | null) ?? null,
+    listing_number: (l.listing_number as number | null) ?? null,
+    custom_slug: (l.custom_slug as string | null) ?? null,
     price: (l.price_low as number) ?? 0,
     priceOnRequest: (l.price_on_request as boolean) ?? false,
     capacity: (l.capacity as number) ?? 1,
@@ -195,7 +195,7 @@ export default async function CityPage({ params }: Props) {
       "@type": "ListItem",
       position: i + 1,
       url: `${BASE}${buildListingPath(
-        { region: l.region, city: l.city ?? null, slug_fr: l.slug_fr ?? null, slug_en: l.slug_en ?? null },
+        { region: l.region, city: l.city ?? null, listing_number: l.listing_number ?? null, custom_slug: l.custom_slug ?? null },
         isEn ? "en" : "fr"
       ) ?? `/chalets/${l.id}`}`,
       name: l.title,

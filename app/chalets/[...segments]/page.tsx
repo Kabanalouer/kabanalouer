@@ -38,6 +38,49 @@ interface Props {
 
 type SearchParams = { checkin?: string; checkout?: string; capacity?: string; preview?: string };
 
+type ListingRow = Record<string, unknown> & {
+  title: string | null;
+  title_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  photos: unknown;
+  region: string | null;
+  city: string | null;
+  is_published: boolean | null;
+  custom_slug: string | null;
+  listing_number: number | null;
+  previous_custom_slug: string | null;
+};
+
+// Résout une fiche par son dernier segment d'URL : lien personnalisé
+// (custom_slug) ou numéro d'annonce (listing_number, comparé uniquement si le
+// segment est purement numérique). Si rien ne correspond, retombe sur
+// previous_custom_slug — le proprio a changé son lien personnalisé depuis
+// (voir CLAUDE.md section 9) — pour que l'ancien lien redirige vers le
+// chemin canonique actuel au lieu de 404. `publishedOnly` restreint la
+// recherche aux fiches publiées (utilisé pour les métadonnées uniquement ;
+// renderThreeSegments laisse RLS trancher, comme pour l'aperçu de brouillon).
+async function findListingByChaletSlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  chaletSlug: string,
+  { publishedOnly = false }: { publishedOnly?: boolean } = {}
+): Promise<ListingRow | null> {
+  const asNumber = /^\d+$/.test(chaletSlug) ? Number(chaletSlug) : null;
+  const orFilter = asNumber !== null
+    ? `custom_slug.eq.${chaletSlug},listing_number.eq.${asNumber}`
+    : `custom_slug.eq.${chaletSlug}`;
+
+  let primaryQuery = supabase.from("listings").select("*").or(orFilter);
+  if (publishedOnly) primaryQuery = primaryQuery.eq("is_published", true);
+  const { data: primary } = await primaryQuery.maybeSingle();
+  if (primary) return primary as ListingRow;
+
+  let previousQuery = supabase.from("listings").select("*").eq("previous_custom_slug", chaletSlug);
+  if (publishedOnly) previousQuery = previousQuery.eq("is_published", true);
+  const { data: viaPrevious } = await previousQuery.maybeSingle();
+  return (viaPrevious as ListingRow) ?? null;
+}
+
 export async function generateStaticParams() {
   return getRegionSlugs().map((s) => ({ segments: [s] }));
 }
@@ -106,13 +149,7 @@ export async function generateMetadata({ params }: Props) {
     const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
     if (!regionConfig) return {};
 
-    const slugColumn = isEn ? "slug_en" : "slug_fr";
-    const { data } = await supabase
-      .from("listings")
-      .select("title, title_en, region, city, description, description_en, photos, slug_fr, slug_en")
-      .eq(slugColumn, chaletSlug)
-      .eq("is_published", true)
-      .maybeSingle();
+    const data = await findListingByChaletSlug(supabase, chaletSlug, { publishedOnly: true });
 
     if (!data) return {};
 
@@ -182,16 +219,24 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   // auth.uid(), + "Les admins gèrent tous les listings") — un visiteur non
   // concerné reçoit simplement zéro ligne pour un brouillon, exactement
   // comme avant.
-  const [{ data: listingBySlug }, { data: { user } }] = await Promise.all([
-    supabase
-      .from("listings")
-      .select("*")
-      .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
-      .maybeSingle(),
+  const [listingBySlug, { data: { user } }] = await Promise.all([
+    findListingByChaletSlug(supabase, slug),
     supabase.auth.getUser(),
   ]);
 
   let listing = listingBySlug;
+
+  // Repli additionnel : ancien schéma d'URL à 1 segment basé sur slug_fr/
+  // slug_en (avant l'introduction du numéro d'annonce/lien personnalisé) —
+  // un lien de cette époque déjà partagé/indexé doit continuer à fonctionner.
+  if (!listing) {
+    const { data: legacyBySlug } = await supabase
+      .from("listings")
+      .select("*")
+      .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
+      .maybeSingle();
+    listing = legacyBySlug as ListingRow | null;
+  }
 
   if (!listing) {
     const { data: byId } = await supabase
@@ -208,8 +253,7 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   // rediriger vers le chemin canonique à 3 segments plutôt que de rendre ici.
   // Les brouillons (is_published = false) restent rendus directement sur
   // cette URL — c'est le mécanisme utilisé par "Aperçu de mon annonce"
-  // (PreviewModal.tsx), et un brouillon n'a de toute façon jamais de slug
-  // (ensureListingSlugs() n'est appelé qu'à la publication).
+  // (PreviewModal.tsx), qui pointe toujours vers l'UUID brut.
   if (listing.is_published) {
     const targetPath = buildListingPath(listing, isEn ? "en" : "fr");
     if (targetPath) {
@@ -239,9 +283,8 @@ async function renderThreeSegments([slug, city, chaletSlug]: [string, string, st
   if (!regionConfig) notFound();
 
   const supabase = await createClient();
-  const slugColumn = isEn ? "slug_en" : "slug_fr";
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
-    supabase.from("listings").select("*").eq(slugColumn, chaletSlug).maybeSingle(),
+  const [listing, { data: { user } }] = await Promise.all([
+    findListingByChaletSlug(supabase, chaletSlug),
     supabase.auth.getUser(),
   ]);
 
