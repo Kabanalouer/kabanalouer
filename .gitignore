@@ -49,3 +49,6 @@ responsive-screenshots/
 
 # Supabase CLI local cache/link state
 supabase/.temp/
+
+# Design handoff bundles (matériel de référence, pas du code applicatif)
+design_handoff_traduction_titre/
