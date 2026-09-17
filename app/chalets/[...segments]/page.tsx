@@ -60,11 +60,20 @@ type ListingRow = Record<string, unknown> & {
 // chemin canonique actuel au lieu de 404. `publishedOnly` restreint la
 // recherche aux fiches publiées (utilisé pour les métadonnées uniquement ;
 // renderThreeSegments laisse RLS trancher, comme pour l'aperçu de brouillon).
+// Un custom_slug/slug_fr/slug_en valide ne contient jamais autre chose que
+// [a-z0-9-] (voir validateCustomSlugFormat()/slugify()) — rejeter tout le
+// reste AVANT de construire une chaîne de filtre PostgREST .or() évite
+// l'injection de filtre plutôt que d'essayer d'échapper chaletSlug (issu
+// directement du segment d'URL, donc contrôlé par le visiteur).
+const SAFE_SEGMENT_PATTERN = /^[a-z0-9-]{1,60}$/;
+
 async function findListingByChaletSlug(
   supabase: Awaited<ReturnType<typeof createClient>>,
   chaletSlug: string,
   { publishedOnly = false }: { publishedOnly?: boolean } = {}
 ): Promise<ListingRow | null> {
+  if (!SAFE_SEGMENT_PATTERN.test(chaletSlug)) return null;
+
   const asNumber = /^\d+$/.test(chaletSlug) ? Number(chaletSlug) : null;
   const orFilter = asNumber !== null
     ? `custom_slug.eq.${chaletSlug},listing_number.eq.${asNumber}`
@@ -229,7 +238,9 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   // Repli additionnel : ancien schéma d'URL à 1 segment basé sur slug_fr/
   // slug_en (avant l'introduction du numéro d'annonce/lien personnalisé) —
   // un lien de cette époque déjà partagé/indexé doit continuer à fonctionner.
-  if (!listing) {
+  // Même garde-fou que findListingByChaletSlug() : un slug_fr/slug_en valide
+  // ne contient jamais autre chose que [a-z0-9-] (voir lib/slugify.ts).
+  if (!listing && SAFE_SEGMENT_PATTERN.test(slug)) {
     const { data: legacyBySlug } = await supabase
       .from("listings")
       .select("*")
