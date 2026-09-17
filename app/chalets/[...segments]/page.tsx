@@ -158,8 +158,6 @@ export default async function ChaletPage({ params, searchParams }: Props) {
   const [locale, sp] = await Promise.all([getLocale(), searchParams]);
   const isEn = locale === "en";
 
-  console.error("[DEBUG3] segments", JSON.stringify(segments), "length", segments.length, "locale", locale);
-
   if (segments.length === 1) {
     return renderSingleSegment(segments[0], locale, isEn, sp);
   }
@@ -168,7 +166,6 @@ export default async function ChaletPage({ params, searchParams }: Props) {
     return renderThreeSegments(segments as [string, string, string], locale, isEn, sp);
   }
 
-  console.error("[DEBUG3] notFound: unexpected segment length", segments.length);
   notFound();
 }
 
@@ -239,37 +236,30 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
 
 async function renderThreeSegments([slug, city, chaletSlug]: [string, string, string], locale: string, isEn: boolean, sp: SearchParams) {
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
-  console.error("[DEBUG3] three-seg", JSON.stringify({ slug, city, chaletSlug, isEn, regionFound: !!regionConfig }));
-  if (!regionConfig) {
-    console.error("[DEBUG3] notFound: no region");
-    notFound();
-  }
+  if (!regionConfig) notFound();
 
   const supabase = await createClient();
   const slugColumn = isEn ? "slug_en" : "slug_fr";
-  const [{ data: listing, error: listErr }, { data: { user } }] = await Promise.all([
+  const [{ data: listing }, { data: { user } }] = await Promise.all([
     supabase.from("listings").select("*").eq(slugColumn, chaletSlug).maybeSingle(),
     supabase.auth.getUser(),
   ]);
 
-  console.error("[DEBUG3] listing", JSON.stringify({ slugColumn, chaletSlug, found: !!listing, err: listErr?.message ?? null }));
-  if (!listing) {
-    console.error("[DEBUG3] notFound: no listing");
-    notFound();
-  }
+  if (!listing) notFound();
 
   // Valide que région/ville dans l'URL correspondent bien à l'annonce
   // trouvée — sinon redirige vers son chemin canonique actuel (annonce
-  // déplacée, lien obsolète, faute de frappe dans le segment ville…).
+  // déplacée, lien obsolète, faute de frappe dans le segment ville…). Le
+  // chemin "affiché" reconstruit ici est toujours /chalets/... (ou
+  // /en/cabins/...) — jamais /fr/chalets/... — même si cette fonction est
+  // exécutée pour le FR via la réécriture interne définie dans
+  // next.config.ts (voir commentaire là-bas) : le navigateur ne voit jamais
+  // ce préfixe "/fr", seul Next.js l'utilise en interne pour la résolution
+  // de route.
   const canonicalPath = buildListingPath(listing, isEn ? "en" : "fr");
   const currentPath = `${isEn ? "/en/cabins" : "/chalets"}/${slug}/${city}/${chaletSlug}`;
-  console.error("[DEBUG3] paths", JSON.stringify({ canonicalPath, currentPath }));
-  if (!canonicalPath) {
-    console.error("[DEBUG3] notFound: no canonicalPath");
-    notFound();
-  }
+  if (!canonicalPath) notFound();
   if (canonicalPath !== currentPath) {
-    console.error("[DEBUG3] redirect to", canonicalPath);
     permanentRedirect(canonicalPath);
   }
 
