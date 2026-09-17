@@ -49,6 +49,9 @@ const nextConfig: NextConfig = {
     return [
       { source: "/en/chalets",           destination: "/en/cabins",        permanent: true },
       { source: "/en/chalets/:path*",    destination: "/en/cabins/:path*", permanent: true },
+      // Renommage région Capitale-Nationale → Québec (2026-09-17), voir lib/regions.ts
+      { source: "/chalets/capitale-nationale",    destination: "/chalets/quebec",              permanent: true },
+      { source: "/en/cabins/capitale-nationale",  destination: "/en/cabins/quebec-city-region", permanent: true },
       { source: "/en/devenir-hote",      destination: "/en/become-a-host", permanent: true },
       { source: "/en/a-propos",          destination: "/en/about",         permanent: true },
       { source: "/en/comment-ca-marche", destination: "/en/how-it-works",  permanent: true },

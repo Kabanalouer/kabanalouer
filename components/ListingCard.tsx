@@ -8,12 +8,15 @@ import FavoriteButton from "@/components/chalets/FavoriteButton";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { buildListingPath } from "@/lib/listingUrl";
 
 export interface Listing {
   id: string;
   title: string;
   region: string;
   city?: string | null;
+  slug_fr?: string | null;
+  slug_en?: string | null;
   price: number;
   priceOnRequest?: boolean;
   capacity: number;
@@ -52,7 +55,11 @@ export default function ListingCard({
     if (checkout) qs.set("checkout", checkout);
     if (capacity) qs.set("capacity", capacity);
     const s = qs.toString();
-    return localePath(`/chalets/${listing.id}${s ? `?${s}` : ""}`, locale);
+    const path = buildListingPath(
+      { region: listing.region, city: listing.city ?? null, slug_fr: listing.slug_fr ?? null, slug_en: listing.slug_en ?? null },
+      locale === "en" ? "en" : "fr"
+    ) ?? localePath(`/chalets/${listing.id}`, locale);
+    return `${path}${s ? `?${s}` : ""}`;
   })();
 
   const prev = (e: React.MouseEvent) => {

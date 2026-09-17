@@ -26,6 +26,7 @@ const MUNICIPALITIES = municipalitiesData as Municipality[];
 
 const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
+const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
@@ -215,9 +216,11 @@ function NavSearchBarInner() {
 
     const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
 
+    const isEn = locale === "en";
+
     if (active?.type === "region" && noFilters) {
-      const slug = REGION_SLUG_BY_NAME.get(active.value);
-      if (slug) { router.push(localePath(`/chalets/${slug}`, locale)); return; }
+      const slug = isEn ? REGION_EN_SLUG_BY_NAME.get(active.value) : REGION_SLUG_BY_NAME.get(active.value);
+      if (slug) { router.push(isEn ? `/en/cabins/${slug}` : `/chalets/${slug}`); return; }
     }
 
     // Ville reconnue dans la liste officielle (no dates, no guests) → sa
@@ -230,8 +233,8 @@ function NavSearchBarInner() {
           router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
           return;
         }
-        const regionSlug = REGION_SLUG_BY_NAME.get(municipality.region);
-        if (regionSlug) { router.push(localePath(`/chalets/${regionSlug}`, locale)); return; }
+        const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
+        if (regionSlug) { router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`); return; }
       }
     }
 

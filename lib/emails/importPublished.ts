@@ -51,14 +51,14 @@ export async function sendImportPublishedEmail({
   email,
   preferredLanguage,
   firstName,
-  listingId,
+  listingPath,
   listingTitle,
   isFreeLaunch,
 }: {
   email: string;
   preferredLanguage: "fr" | "en";
   firstName?: string | null;
-  listingId: string;
+  listingPath: string;
   listingTitle: string;
   isFreeLaunch: boolean;
 }): Promise<{ error: Error | null }> {
@@ -71,7 +71,7 @@ export async function sendImportPublishedEmail({
     heading: template.heading,
     body: isFreeLaunch ? template.bodyFree(listingTitle) : template.bodyPaid(listingTitle),
     buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}/chalets/${listingId}`,
+    buttonUrl: `${SITE_URL}${listingPath}`,
     footerNote: template.footerNote,
   });
 

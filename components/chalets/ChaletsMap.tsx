@@ -5,6 +5,7 @@ import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/re
 import type { ListingForMap } from "./ChaletsMapLayout";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { buildListingPath } from "@/lib/listingUrl";
 
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
 
@@ -169,7 +170,12 @@ function MapContent({
               {selected.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: selected.price })}
             </p>
             <a
-              href={localePath(`/chalets/${selected.id}`, locale)}
+              href={
+                buildListingPath(
+                  { region: selected.region, city: selected.city ?? null, slug_fr: selected.slug_fr ?? null, slug_en: selected.slug_en ?? null },
+                  locale === "en" ? "en" : "fr"
+                ) ?? localePath(`/chalets/${selected.id}`, locale)
+              }
               className="block text-center text-xs bg-primary text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
               {tMap("viewCabin")}

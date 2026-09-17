@@ -9,6 +9,7 @@ import { REGIONS, type RegionConfig } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
+import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { safeJsonLd } from "@/lib/jsonLd";
@@ -16,6 +17,7 @@ import { safeJsonLd } from "@/lib/jsonLd";
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const isEn = locale === "en";
+  const displayRegionName = isEn ? regionConfig.nameEn : regionConfig.name;
   const content = getRegionContent(regionConfig.slug);
   const {
     data: { user },
@@ -24,7 +26,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities"
+      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, slug_fr, slug_en"
     )
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
@@ -36,6 +38,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     title: l.title ?? "",
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
+    slug_fr: (l.slug_fr as string | null) ?? null,
+    slug_en: (l.slug_en as string | null) ?? null,
     price: (l.price_low as number) ?? 0,
     priceOnRequest: (l.price_on_request as boolean) ?? false,
     capacity: (l.capacity as number) ?? 1,
@@ -59,7 +63,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawVedette } = vedetteIds.length > 0
     ? await supabase
         .from("listings")
-        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities")
+        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, slug_fr, slug_en")
         .in("id", vedetteIds)
         .eq("is_published", true)
     : { data: [] as typeof rawListings };
@@ -68,6 +72,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     title: l.title ?? "",
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
+    slug_fr: (l.slug_fr as string | null) ?? null,
+    slug_en: (l.slug_en as string | null) ?? null,
     price: (l.price_low as number) ?? 0,
     priceOnRequest: (l.price_on_request as boolean) ?? false,
     capacity: (l.capacity as number) ?? 1,
@@ -92,14 +98,14 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {
         "@type": "ListItem",
         position: 2,
-        name: "Chalets",
-        item: `${SITE_URL}/chalets`,
+        name: isEn ? "Cabins" : "Chalets",
+        item: `${SITE_URL}${localePath("/chalets", locale)}`,
       },
       {
         "@type": "ListItem",
         position: 3,
-        name: regionConfig.name,
-        item: `${SITE_URL}/chalets/${regionConfig.slug}`,
+        name: displayRegionName,
+        item: `${SITE_URL}${isEn ? `/en/cabins/${regionConfig.slugEn}` : `/chalets/${regionConfig.slug}`}`,
       },
     ],
   };
@@ -109,12 +115,15 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       ? {
           "@context": "https://schema.org",
           "@type": "ItemList",
-          name: `Chalets à louer ${regionConfig.locative}`,
+          name: isEn ? `Cabins for rent ${content?.locative_en ?? "in Quebec"}` : `Chalets à louer ${regionConfig.locative}`,
           numberOfItems: listings.length,
-          itemListElement: listings.map((l, i) => ({
+          itemListElement: (rawListings ?? []).map((l, i) => ({
             "@type": "ListItem",
             position: i + 1,
-            url: `${SITE_URL}/chalets/${l.id}`,
+            url: `${SITE_URL}${buildListingPath(
+              { region: l.region as string | null, city: l.city as string | null, slug_fr: l.slug_fr as string | null, slug_en: l.slug_en as string | null },
+              isEn ? "en" : "fr"
+            ) ?? `/chalets/${l.id}`}`,
             name: l.title,
           })),
         }
@@ -174,7 +183,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
               {isEn ? "Cabins" : "Chalets"}
             </Link>
             <span>›</span>
-            <span className="text-white/90">{regionConfig.name}</span>
+            <span className="text-white/90">{displayRegionName}</span>
           </nav>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 max-w-3xl leading-tight">
             {isEn
@@ -303,8 +312,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-charcoal-800 mb-6">
             {isEn
-              ? `Discover ${content?.region_en ?? regionConfig.name}`
-              : `Découvrez ${content?.region_fr ?? regionConfig.name}`}
+              ? `Discover ${content?.region_en ?? displayRegionName}`
+              : `Découvrez ${content?.region_fr ?? displayRegionName}`}
           </h2>
           <div className="space-y-4">
             {(isEn && content?.description_en
@@ -340,15 +349,15 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
       {/* ── Other regions ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Explorer d&apos;autres régions</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-6">{isEn ? "Explore other regions" : "Explorer d'autres régions"}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {otherRegions.map((r) => (
             <Link
               key={r.slug}
-              href={localePath(`/chalets/${r.slug}`, locale)}
+              href={isEn ? `/en/cabins/${r.slugEn}` : `/chalets/${r.slug}`}
               className="flex items-center px-4 py-3 rounded-xl border border-gray-200 hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-gray-700 hover:text-primary"
             >
-              {r.name}
+              {isEn ? r.nameEn : r.name}
             </Link>
           ))}
         </div>

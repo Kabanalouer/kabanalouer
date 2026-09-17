@@ -757,14 +757,14 @@ const REGIONS_CONTENT: RegionContent[] = [
     ],
   },
   {
-    slug: "capitale-nationale",
-    region_fr: "la Capitale-Nationale",
-    region_en: "the Capitale-Nationale region",
-    locative_en: "in the Capitale-Nationale region",
+    slug: "quebec",
+    region_fr: "la région de Québec",
+    region_en: "the Québec City region",
+    locative_en: "in the Québec City region",
     description_en: [
-      "The Capitale-Nationale region encompasses Quebec City, the historic fortified old town, as well as the magnificent countryside of the Côte-de-Beaupré, Orléans Island, and the wild lands to the north up to the Laurentians wildlife reserve. Renting a cabin here means combining urban culture with wild nature just kilometres apart.",
+      "The Québec City region encompasses Quebec City, the historic fortified old town, as well as the magnificent countryside of the Côte-de-Beaupré, Orléans Island, and the wild lands to the north up to the Laurentians wildlife reserve. Renting a cabin here means combining urban culture with wild nature just kilometres apart.",
       "Orléans Island, nicknamed the 'Garden of Quebec,' offers farm restaurants, cheese makers, and orchards in a unique pastoral setting. The Côte-de-Beaupré leads to the grand Montmorency Falls and Mont-Sainte-Anne, one of Eastern Canada's most important alpine ski resorts.",
-      "Jacques-Cartier National Park, north of Quebec City, is paradise for canoe-camping in summer and snowshoeing in winter. A cabin in the Capitale-Nationale places you at the heart of Quebec history and nature.",
+      "Jacques-Cartier National Park, north of Quebec City, is paradise for canoe-camping in summer and snowshoeing in winter. A cabin in the Québec City region places you at the heart of Quebec history and nature.",
     ],
     highlights_fr: [
       "Mont-Sainte-Anne — ski alpin de classe mondiale",
@@ -780,9 +780,9 @@ const REGIONS_CONTENT: RegionContent[] = [
       "Quebec City just minutes away",
       "Canoe-camping and snowshoeing in national parks",
     ],
-    meta_title_fr: "Chalets à louer dans la Capitale-Nationale",
+    meta_title_fr: "Chalets à louer dans la région de Québec",
     meta_title_en: "Cabin Rentals near Quebec City, QC",
-    meta_description_fr: "Chalets à louer dans la Capitale-Nationale — Mont-Sainte-Anne, île d'Orléans, parc de la Jacques-Cartier. Contact direct propriétaires.",
+    meta_description_fr: "Chalets à louer dans la région de Québec — Mont-Sainte-Anne, île d'Orléans, parc de la Jacques-Cartier. Contact direct propriétaires.",
     meta_description_en: "Rent a cabin near Quebec City. Mont-Sainte-Anne, Montmorency Falls, Jacques-Cartier Park — direct contact with owners. No service fees.",
     faq_fr: [
       {
@@ -801,7 +801,7 @@ const REGIONS_CONTENT: RegionContent[] = [
     faq_en: [
       {
         question: "What winter activities are available near Quebec City?",
-        answer: "The Capitale-Nationale region offers downhill skiing at Mont-Sainte-Anne and Stoneham, cross-country skiing in Jacques-Cartier National Park, snowshoeing, tobogganing on the Dufferin Terrace slide, and the Quebec Winter Carnival in February — the world's largest winter carnival.",
+        answer: "The Québec City region offers downhill skiing at Mont-Sainte-Anne and Stoneham, cross-country skiing in Jacques-Cartier National Park, snowshoeing, tobogganing on the Dufferin Terrace slide, and the Quebec Winter Carnival in February — the world's largest winter carnival.",
       },
       {
         question: "Is Orléans Island worth a visit?",

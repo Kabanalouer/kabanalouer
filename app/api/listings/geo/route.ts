@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
+    .select("id, title, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, slug_fr, slug_en")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -117,6 +117,8 @@ export async function GET(req: Request) {
       title: row.title as string,
       region: row.region as string,
       city: (row.city as string | null) ?? null,
+      slug_fr: (row.slug_fr as string | null) ?? null,
+      slug_en: (row.slug_en as string | null) ?? null,
       price: row.price_low as number,
       priceOnRequest: !!(row.price_on_request),
       capacity: row.capacity as number,

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { getRegionSlugs, getRegionBySlug } from "@/lib/regions";
+import { REGIONS, getRegionSlugs, getRegionBySlug } from "@/lib/regions";
 import { isKnownMunicipality } from "@/lib/municipalities";
 import { slugify } from "@/lib/slugify";
+import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { createClient } from "@supabase/supabase-js";
 
@@ -46,9 +47,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Défaut optimiste (toutes les régions) — écrasé ci-dessous une fois les
   // comptes actifs connus. Reste tel quel si Supabase est injoignable (ne pas
   // faire échouer le build, voir catch plus bas).
-  let regionPages: MetadataRoute.Sitemap = getRegionSlugs().flatMap((slug) => [
-    { url: `${BASE}/chalets/${slug}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
-    { url: `${BASE}/en/cabins/${slug}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+  let regionPages: MetadataRoute.Sitemap = REGIONS.flatMap((region) => [
+    { url: `${BASE}/chalets/${region.slug}`,        lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+    { url: `${BASE}/en/cabins/${region.slugEn}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
   ]);
 
   let listingPages: MetadataRoute.Sitemap = [];
@@ -68,14 +69,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     listingPages = (listings ?? []).flatMap((l) => {
       const lastMod = new Date(l.updated_at as string);
-      const slugFr = (l.slug_fr as string | null) ?? l.id;
-      const slugEn = (l.slug_en as string | null) ?? null;
-      const entries: MetadataRoute.Sitemap = [
-        { url: `${BASE}/chalets/${slugFr}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 },
-      ];
-      if (slugEn) {
-        entries.push({ url: `${BASE}/en/cabins/${slugEn}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 });
-      }
+      const listingRow = {
+        region: l.region as string | null,
+        city: l.city as string | null,
+        slug_fr: l.slug_fr as string | null,
+        slug_en: l.slug_en as string | null,
+      };
+      const pathFr = buildListingPath(listingRow, "fr");
+      const pathEn = buildListingPath(listingRow, "en");
+      // Une annonce sans région connue ou sans slug généré (voir
+      // ensureListingSlugs()) n'a pas de chemin canonique fiable — jamais
+      // soumise à Google sous son UUID brut.
+      const entries: MetadataRoute.Sitemap = [];
+      if (pathFr) entries.push({ url: `${BASE}${pathFr}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 });
+      if (pathEn) entries.push({ url: `${BASE}${pathEn}`, lastModified: lastMod, changeFrequency: "weekly" as const, priority: 0.8 });
       return entries;
     });
 
@@ -117,10 +124,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     regionPages = getRegionSlugs().flatMap((slug) => {
       const regionConfig = getRegionBySlug(slug);
       const activeCount = regionConfig ? (activeCountByRegion.get(regionConfig.dbValue) ?? 0) : 0;
-      if (activeCount < MIN_CHALETS_FOR_INDEX) return [];
+      if (activeCount < MIN_CHALETS_FOR_INDEX || !regionConfig) return [];
       return [
-        { url: `${BASE}/chalets/${slug}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
-        { url: `${BASE}/en/cabins/${slug}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+        { url: `${BASE}/chalets/${regionConfig.slug}`,      lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+        { url: `${BASE}/en/cabins/${regionConfig.slugEn}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
       ];
     });
   } catch {

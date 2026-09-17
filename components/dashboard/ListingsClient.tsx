@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { firstPhotoUrl } from "@/lib/photo";
 import { getScoreLevel } from "@/lib/listingScore";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import { buildListingPath } from "@/lib/listingUrl";
 
 type Listing = {
   id: string;
   title: string | null;
   title_en?: string | null;
   region: string | null;
+  city?: string | null;
+  slug_fr?: string | null;
+  slug_en?: string | null;
   is_published: boolean | null;
   price_low: number | null;
   photos: unknown;
@@ -28,6 +32,7 @@ interface Props {
 
 export default function ListingsClient({ listings, reviews, scores, translationPending }: Props) {
   const t = useTranslations("listings");
+  const locale = useLocale();
 
   return (
     <div className="space-y-3">
@@ -87,7 +92,12 @@ export default function ListingsClient({ listings, reviews, scores, translationP
               <div className="flex items-center gap-3 shrink-0">
                 {listing.is_published && (
                   <Link
-                    href={`/chalets/${listing.id}`}
+                    href={
+                      buildListingPath(
+                        { region: listing.region, city: listing.city ?? null, slug_fr: listing.slug_fr ?? null, slug_en: listing.slug_en ?? null },
+                        locale === "en" ? "en" : "fr"
+                      ) ?? `/chalets/${listing.id}`
+                    }
                     target="_blank"
                     className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors hidden sm:block"
                   >

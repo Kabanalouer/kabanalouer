@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
-import { getRegionSlugByDbValue } from "@/lib/regions";
+import { getRegionByDbValue } from "@/lib/regions";
 import { renderEmail } from "./renderEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -36,9 +36,9 @@ function homePageUrl(lang: "fr" | "en"): string {
 // à aucun slug connu (ne devrait pas arriver, mais on dégrade proprement en texte simple).
 function regionPageUrl(region: string | null | undefined, lang: "fr" | "en"): string | null {
   if (!region) return null;
-  const slug = getRegionSlugByDbValue(region);
-  if (!slug) return null;
-  return lang === "en" ? `${SITE_URL}/en/chalets/${slug}` : `${SITE_URL}/chalets/${slug}`;
+  const regionConfig = getRegionByDbValue(region);
+  if (!regionConfig) return null;
+  return lang === "en" ? `${SITE_URL}/en/cabins/${regionConfig.slugEn}` : `${SITE_URL}/chalets/${regionConfig.slug}`;
 }
 
 // Phrase complète ("la section vedette de la région Laurentides"), avec un lien cliquable

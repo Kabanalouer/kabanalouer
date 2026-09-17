@@ -28,6 +28,7 @@ const MUNICIPALITIES = municipalitiesData as Municipality[];
 const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 // dbValue -> slug URL, pour le raccourci vers la page région SEO existante.
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
+const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 // nom de municipalité -> fiche complète (région, slug), pour choisir entre
 // /chalets/ville/[slug] et la page région parente au moment de la recherche.
 const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
@@ -315,11 +316,13 @@ export default function SearchBar({
 
     const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
 
+    const isEn = locale === "en";
+
     // Region-only search (no dates, no guests) → SEO landing page
     if (active?.type === "region" && noFilters) {
-      const slug = REGION_SLUG_BY_NAME.get(active.value);
+      const slug = isEn ? REGION_EN_SLUG_BY_NAME.get(active.value) : REGION_SLUG_BY_NAME.get(active.value);
       if (slug) {
-        router.push(localePath(`/chalets/${slug}`, locale));
+        router.push(isEn ? `/en/cabins/${slug}` : `/chalets/${slug}`);
         return;
       }
     }
@@ -335,9 +338,9 @@ export default function SearchBar({
           router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
           return;
         }
-        const regionSlug = REGION_SLUG_BY_NAME.get(municipality.region);
+        const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
         if (regionSlug) {
-          router.push(localePath(`/chalets/${regionSlug}`, locale));
+          router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`);
           return;
         }
       }

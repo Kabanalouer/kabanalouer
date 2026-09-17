@@ -1,6 +1,8 @@
 export interface RegionConfig {
   slug: string;
   name: string;
+  slugEn: string;
+  nameEn: string;
   dbValue: string;       // Exact value stored in Supabase listings.region
   locative: string;      // French locative phrase
   seoText: string[];     // 2–3 SEO paragraphs
@@ -11,6 +13,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "laurentides",
     name: "Laurentides",
+    slugEn: "laurentians",
+    nameEn: "Laurentians",
     dbValue: "Laurentides",
     locative: "dans les Laurentides",
     heroImage: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80",
@@ -23,6 +27,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "charlevoix",
     name: "Charlevoix",
+    slugEn: "charlevoix",
+    nameEn: "Charlevoix",
     dbValue: "Charlevoix",
     locative: "en Charlevoix",
     heroImage: "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=1920&q=80",
@@ -35,6 +41,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "cantons-de-lest",
     name: "Cantons-de-l'Est",
+    slugEn: "eastern-townships",
+    nameEn: "Eastern Townships",
     dbValue: "Estrie (Cantons-de-l'Est)",
     locative: "dans les Cantons-de-l'Est",
     heroImage: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=1920&q=80",
@@ -47,6 +55,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "lanaudiere",
     name: "Lanaudière",
+    slugEn: "lanaudiere",
+    nameEn: "Lanaudière",
     dbValue: "Lanaudière",
     locative: "en Lanaudière",
     heroImage: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=80",
@@ -59,6 +69,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "mauricie",
     name: "Mauricie",
+    slugEn: "mauricie",
+    nameEn: "Mauricie",
     dbValue: "Mauricie",
     locative: "en Mauricie",
     heroImage: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80",
@@ -71,6 +83,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "outaouais",
     name: "Outaouais",
+    slugEn: "outaouais",
+    nameEn: "Outaouais",
     dbValue: "Outaouais",
     locative: "en Outaouais",
     heroImage: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1920&q=80",
@@ -83,6 +97,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "saguenay-lac-saint-jean",
     name: "Saguenay–Lac-Saint-Jean",
+    slugEn: "saguenay-lac-saint-jean",
+    nameEn: "Saguenay–Lac-Saint-Jean",
     dbValue: "Saguenay–Lac-Saint-Jean",
     locative: "au Saguenay–Lac-Saint-Jean",
     heroImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80",
@@ -95,6 +111,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "bas-saint-laurent",
     name: "Bas-Saint-Laurent",
+    slugEn: "bas-saint-laurent",
+    nameEn: "Bas-Saint-Laurent",
     dbValue: "Bas-Saint-Laurent",
     locative: "dans le Bas-Saint-Laurent",
     heroImage: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1920&q=80",
@@ -113,6 +131,8 @@ export const REGIONS: RegionConfig[] = [
     // le contenu ne parle encore que de la péninsule gaspésienne.
     slug: "gaspesie",
     name: "Gaspésie–Îles-de-la-Madeleine",
+    slugEn: "gaspesie-iles-de-la-madeleine",
+    nameEn: "Gaspésie–Îles-de-la-Madeleine",
     dbValue: "Gaspésie–Îles-de-la-Madeleine",
     locative: "en Gaspésie",
     heroImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80",
@@ -125,6 +145,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "abitibi-temiscamingue",
     name: "Abitibi-Témiscamingue",
+    slugEn: "abitibi-temiscamingue",
+    nameEn: "Abitibi-Témiscamingue",
     dbValue: "Abitibi-Témiscamingue",
     locative: "en Abitibi-Témiscamingue",
     heroImage: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920&q=80",
@@ -137,6 +159,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "cote-nord",
     name: "Côte-Nord",
+    slugEn: "cote-nord",
+    nameEn: "Côte-Nord",
     dbValue: "Côte-Nord",
     locative: "sur la Côte-Nord",
     heroImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80",
@@ -149,6 +173,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "monteregie",
     name: "Montérégie",
+    slugEn: "monteregie",
+    nameEn: "Montérégie",
     dbValue: "Montérégie",
     locative: "en Montérégie",
     heroImage: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1920&q=80",
@@ -161,6 +187,8 @@ export const REGIONS: RegionConfig[] = [
   {
     slug: "chaudiere-appalaches",
     name: "Chaudière-Appalaches",
+    slugEn: "chaudiere-appalaches",
+    nameEn: "Chaudière-Appalaches",
     dbValue: "Chaudière-Appalaches",
     locative: "en Chaudière-Appalaches",
     heroImage: "https://images.unsplash.com/photo-1487621167305-5d248087c724?w=1920&q=80",
@@ -171,8 +199,14 @@ export const REGIONS: RegionConfig[] = [
     ],
   },
   {
-    slug: "capitale-nationale",
-    name: "Capitale-Nationale",
+    // Slug/nom FR volontairement changés de "capitale-nationale" vers
+    // "quebec" (2026-09-17) — plus naturel pour le grand public que le nom
+    // administratif MAMH. dbValue INCHANGÉ (valeur brute déjà en base pour
+    // les annonces existantes) — voir getRegionByDbValue().
+    slug: "quebec",
+    name: "Québec",
+    slugEn: "quebec-city-region",
+    nameEn: "Québec City Region",
     dbValue: "Québec (ville et région)",
     locative: "dans la Capitale-Nationale",
     heroImage: "https://images.unsplash.com/photo-1548695607-9c73430379f9?w=1920&q=80",
@@ -188,6 +222,8 @@ export const REGIONS: RegionConfig[] = [
     // (80 municipalités au répertoire MAMH, voir lib/municipalities.json).
     slug: "centre-du-quebec",
     name: "Centre-du-Québec",
+    slugEn: "centre-du-quebec",
+    nameEn: "Centre-du-Québec",
     dbValue: "Centre-du-Québec",
     locative: "au Centre-du-Québec",
     heroImage: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1920&q=80",
@@ -203,13 +239,18 @@ export function getRegionBySlug(slug: string): RegionConfig | undefined {
   return REGIONS.find((r) => r.slug === slug);
 }
 
+export function getRegionByEnSlug(slugEn: string): RegionConfig | undefined {
+  return REGIONS.find((r) => r.slugEn === slugEn);
+}
+
+export function getRegionByDbValue(dbValue: string): RegionConfig | undefined {
+  return REGIONS.find((r) => r.dbValue === dbValue);
+}
+
 export function getRegionSlugs(): string[] {
   return REGIONS.map((r) => r.slug);
 }
 
-// Retrouve le slug de page publique (/chalets/[slug]) à partir de la valeur région
-// stockée en base (listings.region / featured_listings.region) — utilisé pour lier
-// le nom de région vers sa page publique dans les emails de boost.
-export function getRegionSlugByDbValue(dbValue: string): string | undefined {
-  return REGIONS.find((r) => r.dbValue === dbValue)?.slug;
+export function getRegionEnSlugs(): string[] {
+  return REGIONS.map((r) => r.slugEn);
 }

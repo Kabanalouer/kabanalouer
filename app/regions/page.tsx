@@ -7,6 +7,7 @@ import { REGIONS } from "@/lib/regions";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -43,22 +44,23 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const breadcrumbJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Accueil", item: `${SITE_URL}/` },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Régions",
-      item: `${SITE_URL}/regions`,
-    },
-  ],
-};
-
 export default async function RegionsPage() {
-  const [supabase, t] = await Promise.all([createClient(), getTranslations("regions")]);
+  const [supabase, t, locale] = await Promise.all([createClient(), getTranslations("regions"), getLocale()]);
+  const isEn = locale === "en";
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: isEn ? "Home" : "Accueil", item: `${SITE_URL}${localePath("/", locale)}` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEn ? "Regions" : "Régions",
+        item: `${SITE_URL}${localePath("/regions", locale)}`,
+      },
+    ],
+  };
 
   const { data } = await supabase
     .from("listings")
@@ -102,12 +104,14 @@ export default async function RegionsPage() {
 
           {/* ── Region grid ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[...REGIONS].sort((a, b) => a.name.localeCompare(b.name, "fr")).map((region) => {
+            {[...REGIONS]
+              .sort((a, b) => (isEn ? a.nameEn.localeCompare(b.nameEn, "en") : a.name.localeCompare(b.name, "fr")))
+              .map((region) => {
               const count = counts[region.dbValue] ?? 0;
               const href =
                 count > 0
-                  ? `/chalets/${region.slug}`
-                  : `/chalets?region=${encodeURIComponent(region.dbValue)}`;
+                  ? (isEn ? `/en/cabins/${region.slugEn}` : `/chalets/${region.slug}`)
+                  : localePath(`/chalets?region=${encodeURIComponent(region.dbValue)}`, locale);
 
               return (
                 <Link
@@ -117,7 +121,7 @@ export default async function RegionsPage() {
                 >
                   <div className="min-w-0 mr-3">
                     <p className="text-[15px] font-medium text-charcoal-800 truncate">
-                      {region.name}
+                      {isEn ? region.nameEn : region.name}
                     </p>
                     {count > 0 ? (
                       <p className="text-sm text-charcoal-400 mt-0.5">

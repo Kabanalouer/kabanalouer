@@ -43,7 +43,7 @@ export default async function FavorisPage() {
     // Fetch listing data
     const { data: rows } = await supabase
       .from("listings")
-      .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities")
+      .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, slug_fr, slug_en")
       .in("id", favListingIds)
       .eq("is_published", true);
 
@@ -91,6 +91,8 @@ export default async function FavorisPage() {
           title: row.title as string,
           region: row.region as string,
           city: (row.city as string | null) ?? null,
+          slug_fr: (row.slug_fr as string | null) ?? null,
+          slug_en: (row.slug_en as string | null) ?? null,
           price: row.price_low as number,
           priceOnRequest: !!(row.price_on_request),
           capacity: row.capacity as number,
