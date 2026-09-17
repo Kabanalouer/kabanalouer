@@ -405,19 +405,23 @@ export default function EditListingForm({
 
   // Auto-resize des textareas Description — même technique que les légendes
   // de photo (PhotoUpload.tsx) : hauteur recalculée depuis scrollHeight.
+  // Dépend aussi de activeSection : le textarea n'existe dans le DOM que
+  // lorsque l'onglet Description est actif, donc un contenu déjà présent
+  // (annonce existante) ne serait jamais mesuré avant la première frappe sans
+  // ce déclencheur supplémentaire à l'ouverture de l'onglet.
   useEffect(() => {
     const el = descFrTextareaRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
-  }, [form.description]);
+  }, [form.description, activeSection]);
 
   useEffect(() => {
     const el = descEnTextareaRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
-  }, [form.description_en]);
+  }, [form.description_en, activeSection]);
 
   // Hauteur minimale du champ Description = hauteur réelle d'un texte
   // d'environ DESC_MIN caractères à la largeur actuelle du champ (mesurée via
@@ -851,6 +855,20 @@ export default function EditListingForm({
       <div className="flex-1 min-w-0">
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 h-full">
 
+          {/* Miroir invisible (Description) — toujours monté, indépendamment de
+              l'onglet actif, pour mesurer la largeur réelle dès le chargement
+              du formulaire plutôt qu'à la première visite de l'onglet. */}
+          <div aria-hidden="true" className="h-0 overflow-hidden">
+            <textarea
+              ref={descMeasureRef}
+              readOnly
+              tabIndex={-1}
+              rows={1}
+              value={DESC_MIN_HEIGHT_SAMPLE}
+              className={`${inputCls} resize-none`}
+            />
+          </div>
+
           {/* Section: Photos */}
           {activeSection === "photos" && (
             <SectionShell title={t("sections.photos")}>
@@ -1003,19 +1021,6 @@ export default function EditListingForm({
           {activeSection === "description" && (
             <SectionShell title={t("sections.description")}>
               <p className="text-sm text-charcoal-400 -mt-3 mb-4">{tEdit("descMaxChars", { count: DESC_MAX })}</p>
-
-              {/* Miroir invisible — sert uniquement à mesurer la hauteur d'environ
-                  DESC_MIN caractères à la largeur actuelle, jamais affiché. */}
-              <div aria-hidden="true" className="h-0 overflow-hidden">
-                <textarea
-                  ref={descMeasureRef}
-                  readOnly
-                  tabIndex={-1}
-                  rows={1}
-                  value={DESC_MIN_HEIGHT_SAMPLE}
-                  className={`${inputCls} resize-none`}
-                />
-              </div>
 
               {(() => {
                 const descFrBlock = (
