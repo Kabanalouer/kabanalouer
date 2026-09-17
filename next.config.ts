@@ -45,6 +45,25 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  // Contourne un comportement de routage confirmé où une route dynamique
+  // imbriquée/catch-all déclarée directement à la racine de app/ (sans
+  // ancêtre dynamique, ex. app/chalets/[...segments]) ne correspond qu'à
+  // exactement 1 segment en production, jamais à plusieurs, alors que la
+  // même route déclarée sous app/[locale]/... fonctionne pour n'importe quel
+  // nombre de segments. Confirmé par des tests de diagnostic répétés
+  // (logs Vercel, plusieurs déploiements, y compris un build sans cache) —
+  // voir app/chalets/[...segments]/page.tsx. Ces réécritures redirigent en
+  // interne (URL affichée inchangée) vers l'implémentation identique servie
+  // sous app/[locale]/chalets/[...segments]/page.tsx, qui fonctionne
+  // correctement. Portée volontairement limitée à exactement 1 ou 3
+  // segments pour ne jamais toucher /chalets (recherche) ni
+  // /chalets/ville/[slug] (2 segments, déjà fonctionnel).
+  async rewrites() {
+    return [
+      { source: "/chalets/:a",       destination: "/fr/chalets/:a" },
+      { source: "/chalets/:a/:b/:c", destination: "/fr/chalets/:a/:b/:c" },
+    ];
+  },
   async redirects() {
     return [
       { source: "/en/chalets",           destination: "/en/cabins",        permanent: true },
