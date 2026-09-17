@@ -364,12 +364,33 @@ export default function EditListingForm({
   const descLimitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const titleSuggestionsRef = useRef<HTMLDivElement | null>(null);
   const [titleGenerating, setTitleGenerating] = useState(false);
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
   const [titleEnAutoTranslated, setTitleEnAutoTranslated] = useState(false);
   const [savedTitleEn, setSavedTitleEn] = useState<string | null>(null);
+
+  // Popover de suggestions IA (titre) — se ferme sans rien changer au clic
+  // en dehors ou à Échap, jamais en remplissant le champ.
+  useEffect(() => {
+    if (titleSuggestions.length === 0) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (titleSuggestionsRef.current && !titleSuggestionsRef.current.contains(e.target as Node)) {
+        setTitleSuggestions([]);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTitleSuggestions([]);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [titleSuggestions.length]);
 
   const [descGenerating, setDescGenerating] = useState(false);
   const [descGenError, setDescGenError] = useState("");
@@ -813,7 +834,7 @@ export default function EditListingForm({
               {(() => {
                 const titleFrBlock = (
                   <>
-                    <div className="flex items-center justify-between gap-4 mb-1.5">
+                    <div ref={titleSuggestionsRef} className="relative flex items-center justify-between gap-4 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">
                         {tEdit("titleLabelFr")} <Req />
                       </label>
@@ -835,6 +856,28 @@ export default function EditListingForm({
                         )}
                         {titleGenerating ? tEdit("aiGenerating") : tEdit("aiGenerate")}
                       </button>
+
+                      {titleSuggestions.length > 0 && (
+                        <div className="absolute right-0 top-full mt-2 w-72 max-w-[90vw] bg-white rounded-xl shadow-lg border border-[#ebebeb] z-20 p-3 space-y-2">
+                          <p className="text-xs font-medium text-charcoal-400">{tEdit("titleClickToUse")}</p>
+                          <div className="flex flex-col gap-2">
+                            {titleSuggestions.map((s, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  if (form.title.trim()) setSavedTitle(form.title);
+                                  handleTitleChange(s);
+                                  setTitleSuggestions([]);
+                                }}
+                                className="text-left text-sm px-3 py-2 rounded-xl border border-[#ebebeb] hover:border-primary hover:bg-primary/5 text-charcoal-700 transition-colors"
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <input
                       type="text"
@@ -944,28 +987,6 @@ export default function EditListingForm({
                   </div>
                 ));
               })()}
-
-              {titleSuggestions.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-xs font-medium text-charcoal-400">{tEdit("titleClickToUse")}</p>
-                  <div className="flex flex-col gap-2">
-                    {titleSuggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          if (form.title.trim()) setSavedTitle(form.title);
-                          handleTitleChange(s);
-                          setTitleSuggestions([]);
-                        }}
-                        className="text-left text-sm px-4 py-2.5 rounded-xl border border-[#ebebeb] hover:border-primary hover:bg-primary/5 text-charcoal-700 transition-colors"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {savedTitle !== null && titleSuggestions.length === 0 && (
                 <div className="mt-3">
