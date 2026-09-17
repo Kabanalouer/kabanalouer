@@ -1,6 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
+import {
+  NO_GENERIC_ADJECTIVES_FR,
+  NO_GENERIC_ADJECTIVES_EN,
+  PRIORITIZE_DIFFERENTIATING_AMENITIES_FR,
+  PRIORITIZE_DIFFERENTIATING_AMENITIES_EN,
+} from "@/lib/aiWritingRules";
 import { NextResponse } from "next/server";
 
 const SYSTEM_PROMPT_FR =
@@ -13,7 +19,10 @@ const SYSTEM_PROMPT_FR =
   "Pense aussi aux recherches faites dans les LLM comme ChatGPT. " +
   "RÈGLE SEO PRIORITAIRE : Si le titre actuel ou les informations de la fiche contiennent un nom propre de chalet (ex: 'Chalet Authentik 50', 'Chalet du Lac', 'Villa des Pins', etc.), AU MOINS 2 des 3 suggestions doivent commencer par ce nom propre. " +
   "Les voyageurs qui connaissent déjà ce chalet le cherchent par son nom sur Google — c'est le mot-clé SEO le plus important. " +
-  "Détecte le nom propre dans le titre existant et utilise-le.";
+  "Détecte le nom propre dans le titre existant et utilise-le. " +
+  "RÈGLE DES 3 ANGLES : les 3 suggestions doivent couvrir 3 angles distincts, jamais trois variations du même registre équipement+lieu — (1) un équipement différenciant, (2) la capacité ou le profil de groupe (ex: nombre de personnes, familles, groupes d'amis), (3) la région ou la destination. Si la règle SEO du nom propre s'applique à une suggestion, applique quand même un angle différent pour le reste du texte de cette suggestion. " +
+  NO_GENERIC_ADJECTIVES_FR + " " +
+  PRIORITIZE_DIFFERENTIATING_AMENITIES_FR;
 
 const SYSTEM_PROMPT_EN =
   "You are an expert in writing vacation cabin rental listings in Quebec, Canada. " +
@@ -25,7 +34,10 @@ const SYSTEM_PROMPT_EN =
   "Think also about searches made in LLMs like ChatGPT. " +
   "PRIORITY SEO RULE: If the current title or listing info contains a proper cabin name (e.g. 'Chalet Authentik 50', 'Lakeside Cabin', 'Pine Villa'), AT LEAST 2 of the 3 suggestions must start with that proper name. " +
   "Travelers who already know this cabin search for it by name on Google — it is the most important SEO keyword. " +
-  "Detect the proper name in the existing title and use it.";
+  "Detect the proper name in the existing title and use it. " +
+  "3-ANGLE RULE: the 3 suggestions must cover 3 distinct angles, never three variations of the same amenity+location register — (1) a differentiating amenity, (2) capacity or group profile (e.g. number of people, families, groups of friends), (3) the region or destination. If the proper-name SEO rule applies to a suggestion, still apply a different angle for the rest of that suggestion's text. " +
+  NO_GENERIC_ADJECTIVES_EN + " " +
+  PRIORITIZE_DIFFERENTIATING_AMENITIES_EN;
 
 export async function POST(request: Request) {
   const supabase = await createClient();
