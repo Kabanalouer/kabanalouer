@@ -368,7 +368,6 @@ export default function EditListingForm({
   const [titleGenerating, setTitleGenerating] = useState(false);
   const [titleGenError, setTitleGenError] = useState("");
   const [showTitleContextWarning, setShowTitleContextWarning] = useState(false);
-  const [savedTitle, setSavedTitle] = useState<string | null>(null);
 
   // Popover de suggestions IA (titre) — se ferme sans rien changer au clic
   // en dehors ou à Échap, jamais en remplissant le champ.
@@ -428,7 +427,6 @@ export default function EditListingForm({
     } else {
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
-      setSavedTitle(null);
       setSavedDescription(null);
       setShowDescRestoreButtons(false);
     }
@@ -864,7 +862,6 @@ export default function EditListingForm({
                                 key={i}
                                 type="button"
                                 onClick={() => {
-                                  if (form.title.trim()) setSavedTitle(form.title);
                                   handleTitleChange(s);
                                   setTitleSuggestions([]);
                                 }}
@@ -880,7 +877,7 @@ export default function EditListingForm({
                     <input
                       type="text"
                       value={form.title}
-                      onChange={(e) => { if (savedTitle !== null) setSavedTitle(null); handleTitleChange(e.target.value); }}
+                      onChange={(e) => handleTitleChange(e.target.value)}
                       className={inputCls}
                       placeholder={tEdit("titlePlaceholder")}
                     />
@@ -957,17 +954,6 @@ export default function EditListingForm({
                 ));
               })()}
 
-              {savedTitle !== null && titleSuggestions.length === 0 && (
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={() => { handleTitleChange(savedTitle); setSavedTitle(null); }}
-                    className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors"
-                  >
-                    {tEdit("titleRestore")}
-                  </button>
-                </div>
-              )}
               <RequiredNote tEdit={tEdit} />
             </SectionShell>
           )}

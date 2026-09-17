@@ -104,7 +104,6 @@
       "titleLabelEn": "Title (English)",
       "titleEnPlaceholder": "e.g. Cozy lakefront cabin with hot tub",
       "titleClickToUse": "Click to use:",
-      "titleRestore": "Restore original title",
       "translateFromFrench": "Translate from French",
       "translateTitleError": "The translation didn't work — try again or leave it blank, it'll be translated automatically when you publish.",
       "titleEnHelperNote": "You can leave this field empty — it will be translated automatically when you publish.",
