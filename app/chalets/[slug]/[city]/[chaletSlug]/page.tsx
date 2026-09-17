@@ -81,24 +81,37 @@ export default async function ListingPage({ params, searchParams }: Props) {
   const isEn = locale === "en";
 
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
-  if (!regionConfig) notFound();
+  console.error("[DEBUG2] slug/city/chaletSlug/locale", JSON.stringify({ slug, city, chaletSlug, locale, regionFound: !!regionConfig }));
+  if (!regionConfig) {
+    console.error("[DEBUG2] notFound: no regionConfig");
+    notFound();
+  }
 
   const supabase = await createClient();
   const slugColumn = isEn ? "slug_en" : "slug_fr";
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  const [{ data: listing, error: listingErr }, { data: { user } }] = await Promise.all([
     supabase.from("listings").select("*").eq(slugColumn, chaletSlug).maybeSingle(),
     supabase.auth.getUser(),
   ]);
 
-  if (!listing) notFound();
+  console.error("[DEBUG2] listing lookup", JSON.stringify({ slugColumn, chaletSlug, found: !!listing, err: listingErr?.message ?? null }));
+  if (!listing) {
+    console.error("[DEBUG2] notFound: no listing");
+    notFound();
+  }
 
   // Valide que région/ville dans l'URL correspondent bien à l'annonce
   // trouvée — sinon redirige vers son chemin canonique actuel (annonce
   // déplacée, lien obsolète, faute de frappe dans le segment ville…).
   const canonicalPath = buildListingPath(listing, isEn ? "en" : "fr");
   const currentPath = `${isEn ? "/en/cabins" : "/chalets"}/${slug}/${city}/${chaletSlug}`;
-  if (!canonicalPath) notFound();
+  console.error("[DEBUG2] path check", JSON.stringify({ canonicalPath, currentPath, equal: canonicalPath === currentPath }));
+  if (!canonicalPath) {
+    console.error("[DEBUG2] notFound: no canonicalPath");
+    notFound();
+  }
   if (canonicalPath !== currentPath) {
+    console.error("[DEBUG2] redirecting to", canonicalPath);
     permanentRedirect(canonicalPath);
   }
 
