@@ -114,6 +114,10 @@ export default function TranslateButton({
       <button
         type="button"
         title={idleLabel}
+        // Empêche le blur du champ voisin (ex. légende) de se déclencher avant
+        // le clic — sans ça, un onBlur qui sauvegarde/valide peut faire perdre
+        // le premier clic (le focus bouge, mais le clic n'est pas traité).
+        onMouseDown={(e) => e.preventDefault()}
         onClick={handleClick}
         disabled={isDisabled}
         className={VARIANT_CLASSNAME[variant]}

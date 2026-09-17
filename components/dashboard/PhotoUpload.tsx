@@ -732,6 +732,8 @@ function CaptionField({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           disabled={disabled}
+          spellCheck
+          lang="fr-CA"
           className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50 resize-none overflow-hidden"
         />
         <CaptionButton i={i} generatingIdx={generatingIdx} onClick={onGenerate} />
@@ -755,6 +757,8 @@ function CaptionField({
           onMouseDown={onMouseDown}
           onChange={(e) => onChangeEn(e.target.value.slice(0, CAPTION_MAX))}
           onBlur={onBlur}
+          spellCheck
+          lang="en-CA"
           className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition resize-none overflow-hidden"
         />
         <TranslateButton

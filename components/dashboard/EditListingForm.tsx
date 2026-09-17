@@ -946,6 +946,8 @@ export default function EditListingForm({
                       onChange={(e) => handleTitleChange(e.target.value)}
                       className={inputCls}
                       placeholder={tEdit("titlePlaceholder")}
+                      spellCheck
+                      lang="fr-CA"
                     />
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
                       {form.title.length}/{TITLE_MAX}
@@ -1002,6 +1004,8 @@ export default function EditListingForm({
                       onChange={(e) => set("title_en", e.target.value.slice(0, TITLE_MAX))}
                       className={inputCls}
                       placeholder={tEdit("titleEnPlaceholder")}
+                      spellCheck
+                      lang="en-CA"
                     />
                     <p className="text-xs tabular-nums mt-1 text-right text-charcoal-400">
                       {form.title_en.length}/{TITLE_MAX}
@@ -1066,6 +1070,8 @@ export default function EditListingForm({
                       style={descMinHeightPx ? { minHeight: `${descMinHeightPx}px` } : undefined}
                       rows={1}
                       placeholder={tEdit("descPlaceholder")}
+                      spellCheck
+                      lang="fr-CA"
                     />
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit || form.description.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
                       {tEdit("descCounter", { count: form.description.length, max: DESC_MAX, min: DESC_MIN })}
@@ -1132,6 +1138,8 @@ export default function EditListingForm({
                       style={descMinHeightPx ? { minHeight: `${descMinHeightPx}px` } : undefined}
                       rows={1}
                       placeholder={tEdit("descEnPlaceholder")}
+                      spellCheck
+                      lang="en-CA"
                     />
                     <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${form.description_en.trim().length > 0 && form.description_en.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
                       {tEdit("descCounter", { count: form.description_en.length, max: DESC_MAX, min: DESC_MIN })}
