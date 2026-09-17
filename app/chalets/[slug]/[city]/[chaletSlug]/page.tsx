@@ -80,16 +80,30 @@ export default async function ListingPage({ params, searchParams }: Props) {
   const [locale, sp] = await Promise.all([getLocale(), searchParams]);
   const isEn = locale === "en";
 
+  console.error("[DEBUG listing-page] params", { slug, city, chaletSlug, locale, isEn });
+
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
+  console.error("[DEBUG listing-page] regionConfig", regionConfig ? regionConfig.slug : null);
   if (!regionConfig) notFound();
 
   const supabase = await createClient();
   const slugColumn = isEn ? "slug_en" : "slug_fr";
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  const [{ data: listing, error: listingError }, { data: { user } }] = await Promise.all([
     supabase.from("listings").select("*").eq(slugColumn, chaletSlug).maybeSingle(),
     supabase.auth.getUser(),
   ]);
 
+  console.error("[DEBUG listing-page] listing lookup", {
+    slugColumn,
+    chaletSlug,
+    found: !!listing,
+    listingError: listingError?.message ?? null,
+    listingRegion: listing?.region ?? null,
+    listingCity: listing?.city ?? null,
+    listingSlugFr: listing?.slug_fr ?? null,
+    listingSlugEn: listing?.slug_en ?? null,
+    listingPublished: listing?.is_published ?? null,
+  });
   if (!listing) notFound();
 
   // Valide que région/ville dans l'URL correspondent bien à l'annonce
@@ -97,6 +111,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
   // déplacée, lien obsolète, faute de frappe dans le segment ville…).
   const canonicalPath = buildListingPath(listing, isEn ? "en" : "fr");
   const currentPath = `${isEn ? "/en/cabins" : "/chalets"}/${slug}/${city}/${chaletSlug}`;
+  console.error("[DEBUG listing-page] path comparison", { canonicalPath, currentPath, equal: canonicalPath === currentPath });
   if (!canonicalPath) notFound();
   if (canonicalPath !== currentPath) {
     permanentRedirect(canonicalPath);
