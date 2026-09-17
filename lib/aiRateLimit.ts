@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 const WINDOW_MS = 60 * 60 * 1000;
-const MAX_CALLS = 20;
+const MAX_CALLS = 200;
 
 export async function checkAiRateLimit(
   supabase: SupabaseServerClient,

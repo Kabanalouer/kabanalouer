@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   if (!(await checkAiRateLimit(supabase, user.id, "generate-description"))) {
     return NextResponse.json(
-      { error: "Vous avez atteint la limite de 20 générations IA par heure. Réessayez plus tard." },
+      { error: "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard." },
       { status: 429 }
     );
   }
