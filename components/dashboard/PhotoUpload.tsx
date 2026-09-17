@@ -13,7 +13,7 @@ const MAX_SIZE_MB = 8;
 const MIN_LONG_SIDE = 1200;
 const MIN_SHORT_SIDE = 800;
 export const MIN_PHOTOS = 5;
-const CAPTION_MAX = 200;
+const CAPTION_MAX = 100;
 
 // ── Image compression ────────────────────────────────────────────────────────
 
