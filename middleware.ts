@@ -6,10 +6,6 @@ import { NextResponse, type NextRequest } from "next/server";
 const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/chalets/laurentides")) {
-    console.error("[DEBUG middleware] pathname", request.nextUrl.pathname);
-  }
-
   // Admin routes: pas de locale, pas de refresh session — AdminLayout gère l'auth directement
   // Auth routes (ex. /auth/callback) : pas d'équivalent sous app/[locale], la réécriture i18n causait un 404
   if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/auth/")) {
@@ -18,10 +14,6 @@ export async function middleware(request: NextRequest) {
 
   // next-intl: locale detection, redirects (e.g. /fr/dashboard → /dashboard)
   const intlResponse = intlMiddleware(request);
-
-  if (request.nextUrl.pathname.startsWith("/chalets/laurentides")) {
-    console.error("[DEBUG middleware] intlResponse status", intlResponse.status, intlResponse.headers.get("location"));
-  }
 
   // If next-intl returns a redirect, pass it through immediately.
   // next-intl always issues a 307 (temporary) here — but under
