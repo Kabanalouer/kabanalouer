@@ -22,6 +22,7 @@ import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { safeHttpUrl } from "@/lib/safeUrl";
+import { useAutosave } from "@/lib/useAutosave";
 
 
 type FormState = {
@@ -626,6 +627,36 @@ export default function EditListingForm({
   // publier — l'anglais reste facultatif (traduit automatiquement à la
   // publication s'il est vide), jamais bloquant ici.
   const descBelowMin = activeSection === "description" && form.description.trim().length < DESC_MIN;
+
+  // Sauvegarde automatique — réutilise exactement handleSaveSection (même
+  // validation, même écriture Supabase), déclenchée ~1,75 s après la
+  // dernière modification d'un champ de la section active. La section Photos
+  // en est exclue : elle a déjà sa propre sauvegarde continue à l'intérieur
+  // de PhotoUpload.tsx (légendes, ordre, ajout/suppression) — ajouter ce
+  // déclencheur par-dessus créerait un doublon, jamais un filet de sécurité
+  // supplémentaire utile.
+  const autosaveEnabled = hasSaveButton && activeSection !== "photos";
+  const autosaveTrigger = JSON.stringify(SECTION_FIELDS[activeSection].map((field) => form[field]));
+  const { pending: autosavePending } = useAutosave(
+    activeSection,
+    autosaveTrigger,
+    () => { void handleSaveSection(); },
+    { enabled: autosaveEnabled }
+  );
+
+  // Garde-fou de sortie : une sauvegarde en attente, en cours, ou échouée
+  // signifie que des changements ne sont pas encore confirmés en base —
+  // avertit avant de fermer l'onglet ou de naviguer ailleurs.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (autosavePending || saving || saveError) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [autosavePending, saving, saveError]);
 
   const getSectionLabel = (id: string): string => {
     const map: Partial<Record<string, string>> = {
