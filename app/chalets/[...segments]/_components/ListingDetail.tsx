@@ -312,7 +312,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
   };
 
   const subtitleParts = [
-    city ? `${city}, ${listing.region}` : listing.region,
     t("personCount", { count: listing.capacity as number }),
     t("bedroomCount", { count: bedroomCount as number }),
     totalBeds !== null && totalBeds > 0 ? t("bedCount", { count: totalBeds }) : null,
