@@ -13,12 +13,14 @@ import {
   type AmenityDetailField,
 } from "@/lib/amenities-catalog";
 
+type HoursValue = { open24?: boolean; start?: string; end?: string };
+
 function normalizeForSearch(value: string): string {
   return value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 const fieldInputCls =
-  "w-full border border-[#ebebeb] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "border border-[#ebebeb] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 function pillCls(active: boolean) {
   return `px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
@@ -28,104 +30,56 @@ function pillCls(active: boolean) {
   }`;
 }
 
-function DetailFieldEditor({
-  field,
-  value,
-  onChange,
-  locale,
-}: {
-  field: AmenityDetailField;
-  value: unknown;
-  onChange: (value: unknown) => void;
-  locale: string;
+// ── Widgets du panneau de détails, un par type de champ ─────────────────────
+
+function SegmentedField({ field, value, onChange, locale }: {
+  field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
 }) {
   const isEn = locale === "en";
-  const label = isEn ? field.labelEn : field.label;
-
-  if (field.type === "boolean") {
-    return (
-      <label className="flex items-center gap-2 text-sm text-charcoal-700 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={value === true}
-          onChange={(e) => onChange(e.target.checked)}
-          className="w-4 h-4 rounded border-charcoal-300 text-primary focus:ring-primary"
-        />
-        {label}
-      </label>
-    );
-  }
-
-  if (field.type === "number") {
-    return (
-      <label className="block">
-        <span className="block text-xs text-charcoal-500 mb-1">{label}</span>
-        <input
-          type="number"
-          min={0}
-          value={typeof value === "number" ? value : ""}
-          onChange={(e) => onChange(e.target.value === "" ? undefined : Number(e.target.value))}
-          placeholder={isEn ? field.placeholderEn : field.placeholder}
-          className={`${fieldInputCls} max-w-[8rem]`}
-        />
-      </label>
-    );
-  }
-
-  if (field.type === "hours") {
-    return (
-      <label className="block">
-        <span className="block text-xs text-charcoal-500 mb-1">{label}</span>
-        <input
-          type="text"
-          value={typeof value === "string" ? value : ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={isEn ? "E.g. 9am-9pm" : "Ex. 9h à 21h"}
-          className={fieldInputCls}
-        />
-      </label>
-    );
-  }
-
   const options = field.options ?? [];
   const optionsEn = field.optionsEn ?? [];
-
-  if (field.type === "single-select") {
-    return (
-      <div>
-        <span className="block text-xs text-charcoal-500 mb-1.5">{label}</span>
-        <div className="flex flex-wrap gap-1.5">
-          {options.map((opt, i) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => onChange(value === opt ? undefined : opt)}
-              className={pillCls(value === opt)}
-            >
-              {isEn ? optionsEn[i] ?? opt : opt}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const selected = Array.isArray(value) ? (value as string[]) : [];
   return (
     <div>
-      <span className="block text-xs text-charcoal-500 mb-1.5">{label}</span>
-      <div className="flex flex-wrap gap-1.5">
+      <span className="block text-sm text-charcoal-700 mb-2">{isEn ? field.labelEn : field.label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt, i) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onChange(value === opt ? undefined : opt)}
+            className={pillCls(value === opt)}
+          >
+            {isEn ? optionsEn[i] ?? opt : opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MultiSelectField({ field, value, onChange, locale }: {
+  field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
+}) {
+  const isEn = locale === "en";
+  const options = field.options ?? [];
+  const optionsEn = field.optionsEn ?? [];
+  const selectedVals = Array.isArray(value) ? (value as string[]) : [];
+  return (
+    <div>
+      <span className="block text-sm text-charcoal-700 mb-2">{isEn ? field.labelEn : field.label}</span>
+      <div className="space-y-2">
         {options.map((opt, i) => {
-          const active = selected.includes(opt);
+          const checked = selectedVals.includes(opt);
           return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => onChange(active ? selected.filter((v) => v !== opt) : [...selected, opt])}
-              className={pillCls(active)}
-            >
+            <label key={opt} className="flex items-center gap-2.5 text-sm text-charcoal-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onChange(checked ? selectedVals.filter((v) => v !== opt) : [...selectedVals, opt])}
+                className="w-4 h-4 rounded border-charcoal-300 text-primary focus:ring-primary"
+              />
               {isEn ? optionsEn[i] ?? opt : opt}
-            </button>
+            </label>
           );
         })}
       </div>
@@ -133,90 +87,260 @@ function DetailFieldEditor({
   );
 }
 
-function AddedAmenityRow({
-  value,
-  entry,
-  locale,
-  onRemove,
-  onDetailsChange,
-}: {
-  value: AmenityValue;
-  entry: AmenityCatalogEntry;
-  locale: string;
-  onRemove: () => void;
-  onDetailsChange: (details: Record<string, unknown>) => void;
+function NumberField({ field, value, onChange, locale }: {
+  field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const isEn = locale === "en";
-  const label = isEn ? entry.labelEn : entry.label;
-  const summary = summarizeAmenityDetails(entry, value.details, locale);
-  const hasDetails = !!entry.detailSchema && entry.detailSchema.length > 0;
-
-  const setField = (key: string, fieldValue: unknown) => {
-    const next = { ...(value.details ?? {}) };
-    if (fieldValue === undefined) delete next[key];
-    else next[key] = fieldValue;
-    onDetailsChange(next);
-  };
-
+  const num = typeof value === "number" ? value : 0;
   return (
-    <div className="border border-[#ebebeb] rounded-xl overflow-hidden">
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        <span className="shrink-0 text-primary">
-          <AmenityIcon name={entry.icon} />
-        </span>
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-charcoal-700">{isEn ? field.labelEn : field.label}</span>
+      <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => hasDetails && setExpanded((v) => !v)}
-          className={`flex-1 min-w-0 text-left ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
+          onClick={() => onChange(Math.max(0, num - 1))}
+          disabled={num <= 0}
+          className="w-8 h-8 rounded-full border-2 border-charcoal-200 text-charcoal-600 flex items-center justify-center transition-colors disabled:opacity-30 hover:border-charcoal-400"
         >
-          <p className="text-sm font-medium text-charcoal-800 truncate">{label}</p>
-          {summary && <p className="text-xs text-charcoal-400 truncate">{summary}</p>}
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+          </svg>
         </button>
-        {hasDetails && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="shrink-0 text-charcoal-300 hover:text-charcoal-600 transition-colors"
-          >
-            <svg
-              className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.75}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
-        )}
+        <span className="w-6 text-center text-sm font-medium text-charcoal-800 tabular-nums">{num}</span>
         <button
           type="button"
-          onClick={onRemove}
-          title={isEn ? "Remove" : "Retirer"}
-          className="shrink-0 text-charcoal-300 hover:text-charcoal-700 transition-colors"
+          onClick={() => onChange(num + 1)}
+          className="w-8 h-8 rounded-full border-2 border-charcoal-200 text-charcoal-600 flex items-center justify-center transition-colors hover:border-charcoal-400"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </button>
       </div>
-      {hasDetails && expanded && (
-        <div className="px-3 pb-3 pt-1 space-y-3 border-t border-[#ebebeb] bg-charcoal-50">
-          {entry.detailSchema!.map((field) => (
-            <DetailFieldEditor
-              key={field.key}
-              field={field}
-              value={value.details?.[field.key]}
-              onChange={(v) => setField(field.key, v)}
-              locale={locale}
-            />
-          ))}
+    </div>
+  );
+}
+
+function ToggleField({ field, value, onChange, locale }: {
+  field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
+}) {
+  const isEn = locale === "en";
+  const checked = value === true;
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-charcoal-700">{isEn ? field.labelEn : field.label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${checked ? "bg-primary" : "bg-charcoal-200"}`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : ""
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function HoursField({ field, value, onChange, locale }: {
+  field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
+}) {
+  const isEn = locale === "en";
+  const v = (value && typeof value === "object" ? value : {}) as HoursValue;
+  const open24 = v.open24 === true;
+  return (
+    <div>
+      <span className="block text-sm text-charcoal-700 mb-2">{isEn ? field.labelEn : field.label}</span>
+      <label className="flex items-center gap-2.5 text-sm text-charcoal-600 mb-2.5 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={open24}
+          onChange={(e) => onChange({ ...v, open24: e.target.checked })}
+          className="w-4 h-4 rounded border-charcoal-300 text-primary focus:ring-primary"
+        />
+        {isEn ? "Open 24/7" : "Ouvert 24h/24"}
+      </label>
+      {!open24 && (
+        <div className="flex items-center gap-2">
+          <input
+            type="time"
+            value={v.start ?? ""}
+            onChange={(e) => onChange({ ...v, open24: false, start: e.target.value })}
+            className={fieldInputCls}
+          />
+          <span className="text-sm text-charcoal-400">{isEn ? "to" : "à"}</span>
+          <input
+            type="time"
+            value={v.end ?? ""}
+            onChange={(e) => onChange({ ...v, open24: false, end: e.target.value })}
+            className={fieldInputCls}
+          />
         </div>
       )}
     </div>
   );
 }
+
+// ── Panneau de détails (modale) ──────────────────────────────────────────────
+
+function AmenityDetailsModal({
+  entry,
+  initialDetails,
+  locale,
+  onSave,
+  onClose,
+}: {
+  entry: AmenityCatalogEntry;
+  initialDetails: Record<string, unknown>;
+  locale: string;
+  onSave: (details: Record<string, unknown>) => void;
+  onClose: () => void;
+}) {
+  const isEn = locale === "en";
+  const [details, setDetails] = useState<Record<string, unknown>>(initialDetails);
+  const schema = entry.detailSchema ?? [];
+
+  const setField = (key: string, value: unknown) => setDetails((prev) => ({ ...prev, [key]: value }));
+
+  const handleSave = () => {
+    // Ne garde que les champs réellement renseignés (0 / false / vide restent
+    // l'état par défaut du widget, pas une valeur voulue) — évite un résumé
+    // du type "0" ou "Ouvert 24h/24: non" dans la colonne gauche.
+    const cleaned: Record<string, unknown> = {};
+    for (const field of schema) {
+      const v = details[field.key];
+      if (field.type === "boolean" && v === true) cleaned[field.key] = true;
+      else if (field.type === "number" && typeof v === "number" && v > 0) cleaned[field.key] = v;
+      else if (field.type === "single-select" && typeof v === "string" && v) cleaned[field.key] = v;
+      else if (field.type === "multi-select" && Array.isArray(v) && v.length > 0) cleaned[field.key] = v;
+      else if (field.type === "hours" && v && typeof v === "object") {
+        const hv = v as HoursValue;
+        if (hv.open24) cleaned[field.key] = { open24: true };
+        else if (hv.start || hv.end) cleaned[field.key] = { open24: false, start: hv.start, end: hv.end };
+      }
+    }
+    onSave(cleaned);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb] shrink-0">
+          <h3 className="text-base font-bold text-charcoal-800">{isEn ? entry.labelEn : entry.label}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-charcoal-50 transition-colors text-charcoal-400"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          {schema.map((field) => {
+            const value = details[field.key];
+            const onChange = (v: unknown) => setField(field.key, v);
+            if (field.type === "boolean") return <ToggleField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;
+            if (field.type === "number") return <NumberField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;
+            if (field.type === "hours") return <HoursField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;
+            if (field.type === "multi-select") return <MultiSelectField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;
+            return <SegmentedField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;
+          })}
+        </div>
+
+        <div className="shrink-0 border-t border-[#ebebeb] px-5 py-4 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm font-medium text-charcoal-500 hover:text-charcoal-800 transition-colors px-4 py-2.5"
+          >
+            {isEn ? "Cancel" : "Annuler"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            {isEn ? "Save" : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ligne d'un équipement déjà ajouté ────────────────────────────────────────
+
+function AddedAmenityRow({
+  value,
+  entry,
+  locale,
+  onRemove,
+  onEdit,
+}: {
+  value: AmenityValue;
+  entry: AmenityCatalogEntry;
+  locale: string;
+  onRemove: () => void;
+  onEdit: () => void;
+}) {
+  const isEn = locale === "en";
+  const label = isEn ? entry.labelEn : entry.label;
+  const summary = summarizeAmenityDetails(entry, value.details, locale);
+  const hasDetails = !!entry.detailSchema && entry.detailSchema.length > 0;
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 border border-[#ebebeb] rounded-xl">
+      <span className="shrink-0 text-primary">
+        <AmenityIcon name={entry.icon} />
+      </span>
+      {hasDetails ? (
+        <button type="button" onClick={onEdit} className="flex-1 min-w-0 text-left cursor-pointer">
+          <p className="text-sm font-medium text-charcoal-800 truncate">{label}</p>
+          {summary && <p className="text-xs text-charcoal-400 truncate">{summary}</p>}
+        </button>
+      ) : (
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-charcoal-800 truncate">{label}</p>
+        </div>
+      )}
+      {hasDetails && (
+        <button
+          type="button"
+          onClick={onEdit}
+          title={isEn ? "Edit details" : "Modifier les détails"}
+          className="shrink-0 text-charcoal-300 hover:text-charcoal-600 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        title={isEn ? "Remove" : "Retirer"}
+        className="shrink-0 text-charcoal-300 hover:text-charcoal-700 transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// ── Composant principal ──────────────────────────────────────────────────────
+
+type Editing = { type: "new"; id: string } | { type: "edit"; index: number };
 
 export default function AmenitiesPicker({
   selected,
@@ -229,6 +353,7 @@ export default function AmenitiesPicker({
   const isEn = locale === "en";
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Editing | null>(null);
 
   const selectedIds = new Set(selected.map((a) => a.id));
 
@@ -241,8 +366,24 @@ export default function AmenitiesPicker({
   // ligne de la colonne gauche doit donc cibler son propre index, jamais
   // toutes les entrées partageant cet id.
   const removeAmenityAt = (index: number) => onChange(selected.filter((_, i) => i !== index));
-  const updateDetailsAt = (index: number, details: Record<string, unknown>) =>
-    onChange(selected.map((a, i) => (i === index ? { ...a, details } : a)));
+
+  const handleToggle = (entry: AmenityCatalogEntry) => {
+    if (selectedIds.has(entry.id)) {
+      removeAllOfId(entry.id);
+      return;
+    }
+    if (entry.detailSchema && entry.detailSchema.length > 0) {
+      setEditing({ type: "new", id: entry.id });
+      return;
+    }
+    addAmenity(entry.id);
+  };
+
+  const handleSaveDetails = (details: Record<string, unknown>) => {
+    if (!editing) return;
+    if (editing.type === "new") onChange([...selected, { id: editing.id, details }]);
+    else onChange(selected.map((a, i) => (i === editing.index ? { ...a, details } : a)));
+  };
 
   const normalizedSearch = normalizeForSearch(search.trim());
   const filteredCatalog = useMemo(() => {
@@ -253,6 +394,15 @@ export default function AmenitiesPicker({
       return normalizeForSearch(label).includes(normalizedSearch);
     });
   }, [activeCategory, normalizedSearch, isEn]);
+
+  const editingEntry =
+    editing?.type === "new"
+      ? getAmenityCatalogEntry(editing.id)
+      : editing?.type === "edit"
+      ? getAmenityCatalogEntry(selected[editing.index]?.id ?? "")
+      : undefined;
+  const editingInitialDetails =
+    editing?.type === "edit" ? selected[editing.index]?.details ?? {} : {};
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -276,7 +426,7 @@ export default function AmenitiesPicker({
                   entry={entry}
                   locale={locale}
                   onRemove={() => removeAmenityAt(index)}
-                  onDetailsChange={(details) => updateDetailsAt(index, details)}
+                  onEdit={() => setEditing({ type: "edit", index })}
                 />
               );
             })}
@@ -343,7 +493,7 @@ export default function AmenitiesPicker({
                   </span>
                   <button
                     type="button"
-                    onClick={() => (active ? removeAllOfId(entry.id) : addAmenity(entry.id))}
+                    onClick={() => handleToggle(entry)}
                     title={active ? (isEn ? "Remove" : "Retirer") : isEn ? "Add" : "Ajouter"}
                     className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
                       active
@@ -367,6 +517,16 @@ export default function AmenitiesPicker({
           )}
         </div>
       </div>
+
+      {editing && editingEntry && (
+        <AmenityDetailsModal
+          entry={editingEntry}
+          initialDetails={editingInitialDetails}
+          locale={locale}
+          onSave={handleSaveDetails}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </div>
   );
 }

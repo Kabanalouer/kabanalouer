@@ -303,8 +303,12 @@ export function summarizeAmenityDetails(
 
     if (field.type === "boolean") {
       if (value === true) parts.push(isEn ? field.labelEn : field.label);
-    } else if (field.type === "number" || field.type === "hours") {
+    } else if (field.type === "number") {
       parts.push(String(value));
+    } else if (field.type === "hours" && typeof value === "object") {
+      const hv = value as { open24?: boolean; start?: string; end?: string };
+      if (hv.open24) parts.push(isEn ? "Open 24/7" : "Ouvert 24h/24");
+      else if (hv.start && hv.end) parts.push(`${hv.start}–${hv.end}`);
     } else if (field.type === "single-select" && typeof value === "string") {
       parts.push(translateOptionValue(field, value, locale));
     } else if (field.type === "multi-select" && Array.isArray(value)) {
