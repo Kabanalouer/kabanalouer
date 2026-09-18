@@ -233,9 +233,16 @@ export default function AmenitiesPicker({
   const selectedIds = new Set(selected.map((a) => a.id));
 
   const addAmenity = (id: string) => onChange([...selected, { id, details: {} }]);
-  const removeAmenity = (id: string) => onChange(selected.filter((a) => a.id !== id));
-  const updateDetails = (id: string, details: Record<string, unknown>) =>
-    onChange(selected.map((a) => (a.id === id ? { ...a, details } : a)));
+  // Retire toutes les entrées de cet id — utilisé par le bouton coché de la
+  // colonne droite (toggle global d'un équipement du catalogue).
+  const removeAllOfId = (id: string) => onChange(selected.filter((a) => a.id !== id));
+  // Un même id peut apparaître plusieurs fois dans `selected` (ex. une
+  // piscine intérieure ET extérieure, avec des détails différents) — la
+  // ligne de la colonne gauche doit donc cibler son propre index, jamais
+  // toutes les entrées partageant cet id.
+  const removeAmenityAt = (index: number) => onChange(selected.filter((_, i) => i !== index));
+  const updateDetailsAt = (index: number, details: Record<string, unknown>) =>
+    onChange(selected.map((a, i) => (i === index ? { ...a, details } : a)));
 
   const normalizedSearch = normalizeForSearch(search.trim());
   const filteredCatalog = useMemo(() => {
@@ -259,17 +266,17 @@ export default function AmenitiesPicker({
           </p>
         ) : (
           <div className="space-y-2">
-            {selected.map((value) => {
+            {selected.map((value, index) => {
               const entry = getAmenityCatalogEntry(value.id);
               if (!entry) return null;
               return (
                 <AddedAmenityRow
-                  key={value.id}
+                  key={`${value.id}-${index}`}
                   value={value}
                   entry={entry}
                   locale={locale}
-                  onRemove={() => removeAmenity(value.id)}
-                  onDetailsChange={(details) => updateDetails(value.id, details)}
+                  onRemove={() => removeAmenityAt(index)}
+                  onDetailsChange={(details) => updateDetailsAt(index, details)}
                 />
               );
             })}
@@ -336,7 +343,7 @@ export default function AmenitiesPicker({
                   </span>
                   <button
                     type="button"
-                    onClick={() => (active ? removeAmenity(entry.id) : addAmenity(entry.id))}
+                    onClick={() => (active ? removeAllOfId(entry.id) : addAmenity(entry.id))}
                     title={active ? (isEn ? "Remove" : "Retirer") : isEn ? "Add" : "Ajouter"}
                     className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
                       active

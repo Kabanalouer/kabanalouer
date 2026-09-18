@@ -47,8 +47,8 @@ export default function AmenitiesSection({ amenities }: { amenities: AmenityValu
       <h2 className="font-semibold text-charcoal-800 mb-1">{t("heading")}</h2>
 
       <div className="divide-y divide-[#ebebeb]">
-        {(expanded ? sorted : top3).map((value) => (
-          <AmenityRow key={value.id} value={value} locale={locale} />
+        {(expanded ? sorted : top3).map((value, index) => (
+          <AmenityRow key={`${value.id}-${index}`} value={value} locale={locale} />
         ))}
       </div>
 
