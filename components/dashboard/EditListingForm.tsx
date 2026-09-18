@@ -1644,7 +1644,6 @@ export default function EditListingForm({
           {activeSection === "lienPersonnalise" && (
             <SectionShell title={t("sections.customSlug")}>
               <div className="space-y-5">
-                <p className="text-sm text-charcoal-500">{tEdit("customSlugSectionIntro")}</p>
                 <CustomSlugField
                   listingId={listingId}
                   initialCustomSlug={initialCustomSlug}

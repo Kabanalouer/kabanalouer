@@ -6,8 +6,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { CUSTOM_SLUG_MAX_LENGTH } from "@/lib/customSlug";
 import { SITE_URL } from "@/lib/siteUrl";
 
-const inputCls =
-  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+const DISPLAY_DOMAIN = SITE_URL.replace(/^https?:\/\//, "");
 
 // Normalise à la volée (minuscules, espaces → tirets) pour que taper "Mon
 // Chalet" produise directement "mon-chalet" plutôt que de rejeter la saisie —
@@ -44,14 +43,21 @@ export default function CustomSlugField({
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
 
-  const previewPath = buildListingPath(
-    { region, city, listing_number: listingNumber, custom_slug: value.trim() || null },
+  // Préfixe fixe de l'URL (tout sauf le dernier segment) — dérivé de
+  // buildListingPath() avec un segment placeholder, puis tronqué avant le
+  // dernier "/", pour ne jamais dupliquer la logique région/ville/repli déjà
+  // centralisée dans lib/listingUrl.ts.
+  const fullPathWithPlaceholder = buildListingPath(
+    { region, city, listing_number: null, custom_slug: "x" },
     "fr"
   );
+  const urlPrefix = fullPathWithPlaceholder
+    ? `${DISPLAY_DOMAIN}${fullPathWithPlaceholder.slice(0, fullPathWithPlaceholder.lastIndexOf("/") + 1)}`
+    : null;
 
   const hasChanges = value.trim() !== savedValue;
 
-  const handleSave = async () => {
+  const performSave = async (raw: string) => {
     setSaving(true);
     setError(null);
     setJustSaved(false);
@@ -59,7 +65,7 @@ export default function CustomSlugField({
       const res = await fetch(`/api/listings/${listingId}/custom-slug`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customSlug: value.trim() }),
+        body: JSON.stringify({ customSlug: raw }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -69,10 +75,11 @@ export default function CustomSlugField({
         else setError(tEdit("customSlugErrorGeneric"));
         return;
       }
-      const saved = value.trim() || null;
-      setSavedValue(value.trim());
+      const trimmed = raw.trim();
+      setValue(trimmed);
+      setSavedValue(trimmed);
       setJustSaved(true);
-      onSaved?.(saved);
+      onSaved?.(trimmed || null);
     } catch {
       setError(tEdit("customSlugErrorGeneric"));
     } finally {
@@ -82,43 +89,64 @@ export default function CustomSlugField({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("customSlugLabel")}</label>
-      <p className="text-xs text-charcoal-400 mb-2">{tEdit("customSlugHelp")}</p>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          setValue(sanitizeInput(e.target.value));
-          setError(null);
-          setJustSaved(false);
-        }}
-        className={inputCls}
-        placeholder={tEdit("customSlugPlaceholder")}
-      />
+      {urlPrefix ? (
+        <div className="flex items-stretch border border-[#ebebeb] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition">
+          <span className="flex items-center pl-4 pr-0.5 text-sm text-charcoal-400 bg-charcoal-50 whitespace-nowrap select-none">
+            {urlPrefix}
+          </span>
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => {
+              setValue(sanitizeInput(e.target.value));
+              setError(null);
+              setJustSaved(false);
+            }}
+            className="flex-1 min-w-0 px-1 py-2.5 text-sm text-charcoal-800 focus:outline-none"
+            placeholder={tEdit("customSlugPlaceholder")}
+          />
+        </div>
+      ) : (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            setValue(sanitizeInput(e.target.value));
+            setError(null);
+            setJustSaved(false);
+          }}
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          placeholder={tEdit("customSlugPlaceholder")}
+        />
+      )}
 
-      <div className="mt-2.5 text-xs bg-[#f5f6ec] border border-primary/10 rounded-xl px-3 py-2.5">
-        <p className="text-charcoal-500 font-medium mb-1">{tEdit("customSlugPreviewLabel")}</p>
-        {previewPath ? (
-          <p className="text-charcoal-700 break-all">{SITE_URL}{previewPath}</p>
-        ) : (
-          <p className="text-charcoal-400">—</p>
-        )}
-        {!value.trim() && listingNumber != null && (
-          <p className="text-charcoal-400 mt-1">{tEdit("customSlugUsingNumber", { number: listingNumber })}</p>
-        )}
-      </div>
+      <p className="text-xs text-charcoal-400 mt-2">
+        {savedValue ? tEdit("customSlugActive", { slug: savedValue }) : listingNumber != null ? tEdit("customSlugUsingNumber", { number: listingNumber }) : null}
+      </p>
 
       {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
       {justSaved && !error && <p className="text-sm text-primary mt-2">{tEdit("customSlugSaved")}</p>}
 
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={saving || !hasChanges}
-        className="mt-3 rounded-full bg-primary text-white text-sm font-semibold px-5 py-2 hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        {saving ? tEdit("customSlugSaving") : value.trim() ? tEdit("customSlugSave") : tEdit("customSlugClear")}
-      </button>
+      <div className="flex items-center gap-2 mt-3">
+        <button
+          type="button"
+          onClick={() => performSave(value)}
+          disabled={saving || !hasChanges}
+          className="rounded-full bg-primary text-white text-sm font-semibold px-5 py-2 hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          {saving ? tEdit("customSlugSaving") : tEdit("customSlugSave")}
+        </button>
+        {savedValue && (
+          <button
+            type="button"
+            onClick={() => performSave("")}
+            disabled={saving}
+            className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {tEdit("customSlugClear")}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
