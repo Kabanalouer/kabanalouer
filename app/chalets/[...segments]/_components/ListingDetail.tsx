@@ -25,7 +25,8 @@ import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/
 import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
 import { getTranslations } from "next-intl/server";
-import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import type { AmenityValue } from "@/lib/amenities-catalog";
+import { buildListingJsonLd, buildListingFaqJsonLd } from "@/lib/listing-schema";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -259,58 +260,33 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
   const isOwner = !!(user && host && user.id === host.id);
 
-  const lodgingJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LodgingBusiness",
-    name: listing.title,
-    description: (listing.description as string | null) ?? "",
-    image: photos.map((p) => p.url),
+  const schemaInput = {
+    title: listing.title as string,
+    description: (listing.description as string | null) ?? null,
+    photoUrls: photos.map((p) => p.url),
     url: `${SITE_URL}${canonicalPath}`,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: city ?? listing.region,
-      addressRegion: listing.region,
-      addressCountry: "CA",
-    },
-    ...(listing.latitude && listing.longitude
-      ? { geo: { "@type": "GeoCoordinates", latitude: listing.latitude, longitude: listing.longitude } }
-      : {}),
-    ...(listing.checkin_time ? { checkinTime: listing.checkin_time } : {}),
-    ...(listing.checkout_time ? { checkoutTime: listing.checkout_time } : {}),
-    ...(listing.price_on_request === false && listing.price_low > 0
-      ? {
-          priceRange:
-            listing.price_high > listing.price_low
-              ? `$${listing.price_low} - $${listing.price_high} CAD`
-              : `$${listing.price_low}+ CAD`,
-          makesOffer: {
-            "@type": "Offer",
-            priceCurrency: "CAD",
-            priceSpecification: {
-              "@type": "UnitPriceSpecification",
-              minPrice: listing.price_low,
-              ...(listing.price_high > listing.price_low ? { maxPrice: listing.price_high } : {}),
-              priceCurrency: "CAD",
-              unitText: "nuit",
-            },
-          },
-        }
-      : {}),
-    amenityFeature: getAmenityLabels(amenities, locale).map((name) => ({ "@type": "LocationFeatureSpecification", name, value: true })),
-    numberOfRooms: bedroomCount,
-    occupancy: { "@type": "QuantitativeValue", maxValue: listing.capacity, unitText: "personnes" },
-    ...(reviews && reviews.length > 0
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: avgRating.toFixed(1),
-            reviewCount: reviews.length,
-            bestRating: 5,
-            worstRating: 1,
-          },
-        }
-      : {}),
+    city: city ?? null,
+    region: (listing.region as string | null) ?? null,
+    latitude: (listing.latitude as number | null) ?? null,
+    longitude: (listing.longitude as number | null) ?? null,
+    checkinTime: (listing.checkin_time as string | null) ?? null,
+    checkoutTime: (listing.checkout_time as string | null) ?? null,
+    priceOnRequest: !!listing.price_on_request,
+    priceLow: (listing.price_low as number) ?? 0,
+    priceHigh: (listing.price_high as number) ?? 0,
+    amenities,
+    locale,
+    bedroomCount: bedroomCount as number,
+    bathrooms: listing.bathrooms as number,
+    capacity: listing.capacity as number,
+    petsAllowed: !!listing.pets_allowed,
+    smokingAllowed: !!listing.smoking_allowed,
+    citqNumber: (listing.citq_number as string | null) ?? null,
+    reviewCount: reviews ? reviews.length : 0,
+    avgRating,
   };
+  const lodgingJsonLd = buildListingJsonLd(schemaInput);
+  const faqJsonLd = buildListingFaqJsonLd(schemaInput);
 
   const subtitleParts = [
     t("personCount", { count: listing.capacity as number }),
@@ -326,6 +302,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
+        />
+      )}
       {!isPreviewFrame && <Navbar />}
 
       {isDraftPreview && (
@@ -555,6 +537,18 @@ export default async function ListingDetail({ listing, user, searchParams, local
                       <span>{t("citqNumber", { number: listing.citq_number as string })}</span>
                     </div>
                   )}
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-3a4 4 0 100-8 4 4 0 000 8zm5.13-3.87a4 4 0 010 7.75M6.87 5.13a4 4 0 000 7.75" /></svg>
+                    <span>{t("capacityInfo", { count: listing.capacity as number })}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
+                    <span>{t("bedroomsInfo", { count: bedroomCount as number })}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M4 12h16v2a6 6 0 01-6 6H10a6 6 0 01-6-6v-2zM4 12V6a2 2 0 012-2h1M8 20v2M16 20v2" /></svg>
+                    <span>{t("bathroomsInfo", { count: listing.bathrooms as number })}</span>
+                  </div>
                 </div>
               </div>
             </>
