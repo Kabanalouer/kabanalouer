@@ -71,7 +71,24 @@ export default async function EditListingPage({ params }: Props) {
     <div className="max-w-5xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{listing.title ? "Modifier mon annonce" : "Créer mon annonce"}</h1>
-        <p className="text-gray-500 text-sm mt-1 line-clamp-1">{listing.title}</p>
+        <p className="text-gray-500 text-sm mt-1 flex items-center gap-1.5">
+          <span className="line-clamp-1">{listing.title}</span>
+          {listing.title && (
+            <a
+              href={`/chalets/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Voir la fiche publique"
+              className="shrink-0 text-charcoal-400 hover:text-charcoal-700 transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            </a>
+          )}
+        </p>
       </div>
       <EditListingForm
         userId={hostId}
