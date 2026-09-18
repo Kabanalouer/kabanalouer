@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 type DbData = {
   roomsAllHavePhotos: boolean;
@@ -22,7 +23,7 @@ type Props = {
   photoCount: number;
   title: string;
   description: string;
-  amenities: string[];
+  amenities: AmenityValue[];
   nearbyActivities: string[];
   citqNumber: string;
   icalUrl: string | null;
@@ -155,7 +156,7 @@ export default function AnalyseSection({
         body: JSON.stringify({
           title, description, region, capacity,
           photo_count: photoCount,
-          amenities,
+          amenities: getAmenityLabels(amenities, locale),
           nearby_activities: nearbyActivities,
           score,
           bio_filled: dbData.bioFilled,

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeScore } from "@/lib/listingScore";
 import { firstPhotoUrl } from "@/lib/photo";
+import type { AmenityValue } from "@/lib/amenities-catalog";
 import AdminListingsClient, { type ListingRow } from "@/components/admin/AdminListingsClient";
 
 export const metadata = { title: "Annonces — Administration" };
@@ -62,7 +63,7 @@ export default async function AdminListingsPage({
       photoCount: photoList.length,
       title: (listing.title as string) ?? "",
       description: (listing.description as string) ?? "",
-      amenities: Array.isArray(listing.amenities) ? listing.amenities as string[] : [],
+      amenities: Array.isArray(listing.amenities) ? listing.amenities as AmenityValue[] : [],
       nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
       citqNumber: (listing.citq_number as string) ?? "",
       icalUrl: (listing.ical_url as string | null) ?? null,

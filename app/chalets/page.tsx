@@ -6,6 +6,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
@@ -88,7 +89,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   } = await searchParams;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [{ data: { user } }, locale] = await Promise.all([supabase.auth.getUser(), getLocale()]);
 
   // Availability exclusion
   let excludedIds: string[] = [];
@@ -116,7 +117,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
   if (amenities) {
     const amenityList = amenities.split(",").filter(Boolean);
-    if (amenityList.length > 0) query = query.contains("amenities", amenityList);
+    if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
   }
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
@@ -191,7 +192,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         beds: bedsByListing[row.id as string] ?? null,
         photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
         isFavorite: favSet.has(row.id as string),
-        tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+        tags: Array.isArray(row.amenities) ? getAmenityLabels(row.amenities as AmenityValue[], locale).slice(0, 3) : [],
         hasPromo: promoMap.has(row.id as string),
         promoData: promoMap.get(row.id as string) ?? null,
         lat: (row.latitude as number | null) ?? null,

@@ -1,8 +1,10 @@
+import type { AmenityValue } from "@/lib/amenities-catalog";
+
 export type ScoreInput = {
   photoCount: number;
   title: string;
   description: string;
-  amenities: string[];
+  amenities: AmenityValue[];
   nearbyActivities: string[];
   citqNumber: string;
   icalUrl: string | null;

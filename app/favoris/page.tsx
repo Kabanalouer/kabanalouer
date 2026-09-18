@@ -8,6 +8,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { localePath } from "@/lib/localePath";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("favoris");
@@ -100,7 +101,7 @@ export default async function FavorisPage() {
           beds: bedsByListing[row.id as string] ?? null,
           photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
           isFavorite: true,
-          tags: Array.isArray(row.amenities) ? (row.amenities as string[]).slice(0, 3) : [],
+          tags: Array.isArray(row.amenities) ? getAmenityLabels(row.amenities as AmenityValue[], locale).slice(0, 3) : [],
         }));
     }
   }

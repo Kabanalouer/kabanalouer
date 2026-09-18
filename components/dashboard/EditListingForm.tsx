@@ -24,6 +24,7 @@ import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 
 type FormState = {
@@ -39,7 +40,7 @@ type FormState = {
   price_low: number;
   price_high: number;
   price_peak: number;
-  amenities: string[];
+  amenities: AmenityValue[];
   photos: PhotoItem[];
   citq_number: string;
   checkin_time: string;
@@ -613,7 +614,7 @@ export default function EditListingForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           current_title: form.title, region: form.region, city: initialCity,
-          capacity: form.capacity, bedrooms: form.bedrooms, amenities: form.amenities,
+          capacity: form.capacity, bedrooms: form.bedrooms, amenities: getAmenityLabels(form.amenities, locale),
           nearby_activities: form.nearby_activities,
           locale,
         }),
@@ -638,7 +639,7 @@ export default function EditListingForm({
         body: JSON.stringify({
           title: form.title, region: form.region, city: initialCity,
           capacity: form.capacity, bedrooms: form.bedrooms, bathrooms: form.bathrooms,
-          amenities: form.amenities, nearby_activities: form.nearby_activities,
+          amenities: getAmenityLabels(form.amenities, locale), nearby_activities: form.nearby_activities,
           price_low: form.price_low, price_on_request: form.price_on_request,
           current_description: hadOriginal ? form.description : undefined,
           locale,

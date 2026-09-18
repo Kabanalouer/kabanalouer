@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export interface ListingForMap extends Listing {
   lat: number | null;
@@ -32,6 +32,7 @@ interface Props {
 
 export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
   const t = useTranslations("chaletsMap");
+  const locale = useLocale();
   const destination = filters.city || filters.region || null;
   const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
@@ -71,6 +72,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ...(filters.minBeds && { minBeds: filters.minBeds }),
         ...(filters.minBathrooms && { minBathrooms: filters.minBathrooms }),
         ...(filters.amenities && { amenities: filters.amenities }),
+        locale,
       });
       const res = await fetch(`/api/listings/geo?${params}`);
       if (res.ok) setListings(await res.json());

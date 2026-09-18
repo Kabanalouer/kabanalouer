@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { AMENITIES, getAmenityLabel } from "@/lib/amenities";
+import { AMENITY_CATALOG } from "@/lib/amenities-catalog";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 
@@ -181,11 +181,11 @@ export default function FiltersModal({
               <div>
                 <h3 className="text-sm font-bold text-charcoal-800 mb-4">{t("amenities")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {AMENITIES.map((amenity) => {
-                    const active = selectedAmenities.includes(amenity);
+                  {AMENITY_CATALOG.map((entry) => {
+                    const active = selectedAmenities.includes(entry.id);
                     return (
                       <label
-                        key={amenity}
+                        key={entry.id}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors ${
                           active
                             ? "border-primary/40 bg-primary/5"
@@ -195,7 +195,7 @@ export default function FiltersModal({
                         <input
                           type="checkbox"
                           checked={active}
-                          onChange={() => toggleAmenity(amenity)}
+                          onChange={() => toggleAmenity(entry.id)}
                           className="sr-only"
                         />
                         <span
@@ -209,7 +209,9 @@ export default function FiltersModal({
                             </svg>
                           )}
                         </span>
-                        <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>{getAmenityLabel(amenity, locale)}</span>
+                        <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>
+                          {locale === "en" ? entry.labelEn : entry.label}
+                        </span>
                       </label>
                     );
                   })}

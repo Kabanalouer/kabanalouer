@@ -12,6 +12,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home");
@@ -110,7 +111,7 @@ export default async function HomePage() {
     capacity: (l.capacity as number) ?? 1,
     bedrooms: (l.bedrooms as number) ?? 1,
     photos: normalizePhotos(l.photos).map((p) => p.url),
-    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
     isFeatured: true,
   }));
 
@@ -138,7 +139,7 @@ export default async function HomePage() {
     capacity: (l.capacity as number) ?? 1,
     bedrooms: (l.bedrooms as number) ?? 1,
     photos: normalizePhotos(l.photos).map((p) => p.url),
-    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
     hasPromo: promoMap.has(l.id as string),
     promoData: promoMap.get(l.id as string) ?? null,
   }));

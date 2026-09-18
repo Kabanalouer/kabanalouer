@@ -7,6 +7,7 @@ import { detectImportPlatform, runApifyActor, ApifyImportError } from "@/lib/api
 import { mapAirbnbItem, type ImportedListingData } from "@/lib/listingImportMapping";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
+import { getAmenityLabels } from "@/lib/amenities-catalog";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -52,7 +53,7 @@ function buildRewriteUserMessage(data: ImportedListingData): string {
     data.capacity ? `Capacité : ${data.capacity} personnes` : null,
     data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
     data.bathrooms ? `Salles de bain : ${data.bathrooms}` : null,
-    data.amenities.length > 0 ? `Équipements reconnus : ${data.amenities.join(", ")}` : null,
+    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
     data.rawAmenities.length > 0 ? `Autres équipements mentionnés : ${data.rawAmenities.join(", ")}` : null,
     data.priceLow ? `Prix : à partir de ${data.priceLow} $/nuit` : null,
     data.description ? `Description originale (source, ne pas copier) :\n${data.description}` : null,
@@ -90,7 +91,7 @@ function buildRewriteTitleUserMessage(data: ImportedListingData): string {
     data.city ? `Ville : ${data.city}` : null,
     data.capacity ? `Capacité : ${data.capacity} personnes` : null,
     data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
-    data.amenities.length > 0 ? `Équipements reconnus : ${data.amenities.join(", ")}` : null,
+    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
   ].filter(Boolean);
 
   return (

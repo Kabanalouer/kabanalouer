@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { firstPhotoUrl } from "@/lib/photo";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
+import type { AmenityValue } from "@/lib/amenities-catalog";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { buildListingPath } from "@/lib/listingUrl";
 
@@ -71,7 +72,7 @@ export default async function DashboardPage() {
       photoCount: photoList.length,
       title: (listing.title as string) ?? "",
       description: (listing.description as string) ?? "",
-      amenities: Array.isArray(listing.amenities) ? listing.amenities as string[] : [],
+      amenities: Array.isArray(listing.amenities) ? listing.amenities as AmenityValue[] : [],
       nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
       citqNumber: (listing.citq_number as string) ?? "",
       icalUrl: (listing.ical_url as string | null) ?? null,

@@ -3,12 +3,12 @@
 // deviné) — voir le rapport d'exploration pour le détail des formats.
 //
 // `amenities` et `region` sur `listings` sont des listes fermées (voir
-// lib/amenities.ts et lib/regions.ts) — le texte scrapé ne matche jamais
+// lib/amenities-catalog.ts et lib/regions.ts) — le texte scrapé ne matche jamais
 // exactement, donc tout passe par un mapping best-effort par mots-clés. Ce
 // qui ne matche rien est conservé dans `rawAmenities`/`rawRegionCandidate`
 // pour révision admin plutôt que d'être perdu silencieusement.
 
-import { AMENITIES } from "@/lib/amenities";
+import { AMENITY_CATALOG, type AmenityValue } from "@/lib/amenities-catalog";
 import { REGIONS } from "@/lib/regions";
 import { truncateToLastWord } from "@/lib/aiText";
 
@@ -22,7 +22,7 @@ export type ImportedListingData = {
   capacity: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
-  amenities: string[];
+  amenities: AmenityValue[];
   city: string | null;
   region: string | null;
   latitude: number | null;
@@ -32,54 +32,56 @@ export type ImportedListingData = {
   rawRegionCandidate: string | null;
 };
 
-// Mots-clés (FR + EN, en minuscules) associés à chaque valeur de la liste
-// fermée AMENITIES. Best-effort — pas exhaustif, complété au besoin si des
+// Mots-clés (FR + EN, en minuscules) associés à certains id du catalogue
+// (lib/amenities-catalog.ts). Best-effort — couvre seulement les équipements
+// déjà reconnus avant le catalogue enrichi, complété au besoin si des
 // imports réels révèlent des libellés non reconnus.
-const AMENITY_KEYWORDS: Record<(typeof AMENITIES)[number], string[]> = {
-  "Bord de l'eau": ["waterfront", "bord de l'eau", "lakefront", "lake access", "accès à l'eau"],
-  "Piscine intérieure": ["indoor pool", "piscine intérieure"],
-  "Piscine extérieure": ["outdoor pool", "piscine extérieure", "pool"],
-  "Ski in / Ski out": ["ski in", "ski-in", "ski out", "ski-out"],
-  "Situé sur un resort": ["resort"],
-  "Spa": ["hot tub", "spa", "jacuzzi"],
-  "Sauna": ["sauna"],
-  "Chalet en bois rond": ["log cabin", "bois rond"],
-  "Foyer intérieur au bois": ["wood fireplace", "wood-burning fireplace", "foyer intérieur", "indoor fireplace"],
-  "Foyer extérieur (firepit)": ["fire pit", "firepit", "foyer extérieur", "outdoor fireplace"],
-  "BBQ": ["bbq", "barbecue", "grill"],
-  "Table de billard": ["pool table", "billiard", "billard"],
-  "Babyfoot": ["foosball", "babyfoot"],
-  "Table de ping-pong": ["ping pong", "ping-pong", "table tennis"],
-  "Arcades": ["arcade"],
-  "Jeux de société": ["board game", "jeux de société"],
-  "Livres et Revues": ["books", "magazines", "livres et revues"],
-  "Gym": ["gym", "fitness", "exercise equipment"],
-  "Wifi": ["wifi", "wi-fi", "wireless internet"],
-  "Espace de travail dédié (télétravail)": ["workspace", "espace de travail", "dedicated workspace"],
-  "Climatisation": ["air conditioning", "climatisation", "a/c", "ac unit"],
-  "Télévision avec câble": ["cable tv"],
-  "Télévision intelligente": ["smart tv"],
-  "Système audio (musique)": ["sound system"],
-  "Cuisine complète avec vaisselle et chaudrons": ["kitchen", "cuisine"],
-  "Literie et serviettes incluses": ["linens", "towels", "literie", "serviettes"],
-  "Buanderie": ["washer", "dryer", "laundry", "laveuse", "sécheuse", "buanderie"],
-  "Terrasse": ["deck", "terrace", "terrasse", "patio"],
-  "Module de jeux pour enfant": ["play area", "playground", "module de jeux"],
-  "Borne de recharge pour véhicule électrique": ["ev charg", "electric vehicle", "borne de recharge"],
+const AMENITY_KEYWORDS: Record<string, string[]> = {
+  "bord-eau": ["waterfront", "bord de l'eau", "lakefront", "lake access", "accès à l'eau"],
+  "piscine": ["indoor pool", "piscine intérieure", "outdoor pool", "piscine extérieure", "pool"],
+  "ski-in-ski-out": ["ski in", "ski-in", "ski out", "ski-out"],
+  "situe-resort": ["resort"],
+  "spa": ["hot tub", "spa", "jacuzzi"],
+  "sauna": ["sauna"],
+  "chalet-bois-rond": ["log cabin", "bois rond"],
+  "foyer-interieur-bois": ["wood fireplace", "wood-burning fireplace", "foyer intérieur", "indoor fireplace"],
+  "foyer-exterieur": ["fire pit", "firepit", "foyer extérieur", "outdoor fireplace"],
+  "bbq": ["bbq", "barbecue", "grill"],
+  "table-billard": ["pool table", "billiard", "billard"],
+  "babyfoot": ["foosball", "babyfoot"],
+  "table-ping-pong": ["ping pong", "ping-pong", "table tennis"],
+  "arcades": ["arcade"],
+  "jeux-societe": ["board game", "jeux de société"],
+  "livres-revues": ["books", "magazines", "livres et revues"],
+  "gym": ["gym", "fitness", "exercise equipment"],
+  "wifi": ["wifi", "wi-fi", "wireless internet"],
+  "espace-travail": ["workspace", "espace de travail", "dedicated workspace"],
+  "climatisation": ["air conditioning", "climatisation", "a/c", "ac unit"],
+  "tv-cable": ["cable tv"],
+  "tv-intelligente": ["smart tv"],
+  "systeme-audio": ["sound system"],
+  "cuisine-complete": ["kitchen", "cuisine"],
+  "literie-serviettes": ["linens", "towels", "literie", "serviettes"],
+  "buanderie": ["washer", "dryer", "laundry", "laveuse", "sécheuse", "buanderie"],
+  "terrasse": ["deck", "terrace", "terrasse", "patio"],
+  "module-jeux-enfant": ["play area", "playground", "module de jeux"],
+  "borne-recharge-vr": ["ev charg", "electric vehicle", "borne de recharge"],
 };
 
-export function matchAmenities(rawLabels: string[]): { matched: string[]; unmatched: string[] } {
-  const matched = new Set<string>();
+const AMENITY_CATALOG_IDS = new Set(AMENITY_CATALOG.map((e) => e.id));
+
+export function matchAmenities(rawLabels: string[]): { matched: AmenityValue[]; unmatched: string[] } {
+  const matchedIds = new Set<string>();
   const unmatched: string[] = [];
 
   for (const raw of rawLabels) {
     if (!raw) continue;
     const norm = raw.toLowerCase();
     let found = false;
-    for (const canonical of AMENITIES) {
-      const keywords = AMENITY_KEYWORDS[canonical] ?? [];
+    for (const id of AMENITY_CATALOG_IDS) {
+      const keywords = AMENITY_KEYWORDS[id] ?? [];
       if (keywords.some((k) => norm.includes(k))) {
-        matched.add(canonical);
+        matchedIds.add(id);
         found = true;
         break;
       }
@@ -87,7 +89,7 @@ export function matchAmenities(rawLabels: string[]): { matched: string[]; unmatc
     if (!found) unmatched.push(raw);
   }
 
-  return { matched: Array.from(matched), unmatched };
+  return { matched: Array.from(matchedIds).map((id) => ({ id, details: {} })), unmatched };
 }
 
 export function matchRegion(candidate: string | null): string | null {

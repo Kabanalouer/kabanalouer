@@ -5,6 +5,7 @@ import EditListingForm from "@/components/dashboard/EditListingForm";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
+import type { AmenityValue } from "@/lib/amenities-catalog";
 
 function adminSupabase() {
   return createAdminClient(
@@ -124,7 +125,7 @@ export default async function EditListingPage({ params }: Props) {
           price_low: listing.price_low ?? 0,
           price_high: listing.price_high ?? 0,
           price_peak: listing.price_peak ?? 0,
-          amenities: Array.isArray(listing.amenities) ? listing.amenities : [],
+          amenities: Array.isArray(listing.amenities) ? (listing.amenities as AmenityValue[]) : [],
           photos: normalizePhotos(listing.photos),
           citq_number: (listing.citq_number as string | null) ?? "",
           checkin_time: (listing.checkin_time as string | null) ?? "16:00",

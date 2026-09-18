@@ -13,6 +13,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { safeJsonLd } from "@/lib/jsonLd";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import type { RegionConfig } from "@/lib/regions";
 
 // Pendant région-scopée de RegionLanding.tsx (même patron : props déjà
@@ -61,7 +62,7 @@ export default async function CityLanding({
     capacity: (l.capacity as number) ?? 1,
     bedrooms: (l.bedrooms as number) ?? 1,
     photos: normalizePhotos(l.photos).map((p) => p.url),
-    tags: Array.isArray(l.amenities) ? (l.amenities as string[]).slice(0, 3) : [],
+    tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
   }));
 
   // Other cities in the same region

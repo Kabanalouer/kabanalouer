@@ -25,6 +25,7 @@ import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/
 import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
 import { getTranslations } from "next-intl/server";
+import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -135,7 +136,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const rawPhotos = normalizePhotos(listing.photos);
   const photos = rawPhotos.length > 0 ? rawPhotos : [{ url: DEFAULT_PHOTO, caption: "" }];
 
-  const amenities: string[] = Array.isArray(listing.amenities) ? listing.amenities : [];
+  const amenities: AmenityValue[] = Array.isArray(listing.amenities) ? listing.amenities : [];
   const nearbyActivities: string[] = Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [];
 
   // Locale-aware title and description
@@ -295,7 +296,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
           },
         }
       : {}),
-    amenityFeature: amenities.map((a) => ({ "@type": "LocationFeatureSpecification", name: a, value: true })),
+    amenityFeature: getAmenityLabels(amenities, locale).map((name) => ({ "@type": "LocationFeatureSpecification", name, value: true })),
     numberOfRooms: bedroomCount,
     occupancy: { "@type": "QuantitativeValue", maxValue: listing.capacity, unitText: "personnes" },
     ...(reviews && reviews.length > 0
