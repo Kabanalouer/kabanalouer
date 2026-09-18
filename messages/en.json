@@ -145,7 +145,6 @@
       "customSlugSave": "Save link",
       "customSlugSaving": "Saving…",
       "customSlugSaved": "Custom link saved.",
-      "customSlugClear": "Remove custom link",
       "customSlugErrorFormat": "Use only lowercase letters, numbers, and hyphens (60 characters maximum).",
       "customSlugErrorNumericOnly": "The link can't be made up of numbers only.",
       "customSlugErrorTaken": "This link is already used by another listing — choose a different one.",

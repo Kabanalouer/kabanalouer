@@ -145,7 +145,6 @@
       "customSlugSave": "Enregistrer le lien",
       "customSlugSaving": "Enregistrement…",
       "customSlugSaved": "Lien personnalisé enregistré.",
-      "customSlugClear": "Retirer le lien personnalisé",
       "customSlugErrorFormat": "Utilisez seulement des minuscules, des chiffres et des tirets (60 caractères maximum).",
       "customSlugErrorNumericOnly": "Le lien ne peut pas être composé uniquement de chiffres.",
       "customSlugErrorTaken": "Ce lien est déjà utilisé par une autre fiche — choisissez-en un autre.",

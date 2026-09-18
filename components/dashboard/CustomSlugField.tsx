@@ -25,16 +25,12 @@ export default function CustomSlugField({
   listingNumber,
   region,
   city,
-  onSaved,
 }: {
   listingId: string;
   initialCustomSlug: string | null;
   listingNumber: number | null;
   region: string | null;
   city: string | null;
-  // Notifie le parent (indicateur du menu gauche, voir EditListingForm.tsx)
-  // une fois la sauvegarde confirmée par le serveur.
-  onSaved?: (value: string | null) => void;
 }) {
   const tEdit = useTranslations("listings.edit");
   const [value, setValue] = useState(initialCustomSlug ?? "");
@@ -79,7 +75,6 @@ export default function CustomSlugField({
       setValue(trimmed);
       setSavedValue(trimmed);
       setJustSaved(true);
-      onSaved?.(trimmed || null);
     } catch {
       setError(tEdit("customSlugErrorGeneric"));
     } finally {
@@ -127,26 +122,18 @@ export default function CustomSlugField({
       {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
       {justSaved && !error && <p className="text-sm text-primary mt-2">{tEdit("customSlugSaved")}</p>}
 
-      <div className="flex items-center gap-2 mt-3">
-        <button
-          type="button"
-          onClick={() => performSave(value)}
-          disabled={saving || !hasChanges}
-          className="rounded-full bg-primary text-white text-sm font-semibold px-5 py-2 hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {saving ? tEdit("customSlugSaving") : tEdit("customSlugSave")}
-        </button>
-        {savedValue && (
-          <button
-            type="button"
-            onClick={() => performSave("")}
-            disabled={saving}
-            className="text-sm text-charcoal-500 border border-[#ebebeb] bg-charcoal-50 hover:bg-charcoal-100 rounded-full px-4 py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {tEdit("customSlugClear")}
-          </button>
-        )}
-      </div>
+      {/* Un seul bouton pour définir, changer ou vider le lien : un champ
+          vidé puis sauvegardé remet custom_slug à NULL côté serveur (voir
+          app/api/listings/[id]/custom-slug/route.ts), l'annonce retombe
+          alors sur son numéro d'annonce — pas besoin d'une action séparée. */}
+      <button
+        type="button"
+        onClick={() => performSave(value)}
+        disabled={saving || !hasChanges}
+        className="mt-3 rounded-full bg-primary text-white text-sm font-semibold px-5 py-2 hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        {saving ? tEdit("customSlugSaving") : tEdit("customSlugSave")}
+      </button>
     </div>
   );
 }

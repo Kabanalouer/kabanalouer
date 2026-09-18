@@ -239,7 +239,6 @@ export default function EditListingForm({
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [localImportStatus, setLocalImportStatus] = useState(importStatus ?? null);
-  const [customSlug, setCustomSlug] = useState(initialCustomSlug);
   const [previewOpen, setPreviewOpen] = useState(false);
   const canPreview = !!form.title.trim() && form.photos.length > 0;
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -356,11 +355,11 @@ export default function EditListingForm({
     // Signal visuel uniquement (voir sectionValid ci-dessus, qui ne bloque
     // plus la publication) : CITQ manquant reste affiché comme incomplet.
     infos: form.citq_number.length === 6,
-    // Optionnel, jamais bloquant pour la publication (voir SECTIONS
-    // ci-dessus) — indique simplement si un lien personnalisé est défini,
-    // sinon la fiche utilise son numéro d'annonce par défaut, un état
-    // parfaitement valide.
-    lienPersonnalise: !!customSlug,
+    // Toujours vert, jamais le point rouge "incomplet" : ne pas définir de
+    // lien personnalisé n'est pas une erreur, la fiche fonctionne très bien
+    // avec son numéro d'annonce par défaut (voir SECTIONS ci-dessus, jamais
+    // bloquant pour la publication).
+    lienPersonnalise: true,
   };
 
   const sidebarScore = scoreDbLoaded
@@ -1650,7 +1649,6 @@ export default function EditListingForm({
                   listingNumber={listingNumber}
                   region={form.region || null}
                   city={initialCity || null}
-                  onSaved={setCustomSlug}
                 />
               </div>
             </SectionShell>
