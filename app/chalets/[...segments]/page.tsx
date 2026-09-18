@@ -4,11 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 // cookies() is used via createClient() → force dynamic to avoid DYNAMIC_SERVER_USAGE in production
 export const dynamic = "force-dynamic";
 
-import { getRegionBySlug, getRegionByEnSlug, getRegionSlugs } from "@/lib/regions";
+import { getRegionBySlug, getRegionByEnSlug, getRegionByDbValue, getRegionSlugs } from "@/lib/regions";
 import { getRegionContent } from "@/lib/regionsContent";
 import { buildListingPath } from "@/lib/listingUrl";
 import { normalizePhotos } from "@/lib/photo";
+import { slugify } from "@/lib/slugify";
+import { isKnownMunicipality } from "@/lib/municipalities";
 import RegionLanding from "./_components/RegionLanding";
+import CityLanding from "./_components/CityLanding";
 import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
@@ -30,6 +33,10 @@ const DEFAULT_PHOTO =
 // correspondance différent dans Next.js) tout en gardant les mêmes URLs :
 // - 1 segment  : région (/chalets/laurentides) ou fiche historique (slug
 //   plat / UUID, toujours redirigée vers le chemin canonique à 3 segments).
+// - 2 segments : région/ville (page ville SEO, /chalets/laurentides/mille-isles).
+//   Le premier segment littéral "ville" (FR) / "city" (EN) de l'ancien schéma
+//   /chalets/ville/[slug] est détecté et redirigé vers ce nouveau chemin
+//   région-scopé — voir renderTwoSegments().
 // - 3 segments : région/ville/nom-du-chalet (fiche canonique).
 interface Props {
   params: Promise<{ segments: string[] }>;
@@ -152,6 +159,50 @@ export async function generateMetadata({ params }: Props) {
     return {};
   }
 
+  if (segments.length === 2) {
+    const [slug, citySlug] = segments;
+
+    // Ancien schéma /chalets/ville/[slug] (FR) ou /en/cabins/city/[slug]
+    // (EN) — ne produit qu'une redirection 308, jamais de métadonnées ici.
+    if (slug === (isEn ? "city" : "ville")) return {};
+
+    const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
+    if (!regionConfig) return {};
+
+    const { data: cityRows } = await supabase
+      .from("listings")
+      .select("city")
+      .eq("is_published", true)
+      .eq("region", regionConfig.dbValue)
+      .not("city", "is", null);
+    const cityName = [...new Set((cityRows ?? []).map((r) => r.city as string).filter(Boolean))]
+      .filter(isKnownMunicipality)
+      .find((c) => slugify(c) === citySlug);
+    if (!cityName) return {};
+
+    // Cible les requêtes "location chalet {ville}" / "cabin rental {ville}" —
+    // volontairement plus court/direct que le H1 de la page (voir CityLanding.tsx).
+    const title = isEn ? `Cabin rental in ${cityName}` : `Location de chalet à ${cityName}`;
+    const description = isEn
+      ? `Find your cabin for rent in ${cityName}, ${regionConfig.nameEn}. Direct contact with owners, no service fees.`
+      : `Trouvez votre chalet à louer à ${cityName}, ${regionConfig.name}. Contact direct avec les propriétaires, aucun frais de service.`;
+
+    const pathFr = `/chalets/${regionConfig.slug}/${citySlug}`;
+    const pathEn = `/en/cabins/${regionConfig.slugEn}/${citySlug}`;
+    const canonicalPath = isEn ? pathEn : pathFr;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: canonicalPath,
+        languages: { fr: pathFr, en: pathEn, "x-default": pathFr },
+      },
+      openGraph: { title, description, url: canonicalPath },
+      twitter: { title, description },
+    };
+  }
+
   if (segments.length === 3) {
     const [slug, , chaletSlug] = segments;
 
@@ -206,6 +257,10 @@ export default async function ChaletPage({ params, searchParams }: Props) {
 
   if (segments.length === 1) {
     return renderSingleSegment(segments[0], locale, isEn, sp);
+  }
+
+  if (segments.length === 2) {
+    return renderTwoSegments(segments as [string, string], isEn);
   }
 
   if (segments.length === 3) {
@@ -287,6 +342,55 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
       isPreviewFrame={sp.preview === "1"}
     />
   );
+}
+
+async function renderTwoSegments([slug, citySlug]: [string, string], isEn: boolean) {
+  const supabase = await createClient();
+
+  // Ancien schéma /chalets/ville/[slug] (FR) ou /en/cabins/city/[slug] (EN) —
+  // premier segment autrefois un mot-clé littéral plutôt qu'un slug de
+  // région. Retrouve la région réelle de la ville (parmi TOUTES les régions,
+  // pas seulement celle qu'on croirait deviner) et redirige vers le chemin
+  // canonique région-scopé plutôt que de casser un lien déjà partagé/indexé.
+  if (slug === (isEn ? "city" : "ville")) {
+    const { data: allCityRows } = await supabase
+      .from("listings")
+      .select("city, region")
+      .eq("is_published", true)
+      .not("city", "is", null);
+
+    for (const row of allCityRows ?? []) {
+      const cityName = row.city as string;
+      if (!isKnownMunicipality(cityName) || slugify(cityName) !== citySlug) continue;
+      const regionConfig = getRegionByDbValue(row.region as string);
+      if (!regionConfig) continue;
+      permanentRedirect(
+        isEn
+          ? `/en/cabins/${regionConfig.slugEn}/${slugify(cityName)}`
+          : `/chalets/${regionConfig.slug}/${slugify(cityName)}`
+      );
+    }
+    notFound();
+  }
+
+  const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
+  if (!regionConfig) notFound();
+
+  const { data: cityRows } = await supabase
+    .from("listings")
+    .select("city")
+    .eq("is_published", true)
+    .eq("region", regionConfig.dbValue)
+    .not("city", "is", null);
+  const cityName = [...new Set((cityRows ?? []).map((r) => r.city as string).filter(Boolean))]
+    .filter(isKnownMunicipality)
+    .find((c) => slugify(c) === citySlug);
+  // Ville sans chalet publié dans cette région : même approche que l'ancien
+  // /chalets/ville/[slug] (jamais de redirection, 404 propre) — cohérent
+  // avec le repli déjà en place pour une région sans fiche active.
+  if (!cityName) notFound();
+
+  return <CityLanding regionConfig={regionConfig} cityName={cityName} />;
 }
 
 async function renderThreeSegments([slug, city, chaletSlug]: [string, string, string], locale: string, isEn: boolean, sp: SearchParams) {

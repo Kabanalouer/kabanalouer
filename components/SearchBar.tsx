@@ -203,8 +203,8 @@ export default function SearchBar({
 
   // Villes avec au moins une annonce publiée (pas la source des suggestions
   // de recherche — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
-  // /chalets/ville/[slug] existe pour une municipalité donnée au moment de
-  // rechercher, voir handleSearch()).
+  // /chalets/[région]/[ville] existe pour une municipalité donnée au moment
+  // de rechercher, voir handleSearch()).
   useEffect(() => {
     fetch("/api/listings/locations")
       .then((r) => r.json())
@@ -328,19 +328,19 @@ export default function SearchBar({
     }
 
     // Ville-only search reconnue dans la liste officielle (no dates, no
-    // guests) → sa page SEO dédiée si elle a des annonces publiées
-    // (sinon /chalets/ville/[slug] ferait 404), sinon la page de sa région
-    // parente, qui existe toujours.
+    // guests) → sa page SEO dédiée (région-scopée, /chalets/[région]/[ville])
+    // si elle a des annonces publiées (sinon 404), sinon la page de sa
+    // région parente, qui existe toujours.
     if (active?.type === "city" && noFilters) {
       const municipality = MUNICIPALITY_BY_NAME.get(active.value);
       if (municipality) {
-        if (cities.includes(municipality.name)) {
-          router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
-          return;
-        }
         const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
         if (regionSlug) {
-          router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`);
+          if (cities.includes(municipality.name)) {
+            router.push(isEn ? `/en/cabins/${regionSlug}/${municipality.slug}` : `/chalets/${regionSlug}/${municipality.slug}`);
+          } else {
+            router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`);
+          }
           return;
         }
       }

@@ -19,6 +19,8 @@ import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { buildListingPath } from "@/lib/listingUrl";
 import { localePath } from "@/lib/localePath";
+import { getRegionByDbValue } from "@/lib/regions";
+import { slugify } from "@/lib/slugify";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
 import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
@@ -50,6 +52,18 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
   const id = listing.id as string; // UUID for all sub-queries
   const canonicalPath = buildListingPath(listing, isEn ? "en" : "fr") ?? `/chalets/${id}`;
+
+  // Fil d'Ariane : Chalets > Région > Ville > Titre (voir CLAUDE.md section 9,
+  // les segments région/ville pointent vers les vraies pages dédiées déjà
+  // existantes, jamais une URL de recherche filtrée comme avant).
+  const regionConfig = listing.region ? getRegionByDbValue(listing.region as string) : undefined;
+  const regionBasePath = regionConfig
+    ? (isEn ? `/en/cabins/${regionConfig.slugEn}` : `/chalets/${regionConfig.slug}`)
+    : undefined;
+  const cityBasePath = regionBasePath && listing.city
+    ? `${regionBasePath}/${slugify(listing.city as string)}`
+    : undefined;
+  const regionDisplayName = regionConfig ? (isEn ? regionConfig.nameEn : regionConfig.name) : "";
 
   // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
   // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
@@ -325,9 +339,23 @@ export default async function ListingDetail({ listing, user, searchParams, local
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
         <nav className="hidden md:block text-sm text-charcoal-400 mb-4">
-          <Link href={localePath("/chalets", locale)} className="hover:text-primary transition-colors">{t("breadcrumbCabins")}</Link>
-          <span className="mx-2">›</span>
-          <Link href={localePath(`/chalets?region=${listing.region}`, locale)} className="hover:text-primary transition-colors">{listing.region}</Link>
+          <Link href={localePath("/chalets", locale)} className="hover:text-primary hover:underline transition-colors">{t("breadcrumbCabins")}</Link>
+          {regionBasePath && (
+            <>
+              <span className="mx-2">›</span>
+              <Link href={regionBasePath} className="hover:text-primary hover:underline transition-colors">
+                {regionDisplayName}
+              </Link>
+            </>
+          )}
+          {cityBasePath && (
+            <>
+              <span className="mx-2">›</span>
+              <Link href={cityBasePath} className="hover:text-primary hover:underline transition-colors">
+                {listing.city}
+              </Link>
+            </>
+          )}
           <span className="mx-2">›</span>
           <span className="text-charcoal-600 truncate">{displayTitle}</span>
         </nav>

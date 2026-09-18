@@ -4,7 +4,7 @@ import municipalitiesData from "./municipalities.json";
 // l'interface Municipality et les Map de correspondance dans chaque fichier
 // qui en a besoin (components/dashboard/MunicipalityCombobox.tsx,
 // components/dashboard/LocationSection.tsx, app/sitemap.ts,
-// app/chalets/ville/[slug]/page.tsx).
+// app/chalets/[...segments]/page.tsx).
 export interface Municipality {
   name: string;
   slug: string;
@@ -29,8 +29,8 @@ export function getMunicipalityBySlug(slug: string): Municipality | undefined {
 // Utilisé pour distinguer une ville "officielle" (municipalité constituée,
 // répertoire MAMH) d'une ville issue du filet de sécurité "Je ne trouve pas
 // ma localité" (texte libre, TNO ou lieu non répertorié) — cette dernière ne
-// doit jamais générer de page /chalets/ville/[slug] (URL imprévisible),
-// voir app/sitemap.ts et app/chalets/ville/[slug]/page.tsx.
+// doit jamais générer de page /chalets/[région]/[ville] (URL imprévisible),
+// voir app/sitemap.ts et app/chalets/[...segments]/page.tsx.
 export function isKnownMunicipality(name: string): boolean {
   return BY_NAME.has(name);
 }

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { REGIONS, getRegionSlugs, getRegionBySlug } from "@/lib/regions";
+import { REGIONS, getRegionSlugs, getRegionBySlug, getRegionByDbValue } from "@/lib/regions";
 import { isKnownMunicipality } from "@/lib/municipalities";
 import { slugify } from "@/lib/slugify";
 import { buildListingPath } from "@/lib/listingUrl";
@@ -86,32 +86,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return entries;
     });
 
-    const distinctCities = [
-      ...new Set(
-        (listings ?? [])
-          .map((l) => l.city as string | null)
-          .filter((c): c is string => !!c)
-          // Filet de sécurité "Je ne trouve pas ma localité" (texte libre,
-          // TNO ou lieu non répertorié, voir MunicipalityCombobox) : jamais
-          // une page ville dédiée — URL imprévisible pour rien, l'annonce
-          // apparaît déjà normalement sur la page de sa région.
-          .filter(isKnownMunicipality)
-      ),
-    ];
-    cityPages = distinctCities.flatMap((city) => [
-      {
-        url: `${BASE}/chalets/ville/${slugify(city)}`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      },
-      {
-        url: `${BASE}/en/cabins/city/${slugify(city)}`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      },
-    ]);
+    // Ville → région (premier match retenu) : la page ville est maintenant
+    // rattachée à sa région dans l'URL (/chalets/[région]/[ville]), voir
+    // app/chalets/[...segments]/page.tsx.
+    const cityToRegionDbValue = new Map<string, string>();
+    for (const l of listings ?? []) {
+      const city = l.city as string | null;
+      const region = l.region as string | null;
+      if (!city || !region || !isKnownMunicipality(city)) continue;
+      if (!cityToRegionDbValue.has(city)) cityToRegionDbValue.set(city, region);
+    }
+    cityPages = [...cityToRegionDbValue.entries()].flatMap(([city, regionDbValue]) => {
+      const regionConfig = getRegionByDbValue(regionDbValue);
+      if (!regionConfig) return [];
+      return [
+        {
+          url: `${BASE}/chalets/${regionConfig.slug}/${slugify(city)}`,
+          lastModified: now,
+          changeFrequency: "weekly" as const,
+          priority: 0.75,
+        },
+        {
+          url: `${BASE}/en/cabins/${regionConfig.slugEn}/${slugify(city)}`,
+          lastModified: now,
+          changeFrequency: "weekly" as const,
+          priority: 0.75,
+        },
+      ];
+    });
 
     // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
     // (voir MIN_CHALETS_FOR_INDEX ci-dessus et dans app/chalets/[slug]/page.tsx).

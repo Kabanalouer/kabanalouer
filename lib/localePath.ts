@@ -1,7 +1,6 @@
 // Mapping of FR path segments to their EN equivalents.
 // Paths not listed here keep the same slug under /en/.
 const PATH_TRANSLATIONS: Array<[string, string]> = [
-  ["/chalets/ville", "/cabins/city"],
   ["/chalets", "/cabins"],
   ["/devenir-hote", "/become-a-host"],
   ["/a-propos", "/about"],

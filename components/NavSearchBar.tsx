@@ -173,7 +173,7 @@ function NavSearchBarInner() {
 
   // Villes avec au moins une annonce publiée (pas la source des suggestions
   // — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
-  // /chalets/ville/[slug] existe pour une municipalité donnée, voir handleSearch()).
+  // /chalets/[région]/[ville] existe pour une municipalité donnée, voir handleSearch()).
   useEffect(() => {
     fetch("/api/listings/locations").then(r => r.json()).then(d => setCities(d.cities ?? [])).catch(() => {});
     setRecentSearches(loadRecent());
@@ -224,17 +224,20 @@ function NavSearchBarInner() {
     }
 
     // Ville reconnue dans la liste officielle (no dates, no guests) → sa
-    // page SEO dédiée si elle a des annonces publiées (sinon
-    // /chalets/ville/[slug] ferait 404), sinon la page de sa région parente.
+    // page SEO dédiée (région-scopée, /chalets/[région]/[ville]) si elle a
+    // des annonces publiées (sinon 404), sinon la page de sa région parente.
     if (active?.type === "city" && noFilters) {
       const municipality = MUNICIPALITY_BY_NAME.get(active.value);
       if (municipality) {
-        if (cities.includes(municipality.name)) {
-          router.push(localePath(`/chalets/ville/${municipality.slug}`, locale));
+        const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
+        if (regionSlug) {
+          router.push(
+            cities.includes(municipality.name)
+              ? (isEn ? `/en/cabins/${regionSlug}/${municipality.slug}` : `/chalets/${regionSlug}/${municipality.slug}`)
+              : (isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`)
+          );
           return;
         }
-        const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
-        if (regionSlug) { router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`); return; }
       }
     }
 

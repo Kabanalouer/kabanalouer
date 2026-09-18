@@ -55,12 +55,19 @@ const nextConfig: NextConfig = {
   // voir app/chalets/[...segments]/page.tsx. Ces réécritures redirigent en
   // interne (URL affichée inchangée) vers l'implémentation identique servie
   // sous app/[locale]/chalets/[...segments]/page.tsx, qui fonctionne
-  // correctement. Portée volontairement limitée à exactement 1 ou 3
-  // segments pour ne jamais toucher /chalets (recherche) ni
-  // /chalets/ville/[slug] (2 segments, déjà fonctionnel).
+  // correctement. Portée volontairement limitée à exactement 1, 2 ou 3
+  // segments pour ne jamais toucher /chalets (recherche, 0 segment).
+  // L'ancienne route dédiée /chalets/ville/[slug] (2 segments avec un
+  // premier segment littéral "ville") a été retirée le 2026-09-17 — son URL
+  // aurait autrement été interceptée par la réécriture générique ci-dessous
+  // (les réécritures sans phase explicite, comme ici, sont résolues par
+  // Next.js avant ses propres routes dynamiques). Les anciens liens
+  // /chalets/ville/[slug] redirigent maintenant vers le nouveau chemin
+  // région-scopé via renderTwoSegments() dans le fichier catch-all.
   async rewrites() {
     return [
       { source: "/chalets/:a",       destination: "/fr/chalets/:a" },
+      { source: "/chalets/:a/:b",    destination: "/fr/chalets/:a/:b" },
       { source: "/chalets/:a/:b/:c", destination: "/fr/chalets/:a/:b/:c" },
     ];
   },
