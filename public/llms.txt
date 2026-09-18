@@ -1,40 +1,18 @@
 # Kabanalouer
 
-Kabanalouer est la marketplace de référence pour la location de chalets au Québec, Canada.
+> Kabanalouer est une marketplace de location de chalets au Québec, sans commission, permettant un contact direct entre voyageurs et proprios.
+
+## Pages principales
+
+- [Accueil](https://kabanalouer.ca) : recherche de chalets par région
+- [Chalets](https://kabanalouer.ca/chalets) : liste complète des chalets disponibles
+- [Devenir proprio](https://kabanalouer.ca/devenir-hote) : inscrire son chalet sur la plateforme
+- [Comment ça marche](https://kabanalouer.ca/comment-ca-marche) : fonctionnement pour voyageurs et propriétaires
+- [Tarifs et abonnement](https://kabanalouer.ca/tarifs) : détails de l'abonnement proprio
+- [FAQ propriétaires](https://kabanalouer.ca/faq-hotes) : questions fréquentes pour les proprios
+- [À propos](https://kabanalouer.ca/a-propos) : présentation de Kabanalouer
+- [Sitemap](https://kabanalouer.ca/sitemap.xml) : liste complète des pages, y compris chaque fiche de chalet
 
 ## À propos
 
-- Plateforme de mise en relation entre propriétaires de chalets et voyageurs québécois
-- Aucun frais de service pour les voyageurs
-- Contact direct propriétaire-voyageur, sans intermédiaire
-- Chalets disponibles dans toutes les régions du Québec
-- Paiement géré directement entre voyageur et propriétaire
-
-## Régions couvertes
-
-Laurentides, Charlevoix, Cantons-de-l'Est (Estrie), Lanaudière, Mauricie, Outaouais,
-Saguenay–Lac-Saint-Jean, Bas-Saint-Laurent, Gaspésie, Abitibi-Témiscamingue,
-Côte-Nord, Montérégie, Chaudière-Appalaches, Capitale-Nationale
-
-## Pour les propriétaires
-
-- Abonnement annuel : 299 $/an par chalet
-- Offre de lancement : 50 premiers hôtes gratuits
-- Outils inclus : calendrier de disponibilités, synchronisation iCal (Airbnb, Booking),
-  messagerie intégrée, tableau de bord, statistiques, génération de description par IA
-- Aucune commission sur les revenus
-
-## Pour les voyageurs
-
-- Accès gratuit à toutes les annonces
-- Création de compte gratuite
-- Contact direct avec les propriétaires via messagerie intégrée
-- Pas de frais de service ni de commission
-
-## URLs importantes
-
-- Site principal : https://kabanalouer.ca
-- Recherche de chalets : https://kabanalouer.ca/chalets
-- Devenir hôte : https://kabanalouer.ca/devenir-hote
-- Comment ça marche : https://kabanalouer.ca/comment-ca-marche
-- Sitemap : https://kabanalouer.ca/sitemap.xml
+Kabanalouer connecte directement les voyageurs et les propriétaires de chalets au Québec, sans frais de plateforme sur les réservations. Chaque fiche de chalet inclut les équipements, la capacité, les conditions (animaux, tabac, arrivée/départ) et les coordonnées pour contacter le proprio directement.

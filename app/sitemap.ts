@@ -61,14 +61,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: listings } = await supabase
+    const { data: listings, error: listingsError } = await supabase
       .from("listings")
-      .select("id, region, city, listing_number, custom_slug, updated_at")
+      .select("id, region, city, listing_number, custom_slug, created_at")
       .eq("is_published", true)
-      .order("updated_at", { ascending: false });
+      .order("created_at", { ascending: false });
+
+    // Supabase ne lève jamais d'exception pour une erreur de requête (colonne
+    // inconnue, etc.) — elle retourne { data: null, error } silencieusement,
+    // ce que le try/catch autour de ce bloc ne peut pas intercepter. Logué
+    // explicitement ici, sinon un futur bug de ce type redevient invisible
+    // (voir le bug updated_at/created_at corrigé le 2026-09-18, qui avait
+    // vidé tout le sitemap dynamique sans aucune trace nulle part).
+    if (listingsError) console.error("sitemap: erreur Supabase sur la requête listings", listingsError);
 
     listingPages = (listings ?? []).flatMap((l) => {
-      const lastMod = new Date(l.updated_at as string);
+      const lastMod = new Date(l.created_at as string);
       const listingRow = {
         region: l.region as string | null,
         city: l.city as string | null,
@@ -132,9 +140,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${BASE}/en/cabins/${regionConfig.slugEn}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
       ];
     });
-  } catch {
-    // Don't fail the build if Supabase is unreachable — regionPages garde son
-    // défaut optimiste (toutes les régions) défini plus haut.
+  } catch (err) {
+    // Don't fail the build if Supabase est injoignable (exception réelle,
+    // réseau/auth) — regionPages garde son défaut optimiste (toutes les
+    // régions) défini plus haut.
+    console.error("sitemap: exception Supabase, repli sur les valeurs par défaut", err);
   }
 
   return [...staticPages, ...regionPages, ...cityPages, ...listingPages];
