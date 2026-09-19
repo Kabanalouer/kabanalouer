@@ -17,7 +17,7 @@ export default function AmenityRow({ value, locale }: { value: AmenityValue; loc
       </div>
       <div className="min-w-0">
         <p className="font-semibold text-charcoal-800 text-sm">{label}</p>
-        {summary && <p className="text-sm text-charcoal-400 mt-0.5">{summary}</p>}
+        {summary && <p className="text-sm text-charcoal-400 mt-0.5 truncate">{summary}</p>}
       </div>
     </div>
   );

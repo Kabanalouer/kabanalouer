@@ -16,6 +16,9 @@ export interface AmenityDetailField {
   optionsEn?: string[];
   placeholder?: string;
   placeholderEn?: string;
+  // Champs "number" seulement — borne le compteur +/- pour qu'une valeur
+  // saisie sans limite ne puisse jamais produire un résumé trop long.
+  max?: number;
 }
 
 export interface AmenityCategory {
@@ -171,7 +174,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     icon: "Waves",
     detailSchema: [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
-      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6" },
+      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20 },
       { key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round" },
     ],
   },
@@ -203,7 +206,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "stationnement",
     icon: "ParkingCircle",
     detailSchema: [
-      { key: "places", type: "number", label: "Nombre de places", labelEn: "Number of spots", placeholder: "Ex. 4", placeholderEn: "E.g. 4" },
+      { key: "places", type: "number", label: "Nombre de places", labelEn: "Number of spots", placeholder: "Ex. 4", placeholderEn: "E.g. 4", max: 30 },
       { key: "gratuit", type: "boolean", label: "Gratuit", labelEn: "Free" },
     ],
   },
@@ -313,7 +316,13 @@ export function summarizeAmenityDetails(
       parts.push(translateOptionValue(field, value, locale));
     } else if (field.type === "multi-select" && Array.isArray(value)) {
       const values = (value as unknown[]).filter((v): v is string => typeof v === "string");
-      if (values.length > 0) parts.push(values.map((v) => translateOptionValue(field, v, locale)).join("/"));
+      if (values.length === 0) continue;
+      // Au-delà de 2 choix, l'énumération complète (ex. les 4 types de
+      // cafetière) devient trop longue pour un résumé sur une seule ligne —
+      // le nombre de choix suffit, le détail complet reste visible dans le
+      // panneau d'édition.
+      if (values.length > 2) parts.push(isEn ? `${values.length} options` : `${values.length} choix`);
+      else parts.push(values.map((v) => translateOptionValue(field, v, locale)).join("/"));
     }
   }
 

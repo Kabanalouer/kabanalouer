@@ -92,6 +92,8 @@ function NumberField({ field, value, onChange, locale }: {
 }) {
   const isEn = locale === "en";
   const num = typeof value === "number" ? value : 0;
+  const max = field.max ?? 99;
+  const atMax = num >= max;
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-charcoal-700">{isEn ? field.labelEn : field.label}</span>
@@ -109,8 +111,9 @@ function NumberField({ field, value, onChange, locale }: {
         <span className="w-6 text-center text-sm font-medium text-charcoal-800 tabular-nums">{num}</span>
         <button
           type="button"
-          onClick={() => onChange(num + 1)}
-          className="w-8 h-8 rounded-full border-2 border-charcoal-200 text-charcoal-600 flex items-center justify-center transition-colors hover:border-charcoal-400"
+          onClick={() => onChange(Math.min(max, num + 1))}
+          disabled={atMax}
+          className="w-8 h-8 rounded-full border-2 border-charcoal-200 text-charcoal-600 flex items-center justify-center transition-colors disabled:opacity-30 hover:border-charcoal-400"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
