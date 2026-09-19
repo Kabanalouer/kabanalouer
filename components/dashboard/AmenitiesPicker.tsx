@@ -149,6 +149,41 @@ function ToggleField({ field, value, onChange, locale }: {
   );
 }
 
+// Pas au quart d'heure : trop précis pour des horaires d'équipement (piscine,
+// spa...) — inspiré du sélecteur d'heure de Google Agenda.
+const HOUR_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, "0");
+  const m = i % 2 === 0 ? "00" : "30";
+  return `${h}:${m}`;
+});
+
+function TimeSelect({ value, onChange, placeholder }: {
+  value?: string; onChange: (v: string) => void; placeholder: string;
+}) {
+  // Une valeur déjà enregistrée hors du pas de 30 min (ex. 09:15) reste
+  // sélectionnable et s'affiche telle quelle, sans être écrasée.
+  const options = value && !HOUR_OPTIONS.includes(value) ? [...HOUR_OPTIONS, value].sort() : HOUR_OPTIONS;
+  return (
+    <div className="relative">
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${fieldInputCls} appearance-none pr-8 bg-white cursor-pointer`}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map((t) => (
+          <option key={t} value={t}>{t}</option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+        <svg className="w-3.5 h-3.5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 function HoursField({ field, value, onChange, locale }: {
   field: AmenityDetailField; value: unknown; onChange: (v: unknown) => void; locale: string;
 }) {
@@ -169,18 +204,16 @@ function HoursField({ field, value, onChange, locale }: {
       </label>
       {!open24 && (
         <div className="flex items-center gap-2">
-          <input
-            type="time"
-            value={v.start ?? ""}
-            onChange={(e) => onChange({ ...v, open24: false, start: e.target.value })}
-            className={fieldInputCls}
+          <TimeSelect
+            value={v.start}
+            onChange={(val) => onChange({ ...v, open24: false, start: val })}
+            placeholder={isEn ? "Start" : "Début"}
           />
           <span className="text-sm text-charcoal-400">{isEn ? "to" : "à"}</span>
-          <input
-            type="time"
-            value={v.end ?? ""}
-            onChange={(e) => onChange({ ...v, open24: false, end: e.target.value })}
-            className={fieldInputCls}
+          <TimeSelect
+            value={v.end}
+            onChange={(val) => onChange({ ...v, open24: false, end: val })}
+            placeholder={isEn ? "End" : "Fin"}
           />
         </div>
       )}
