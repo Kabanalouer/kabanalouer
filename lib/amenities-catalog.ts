@@ -455,32 +455,21 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
 // équipements déjà existants, les nouveaux (québécois ou non) insérés selon
 // leur pouvoir différenciateur.
 export const AMENITY_PRIORITY_ORDER: string[] = [
-  // Argument de vente fort — bord de l'eau, détente, particularités québécoises
-  "bord-eau", "quai", "acces-lac", "piscine-interieure", "piscine-exterieure", "spa", "sauna",
-  "patinoire", "terrain-tennis", "terrain-pickleball", "ski-in-ski-out", "chalet-bois-rond",
-  "foyer-interieur-bois", "foyer-exterieur",
-  // Divertissement, famille, emplacement
-  "gym", "table-billard", "module-jeux-enfant", "borne-recharge-vr", "bbq",
-  "babyfoot", "table-ping-pong", "arcades", "terrasse", "jeux-societe",
-  "situe-resort", "livres-revues", "lit-bebe", "chaise-haute",
-  "barrieres-securite", "jouets-enfants",
-  "sentiers-randonnee", "acces-motoneige-vtt",
-  "systeme-audio", "tv-intelligente",
-  "garage", "stationnement",
-  // Confort et pratique
-  "wifi", "espace-travail", "climatisation",
-  "chauffage-central", "thermopompe", "ventilateurs",
-  "cuisine-complete", "refrigerateur", "four", "cuisiniere", "micro-ondes",
-  "lave-vaisselle", "cafetiere", "menage-inclus",
-  "conciergerie", "panier-bienvenue",
-  "baignoire",
-  "serviettes-piscine", "seche-cheveux",
-  // Essentiels attendus par défaut — jamais un argument de vente
-  "literie-serviettes", "buanderie", "cintres", "fer-a-repasser",
-  "draps-supplementaires", "rideaux-occultants", "savon-shampoing",
-  "papier-hygienique", "produits-nettoyage", "detecteur-fumee",
-  "detecteur-co", "extincteur", "trousse-premiers-soins",
-  "camera-exterieure", "serrure-electronique",
+  "bord-eau", "piscine-interieure", "ski-in-ski-out", "spa", "sauna", "piscine-exterieure",
+  "acces-lac", "table-billard", "terrain-tennis", "terrain-pickleball", "gym",
+  "chalet-bois-rond", "babyfoot", "table-ping-pong", "arcades", "foyer-interieur-bois",
+  "foyer-exterieur", "module-jeux-enfant", "situe-resort", "bbq", "terrasse",
+  "borne-recharge-vr", "sentiers-randonnee", "acces-motoneige-vtt", "patinoire",
+  "espace-travail", "climatisation", "serrure-electronique", "quai", "jeux-societe",
+  "systeme-audio", "tv-intelligente", "garage", "stationnement", "wifi", "menage-inclus",
+  "buanderie", "jouets-enfants", "conciergerie", "panier-bienvenue", "literie-serviettes",
+  "livres-revues", "lit-bebe", "chaise-haute", "barrieres-securite", "chauffage-central",
+  "thermopompe", "ventilateurs", "cuisine-complete", "refrigerateur", "four", "cuisiniere",
+  "micro-ondes", "lave-vaisselle", "cafetiere", "baignoire", "serviettes-piscine",
+  "seche-cheveux", "cintres", "fer-a-repasser", "draps-supplementaires",
+  "rideaux-occultants", "savon-shampoing", "papier-hygienique", "produits-nettoyage",
+  "detecteur-fumee", "detecteur-co", "extincteur", "trousse-premiers-soins",
+  "camera-exterieure",
 ];
 
 export function getAmenityCatalogEntry(id: string): AmenityCatalogEntry | undefined {
