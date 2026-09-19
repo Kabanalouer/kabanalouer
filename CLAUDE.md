@@ -154,7 +154,8 @@ lib/
   supabase/             client.ts + server.ts
   aiRateLimit.ts        Rate limiting IA (table ai_usage_log)
   photo.ts              Compression WebP + normalisation URLs
-  amenities.ts          Liste des caractéristiques
+  amenities-catalog.ts  Catalogue d'équipements (catégories, detailSchema, showIf, unit, priorité) — voir section 9
+  listing-schema.ts     JSON-LD SEO/GEO de la fiche publique (LodgingBusiness + FAQPage)
   listingScore.ts       Score optimisation 0-100 (buildCriteria, computeScore, getScoreLevel)
 public/                 Assets statiques (logos, hero image)
 design-system/          Fichiers de référence branding
@@ -423,13 +424,44 @@ Fait à la suite du changement d'URL ci-dessus, pour donner à chaque ville sa p
 - **Fil d'Ariane sur la fiche chalet** (`ListingDetail.tsx`) : devient `Chalets > Région > Ville > Titre du chalet`. Le segment région, qui pointait avant vers une recherche filtrée (`/chalets?region=...`, jamais vers la vraie page région), pointe maintenant vers `/chalets/[région]` (ou `/en/cabins/[région]`) — la page région déjà existante. Nouveau segment ville, cliquable, vers la page ville ci-dessus. Le titre reste le seul segment non cliquable. Tous les segments cliquables ont un soulignement au survol (`hover:underline`), jamais le titre.
 - **Mention ville/région retirée sous le titre** de la fiche chalet (ligne "16 personnes · 5 chambres · ...") — devenue redondante avec le fil d'Ariane juste au-dessus, qui l'affiche déjà. Reste uniquement dans le fil d'Ariane et le JSON-LD (`addressLocality`/`addressRegion`, inchangés).
 
-### Points forts du chalet — système de priorité (2026-09-17)
+### Catalogue d'équipements (« Équipements ») — architecture actuelle (refondue le 2026-09-19)
 
-Les 3 "points forts" affichés sur la fiche publique juste avant le bouton "Voir toutes les caractéristiques" (`components/chalets/AmenitiesSection.tsx`) ne sont **ni** dans l'ordre où le proprio les a cochées, **ni** alphabétiques, **ni** aléatoires : le code filtre les caractéristiques de l'annonce, les trie selon leur **position** dans la liste maîtresse `AMENITIES` (`lib/amenities.ts`), puis garde les 3 premières (`AMENITIES.indexOf(...)`). C'est cette position dans `AMENITIES` qui fait office de priorité — une caractéristique plus haut dans le tableau l'emporte toujours, peu importe l'ordre de sélection du proprio.
+Remplace complètement l'ancien système à plat (`lib/amenities.ts`, `AMENITIES`/`AMENITIES_EN`/`AMENITY_CONFIG`/`AMENITY_DESC_EN`/`AMENITY_EMOJI`/`AMENITY_GROUPS`, fichier supprimé) par un vrai catalogue structuré façon Airbnb.
 
-`AMENITIES_EN` (traductions) doit **impérativement rester aligné position par position** avec `AMENITIES` — `getAmenityLabel()` traduit une caractéristique FR→EN en cherchant son index dans `AMENITIES` puis en lisant `AMENITIES_EN` au même index, jamais par correspondance de nom. Réordonner l'un sans l'autre casse toutes les traductions anglaises.
+- **`lib/amenities-catalog.ts`** — source unique de vérité :
+  - `AMENITY_CATEGORIES` : 13 catégories (Essentiels, Salle de bain, Chambre et linge, Divertissement, Famille, Chauffage et climatisation, Sécurité, Internet et bureau, Cuisine et repas, Emplacement, Extérieur, Stationnement, Services).
+  - `AMENITY_CATALOG` : 70 entrées (`AmenityCatalogEntry` — `id`/`label`/`labelEn`/`categoryId`/`icon`/`detailSchema?`). `listings.amenities` (jsonb) stocke un tableau de `AmenityValue` (`{id, details?}`), jamais l'ancien format `string[]`.
+  - `detailSchema` (sous-détails par équipement, ex. Accès Privé/Partagé, horaires, capacité) — types : `single-select`, `multi-select`, `number`, `boolean`, `hours`. Deux propriétés génériques ajoutées le 2026-09-19 :
+    - **`unit`** (champs `number` seulement) — unité affichée après la valeur dans le résumé et le panneau d'édition (ex. `unit: "pers."` sur la capacité du Spa → "6 pers." au lieu de "6").
+    - **`showIf: { key, equals }`** — un champ conditionnel n'est affiché (et sauvegardé) que si un autre champ du même équipement vaut exactement `equals`. Utilisé pour : Foyer intérieur ("Bois inclus" si Type = "Bois"), Accès à un lac ("Gratuit ou payant" si Location d'embarcations = `true`), Terrain de tennis/pickleball ("Gratuite ou payante" si Location de raquette = "Oui"). La condition est revérifiée à la fois à l'affichage (`AmenityDetailsModal`) et au résumé (`summarizeAmenityDetails()`) — une valeur devenue obsolète (ex. type changé de Bois à Gaz) ne traîne jamais dans le résumé ni n'est sauvegardée.
+  - `AMENITY_PRIORITY_ORDER` : tableau séparé des 70 ids déterminant l'ordre des "Points forts" sur la fiche publique (position = priorité, indépendant de l'ordre de sélection du proprio ou de `AMENITY_CATALOG`) — **entièrement remplacé et réordonné manuellement par Simon le 2026-09-19** (aucune logique de tri automatique). Pour un futur ajustement, une description en langage clair suffit ("monte le sauna en 2ᵉ position") si l'ordre reste une simple permutation des mêmes ids.
+  - `summarizeAmenityDetails()` : génère le résumé court affiché sous le nom de l'équipement (ex. "Privé • 6 pers. • Disponible toute l'année"), utilisé à la fois côté humain (`AmenityRow.tsx`, dashboard) et dans le JSON-LD (voir plus bas) — une seule fonction, deux usages.
+- **`components/AmenityIcon.tsx`** : une entrée SVG inline par nom d'icône référencé dans le catalogue (jamais de librairie externe). Piscine intérieure/extérieure et Spa ont chacun leur icône distincte (avant : une seule icône "vagues" partagée) ; Terrain de tennis (balle) et Terrain de pickleball (palette) aussi.
+- **14 équipements retirés** le 2026-09-19 (doublons ou peu pertinents) : Salle de bain privée, Télévision par câble (fusionné dans "Télévision"), Balançoire et jeux extérieurs, Foyer au gaz (fusionné dans "Foyer intérieur"), Bureau avec chaise ergonomique, Vaisselle et ustensiles de base, Vue panoramique, Feu de camp autorisé, Accès direct à un lac ou une rivière, Cabane à sucre sur le terrain, Espace pour VR ou remorque, l'ancien "Arrivée autonome (boîte à clé ou serrure électronique)" (doublon de l'équipement `serrure-electronique` renommé), Location d'équipement sur place, Service de navette.
+- **3 nouveaux équipements** : "Accès à un lac" (`acces-lac`), "Terrain de tennis" (`terrain-tennis`), "Terrain de pickleball" (`terrain-pickleball`) — tous trois catégorie Extérieur.
+- **Renommages notables (id inchangé, seul le libellé change)** : Piscine → séparée en "Piscine intérieure"/"Piscine extérieure" (deux ids distincts, `emplacement` retiré) ; "Spa extérieur" → "Spa" (+ nouveau champ `emplacement` Intérieur/Extérieur) ; "Foyer intérieur au bois" → "Foyer intérieur" ; "Télévision intelligente" → "Télévision" ; "Espace de travail dédié (télétravail)" → "Espace de travail (télétravail)" ; "Serrure électronique / boîte à clé" → "Arrivée autonome" ; "Sentiers de randonnée à proximité" → "Sentier de randonnée sur le site".
+- **`lib/listingImportMapping.ts`** (`AMENITY_KEYWORDS`) : gardé synchronisé à chaque renommage/suppression d'id du catalogue (ex. mot-clé "cable tv" fusionné sous `tv-intelligente` plutôt que laissé orphelin sous l'ancien id `tv-cable`).
 
-Ordre de priorité ajusté deux fois le 2026-09-17 (spa et sauna remontés juste après les piscines, ordre des activités/divertissement révisé, "Piscine extérieure" et "Situé sur un resort" repositionnées en rang 11 et 20) — les libellés, icônes, descriptions et groupes du dashboard (`AMENITY_CONFIG`, `AMENITY_DESC_EN`, `AMENITY_EMOJI`, `AMENITY_GROUPS`, tous indexés par nom) ne sont jamais affectés par ces réordonnancements. **Pour un futur ajustement** : décrire simplement le changement voulu en langage clair (ex. "monte le sauna en 2e position") suffit, pas besoin de fournir la liste complète à chaque fois.
+#### Dashboard — section renommée "Équipements" (2026-09-19)
+
+Anciennement "Caractéristiques" — renommé partout où le libellé désigne cette section précise : `messages/fr.json` → `listings.sections.amenities`, `listings.edit.aiContextWarning`, `listings.edit.amenitiesAtLeast`, `listings.analyse.criteria.amenities` (+ fallback codé en dur correspondant dans `lib/listingScore.ts`, gardé en synchro). **Laissé intact** : `filtersModal.amenities` ("Caractéristiques") sur les filtres de recherche publics — une fonctionnalité distincte, pas la section d'édition.
+
+`components/dashboard/AmenitiesPicker.tsx` :
+- **Icône crayon** (plus de chevron ">") sur les équipements ayant un `detailSchema`, aucune icône sur ceux qui n'en ont pas — communique "modifier les détails" plutôt que "naviguer".
+- Les deux colonnes ("Équipements ajoutés" / "Ajouter des équipements") affichent la **liste complète sans scroll interne ni ombre de défilement** — seule la page défile. Un compteur discret ("81 équipements" ou "13 équipements disponibles dans {catégorie}") reste au-dessus de la colonne de droite, mis à jour selon le filtre actif.
+- Champs `hours` (horaires piscine/gym) : menu déroulant façon Google Agenda (`TimeSelect`, pas de saisie libre à la minute), limité aux intervalles de 30 minutes — une valeur déjà enregistrée hors de ce pas (ex. 09:15, ancienne donnée) reste affichée et sélectionnable sans être écrasée.
+
+#### Fiche publique — affichage des équipements (2026-09-19)
+
+- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`), plus de bouton "Voir caractéristiques".
+- **`components/chalets/AmenitiesSection.tsx`** : section "Ce que propose ce chalet" (repositionnée après "Où vous dormirez"), affiche les 10 équipements prioritaires + bouton "Afficher {X} équipements" (masqué si ≤ 10 au total) ouvrant une modale groupée par catégorie via `groupAmenitiesByCategory()`.
+- **`components/chalets/AmenityRow.tsx`** (partagé entre les deux composants ci-dessus) : icône + nom + résumé (`summarizeAmenityDetails()`), résumé toujours tronqué sur une seule ligne (`truncate` + `min-w-0` sur le parent flex) peu importe sa longueur.
+
+#### JSON-LD / GEO (`lib/listing-schema.ts`) — description des équipements pour les agents IA (2026-09-19)
+
+Chaque `amenityFeature` (`LocationFeatureSpecification`) inclut maintenant un champ `description` avec le résumé de `summarizeAmenityDetails()` (ex. `{"name": "Spa", "value": true, "description": "Extérieur • Privé • 6 pers. • Disponible toute l'année"}`) — omis entièrement (jamais une chaîne vide) si l'équipement n'a pas de détails renseignés. Objectif : un agent IA qui ne lit que le bloc JSON-LD (pas le texte visible de la page) a accès aux mêmes détails qu'un visiteur humain, pas seulement le nom brut de l'équipement.
+
+**Audit GEO complet effectué le 2026-09-19** (nom, région/ville, capacité, chambres, salles de bain, politique fumeur, politique animaux) : tous déjà correctement exposés dans le JSON-LD `LodgingBusiness` — `name`, `address.addressLocality`/`addressRegion`, `occupancy`, `numberOfBedrooms`, `numberOfBathroomsTotal`, `petsAllowed` (propriété native), `additionalProperty` (« Fumeurs acceptés » — `smokingAllowed` n'existe pas nativement dans schema.org). Nuance notée mais non corrigée (pas demandé) : `numberOfBedrooms`/`numberOfBathroomsTotal`/`occupancy` appartiennent au vocabulaire `Accommodation` de schema.org, pas `LodgingBusiness` (le `@type` déclaré) — convention courante chez les plateformes de location (Google, la plupart des LLM la tolèrent), mais un validateur strict pourrait la signaler.
 
 ### "Aperçu de mon annonce" pour un brouillon — CSP et accès RLS corrigés (2026-09-16)
 
@@ -639,6 +671,16 @@ Trois chantiers de fond, chacun testé en conditions réelles avant commit :
 
 Voir section 14 pour les autres points en suspens (findings structurels de la revue visuelle non traités, avertissements console à vérifier).
 
+### Session du 2026-09-19
+
+Refonte complète du système d'équipements ("Caractéristiques" → "Équipements") et audit GEO — détail technique complet en section 9 ("Catalogue d'équipements"), résumé chronologique ici :
+
+1. Refonte de l'affichage public : nouvelle section "Ce que propose ce chalet" (`AmenitiesSection.tsx`, top 10 + modale par catégorie), composant partagé `AmenityRow.tsx` (résumé toujours sur une ligne), retrait du bouton "Voir caractéristiques" des points forts (`ListingHighlights.tsx`).
+2. Dashboard : section renommée "Équipements", icône crayon (au lieu du chevron) sur les équipements modifiables, colonnes sans scroll interne, sélecteur d'heure par pas de 30 min façon Google Agenda.
+3. Refonte majeure du catalogue (`lib/amenities-catalog.ts`) : mécanisme générique `showIf` (champs conditionnels) et `unit` (ex. "pers.") ajoutés au modèle de `detailSchema`, 14 équipements retirés, 3 ajoutés (Accès à un lac, Terrain de tennis, Terrain de pickleball), plusieurs renommages, `AMENITY_PRIORITY_ORDER` entièrement réordonné par Simon.
+4. JSON-LD (`lib/listing-schema.ts`) : chaque équipement avec détails expose maintenant un résumé (`description`) dans son `amenityFeature`, pour qu'un agent IA lisant seulement le JSON-LD ait la même information qu'un visiteur humain. Audit GEO complet confirmant que nom/adresse/capacité/chambres/salles de bain/politiques fumeur et animaux étaient déjà bien exposés.
+5. Chaque étape testée en conditions réelles sur la fiche `chalet-authentik-50` (seule fiche en base) — migrations de données présentées et confirmées avant écriture à chaque fois, catalogue et ordre de priorité vérifiés par script (aucun id orphelin ou dupliqué).
+
 ---
 
 ## 14. Points en suspens
@@ -678,8 +720,7 @@ Implémenté (commit `4eabe82`) mais pas encore testé en conditions réelles :
 
 ### Revue visuelle du dashboard proprio (frontend-design + ui-ux-pro-max) — findings non traités (2026-07-08)
 
-Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Restent en suspens, à discuter avant d'y toucher :
-- Regroupement des "Caractéristiques" dans l'édition d'annonce
+Seuls les 2 points "petits et sûrs" ont été corrigés (voir section 13). Le regroupement des équipements dans l'édition d'annonce est réglé depuis (voir section 9, refonte du catalogue du 2026-09-19). Restent en suspens, à discuter avant d'y toucher :
 - Traitement de l'espace vide sur les sections courtes du dashboard
 - État vide de la section "Aperçu"
 - Incohérence de l'ordre des CTA mobile vs desktop
