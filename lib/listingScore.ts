@@ -37,7 +37,7 @@ export function buildCriteria(input: ScoreInput): Criterion[] {
     { key: "title40",    label: "Titre de 40 caractères et plus",                      points: 5,  achieved: input.title.length >= 40,             section: "titre" },
     { key: "desc500",    label: "Description de 500 caractères et plus",               points: 10, achieved: input.description.length >= 500,      section: "description" },
     { key: "desc1500",   label: "Description de 1500 caractères et plus",              points: 5,  achieved: input.description.length >= 1500,     section: "description" },
-    { key: "amenities",  label: "10 caractéristiques sélectionnées et plus",           points: 10, achieved: input.amenities.length >= 10,         section: "equipements" },
+    { key: "amenities",  label: "10 équipements sélectionnés et plus",                 points: 10, achieved: input.amenities.length >= 10,         section: "equipements" },
     { key: "nearby",     label: "Activités à proximité renseignées",                   points: 5,  achieved: input.nearbyActivities.length > 0,    section: "proximite" },
     { key: "avail",      label: "iCal synchronisé ou disponibilités saisies",          points: 10, achieved: hasAvailability,                      section: "calendrier" },
     { key: "citq",       label: "Numéro CITQ renseigné (6 chiffres)",                  points: 5,  achieved: input.citqNumber.length === 6,        section: "infos" },
