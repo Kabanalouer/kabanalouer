@@ -108,7 +108,9 @@ function NumberField({ field, value, onChange, locale }: {
             <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
           </svg>
         </button>
-        <span className="w-6 text-center text-sm font-medium text-charcoal-800 tabular-nums">{num}</span>
+        <span className="min-w-[2.5rem] px-1 text-center text-sm font-medium text-charcoal-800 tabular-nums">
+          {num}{field.unit ? ` ${field.unit}` : ""}
+        </span>
         <button
           type="button"
           onClick={() => onChange(Math.min(max, num + 1))}
@@ -248,6 +250,10 @@ function AmenityDetailsModal({
     // du type "0" ou "Ouvert 24h/24: non" dans la colonne gauche.
     const cleaned: Record<string, unknown> = {};
     for (const field of schema) {
+      // Un champ conditionnel masqué (condition non remplie) n'est jamais
+      // sauvegardé, même si une valeur y avait été saisie avant que la
+      // condition change (ex. "Bois inclus" rempli, puis Type basculé à Gaz).
+      if (field.showIf && details[field.showIf.key] !== field.showIf.equals) continue;
       const v = details[field.key];
       if (field.type === "boolean" && v === true) cleaned[field.key] = true;
       else if (field.type === "number" && typeof v === "number" && v > 0) cleaned[field.key] = v;
@@ -282,6 +288,9 @@ function AmenityDetailsModal({
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
           {schema.map((field) => {
+            // Champ conditionnel (ex. "Bois inclus" seulement si Type =
+            // "Bois") — masqué tant que sa condition n'est pas remplie.
+            if (field.showIf && details[field.showIf.key] !== field.showIf.equals) return null;
             const value = details[field.key];
             const onChange = (v: unknown) => setField(field.key, v);
             if (field.type === "boolean") return <ToggleField key={field.key} field={field} value={value} onChange={onChange} locale={locale} />;

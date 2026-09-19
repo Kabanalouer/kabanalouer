@@ -343,6 +343,14 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
       <path d="M4 10h4M16 10h4" />
     </>
   ),
+  SailBoat: (
+    <>
+      <path d="M12 3v11" />
+      <path d="M12 4l5 5-5 3z" />
+      <path d="M4 17l1.5-5h13L20 17" />
+      <path d="M2 20c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0" />
+    </>
+  ),
   ParkingCircle: (
     <>
       <circle cx="12" cy="12" r="9" />

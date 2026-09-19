@@ -19,6 +19,12 @@ export interface AmenityDetailField {
   // Champs "number" seulement — borne le compteur +/- pour qu'une valeur
   // saisie sans limite ne puisse jamais produire un résumé trop long.
   max?: number;
+  // Champs "number" seulement — unité affichée après la valeur (ex. "pers.")
+  // dans le résumé et le panneau de détails, jamais stockée dans details[key].
+  unit?: string;
+  // N'affiche (et ne sauvegarde) ce champ que si details[showIf.key] vaut
+  // exactement showIf.equals — ex. "Bois inclus" seulement si Type = "Bois".
+  showIf?: { key: string; equals: string | boolean };
 }
 
 export interface AmenityCategory {
@@ -70,40 +76,126 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   { id: "baignoire", label: "Baignoire", labelEn: "Bathtub", categoryId: "salle-de-bain", icon: "Bath" },
   { id: "seche-cheveux", label: "Sèche-cheveux", labelEn: "Hair dryer", categoryId: "salle-de-bain", icon: "Wind" },
   { id: "serviettes-piscine", label: "Serviettes de piscine", labelEn: "Pool towels", categoryId: "salle-de-bain", icon: "Waves" },
-  { id: "salle-de-bain-privee", label: "Salle de bain privée", labelEn: "Private bathroom", categoryId: "salle-de-bain", icon: "DoorClosed" },
 
   // Chambre et linge
   { id: "cintres", label: "Cintres", labelEn: "Hangers", categoryId: "chambre-et-linge", icon: "Shirt" },
   { id: "fer-a-repasser", label: "Fer à repasser", labelEn: "Iron", categoryId: "chambre-et-linge", icon: "Sparkles" },
-  { id: "buanderie", label: "Buanderie", labelEn: "Laundry", categoryId: "chambre-et-linge", icon: "WashingMachine" },
+  {
+    id: "buanderie",
+    label: "Buanderie",
+    labelEn: "Laundry",
+    categoryId: "chambre-et-linge",
+    icon: "WashingMachine",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
   { id: "draps-supplementaires", label: "Draps et oreillers supplémentaires", labelEn: "Extra sheets and pillows", categoryId: "chambre-et-linge", icon: "BedDouble" },
   { id: "rideaux-occultants", label: "Rideaux occultants", labelEn: "Blackout curtains", categoryId: "chambre-et-linge", icon: "Moon" },
 
   // Divertissement
-  { id: "table-billard", label: "Table de billard", labelEn: "Pool table", categoryId: "divertissement", icon: "Disc" },
-  { id: "babyfoot", label: "Babyfoot", labelEn: "Foosball", categoryId: "divertissement", icon: "Users" },
-  { id: "table-ping-pong", label: "Table de ping-pong", labelEn: "Ping-pong table", categoryId: "divertissement", icon: "CircleDot" },
-  { id: "arcades", label: "Arcades", labelEn: "Arcade games", categoryId: "divertissement", icon: "Gamepad2" },
+  {
+    id: "table-billard",
+    label: "Table de billard",
+    labelEn: "Pool table",
+    categoryId: "divertissement",
+    icon: "Disc",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+  {
+    id: "babyfoot",
+    label: "Babyfoot",
+    labelEn: "Foosball",
+    categoryId: "divertissement",
+    icon: "Users",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+  {
+    id: "table-ping-pong",
+    label: "Table de ping-pong",
+    labelEn: "Ping-pong table",
+    categoryId: "divertissement",
+    icon: "CircleDot",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+  {
+    id: "arcades",
+    label: "Arcades",
+    labelEn: "Arcade games",
+    categoryId: "divertissement",
+    icon: "Gamepad2",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
   { id: "jeux-societe", label: "Jeux de société", labelEn: "Board games", categoryId: "divertissement", icon: "Dices" },
   { id: "livres-revues", label: "Livres et revues", labelEn: "Books & magazines", categoryId: "divertissement", icon: "BookOpen" },
   { id: "systeme-audio", label: "Système audio (musique)", labelEn: "Sound system", categoryId: "divertissement", icon: "Speaker" },
-  { id: "tv-cable", label: "Télévision avec câble", labelEn: "Cable TV", categoryId: "divertissement", icon: "Tv" },
-  { id: "tv-intelligente", label: "Télévision intelligente", labelEn: "Smart TV", categoryId: "divertissement", icon: "Tv2" },
-  { id: "gym", label: "Gym", labelEn: "Gym", categoryId: "divertissement", icon: "Dumbbell" },
+  {
+    id: "tv-intelligente",
+    label: "Télévision",
+    labelEn: "Television",
+    categoryId: "divertissement",
+    icon: "Tv2",
+    detailSchema: [
+      {
+        key: "type", type: "single-select", label: "Type", labelEn: "Type",
+        options: ["Par câble", "Intelligente (Netflix, etc.)", "Satellite"],
+        optionsEn: ["Cable", "Smart (Netflix, etc.)", "Satellite"],
+      },
+    ],
+  },
+  {
+    id: "gym",
+    label: "Gym",
+    labelEn: "Gym",
+    categoryId: "divertissement",
+    icon: "Dumbbell",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+      { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
+    ],
+  },
 
   // Famille
-  { id: "module-jeux-enfant", label: "Module de jeux pour enfant", labelEn: "Children's play area", categoryId: "famille", icon: "Baby" },
+  {
+    id: "module-jeux-enfant",
+    label: "Module de jeux pour enfant",
+    labelEn: "Children's play area",
+    categoryId: "famille",
+    icon: "Baby",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
   { id: "lit-bebe", label: "Lit de bébé (parc)", labelEn: "Crib", categoryId: "famille", icon: "Baby" },
   { id: "chaise-haute", label: "Chaise haute", labelEn: "High chair", categoryId: "famille", icon: "Baby" },
-  { id: "jeux-exterieurs-enfants", label: "Balançoire et jeux extérieurs", labelEn: "Swing set and outdoor play", categoryId: "famille", icon: "Baby" },
   { id: "barrieres-securite", label: "Barrières de sécurité pour enfants", labelEn: "Child safety gates", categoryId: "famille", icon: "ShieldCheck" },
   { id: "jouets-enfants", label: "Jouets et livres pour enfants", labelEn: "Toys and books for children", categoryId: "famille", icon: "Blocks" },
 
   // Chauffage et climatisation
   { id: "climatisation", label: "Climatisation", labelEn: "Air conditioning", categoryId: "chauffage-et-climatisation", icon: "Snowflake" },
   { id: "chauffage-central", label: "Chauffage central", labelEn: "Central heating", categoryId: "chauffage-et-climatisation", icon: "Thermometer" },
-  { id: "foyer-interieur-bois", label: "Foyer intérieur au bois", labelEn: "Indoor wood fireplace", categoryId: "chauffage-et-climatisation", icon: "Flame" },
-  { id: "foyer-gaz", label: "Foyer au gaz", labelEn: "Gas fireplace", categoryId: "chauffage-et-climatisation", icon: "Flame" },
+  {
+    id: "foyer-interieur-bois",
+    label: "Foyer intérieur",
+    labelEn: "Indoor fireplace",
+    categoryId: "chauffage-et-climatisation",
+    icon: "Flame",
+    detailSchema: [
+      { key: "type", type: "single-select", label: "Type", labelEn: "Type", options: ["Bois", "Gaz"], optionsEn: ["Wood", "Gas"] },
+      {
+        key: "boisInclus", type: "boolean", label: "Bois inclus", labelEn: "Wood included",
+        showIf: { key: "type", equals: "Bois" },
+      },
+    ],
+  },
   { id: "thermopompe", label: "Thermopompe", labelEn: "Heat pump", categoryId: "chauffage-et-climatisation", icon: "Wind" },
   { id: "ventilateurs", label: "Ventilateurs", labelEn: "Fans", categoryId: "chauffage-et-climatisation", icon: "Fan" },
 
@@ -113,12 +205,37 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   { id: "extincteur", label: "Extincteur", labelEn: "Fire extinguisher", categoryId: "securite", icon: "FireExtinguisher" },
   { id: "trousse-premiers-soins", label: "Trousse de premiers soins", labelEn: "First aid kit", categoryId: "securite", icon: "Cross" },
   { id: "camera-exterieure", label: "Caméra de sécurité extérieure", labelEn: "Outdoor security camera", categoryId: "securite", icon: "Camera" },
-  { id: "serrure-electronique", label: "Serrure électronique / boîte à clé", labelEn: "Electronic lock / lockbox", categoryId: "securite", icon: "KeyRound" },
+  {
+    id: "serrure-electronique",
+    label: "Arrivée autonome",
+    labelEn: "Self check-in",
+    categoryId: "securite",
+    icon: "KeyRound",
+    detailSchema: [
+      {
+        key: "type", type: "single-select", label: "Type", labelEn: "Type",
+        options: ["Serrure électronique", "Boîte à clé"],
+        optionsEn: ["Electronic lock", "Lockbox"],
+      },
+    ],
+  },
 
   // Internet et bureau
   { id: "wifi", label: "Wifi", labelEn: "Wifi", categoryId: "internet-et-bureau", icon: "Wifi" },
-  { id: "espace-travail", label: "Espace de travail dédié (télétravail)", labelEn: "Dedicated workspace (remote work)", categoryId: "internet-et-bureau", icon: "Laptop" },
-  { id: "bureau-ergonomique", label: "Bureau avec chaise ergonomique", labelEn: "Desk with ergonomic chair", categoryId: "internet-et-bureau", icon: "Briefcase" },
+  {
+    id: "espace-travail",
+    label: "Espace de travail (télétravail)",
+    labelEn: "Workspace (remote work)",
+    categoryId: "internet-et-bureau",
+    icon: "Laptop",
+    detailSchema: [
+      {
+        key: "acces", type: "single-select", label: "Accès", labelEn: "Access",
+        options: ["Privé", "Commun", "Privé et Commun"],
+        optionsEn: ["Private", "Shared", "Private and shared"],
+      },
+    ],
+  },
 
   // Cuisine et repas
   { id: "cuisine-complete", label: "Cuisine complète avec vaisselle et chaudrons", labelEn: "Fully equipped kitchen", categoryId: "cuisine-et-repas", icon: "CookingPot" },
@@ -141,20 +258,35 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       },
     ],
   },
-  { id: "vaisselle-ustensiles", label: "Vaisselle et ustensiles de base", labelEn: "Basic dishes and utensils", categoryId: "cuisine-et-repas", icon: "UtensilsCrossed" },
 
   // Emplacement
   { id: "bord-eau", label: "Bord de l'eau", labelEn: "Waterfront", categoryId: "emplacement", icon: "Waves" },
-  { id: "vue-panoramique", label: "Vue panoramique (lac ou montagne)", labelEn: "Panoramic view (lake or mountain)", categoryId: "emplacement", icon: "Mountain" },
   { id: "ski-in-ski-out", label: "Ski in / Ski out", labelEn: "Ski in / Ski out", categoryId: "emplacement", icon: "Mountain" },
-  { id: "situe-resort", label: "Situé sur un resort", labelEn: "Resort location", categoryId: "emplacement", icon: "Building2" },
-  { id: "sentiers-randonnee", label: "Sentiers de randonnée à proximité", labelEn: "Hiking trails nearby", categoryId: "emplacement", icon: "Footprints" },
+  {
+    id: "situe-resort",
+    label: "Situé sur un resort",
+    labelEn: "Resort location",
+    categoryId: "emplacement",
+    icon: "Building2",
+    detailSchema: [
+      { key: "accesInclus", type: "boolean", label: "Accès inclus", labelEn: "Access included" },
+    ],
+  },
+  { id: "sentiers-randonnee", label: "Sentier de randonnée sur le site", labelEn: "On-site hiking trail", categoryId: "emplacement", icon: "Footprints" },
   { id: "acces-motoneige-vtt", label: "Accès direct aux sentiers de motoneige/VTT", labelEn: "Direct access to snowmobile/ATV trails", categoryId: "emplacement", icon: "Route" },
 
   // Extérieur
   { id: "terrasse", label: "Terrasse", labelEn: "Terrace / deck", categoryId: "exterieur", icon: "Armchair" },
-  { id: "foyer-exterieur", label: "Foyer extérieur (firepit)", labelEn: "Outdoor firepit", categoryId: "exterieur", icon: "Flame" },
-  { id: "feu-de-camp", label: "Feu de camp autorisé", labelEn: "Campfire allowed", categoryId: "exterieur", icon: "Flame" },
+  {
+    id: "foyer-exterieur",
+    label: "Foyer extérieur (firepit)",
+    labelEn: "Outdoor firepit",
+    categoryId: "exterieur",
+    icon: "Flame",
+    detailSchema: [
+      { key: "boisInclus", type: "boolean", label: "Bois inclus", labelEn: "Wood included" },
+    ],
+  },
   {
     id: "bbq",
     label: "BBQ",
@@ -164,6 +296,10 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     detailSchema: [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
       { key: "type", type: "single-select", label: "Type", labelEn: "Type", options: ["Gaz", "Charbon", "Bois"], optionsEn: ["Gas", "Charcoal", "Wood"] },
+      {
+        key: "disponibilite", type: "single-select", label: "Accessible à l'année", labelEn: "Available",
+        options: ["À l'année", "En saison"], optionsEn: ["Year-round", "Seasonal"],
+      },
     ],
   },
   {
@@ -175,11 +311,20 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     detailSchema: [
       { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieur", "Extérieur"], optionsEn: ["Indoor", "Outdoor"] },
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
-      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20 },
+      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20, unit: "pers." },
       { key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round" },
     ],
   },
-  { id: "sauna", label: "Sauna", labelEn: "Sauna", categoryId: "exterieur", icon: "Thermometer" },
+  {
+    id: "sauna",
+    label: "Sauna",
+    labelEn: "Sauna",
+    categoryId: "exterieur",
+    icon: "Thermometer",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
   {
     id: "piscine-interieure",
     label: "Piscine intérieure",
@@ -204,10 +349,43 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
   },
-  { id: "quai", label: "Quai", labelEn: "Dock", categoryId: "exterieur", icon: "Anchor" },
-  { id: "acces-lac-riviere", label: "Accès direct à un lac ou une rivière", labelEn: "Direct lake or river access", categoryId: "exterieur", icon: "Waves" },
-  { id: "cabane-a-sucre", label: "Cabane à sucre sur le terrain", labelEn: "Sugar shack on the property", categoryId: "exterieur", icon: "TreePine" },
-  { id: "patinoire", label: "Patinoire extérieure", labelEn: "Outdoor skating rink", categoryId: "exterieur", icon: "Snowflake" },
+  {
+    id: "quai",
+    label: "Quai",
+    labelEn: "Dock",
+    categoryId: "exterieur",
+    icon: "Anchor",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+  {
+    id: "acces-lac",
+    label: "Accès à un lac",
+    labelEn: "Lake access",
+    categoryId: "exterieur",
+    icon: "SailBoat",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Public"], optionsEn: ["Private", "Public"] },
+      { key: "plage", type: "boolean", label: "Plage", labelEn: "Beach" },
+      { key: "locationEmbarcations", type: "boolean", label: "Location d'embarcations", labelEn: "Boat rental" },
+      {
+        key: "gratuitPayant", type: "single-select", label: "Gratuit ou payant", labelEn: "Free or paid",
+        options: ["Gratuit", "Payant"], optionsEn: ["Free", "Paid"],
+        showIf: { key: "locationEmbarcations", equals: true },
+      },
+    ],
+  },
+  {
+    id: "patinoire",
+    label: "Patinoire extérieure",
+    labelEn: "Outdoor skating rink",
+    categoryId: "exterieur",
+    icon: "Snowflake",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
   { id: "chalet-bois-rond", label: "Chalet en bois rond", labelEn: "Log cabin", categoryId: "exterieur", icon: "TreePine" },
 
   // Stationnement
@@ -222,17 +400,13 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       { key: "gratuit", type: "boolean", label: "Gratuit", labelEn: "Free" },
     ],
   },
-  { id: "stationnement-vr", label: "Espace pour VR ou remorque", labelEn: "RV or trailer parking", categoryId: "stationnement", icon: "Truck" },
   { id: "garage", label: "Garage", labelEn: "Garage", categoryId: "stationnement", icon: "Warehouse" },
   { id: "borne-recharge-vr", label: "Borne de recharge pour véhicule électrique", labelEn: "EV charging station", categoryId: "stationnement", icon: "Zap" },
 
   // Services
   { id: "menage-inclus", label: "Ménage inclus", labelEn: "Cleaning included", categoryId: "services", icon: "Sparkles" },
-  { id: "arrivee-autonome", label: "Arrivée autonome (boîte à clé ou serrure électronique)", labelEn: "Self check-in (lockbox or smart lock)", categoryId: "services", icon: "KeyRound" },
   { id: "conciergerie", label: "Service de conciergerie", labelEn: "Concierge service", categoryId: "services", icon: "ConciergeBell" },
   { id: "panier-bienvenue", label: "Panier de bienvenue", labelEn: "Welcome basket", categoryId: "services", icon: "Gift" },
-  { id: "location-equipement", label: "Location d'équipement sur place (kayak, vélo, motoneige)", labelEn: "On-site equipment rental (kayak, bike, snowmobile)", categoryId: "services", icon: "Bike" },
-  { id: "navette", label: "Service de navette", labelEn: "Shuttle service", categoryId: "services", icon: "Car" },
 ];
 
 // Ordre de priorité pour les "points forts" affichés sur la fiche publique
@@ -244,24 +418,24 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
 // leur pouvoir différenciateur.
 export const AMENITY_PRIORITY_ORDER: string[] = [
   // Argument de vente fort — bord de l'eau, détente, particularités québécoises
-  "bord-eau", "quai", "acces-lac-riviere", "piscine-interieure", "piscine-exterieure", "spa", "sauna",
-  "cabane-a-sucre", "patinoire", "ski-in-ski-out", "chalet-bois-rond",
-  "foyer-interieur-bois", "foyer-exterieur", "feu-de-camp",
+  "bord-eau", "quai", "acces-lac", "piscine-interieure", "piscine-exterieure", "spa", "sauna",
+  "patinoire", "ski-in-ski-out", "chalet-bois-rond",
+  "foyer-interieur-bois", "foyer-exterieur",
   // Divertissement, famille, emplacement
   "gym", "table-billard", "module-jeux-enfant", "borne-recharge-vr", "bbq",
   "babyfoot", "table-ping-pong", "arcades", "terrasse", "jeux-societe",
   "situe-resort", "livres-revues", "lit-bebe", "chaise-haute",
-  "jeux-exterieurs-enfants", "barrieres-securite", "jouets-enfants",
-  "vue-panoramique", "sentiers-randonnee", "acces-motoneige-vtt",
-  "systeme-audio", "tv-intelligente", "tv-cable", "stationnement-vr",
+  "barrieres-securite", "jouets-enfants",
+  "sentiers-randonnee", "acces-motoneige-vtt",
+  "systeme-audio", "tv-intelligente",
   "garage", "stationnement",
   // Confort et pratique
-  "wifi", "espace-travail", "bureau-ergonomique", "climatisation",
-  "chauffage-central", "thermopompe", "ventilateurs", "foyer-gaz",
+  "wifi", "espace-travail", "climatisation",
+  "chauffage-central", "thermopompe", "ventilateurs",
   "cuisine-complete", "refrigerateur", "four", "cuisiniere", "micro-ondes",
-  "lave-vaisselle", "cafetiere", "vaisselle-ustensiles", "menage-inclus",
-  "arrivee-autonome", "conciergerie", "panier-bienvenue",
-  "location-equipement", "navette", "baignoire", "salle-de-bain-privee",
+  "lave-vaisselle", "cafetiere", "menage-inclus",
+  "conciergerie", "panier-bienvenue",
+  "baignoire",
   "serviettes-piscine", "seche-cheveux",
   // Essentiels attendus par défaut — jamais un argument de vente
   "literie-serviettes", "buanderie", "cintres", "fer-a-repasser",
@@ -313,13 +487,18 @@ export function summarizeAmenityDetails(
   const parts: string[] = [];
 
   for (const field of entry.detailSchema) {
+    // Un champ conditionnel (ex. "Bois inclus" seulement si Type = "Bois")
+    // ne doit jamais apparaître dans le résumé si sa condition ne tient plus
+    // — même si une ancienne valeur traîne encore dans `details`.
+    if (field.showIf && details[field.showIf.key] !== field.showIf.equals) continue;
+
     const value = details[field.key];
     if (value === undefined || value === null || value === "") continue;
 
     if (field.type === "boolean") {
       if (value === true) parts.push(isEn ? field.labelEn : field.label);
     } else if (field.type === "number") {
-      parts.push(String(value));
+      parts.push(field.unit ? `${value} ${field.unit}` : String(value));
     } else if (field.type === "hours" && typeof value === "object") {
       const hv = value as { open24?: boolean; start?: string; end?: string };
       if (hv.open24) parts.push(isEn ? "Open 24/7" : "Ouvert 24h/24");
