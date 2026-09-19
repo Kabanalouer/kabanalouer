@@ -38,7 +38,8 @@ export type ImportedListingData = {
 // imports réels révèlent des libellés non reconnus.
 const AMENITY_KEYWORDS: Record<string, string[]> = {
   "bord-eau": ["waterfront", "bord de l'eau", "lakefront", "lake access", "accès à l'eau"],
-  "piscine": ["indoor pool", "piscine intérieure", "outdoor pool", "piscine extérieure", "pool"],
+  "piscine-interieure": ["indoor pool", "piscine intérieure"],
+  "piscine-exterieure": ["outdoor pool", "piscine extérieure", "pool"],
   "ski-in-ski-out": ["ski in", "ski-in", "ski out", "ski-out"],
   "situe-resort": ["resort"],
   "spa": ["hot tub", "spa", "jacuzzi"],

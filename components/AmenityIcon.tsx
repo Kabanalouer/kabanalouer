@@ -11,6 +11,27 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
       <path d="M2 17c1.5-2.5 3-2.5 4.5 0s3 2.5 4.5 0 3-2.5 4.5 0 3 2.5 4.5 0" />
     </>
   ),
+  OutdoorPool: (
+    <>
+      <rect x="2" y="4" width="20" height="13" rx="2" />
+      <path d="M4 10.5c1-1 2-1 3 0s2 1 3 0 2-1 3 0 2 1 3 0 2-1 3 0" />
+      <path d="M8 20h8" />
+    </>
+  ),
+  IndoorPool: (
+    <>
+      <path d="M3 10L12 4l9 6" />
+      <path d="M5 10v10h14V10" />
+      <path d="M8 15.5c1-1 2-1 3 0s2 1 3 0 2-1 3 0" />
+    </>
+  ),
+  SpaSteam: (
+    <>
+      <path d="M8 21c0-2 2-3 2-5s-2-3-2-5" />
+      <path d="M12 21c0-2 2-3 2-5s-2-3-2-5" />
+      <path d="M16 21c0-2 2-3 2-5s-2-3-2-5" />
+    </>
+  ),
   Mountain: (
     <>
       <path d="M3 20L12 4l9 16H3z" />

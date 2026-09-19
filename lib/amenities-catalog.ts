@@ -168,11 +168,12 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   },
   {
     id: "spa",
-    label: "Spa extérieur",
-    labelEn: "Outdoor spa",
+    label: "Spa",
+    labelEn: "Spa",
     categoryId: "exterieur",
-    icon: "Waves",
+    icon: "SpaSteam",
     detailSchema: [
+      { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieur", "Extérieur"], optionsEn: ["Indoor", "Outdoor"] },
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
       { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20 },
       { key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round" },
@@ -180,15 +181,26 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   },
   { id: "sauna", label: "Sauna", labelEn: "Sauna", categoryId: "exterieur", icon: "Thermometer" },
   {
-    id: "piscine",
-    label: "Piscine",
-    labelEn: "Pool",
+    id: "piscine-interieure",
+    label: "Piscine intérieure",
+    labelEn: "Indoor pool",
     categoryId: "exterieur",
-    icon: "Waves",
+    icon: "IndoorPool",
     detailSchema: [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé", "Public"], optionsEn: ["Private", "Shared", "Public"] },
       { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
-      { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieure", "Extérieure"], optionsEn: ["Indoor", "Outdoor"] },
+      { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
+    ],
+  },
+  {
+    id: "piscine-exterieure",
+    label: "Piscine extérieure",
+    labelEn: "Outdoor pool",
+    categoryId: "exterieur",
+    icon: "OutdoorPool",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé", "Public"], optionsEn: ["Private", "Shared", "Public"] },
+      { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
       { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
   },
@@ -232,7 +244,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
 // leur pouvoir différenciateur.
 export const AMENITY_PRIORITY_ORDER: string[] = [
   // Argument de vente fort — bord de l'eau, détente, particularités québécoises
-  "bord-eau", "quai", "acces-lac-riviere", "piscine", "spa", "sauna",
+  "bord-eau", "quai", "acces-lac-riviere", "piscine-interieure", "piscine-exterieure", "spa", "sauna",
   "cabane-a-sucre", "patinoire", "ski-in-ski-out", "chalet-bois-rond",
   "foyer-interieur-bois", "foyer-exterieur", "feu-de-camp",
   // Divertissement, famille, emplacement
