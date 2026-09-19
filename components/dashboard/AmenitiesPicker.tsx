@@ -365,7 +365,7 @@ function AddedAmenityRow({
           className="shrink-0 text-charcoal-300 hover:text-charcoal-600 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         </button>
       )}
