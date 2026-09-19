@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import AmenityIcon from "@/components/AmenityIcon";
 import {
@@ -28,6 +28,35 @@ function pillCls(active: boolean) {
       ? "border-primary bg-primary/10 text-primary"
       : "border-charcoal-200 text-charcoal-600 hover:border-charcoal-400"
   }`;
+}
+
+// Dégradé signalant qu'il reste du contenu à faire défiler plus bas — se
+// masque de lui-même une fois le bas de la liste atteint.
+function ScrollFade({ visible }: { visible: boolean }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent transition-opacity duration-200 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
+
+// Suit le scroll d'un conteneur pour savoir s'il reste du contenu sous la
+// zone visible (au-delà d'une petite tolérance de sous-pixel).
+function useScrollFade<T extends HTMLDivElement>() {
+  const ref = useRef<T>(null);
+  const [visible, setVisible] = useState(false);
+  const update = useCallback(() => {
+    const el = ref.current;
+    if (!el) {
+      setVisible(false);
+      return;
+    }
+    setVisible(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+  }, []);
+  return { ref, visible, update };
 }
 
 // ── Widgets du panneau de détails, un par type de champ ─────────────────────
@@ -431,6 +460,35 @@ export default function AmenitiesPicker({
     });
   }, [activeCategory, normalizedSearch, isEn]);
 
+  const activeCategoryLabel = activeCategory
+    ? (isEn
+        ? AMENITY_CATEGORIES.find((c) => c.id === activeCategory)?.labelEn
+        : AMENITY_CATEGORIES.find((c) => c.id === activeCategory)?.label) ?? null
+    : null;
+  const availableCountLabel = activeCategoryLabel
+    ? isEn
+      ? `${filteredCatalog.length} amenit${filteredCatalog.length === 1 ? "y" : "ies"} available in ${activeCategoryLabel}`
+      : `${filteredCatalog.length} équipement${filteredCatalog.length === 1 ? "" : "s"} disponible${filteredCatalog.length === 1 ? "" : "s"} dans ${activeCategoryLabel}`
+    : isEn
+    ? `${filteredCatalog.length} amenit${filteredCatalog.length === 1 ? "y" : "ies"}`
+    : `${filteredCatalog.length} équipement${filteredCatalog.length === 1 ? "" : "s"}`;
+
+  // Fondu de défilement — colonne gauche (équipements ajoutés) et colonne
+  // droite (catalogue filtré), chacune avec son propre conteneur scrollable.
+  const { ref: addedListRef, visible: addedFadeVisible, update: updateAddedFade } = useScrollFade<HTMLDivElement>();
+  const { ref: catalogListRef, visible: catalogFadeVisible, update: updateCatalogFade } = useScrollFade<HTMLDivElement>();
+
+  useEffect(() => {
+    updateAddedFade();
+  }, [selected, updateAddedFade]);
+
+  // Remet le scroll en haut à chaque changement de filtre (catégorie ou
+  // recherche) avant de recalculer le fondu sur la nouvelle liste.
+  useEffect(() => {
+    if (catalogListRef.current) catalogListRef.current.scrollTop = 0;
+    updateCatalogFade();
+  }, [filteredCatalog, updateCatalogFade]);
+
   const editingEntry =
     editing?.type === "new"
       ? getAmenityCatalogEntry(editing.id)
@@ -451,21 +509,28 @@ export default function AmenitiesPicker({
             {isEn ? "No amenities added yet" : "Aucun équipement ajouté pour l'instant"}
           </p>
         ) : (
-          <div className="space-y-2">
-            {selected.map((value, index) => {
-              const entry = getAmenityCatalogEntry(value.id);
-              if (!entry) return null;
-              return (
-                <AddedAmenityRow
-                  key={`${value.id}-${index}`}
-                  value={value}
-                  entry={entry}
-                  locale={locale}
-                  onRemove={() => removeAmenityAt(index)}
-                  onEdit={() => setEditing({ type: "edit", index })}
-                />
-              );
-            })}
+          <div className="relative">
+            <div
+              ref={addedListRef}
+              onScroll={updateAddedFade}
+              className="space-y-2 max-h-[28rem] overflow-y-auto pr-1"
+            >
+              {selected.map((value, index) => {
+                const entry = getAmenityCatalogEntry(value.id);
+                if (!entry) return null;
+                return (
+                  <AddedAmenityRow
+                    key={`${value.id}-${index}`}
+                    value={value}
+                    entry={entry}
+                    locale={locale}
+                    onRemove={() => removeAmenityAt(index)}
+                    onEdit={() => setEditing({ type: "edit", index })}
+                  />
+                );
+              })}
+            </div>
+            <ScrollFade visible={addedFadeVisible} />
           </div>
         )}
       </div>
@@ -511,46 +576,55 @@ export default function AmenitiesPicker({
           ))}
         </div>
 
-        <div className="space-y-1.5 max-h-[28rem] overflow-y-auto pr-1">
-          {filteredCatalog.length === 0 ? (
-            <p className="text-sm text-charcoal-400 text-center py-6">
-              {isEn ? "No amenities found" : "Aucun équipement trouvé"}
-            </p>
-          ) : (
-            filteredCatalog.map((entry) => {
-              const active = selectedIds.has(entry.id);
-              return (
-                <div key={entry.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-[#ebebeb]">
-                  <span className="shrink-0 text-charcoal-500">
-                    <AmenityIcon name={entry.icon} />
-                  </span>
-                  <span className="flex-1 text-sm text-charcoal-700 truncate">
-                    {isEn ? entry.labelEn : entry.label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(entry)}
-                    title={active ? (isEn ? "Remove" : "Retirer") : isEn ? "Add" : "Ajouter"}
-                    className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      active
-                        ? "bg-primary border-primary text-white"
-                        : "border-charcoal-300 text-charcoal-500 hover:border-primary hover:text-primary"
-                    }`}
-                  >
-                    {active ? (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              );
-            })
-          )}
+        <p className="text-xs text-charcoal-400 mb-2">{availableCountLabel}</p>
+
+        <div className="relative">
+          <div
+            ref={catalogListRef}
+            onScroll={updateCatalogFade}
+            className="space-y-1.5 max-h-[28rem] overflow-y-auto pr-1"
+          >
+            {filteredCatalog.length === 0 ? (
+              <p className="text-sm text-charcoal-400 text-center py-6">
+                {isEn ? "No amenities found" : "Aucun équipement trouvé"}
+              </p>
+            ) : (
+              filteredCatalog.map((entry) => {
+                const active = selectedIds.has(entry.id);
+                return (
+                  <div key={entry.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-[#ebebeb]">
+                    <span className="shrink-0 text-charcoal-500">
+                      <AmenityIcon name={entry.icon} />
+                    </span>
+                    <span className="flex-1 text-sm text-charcoal-700 truncate">
+                      {isEn ? entry.labelEn : entry.label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggle(entry)}
+                      title={active ? (isEn ? "Remove" : "Retirer") : isEn ? "Add" : "Ajouter"}
+                      className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        active
+                          ? "bg-primary border-primary text-white"
+                          : "border-charcoal-300 text-charcoal-500 hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      {active ? (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <ScrollFade visible={catalogFadeVisible} />
         </div>
       </div>
 
