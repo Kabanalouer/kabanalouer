@@ -3,7 +3,7 @@
 // LodgingBusiness (buildListingJsonLd) et un FAQPage (buildListingFaqJsonLd)
 // limité aux faits connus avec certitude, jamais des questions inventées.
 
-import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { getAmenityCatalogEntry, summarizeAmenityDetails, type AmenityValue } from "@/lib/amenities-catalog";
 
 export interface ListingSchemaInput {
   title: string;
@@ -66,11 +66,21 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
       : {}),
     ...(input.checkinTime ? { checkinTime: input.checkinTime } : {}),
     ...(input.checkoutTime ? { checkoutTime: input.checkoutTime } : {}),
-    amenityFeature: getAmenityLabels(input.amenities, input.locale).map((name) => ({
-      "@type": "LocationFeatureSpecification",
-      name,
-      value: true,
-    })),
+    // Le nom seul suffit pour un lecteur humain qui voit déjà les détails
+    // dans le texte de la page — mais pour un agent IA qui ne lit que le
+    // JSON-LD, "description" expose le même résumé (accès, capacité,
+    // horaires...) que summarizeAmenityDetails() affiche déjà à l'écran.
+    amenityFeature: input.amenities.map((a) => {
+      const entry = getAmenityCatalogEntry(a.id);
+      const name = entry ? (isEn ? entry.labelEn : entry.label) : a.id;
+      const description = entry ? summarizeAmenityDetails(entry, a.details, input.locale) : null;
+      return {
+        "@type": "LocationFeatureSpecification",
+        name,
+        value: true,
+        ...(description ? { description } : {}),
+      };
+    }),
     numberOfBedrooms: input.bedroomCount,
     numberOfBathroomsTotal: input.bathrooms,
     occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" },
