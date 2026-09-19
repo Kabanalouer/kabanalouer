@@ -351,6 +351,23 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
       <path d="M2 20c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0" />
     </>
   ),
+  TennisBall: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M4.5 6c3 3 3 9 0 12" />
+      <path d="M19.5 6c-3 3-3 9 0 12" />
+    </>
+  ),
+  PickleballPaddle: (
+    <>
+      <ellipse cx="12" cy="9" rx="6" ry="7" />
+      <path d="M12 16v5" />
+      <path d="M9 21h6" />
+      <circle cx="9.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
+      <circle cx="14.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="11" r="0.5" fill="currentColor" stroke="none" />
+    </>
+  ),
   ParkingCircle: (
     <>
       <circle cx="12" cy="12" r="9" />

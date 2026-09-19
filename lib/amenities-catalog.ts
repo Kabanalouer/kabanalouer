@@ -386,6 +386,44 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
     ],
   },
+  {
+    id: "terrain-tennis",
+    label: "Terrain de tennis",
+    labelEn: "Tennis court",
+    categoryId: "exterieur",
+    icon: "TennisBall",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+      {
+        key: "locationRaquette", type: "single-select", label: "Location de raquette", labelEn: "Racket rental",
+        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
+      },
+      {
+        key: "gratuitPayant", type: "single-select", label: "Gratuite ou payante", labelEn: "Free or paid",
+        options: ["Gratuite", "Payante"], optionsEn: ["Free", "Paid"],
+        showIf: { key: "locationRaquette", equals: "Oui" },
+      },
+    ],
+  },
+  {
+    id: "terrain-pickleball",
+    label: "Terrain de pickleball",
+    labelEn: "Pickleball court",
+    categoryId: "exterieur",
+    icon: "PickleballPaddle",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+      {
+        key: "locationRaquette", type: "single-select", label: "Location de raquette", labelEn: "Racket rental",
+        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
+      },
+      {
+        key: "gratuitPayant", type: "single-select", label: "Gratuite ou payante", labelEn: "Free or paid",
+        options: ["Gratuite", "Payante"], optionsEn: ["Free", "Paid"],
+        showIf: { key: "locationRaquette", equals: "Oui" },
+      },
+    ],
+  },
   { id: "chalet-bois-rond", label: "Chalet en bois rond", labelEn: "Log cabin", categoryId: "exterieur", icon: "TreePine" },
 
   // Stationnement
@@ -419,7 +457,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
 export const AMENITY_PRIORITY_ORDER: string[] = [
   // Argument de vente fort — bord de l'eau, détente, particularités québécoises
   "bord-eau", "quai", "acces-lac", "piscine-interieure", "piscine-exterieure", "spa", "sauna",
-  "patinoire", "ski-in-ski-out", "chalet-bois-rond",
+  "patinoire", "terrain-tennis", "terrain-pickleball", "ski-in-ski-out", "chalet-bois-rond",
   "foyer-interieur-bois", "foyer-exterieur",
   // Divertissement, famille, emplacement
   "gym", "table-billard", "module-jeux-enfant", "borne-recharge-vr", "bbq",
