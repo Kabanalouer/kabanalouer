@@ -319,3 +319,16 @@ export function summarizeAmenityDetails(
 
   return parts.length > 0 ? parts.join(" • ") : null;
 }
+
+// Groupe les équipements d'une annonce par catégorie, dans l'ordre de
+// AMENITY_CATEGORIES — utilisé par le modal "Ce que propose ce chalet"
+// (fiche publique). Une catégorie sans équipement sur cette fiche est omise.
+// Un id inconnu du catalogue est ignoré (jamais affiché sans libellé).
+export function groupAmenitiesByCategory(
+  amenities: AmenityValue[]
+): { category: AmenityCategory; items: AmenityValue[] }[] {
+  return AMENITY_CATEGORIES.map((category) => ({
+    category,
+    items: amenities.filter((a) => getAmenityCatalogEntry(a.id)?.categoryId === category.id),
+  })).filter((group) => group.items.length > 0);
+}

@@ -1199,9 +1199,8 @@
   },
   "amenitiesSection": {
     "heading": "Cabin highlights",
-    "showAll": "Show all amenities ({count}) →",
-    "showLess": "Show less ↑",
-    "defaultDesc": "Available at this cabin"
+    "fullTitle": "What this cabin offers",
+    "showAllButton": "Show all {count} amenities"
   },
   "availabilityView": {
     "available": "Available",

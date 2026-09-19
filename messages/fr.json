@@ -1199,9 +1199,8 @@
   },
   "amenitiesSection": {
     "heading": "Points forts du chalet",
-    "showAll": "Voir toutes les caractéristiques ({count}) →",
-    "showLess": "Réduire ↑",
-    "defaultDesc": "Disponible dans ce chalet"
+    "fullTitle": "Ce que propose ce chalet",
+    "showAllButton": "Afficher les {count} équipements"
   },
   "availabilityView": {
     "available": "Disponible",

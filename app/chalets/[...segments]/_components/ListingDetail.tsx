@@ -8,6 +8,7 @@ import ExpandableText from "@/components/chalets/ExpandableText";
 import RoomsCarousel from "@/components/chalets/RoomsCarousel";
 import PhotoGallery from "@/components/chalets/PhotoGallery";
 import AmenitiesSection from "@/components/chalets/AmenitiesSection";
+import ListingHighlights from "@/components/chalets/ListingHighlights";
 import HostCard from "@/components/chalets/HostCard";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import ShareButton from "@/components/chalets/ShareButton";
@@ -370,8 +371,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
         <div className="flex gap-10 items-start">
           {/* ── Left column ── */}
           <div className="flex-1 min-w-0 space-y-8">
-            {/* Amenities — Caractéristiques du chalet */}
-            {amenities.length > 0 && <AmenitiesSection amenities={amenities} />}
+            {/* Points forts — teaser, voir AmenitiesSection plus bas pour la liste complète */}
+            {amenities.length > 0 && <ListingHighlights amenities={amenities} />}
 
             <hr className="border-[#ebebeb]" />
 
@@ -401,6 +402,14 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     }))}
                   />
                 </div>
+              </>
+            )}
+
+            {/* Amenities — "Ce que propose ce chalet", juste après les chambres */}
+            {amenities.length > 0 && (
+              <>
+                <hr className="border-[#ebebeb]" />
+                <AmenitiesSection amenities={amenities} />
               </>
             )}
 
