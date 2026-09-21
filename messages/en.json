@@ -271,7 +271,11 @@
       "pendingMessage1": "Fetching your listing…",
       "pendingMessage2": "Analyzing photos…",
       "pendingMessage3": "Writing the description…",
-      "pendingMessage4": "Finishing touches…"
+      "pendingMessage4": "Finishing touches…",
+      "errorNoUrl": "Please paste the link to your listing.",
+      "errorInvalidUrl": "The link isn't valid.",
+      "errorPhotosRights": "You must confirm you hold the rights to the photos in this listing.",
+      "errorSessionExpired": "Your session has expired, please sign in again."
     },
     "publish": {
       "launchOffer": "Launch offer",
@@ -645,7 +649,17 @@
     "subscribe": "Subscribe for $299/yr",
     "switchToPaid": "Switch to a paid subscription",
     "redirectingPayment": "Redirecting to payment…",
-    "securePayment": "Secure payment by Stripe · Cancel anytime"
+    "securePayment": "Secure payment by Stripe · Cancel anytime",
+    "title": "Subscriptions",
+    "pageDescription": "Each cabin has its own annual subscription — the price depends on the number of paid cabins already active when it's added.",
+    "noListings": "No cabins yet.",
+    "untitledListing": "Untitled cabin",
+    "pastDue": "Payment overdue",
+    "renewsOn": "Renews on {date}",
+    "freeFirstYear": "Free for your first year",
+    "freeLaunchDesc": "This cabin is enjoying the launch offer — free access during its first year on Kabanalouer.",
+    "paymentFailedWarning": "Your last payment failed. Update your payment method to avoid an interruption.",
+    "subscribeCta": "Subscribe"
   },
   "home": {
     "badge": "Quebec's cabin rental marketplace",

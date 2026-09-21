@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { importAirbnbListing } from "@/lib/listingImport";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
@@ -60,22 +60,23 @@ export async function submitImportRequest(
 ): Promise<ImportState> {
   const listingUrl = (formData.get("listing_url") as string | null)?.trim() ?? "";
   const photosRightsConfirmed = formData.get("photos_rights_confirmed") === "on";
+  const t = await getTranslations("listings.new");
 
   if (!listingUrl) {
-    return { status: "error", message: "Veuillez coller le lien de votre annonce." };
+    return { status: "error", message: t("errorNoUrl") };
   }
   try {
     new URL(listingUrl);
   } catch {
-    return { status: "error", message: "Le lien n'est pas valide." };
+    return { status: "error", message: t("errorInvalidUrl") };
   }
   if (!photosRightsConfirmed) {
-    return { status: "error", message: "Vous devez confirmer détenir les droits sur les photos de cette annonce." };
+    return { status: "error", message: t("errorPhotosRights") };
   }
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { status: "error", message: "Session expirée, veuillez vous reconnecter." };
+  if (!user) return { status: "error", message: t("errorSessionExpired") };
 
   const outcome = await importAirbnbListing(supabase, user.id, listingUrl);
 

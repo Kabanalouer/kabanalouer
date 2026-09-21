@@ -271,7 +271,11 @@
       "pendingMessage1": "Récupération de l'annonce…",
       "pendingMessage2": "Analyse des photos…",
       "pendingMessage3": "Rédaction de la description…",
-      "pendingMessage4": "Dernières touches…"
+      "pendingMessage4": "Dernières touches…",
+      "errorNoUrl": "Veuillez coller le lien de votre annonce.",
+      "errorInvalidUrl": "Le lien n'est pas valide.",
+      "errorPhotosRights": "Vous devez confirmer détenir les droits sur les photos de cette annonce.",
+      "errorSessionExpired": "Session expirée, veuillez vous reconnecter."
     },
     "publish": {
       "launchOffer": "Offre de lancement",
@@ -645,7 +649,17 @@
     "subscribe": "S'abonner pour 299 $/an",
     "switchToPaid": "Passer à l'abonnement payant",
     "redirectingPayment": "Redirection vers le paiement…",
-    "securePayment": "Paiement sécurisé par Stripe · Annulable à tout moment"
+    "securePayment": "Paiement sécurisé par Stripe · Annulable à tout moment",
+    "title": "Abonnements",
+    "pageDescription": "Chaque chalet a son propre abonnement annuel — le tarif dépend du nombre de chalets payants déjà actifs au moment de l'ajout.",
+    "noListings": "Aucun chalet pour l'instant.",
+    "untitledListing": "Chalet sans titre",
+    "pastDue": "Paiement en retard",
+    "renewsOn": "Renouvellement le {date}",
+    "freeFirstYear": "Gratuit pour votre première année",
+    "freeLaunchDesc": "Ce chalet profite de l'offre de lancement — accès gratuit pendant sa première année sur Kabanalouer.",
+    "paymentFailedWarning": "Le dernier paiement a échoué. Mettez à jour votre méthode de paiement pour éviter une interruption.",
+    "subscribeCta": "S'abonner"
   },
   "home": {
     "badge": "La marketplace de la location de chalet au Québec",

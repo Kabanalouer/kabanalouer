@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 type ListingSub = {
   listing_id: string;
@@ -20,6 +21,7 @@ type ListingRow = {
 
 export default function SubscriptionClient() {
   const t = useTranslations("subscription");
+  const locale = useLocale();
   const supabase = createClient();
 
   const [rows, setRows] = useState<ListingRow[]>([]);
@@ -69,16 +71,16 @@ export default function SubscriptionClient() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-charcoal-800 mb-2">Abonnements</h1>
+      <h1 className="text-2xl font-bold text-charcoal-800 mb-2">{t("title")}</h1>
       <p className="text-charcoal-500 mb-8">
-        Chaque chalet a son propre abonnement annuel — le tarif dépend du nombre de chalets payants déjà actifs au moment de l&apos;ajout.
+        {t("pageDescription")}
       </p>
 
       {loading ? (
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 animate-pulse h-40" />
       ) : rows.length === 0 ? (
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 text-center text-charcoal-500 text-sm">
-          Aucun chalet pour l&apos;instant.
+          {t("noListings")}
         </div>
       ) : (
         <div className="space-y-6">
@@ -94,7 +96,7 @@ export default function SubscriptionClient() {
                 {/* Status */}
                 <div className="p-6 border-b border-[#ebebeb] flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-charcoal-500 mb-1">{row.title || "Chalet sans titre"}</p>
+                    <p className="text-sm text-charcoal-500 mb-1">{row.title || t("untitledListing")}</p>
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-block w-2.5 h-2.5 rounded-full ${
@@ -102,23 +104,24 @@ export default function SubscriptionClient() {
                         }`}
                       />
                       <span className="font-semibold text-charcoal-800">
-                        {isActive ? "Actif" : isPastDue ? "Paiement en retard" : "Inactif"}
+                        {isActive ? t("active") : isPastDue ? t("pastDue") : t("inactive")}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     {sub?.price_cents != null && (
                       <p className="font-semibold text-charcoal-800">
-                        {(sub.price_cents / 100).toLocaleString("fr-CA")} $ / an
+                        {formatPriceLabel(sub.price_cents, locale === "en" ? "en" : "fr")} {t("perYear")}
                       </p>
                     )}
                     {isActive && sub?.expires_at && (
                       <p className="text-xs text-charcoal-400 mt-0.5">
-                        Renouvellement le{" "}
-                        {new Date(sub.expires_at).toLocaleDateString("fr-CA", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
+                        {t("renewsOn", {
+                          date: new Date(sub.expires_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }),
                         })}
                       </p>
                     )}
@@ -134,9 +137,9 @@ export default function SubscriptionClient() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                          <p className="text-sm font-semibold text-primary">Gratuit pour votre première année</p>
+                          <p className="text-sm font-semibold text-primary">{t("freeFirstYear")}</p>
                           <p className="text-xs text-charcoal-500 mt-0.5">
-                            Ce chalet profite de l&apos;offre de lancement — accès gratuit pendant sa première année sur Kabanalouer.
+                            {t("freeLaunchDesc")}
                           </p>
                         </div>
                       </div>
@@ -159,7 +162,7 @@ export default function SubscriptionClient() {
                   ) : isPastDue ? (
                     <>
                       <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm">
-                        Le dernier paiement a échoué. Mettez à jour votre méthode de paiement pour éviter une interruption.
+                        {t("paymentFailedWarning")}
                       </div>
                       <button
                         onClick={handlePortal}
@@ -176,10 +179,10 @@ export default function SubscriptionClient() {
                         disabled={redirecting}
                         className="w-full bg-primary text-white py-3.5 rounded-full font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
                       >
-                        {redirectingId === row.id ? "Redirection vers le paiement…" : "S'abonner"}
+                        {redirectingId === row.id ? t("redirectingPayment") : t("subscribeCta")}
                       </button>
                       <p className="text-xs text-charcoal-400 text-center mt-3">
-                        Paiement sécurisé par Stripe · Annulable à tout moment
+                        {t("securePayment")}
                       </p>
                     </>
                   )}
