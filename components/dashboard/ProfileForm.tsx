@@ -209,6 +209,10 @@ export default function ProfileForm({
     await supabase.from("users").update({ avatar_url: urlData.publicUrl }).eq("id", userId);
     setAvatarUrl(newUrl);
     setAvatarUploading(false);
+    // Le layout du dashboard (bandeau "compléter votre profil") lit avatar_url
+    // côté serveur — sans ce refresh, il resterait affiché avec les données
+    // périmées de la navigation initiale jusqu'au prochain rechargement complet.
+    router.refresh();
   };
 
   const deleteAvatar = async () => {
@@ -218,6 +222,7 @@ export default function ProfileForm({
     if (path) await supabase.storage.from("avatars").remove([path]);
     await supabase.from("users").update({ avatar_url: null }).eq("id", userId);
     setAvatarUrl(null);
+    router.refresh();
   };
 
   const saveInfo = async () => {
@@ -251,7 +256,11 @@ export default function ProfileForm({
     const { error } = await supabase.from("users").update({ bio: bio.trim() || null, bio_en: bioEn.trim() || null }).eq("id", userId);
     setBioSaving(false);
     if (error) setBioError(t("errorSaving"));
-    else { setBioSaved(true); setTimeout(() => setBioSaved(false), 2500); }
+    else {
+      setBioSaved(true);
+      setTimeout(() => setBioSaved(false), 2500);
+      router.refresh();
+    }
   };
 
   // Sauvegarde automatique ~1,75 s après la dernière frappe — réutilise
