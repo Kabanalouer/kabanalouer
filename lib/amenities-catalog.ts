@@ -25,6 +25,13 @@ export interface AmenityDetailField {
   // N'affiche (et ne sauvegarde) ce champ que si details[showIf.key] vaut
   // exactement showIf.equals — ex. "Bois inclus" seulement si Type = "Bois".
   showIf?: { key: string; equals: string | boolean };
+  // Libellés utilisés uniquement dans le résumé (dashboard + fiche publique +
+  // JSON-LD), alignés positionnellement avec `options` — ex. la valeur
+  // stockée reste "Bois" mais le résumé affiche "Au bois". Si absent pour une
+  // valeur donnée, le résumé retombe sur `options` (FR) / `optionsEn` (EN)
+  // tel quel — n'affecte aucun champ qui ne les définit pas.
+  summaryLabels?: string[];
+  summaryLabelsEn?: string[];
 }
 
 export interface AmenityCategory {
@@ -189,9 +196,15 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "chauffage-et-climatisation",
     icon: "Flame",
     detailSchema: [
-      { key: "type", type: "single-select", label: "Type", labelEn: "Type", options: ["Bois", "Gaz"], optionsEn: ["Wood", "Gas"] },
       {
-        key: "boisInclus", type: "boolean", label: "Bois inclus", labelEn: "Wood included",
+        key: "type", type: "single-select", label: "Type", labelEn: "Type",
+        options: ["Bois", "Gaz"], optionsEn: ["Wood", "Gas"],
+        summaryLabels: ["Au bois", "Gaz"],
+      },
+      {
+        key: "boisInclus", type: "single-select", label: "Bois inclus", labelEn: "Wood included",
+        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
+        summaryLabels: ["Bois inclus", "Bois non inclus"], summaryLabelsEn: ["Wood included", "Wood not included"],
         showIf: { key: "type", equals: "Bois" },
       },
     ],
@@ -241,7 +254,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   { id: "cuisine-complete", label: "Cuisine complète avec vaisselle et chaudrons", labelEn: "Fully equipped kitchen", categoryId: "cuisine-et-repas", icon: "CookingPot" },
   { id: "refrigerateur", label: "Réfrigérateur", labelEn: "Refrigerator", categoryId: "cuisine-et-repas", icon: "Refrigerator" },
   { id: "four", label: "Four", labelEn: "Oven", categoryId: "cuisine-et-repas", icon: "Flame" },
-  { id: "cuisiniere", label: "Cuisinière (plaque de cuisson)", labelEn: "Stove", categoryId: "cuisine-et-repas", icon: "Flame" },
+  { id: "cuisiniere", label: "Cuisinière", labelEn: "Stove", categoryId: "cuisine-et-repas", icon: "Flame" },
   { id: "micro-ondes", label: "Four à micro-ondes", labelEn: "Microwave", categoryId: "cuisine-et-repas", icon: "Microwave" },
   { id: "lave-vaisselle", label: "Lave-vaisselle", labelEn: "Dishwasher", categoryId: "cuisine-et-repas", icon: "Sparkles" },
   {
@@ -253,8 +266,8 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     detailSchema: [
       {
         key: "type", type: "multi-select", label: "Type", labelEn: "Type",
-        options: ["Filtre", "Nespresso", "Espresso manuelle", "Percolateur"],
-        optionsEn: ["Drip", "Nespresso", "Manual espresso", "Percolator"],
+        options: ["Filtre", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Espresso manuelle", "Percolateur"],
+        optionsEn: ["Drip", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Manual espresso", "Percolator"],
       },
     ],
   },
@@ -284,7 +297,11 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "exterieur",
     icon: "Flame",
     detailSchema: [
-      { key: "boisInclus", type: "boolean", label: "Bois inclus", labelEn: "Wood included" },
+      {
+        key: "boisInclus", type: "single-select", label: "Bois inclus", labelEn: "Wood included",
+        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
+        summaryLabels: ["Bois inclus", "Bois non inclus"], summaryLabelsEn: ["Wood included", "Wood not included"],
+      },
     ],
   },
   {
@@ -332,7 +349,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "exterieur",
     icon: "IndoorPool",
     detailSchema: [
-      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé", "Public"], optionsEn: ["Private", "Shared", "Public"] },
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
       { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
       { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
@@ -344,7 +361,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "exterieur",
     icon: "OutdoorPool",
     detailSchema: [
-      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé", "Public"], optionsEn: ["Private", "Shared", "Public"] },
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
       { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
       { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
@@ -493,12 +510,31 @@ export function getAmenityCategoryLabel(categoryId: string, locale: string): str
 }
 
 // Traduit une valeur stockée (canonique, FR) d'un champ single/multi-select
-// vers son libellé d'affichage dans la langue demandée.
+// vers son libellé d'affichage dans la langue demandée — `summaryLabels`/
+// `summaryLabelsEn`, si définis pour cette valeur, priment sur `options`/
+// `optionsEn` (ex. valeur stockée "Bois", résumé "Au bois").
 function translateOptionValue(field: AmenityDetailField, value: string, locale: string): string {
-  if (locale !== "en" || !field.options || !field.optionsEn) return value;
-  const idx = field.options.indexOf(value);
-  return idx >= 0 ? (field.optionsEn[idx] ?? value) : value;
+  const idx = field.options?.indexOf(value) ?? -1;
+  if (locale === "en") {
+    if (idx < 0 || !field.optionsEn) return value;
+    return field.summaryLabelsEn?.[idx] ?? field.optionsEn[idx] ?? value;
+  }
+  if (idx >= 0 && field.summaryLabels) return field.summaryLabels[idx] ?? value;
+  return value;
 }
+
+// "Location d'embarcation(s)"/"Location de raquette" pliées avec leur champ
+// Gratuit/Payant lié en une seule phrase du résumé (ex. "Location
+// d'embarcation gratuite") plutôt que deux parties séparées — Accès à un
+// lac, Terrain de tennis, Terrain de pickleball.
+const RENTAL_SUMMARY_COMBOS: Record<
+  string,
+  { triggerKey: string; priceKey: string; base: string; baseEn: string }
+> = {
+  "acces-lac": { triggerKey: "locationEmbarcations", priceKey: "gratuitPayant", base: "Location d'embarcation", baseEn: "Boat rental" },
+  "terrain-tennis": { triggerKey: "locationRaquette", priceKey: "gratuitPayant", base: "Location de raquette", baseEn: "Racket rental" },
+  "terrain-pickleball": { triggerKey: "locationRaquette", priceKey: "gratuitPayant", base: "Location de raquette", baseEn: "Racket rental" },
+};
 
 // Résumé auto-généré des détails choisis pour un équipement (ex. "Privé •
 // Gaz"), affiché sous son nom dans la colonne "Équipements ajoutés" de
@@ -512,12 +548,28 @@ export function summarizeAmenityDetails(
   if (!entry.detailSchema || !details) return null;
   const isEn = locale === "en";
   const parts: string[] = [];
+  const combo = RENTAL_SUMMARY_COMBOS[entry.id];
 
   for (const field of entry.detailSchema) {
+    // Le champ Gratuit/Payant d'une combo est plié dans son champ déclencheur
+    // ci-dessous — jamais affiché comme une partie séparée du résumé.
+    if (combo && field.key === combo.priceKey) continue;
+
     // Un champ conditionnel (ex. "Bois inclus" seulement si Type = "Bois")
     // ne doit jamais apparaître dans le résumé si sa condition ne tient plus
     // — même si une ancienne valeur traîne encore dans `details`.
     if (field.showIf && details[field.showIf.key] !== field.showIf.equals) continue;
+
+    if (combo && field.key === combo.triggerKey) {
+      const active = field.type === "boolean" ? details[field.key] === true : details[field.key] === "Oui";
+      if (!active) continue;
+      const base = isEn ? combo.baseEn : combo.base;
+      const price = details[combo.priceKey];
+      if (price === "Gratuit" || price === "Gratuite") parts.push(isEn ? `Free ${base.toLowerCase()}` : `${base} gratuite`);
+      else if (price === "Payant" || price === "Payante") parts.push(isEn ? `Paid ${base.toLowerCase()}` : `${base} payante`);
+      else parts.push(base);
+      continue;
+    }
 
     const value = details[field.key];
     if (value === undefined || value === null || value === "") continue;
