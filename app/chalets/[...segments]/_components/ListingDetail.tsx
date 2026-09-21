@@ -419,15 +419,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
               </>
             )}
 
-            {/* Availability */}
-            <hr className="border-[#ebebeb]" />
-            <div>
-              <h2 className="font-semibold text-charcoal-800 mb-4">{t("availabilityTitle")}</h2>
-              <AvailabilityView
-                blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
-              />
-            </div>
-
             {/* Map */}
             {listing.latitude && listing.longitude && (
               <>
@@ -567,6 +558,15 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 </div>
               </div>
             </>
+
+            {/* Availability */}
+            <hr className="border-[#ebebeb]" />
+            <div>
+              <h2 className="font-semibold text-charcoal-800 mb-4">{t("availabilityTitle")}</h2>
+              <AvailabilityView
+                blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
+              />
+            </div>
 
             {/* Host section */}
             {host && (
