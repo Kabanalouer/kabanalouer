@@ -602,7 +602,14 @@ export function summarizeAmenityDetails(
     } else if (field.type === "single-select" && typeof value === "string") {
       parts.push(translateOptionValue(field, value, locale));
     } else if (field.type === "multi-select" && Array.isArray(value)) {
-      const values = (value as unknown[]).filter((v): v is string => typeof v === "string");
+      let values = (value as unknown[]).filter((v): v is string => typeof v === "string");
+      // Une ancienne valeur générique orpheline (ex. "Nespresso", remplacée
+      // depuis par "Nespresso Original"/"Nespresso Vertuo" dans le catalogue
+      // mais jamais retirée des données déjà enregistrées) ne doit jamais
+      // s'afficher en plus de son sous-type précis déjà sélectionné — sinon
+      // le résumé répète le même mot deux fois ("Nespresso, Nespresso
+      // Original"). Filtrée dès qu'une autre valeur sélectionnée la précise.
+      values = values.filter((v) => !values.some((other) => other !== v && other.startsWith(`${v} `)));
       if (values.length === 0) continue;
       // Énumération complète, en toutes lettres — un seul type (ex.
       // cafetière filtre seule) s'affiche donc directement sans séparateur.
