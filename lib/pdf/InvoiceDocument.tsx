@@ -22,8 +22,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 32,
   },
-  logo: { width: 40, height: 40 },
-  wordmark: { fontSize: 16, fontFamily: "Helvetica-Bold", color: OLIVE, marginTop: 8 },
+  logo: { width: 130 },
   invoiceTitle: { fontSize: 20, fontFamily: "Helvetica-Bold", color: CHARCOAL_800, textAlign: "right" },
   invoiceMeta: { fontSize: 9, color: CHARCOAL_400, textAlign: "right", marginTop: 4 },
   partiesRow: {
@@ -123,7 +122,6 @@ export default function InvoiceDocument({ data }: { data: InvoiceData }) {
         <View style={styles.headerRow}>
           <View>
             {data.logoSrc && <Image src={data.logoSrc} style={styles.logo} />}
-            <Text style={styles.wordmark}>Kabanalouer</Text>
           </View>
           <View>
             <Text style={styles.invoiceTitle}>Facture</Text>

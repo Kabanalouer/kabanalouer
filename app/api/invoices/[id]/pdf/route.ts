@@ -55,7 +55,7 @@ export async function GET(
     tpsAmount: invoice.tps_amount as number,
     tvqAmount: invoice.tvq_amount as number,
     totalAmount: invoice.total_amount as number,
-    logoSrc: path.resolve(process.cwd(), "public/logo-mark.png"),
+    logoSrc: path.resolve(process.cwd(), "public/logo-wordmark.png"),
   };
 
   const buffer = await renderToBuffer(InvoiceDocument({ data }));
