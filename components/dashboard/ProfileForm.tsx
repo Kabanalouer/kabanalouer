@@ -159,6 +159,7 @@ export default function ProfileForm({
   initialBio,
   initialBioEn,
   initialPreferredLanguage,
+  initialCompanyName,
 }: {
   userId: string;
   email: string;
@@ -170,6 +171,7 @@ export default function ProfileForm({
   initialBio: string;
   initialBioEn: string;
   initialPreferredLanguage: "fr" | "en";
+  initialCompanyName: string;
 }) {
   const supabase = createClient();
   const t = useTranslations("profile");
@@ -181,6 +183,7 @@ export default function ProfileForm({
   const nameParts = initialName.trim().split(/\s+/);
   const [firstName, setFirstName] = useState(nameParts[0] ?? "");
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" "));
+  const [companyName, setCompanyName] = useState(initialCompanyName);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [infoSaving, setInfoSaving] = useState(false);
@@ -229,13 +232,16 @@ export default function ProfileForm({
     setInfoSaving(true);
     setInfoError("");
     const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
-    const { error } = await supabase.from("users").update({ name }).eq("id", userId);
+    const { error } = await supabase
+      .from("users")
+      .update({ name, company_name: companyName.trim() || null })
+      .eq("id", userId);
     setInfoSaving(false);
     if (error) setInfoError(t("errorSaving"));
     else { setInfoSaved(true); setTimeout(() => setInfoSaved(false), 2500); }
   };
 
-  const infoAutosaveTrigger = JSON.stringify([firstName, lastName]);
+  const infoAutosaveTrigger = JSON.stringify([firstName, lastName, companyName]);
   const { pending: infoAutosavePending } = useAutosave(
     "info",
     infoAutosaveTrigger,
@@ -595,6 +601,20 @@ export default function ProfileForm({
             />
           </div>
         </div>
+
+        {(role === "host" || role === "admin") && (
+          <div>
+            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("companyName")}</label>
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className={inputCls}
+              placeholder={t("companyNamePlaceholder")}
+            />
+            <p className="text-xs text-charcoal-400 mt-1">{t("companyNameHint")}</p>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <SaveButton saving={infoSaving} saved={infoSaved} onClick={saveInfo} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />

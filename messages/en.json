@@ -21,6 +21,7 @@
     "messages": "Messages",
     "myReviews": "My reviews",
     "myProfile": "My profile",
+    "myInvoices": "My invoices",
     "myFavorites": "My favorites",
     "createListing": "Create a listing",
     "registerCabin": "List my cabin",
@@ -32,6 +33,19 @@
     "newListing": "New cabin",
     "roleProprio": "Owner",
     "roleVoyageur": "Traveler"
+  },
+  "myInvoices": {
+    "heading": "My invoices",
+    "empty": "No invoices yet.",
+    "columnListing": "Listing",
+    "columnType": "Type",
+    "columnDate": "Date",
+    "columnAmount": "Amount",
+    "columnView": "View",
+    "columnDownload": "Download",
+    "typePublication": "Publication",
+    "typeBoostHome": "Home boost",
+    "typeBoostRegion": "Region boost"
   },
   "dashboard": {
     "greeting": "Hello, {firstName}!",
@@ -511,6 +525,9 @@
     "photoFormats": "JPG, PNG, WebP · Max 5 MB",
     "firstName": "First name",
     "lastName": "Last name",
+    "companyName": "Company name",
+    "companyNamePlaceholder": "E.g. Tremblay Chalets Inc.",
+    "companyNameHint": "Optional — used for invoicing only.",
     "ownerPresentation": "Owner presentation",
     "ownerPresentationDesc": "This information will be visible on your cabin listing.",
     "bio": "Bio",

@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: "Voyageurs", href: "/admin/travelers" },
   { label: "Abonnements", href: "/admin/subscriptions" },
   { label: "Boosts", href: "/admin/featured" },
+  { label: "Facturation", href: "/admin/invoices" },
   { label: "Messages de contact", href: "/admin/messages" },
 ];
 

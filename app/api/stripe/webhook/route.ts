@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendFeaturedConfirmationEmail, type FeaturedType } from "@/lib/emails/featuredListing";
 import { centsForTier, type PriceTier } from "@/lib/subscriptionPricing";
+import { createInvoice } from "@/lib/invoicing";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
 function adminSupabase() {
@@ -104,6 +105,19 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Erreur lors de l'enregistrement de la vedette." }, { status: 500 });
         }
 
+        // Facture — un vrai paiement unique (jamais is_free_launch, cette
+        // branche n'existe que pour un paiement Stripe réel).
+        if (session.amount_subtotal != null && session.amount_total != null) {
+          await createInvoice(supabase, {
+            userId: hostId,
+            listingId,
+            transactionType: type === "region" ? "boost_region" : "boost_accueil",
+            amountBeforeTaxCents: session.amount_subtotal,
+            totalChargedCents: session.amount_total,
+            stripePaymentId: (session.payment_intent as string) ?? session.id,
+          });
+        }
+
         const { data: hostProfile } = await supabase
           .from("users")
           .select("email, name, preferred_language")
@@ -169,6 +183,20 @@ export async function POST(request: NextRequest) {
       if (subError) {
         console.error("checkout.session.completed: échec upsert subscriptions", subError);
         return NextResponse.json({ error: "Erreur lors de l'enregistrement de l'abonnement." }, { status: 500 });
+      }
+
+      // Facture — cette branche ne traite jamais l'offre de lancement
+      // (is_free_launch=true n'arrive jamais via Stripe, voir activate-free
+      // route), donc chaque upsert ici correspond à un vrai paiement.
+      if (session.amount_subtotal != null && session.amount_total != null) {
+        await createInvoice(supabase, {
+          userId,
+          listingId,
+          transactionType: "publication",
+          amountBeforeTaxCents: session.amount_subtotal,
+          totalChargedCents: session.amount_total,
+          stripePaymentId: subscriptionId,
+        });
       }
 
       await supabase

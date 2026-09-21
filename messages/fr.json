@@ -21,6 +21,7 @@
     "messages": "Messages",
     "myReviews": "Mes avis",
     "myProfile": "Mon profil",
+    "myInvoices": "Mes factures",
     "myFavorites": "Mes favoris",
     "createListing": "Créer une annonce",
     "registerCabin": "Inscrire mon chalet",
@@ -32,6 +33,19 @@
     "newListing": "Nouveau chalet",
     "roleProprio": "Proprio",
     "roleVoyageur": "Voyageur"
+  },
+  "myInvoices": {
+    "heading": "Mes factures",
+    "empty": "Aucune facture pour l'instant.",
+    "columnListing": "Annonce",
+    "columnType": "Type",
+    "columnDate": "Date",
+    "columnAmount": "Montant",
+    "columnView": "Visualiser",
+    "columnDownload": "Télécharger",
+    "typePublication": "Publication",
+    "typeBoostHome": "Boost accueil",
+    "typeBoostRegion": "Boost région"
   },
   "dashboard": {
     "greeting": "Bonjour {firstName} !",
@@ -511,6 +525,9 @@
     "photoFormats": "JPG, PNG, WebP · Max 5 Mo",
     "firstName": "Prénom",
     "lastName": "Nom",
+    "companyName": "Nom d'entreprise",
+    "companyNamePlaceholder": "Ex. Chalets Tremblay inc.",
+    "companyNameHint": "Facultatif — sert uniquement à la facturation.",
     "ownerPresentation": "Présentation du propriétaire",
     "ownerPresentationDesc": "Ces informations seront visibles dans la fiche de votre chalet.",
     "bio": "Bio",

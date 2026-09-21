@@ -292,6 +292,7 @@ export default function Navbar() {
                   </div>
                   <div className="py-1">
                     <DropdownLink href={lp("/dashboard/profile")}>{t("myProfile")}</DropdownLink>
+                    <DropdownLink href={lp("/dashboard/invoices")}>{t("myInvoices")}</DropdownLink>
                     <DropdownLink href={lp("/dashboard/listings/new")}>{t("createListing")}</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
