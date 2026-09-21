@@ -277,6 +277,22 @@
       "errorPhotosRights": "You must confirm you hold the rights to the photos in this listing.",
       "errorSessionExpired": "Your session has expired, please sign in again."
     },
+    "import": {
+      "unrecognizedLink": "Unrecognized link — only Airbnb listings can be imported for now",
+      "vrboNotSupported": "Importing from VRBO isn't available yet — only Airbnb is supported for now.",
+      "ownersOnly": "Access restricted to owners",
+      "rateLimitReached": "You've reached the limit of 20 imports per hour. Please try again later.",
+      "extractionFailed": "Failed to extract the listing's data",
+      "noDataExtracted": "No data could be extracted from this link. Make sure it's a public listing.",
+      "creationFailed": "Failed to create the imported listing",
+      "apifyConfigMissing": "Missing server-side configuration (APIFY_API_TOKEN).",
+      "apifyStartFailed": "Unable to start the extraction (Apify responded with {status}).",
+      "apifyUnexpectedStartResponse": "Unexpected response from Apify when starting the extraction.",
+      "apifyRunFailed": "The extraction failed (status: {status}).",
+      "apifyTimeout": "The extraction is taking longer than expected (more than 60 seconds). Please try again shortly.",
+      "apifyNoDataset": "Unexpected response from Apify: no data to retrieve.",
+      "apifyItemsFetchFailed": "Unable to retrieve the extracted data."
+    },
     "publish": {
       "launchOffer": "Launch offer",
       "adminReviewHeading": "Review and publish",

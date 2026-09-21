@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { importAirbnbListing } from "@/lib/listingImport";
 
@@ -25,7 +26,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const outcome = await importAirbnbListing(supabase, user.id, url);
+  // Route hors du middleware next-intl (voir middleware.ts, api/ exclu du matcher) —
+  // pas de détection de langue possible ici, on fixe explicitement le français pour
+  // préserver le comportement actuel plutôt que de deviner une locale incorrecte.
+  const tImport = await getTranslations({ locale: "fr", namespace: "listings.import" });
+  const outcome = await importAirbnbListing(supabase, user.id, url, tImport);
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: outcome.status });
   }

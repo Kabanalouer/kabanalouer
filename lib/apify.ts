@@ -32,14 +32,17 @@ function actorPath(actorId: string): string {
 
 class ApifyImportError extends Error {}
 
+export type ImportTranslator = (key: string, values?: Record<string, string | number>) => string;
+
 export async function runApifyActor(
   actorId: string,
   input: Record<string, unknown>,
-  timeoutMs = 60000
+  timeoutMs: number,
+  t: ImportTranslator
 ): Promise<unknown[]> {
   const token = process.env.APIFY_API_TOKEN;
   if (!token) {
-    throw new ApifyImportError("Configuration manquante côté serveur (APIFY_API_TOKEN).");
+    throw new ApifyImportError(t("apifyConfigMissing"));
   }
 
   const startRes = await fetch(`${APIFY_BASE}/acts/${actorPath(actorId)}/runs?token=${token}`, {
@@ -48,12 +51,12 @@ export async function runApifyActor(
     body: JSON.stringify(input),
   });
   if (!startRes.ok) {
-    throw new ApifyImportError(`Impossible de démarrer l'extraction (Apify a répondu ${startRes.status}).`);
+    throw new ApifyImportError(t("apifyStartFailed", { status: startRes.status }));
   }
   const startData = await startRes.json();
   const runId: string | undefined = startData?.data?.id;
   if (!runId) {
-    throw new ApifyImportError("Réponse inattendue d'Apify au démarrage de l'extraction.");
+    throw new ApifyImportError(t("apifyUnexpectedStartResponse"));
   }
 
   const deadline = Date.now() + timeoutMs;
@@ -72,22 +75,20 @@ export async function runApifyActor(
 
     if (status === "SUCCEEDED") break;
     if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") {
-      throw new ApifyImportError(`L'extraction a échoué (statut : ${status}).`);
+      throw new ApifyImportError(t("apifyRunFailed", { status }));
     }
   }
 
   if (status !== "SUCCEEDED") {
-    throw new ApifyImportError(
-      "L'extraction prend plus de temps que prévu (plus de 60 secondes). Réessayez dans quelques instants."
-    );
+    throw new ApifyImportError(t("apifyTimeout"));
   }
   if (!datasetId) {
-    throw new ApifyImportError("Réponse inattendue d'Apify : aucune donnée à récupérer.");
+    throw new ApifyImportError(t("apifyNoDataset"));
   }
 
   const itemsRes = await fetch(`${APIFY_BASE}/datasets/${datasetId}/items?token=${token}`);
   if (!itemsRes.ok) {
-    throw new ApifyImportError("Impossible de récupérer les données extraites.");
+    throw new ApifyImportError(t("apifyItemsFetchFailed"));
   }
   return await itemsRes.json();
 }

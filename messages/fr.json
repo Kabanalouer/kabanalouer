@@ -277,6 +277,22 @@
       "errorPhotosRights": "Vous devez confirmer détenir les droits sur les photos de cette annonce.",
       "errorSessionExpired": "Session expirée, veuillez vous reconnecter."
     },
+    "import": {
+      "unrecognizedLink": "Lien non reconnu — seules les annonces Airbnb peuvent être importées pour l'instant",
+      "vrboNotSupported": "L'import depuis VRBO n'est pas encore disponible, seul Airbnb est supporté pour l'instant.",
+      "ownersOnly": "Accès réservé aux propriétaires",
+      "rateLimitReached": "Vous avez atteint la limite de 20 imports par heure. Réessayez plus tard.",
+      "extractionFailed": "Échec de l'extraction des données de l'annonce",
+      "noDataExtracted": "Aucune donnée n'a pu être extraite de ce lien. Vérifiez qu'il s'agit bien d'une annonce publique.",
+      "creationFailed": "Échec de la création de l'annonce importée",
+      "apifyConfigMissing": "Configuration manquante côté serveur (APIFY_API_TOKEN).",
+      "apifyStartFailed": "Impossible de démarrer l'extraction (Apify a répondu {status}).",
+      "apifyUnexpectedStartResponse": "Réponse inattendue d'Apify au démarrage de l'extraction.",
+      "apifyRunFailed": "L'extraction a échoué (statut : {status}).",
+      "apifyTimeout": "L'extraction prend plus de temps que prévu (plus de 60 secondes). Réessayez dans quelques instants.",
+      "apifyNoDataset": "Réponse inattendue d'Apify : aucune donnée à récupérer.",
+      "apifyItemsFetchFailed": "Impossible de récupérer les données extraites."
+    },
     "publish": {
       "launchOffer": "Offre de lancement",
       "adminReviewHeading": "Réviser et publier",

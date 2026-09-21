@@ -78,7 +78,8 @@ export async function submitImportRequest(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { status: "error", message: t("errorSessionExpired") };
 
-  const outcome = await importAirbnbListing(supabase, user.id, listingUrl);
+  const tImport = await getTranslations("listings.import");
+  const outcome = await importAirbnbListing(supabase, user.id, listingUrl, tImport);
 
   if (!outcome.ok) {
     return { status: "error", message: outcome.error };

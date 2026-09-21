@@ -3,7 +3,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { cleanDescription, truncateToLastSentence, truncateToLastWord } from "@/lib/aiText";
-import { detectImportPlatform, runApifyActor, ApifyImportError } from "@/lib/apify";
+import { detectImportPlatform, runApifyActor, ApifyImportError, type ImportTranslator } from "@/lib/apify";
 import { mapAirbnbItem, type ImportedListingData } from "@/lib/listingImportMapping";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
@@ -148,19 +148,20 @@ async function rewriteDescription(data: ImportedListingData): Promise<string | n
 export async function importAirbnbListing(
   supabase: SupabaseServerClient,
   userId: string,
-  rawUrl: string
+  rawUrl: string,
+  t: ImportTranslator
 ): Promise<ImportOutcome> {
   const platform = detectImportPlatform(rawUrl);
   if (!platform) {
-    return { ok: false, status: 400, error: "Lien non reconnu — seules les annonces Airbnb peuvent être importées pour l'instant" };
+    return { ok: false, status: 400, error: t("unrecognizedLink") };
   }
   if (platform === "vrbo") {
-    return { ok: false, status: 400, error: "L'import depuis VRBO n'est pas encore disponible, seul Airbnb est supporté pour l'instant." };
+    return { ok: false, status: 400, error: t("vrboNotSupported") };
   }
 
   const { data: profile } = await supabase.from("users").select("role").eq("id", userId).single();
   if (profile?.role !== "host" && profile?.role !== "admin") {
-    return { ok: false, status: 403, error: "Accès réservé aux propriétaires" };
+    return { ok: false, status: 403, error: t("ownersOnly") };
   }
 
   const admin = adminSupabase();
@@ -186,7 +187,7 @@ export async function importAirbnbListing(
   }
 
   if (!(await checkAiRateLimit(supabase, userId, "listings-import-apify"))) {
-    return { ok: false, status: 429, error: "Vous avez atteint la limite de 20 imports par heure. Réessayez plus tard." };
+    return { ok: false, status: 429, error: t("rateLimitReached") };
   }
 
   let items: unknown[];
@@ -202,17 +203,18 @@ export async function importAirbnbListing(
         checkIn: checkIn.toISOString().slice(0, 10),
         checkOut: checkOut.toISOString().slice(0, 10),
       },
-      APIFY_TIMEOUT_MS
+      APIFY_TIMEOUT_MS,
+      t
     );
   } catch (err) {
-    const message = err instanceof ApifyImportError ? err.message : "Échec de l'extraction des données de l'annonce";
+    const message = err instanceof ApifyImportError ? err.message : t("extractionFailed");
     console.error("listingImport: échec Apify", err);
     return { ok: false, status: 502, error: message };
   }
 
   const firstItem = items?.[0];
   if (!firstItem || typeof firstItem !== "object") {
-    return { ok: false, status: 502, error: "Aucune donnée n'a pu être extraite de ce lien. Vérifiez qu'il s'agit bien d'une annonce publique." };
+    return { ok: false, status: 502, error: t("noDataExtracted") };
   }
 
   const mapped = mapAirbnbItem(firstItem as Record<string, unknown>);
@@ -251,7 +253,7 @@ export async function importAirbnbListing(
 
   if (insertError || !listing) {
     console.error("listingImport: échec insert listings", insertError);
-    return { ok: false, status: 500, error: "Échec de la création de l'annonce importée" };
+    return { ok: false, status: 500, error: t("creationFailed") };
   }
 
   try {
