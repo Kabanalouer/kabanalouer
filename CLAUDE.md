@@ -681,11 +681,26 @@ Refonte complète du système d'équipements ("Caractéristiques" → "Équipeme
 4. JSON-LD (`lib/listing-schema.ts`) : chaque équipement avec détails expose maintenant un résumé (`description`) dans son `amenityFeature`, pour qu'un agent IA lisant seulement le JSON-LD ait la même information qu'un visiteur humain. Audit GEO complet confirmant que nom/adresse/capacité/chambres/salles de bain/politiques fumeur et animaux étaient déjà bien exposés.
 5. Chaque étape testée en conditions réelles sur la fiche `chalet-authentik-50` (seule fiche en base) — migrations de données présentées et confirmées avant écriture à chaque fois, catalogue et ordre de priorité vérifiés par script (aucun id orphelin ou dupliqué).
 
+### Session du 2026-09-21 — Audit statique version anglaise du dashboard + corrections
+
+Audit de code (sans session live) de l'espace proprio et de l'édition d'annonce en anglais, suivi de 3 vagues de corrections, tout committé/pushé.
+
+- **Audit** : script Node comparant `messages/fr.json`/`messages/en.json` (0 clé manquante dans les deux sens à ce moment), recherche du mot "host" (1 seule occurrence légitime, `privacy.s4D2`, contexte "web hosting"), 1 label EN notablement plus long que le FR flagué pour vérification visuelle (`listings.edit.continueForm`), grep ciblé du texte français codé en dur et des liens `/dashboard/...` non préfixés `/en/`.
+- **Correction #1 — navigation non localisée** : `router.push`/`redirect`/`href` bruts vers `/dashboard/...` remplacés par `lib/localePath.ts` dans 8 fichiers (`EditListingForm.tsx`, `AnalyseSection.tsx`, `DashboardBottomNav.tsx` — présent sur tout le dashboard mobile —, `Sidebar.tsx`, `app/dashboard/page.tsx`, `app/dashboard/listings/page.tsx`, `app/dashboard/listings/new/actions.ts`, `app/dashboard/listings/[id]/availability/page.tsx`).
+- **Correction #2 — texte français codé en dur** : `AvailabilityCalendar.tsx`, `DeleteListingModal.tsx`, `ICalSync.tsx`, `PreviewModal.tsx`, `NewListingStepZero.tsx` entièrement branchés sur next-intl (plusieurs de ces composants avaient déjà leurs clés de traduction FR/EN prêtes dans `messages/*.json` — jamais consommées, voir leçon ci-dessous), plus `PhotoUpload.tsx` (aria-labels, placeholders, erreurs de compression) et 3 lignes ciblées de `app/dashboard/subscription/SubscriptionClient.tsx` (page sensible facturation, périmètre volontairement limité au départ).
+- **Correction #3 (suite au retour de Simon)** : reste de `SubscriptionClient.tsx` traduit intégralement (titre, description, statuts, prix via `formatPriceLabel()` existant, date de renouvellement locale-aware, bandeau offre de lancement) ; messages d'erreur de l'import Airbnb traduits dans `lib/listingImport.ts` et `lib/apify.ts` (fonctions non-composants, `t` passé en paramètre plutôt que hook `useTranslations`) — deux appelants mis à jour : `submitImportRequest` (vraie langue du proprio via `getTranslations`) et `app/api/listings/import/route.ts` (route API confirmée sans appelant UI actuel, hors du middleware next-intl donc fixée explicitement en `fr` pour préserver son comportement).
+- **Leçon technique retenue** : plusieurs composants dashboard avaient déjà leurs clés de traduction FR/EN complètes dans `messages/fr.json`/`en.json` (calendrier, modale de suppression, sync iCal) sans jamais appeler `useTranslations()` — les clés existaient mais n'étaient pas branchées. Un audit de parité de clés seul (`fr.json` vs `en.json`) ne détecte pas ce cas ; il faut aussi vérifier que chaque composant appelle réellement `useTranslations`/`getTranslations`.
+- **Code mort trouvé, non supprimé** : `components/dashboard/Sidebar.tsx` (`DashboardSidebar`) n'est importé nulle part dans le projet — navigation desktop dashboard gérée ailleurs (probablement `Navbar.tsx`), mobile via `DashboardBottomNav.tsx`. Simon a choisi de le garder pour un futur ménage de code mort plutôt que de le retirer maintenant.
+
 ---
 
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### Code mort à nettoyer un jour — `components/dashboard/Sidebar.tsx` (2026-09-21)
+
+`DashboardSidebar` n'est importé nulle part dans le projet (recherche exhaustive faite, voir section 13). Simon a explicitement demandé de le laisser tel quel pour l'instant, à retirer lors d'un futur ménage de code mort plutôt que maintenant.
 
 ### Titre de test laissé sur une annonce brouillon (2026-07-09)
 
