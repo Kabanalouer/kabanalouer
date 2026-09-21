@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
@@ -22,13 +22,13 @@ function getGrid(y: number, m: number): (number | null)[] {
 }
 
 function CalendarMonth({
-  year, month, today, checkin, checkout, hoverDate,
+  year, month, today, checkin, checkout, hoverDate, blockedDates,
   onDayClick, onDayEnter, onDayLeave,
   showPrev, showNext, onPrev, onNext,
   monthNames, dayNames,
 }: {
   year: number; month: number; today: string;
-  checkin: string; checkout: string; hoverDate: string;
+  checkin: string; checkout: string; hoverDate: string; blockedDates: Set<string>;
   onDayClick: (d: string) => void; onDayEnter: (d: string) => void; onDayLeave: () => void;
   showPrev: boolean; showNext: boolean; onPrev: () => void; onNext: () => void;
   monthNames: string[]; dayNames: string[];
@@ -56,6 +56,8 @@ function CalendarMonth({
           if (day === null) return <div key={`e-${i}`} className="h-8" />;
           const ds = toISO(year, month, day);
           const isPast = ds < today;
+          const isBlocked = !isPast && blockedDates.has(ds);
+          const isDisabled = isPast || isBlocked;
           const isStart = ds === checkin;
           const isEnd = ds === checkout;
           const isHoverEnd = !checkout && !!checkin && ds === hoverDate && ds > checkin;
@@ -67,12 +69,13 @@ function CalendarMonth({
               {(isEnd || isHoverEnd) && <div className="absolute inset-y-0.5 left-0 right-1/2 bg-primary/10" />}
               {inRange && <div className="absolute inset-y-0.5 left-0 right-0 bg-primary/10" />}
               <button
-                disabled={isPast}
-                onClick={() => !isPast && onDayClick(ds)}
-                onMouseEnter={() => !isPast && onDayEnter(ds)}
+                disabled={isDisabled}
+                onClick={() => !isDisabled && onDayClick(ds)}
+                onMouseEnter={() => !isDisabled && onDayEnter(ds)}
                 onMouseLeave={onDayLeave}
                 className={["relative z-10 w-8 h-8 flex items-center justify-center text-xs rounded-full transition-all",
                   isPast ? "text-charcoal-200 cursor-not-allowed" :
+                  isBlocked ? "text-charcoal-300 line-through cursor-not-allowed bg-charcoal-50" :
                   isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
                   "hover:bg-charcoal-50 text-charcoal-800 cursor-pointer"].join(" ")}
@@ -103,6 +106,10 @@ interface Props {
   initialPets?: number;
   price?: number | null;
   priceOnRequest?: boolean;
+  capacity: number;
+  petsAllowed: boolean;
+  blockedDates?: string[];
+  hideMessage?: boolean;
 }
 
 function hostSinceDuration(
@@ -123,6 +130,7 @@ export default function ContactForm({
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
+  capacity, petsAllowed, blockedDates, hideMessage,
 }: Props) {
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
@@ -141,6 +149,8 @@ export default function ContactForm({
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const calRef = useRef<HTMLDivElement>(null);
+
+  const blockedSet = useMemo(() => new Set(blockedDates ?? []), [blockedDates]);
 
   const [adults, setAdults] = useState(initialAdults ?? 0);
   const [children, setChildren] = useState(initialChildren ?? 0);
@@ -172,11 +182,8 @@ export default function ContactForm({
     else { setCheckin(ds); setCheckout(""); }
   };
 
-  const datesLabel = checkin
-    ? `${formatShort(checkin, monthNamesShort)} → ${checkout ? formatShort(checkout, monthNamesShort) : t("departureLabel")}`
-    : null;
-
-  const guestTotal = adults + children + babies;
+  const guestTotal = adults + children + babies + pets;
+  const atCapacity = guestTotal >= capacity;
   const canSubmit = !!(checkin || guestTotal > 0 || pets > 0 || message.trim());
 
   const handleSubmit = async () => {
@@ -225,7 +232,7 @@ export default function ContactForm({
         href={`/login?next=/chalets/${listingId}`}
         className="block w-full bg-primary text-white py-3.5 rounded-full font-bold text-center hover:bg-primary/90 transition-colors text-sm"
       >
-        {t("mobileContactCta")}
+        {t("quoteRequestCta")}
       </Link>
     );
   }
@@ -300,25 +307,34 @@ export default function ContactForm({
       {/* Dates */}
       <p className="text-sm font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
       <div ref={calRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setCalendarOpen((o) => !o)}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#ebebeb] text-left hover:border-charcoal-200 transition-colors"
-        >
-          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span className={`text-sm ${datesLabel ? "text-charcoal-800" : "text-charcoal-400"}`}>
-            {datesLabel ?? t("datesPlaceholder")}
-          </span>
-        </button>
+        <div className="grid grid-cols-2 rounded-xl border border-[#ebebeb] overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setCalendarOpen((o) => !o)}
+            className="flex flex-col items-start gap-0.5 px-3 py-2 text-left border-r border-[#ebebeb] hover:bg-charcoal-50 transition-colors"
+          >
+            <span className="text-[11px] font-medium text-charcoal-400">{t("arrivalLabel")}</span>
+            <span className={`text-sm ${checkin ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
+              {checkin ? formatShort(checkin, monthNamesShort) : t("addDate")}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCalendarOpen((o) => !o)}
+            className="flex flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-charcoal-50 transition-colors"
+          >
+            <span className="text-[11px] font-medium text-charcoal-400">{t("departureLabel")}</span>
+            <span className={`text-sm ${checkout ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
+              {checkout ? formatShort(checkout, monthNamesShort) : t("addDate")}
+            </span>
+          </button>
+        </div>
 
         {calendarOpen && (
           <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] p-4 z-50 w-full">
             <CalendarMonth
               year={calYear} month={calMonth} today={today}
-              checkin={checkin} checkout={checkout} hoverDate={hoverDate}
+              checkin={checkin} checkout={checkout} hoverDate={hoverDate} blockedDates={blockedSet}
               onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
               showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
               monthNames={monthNames} dayNames={dayNames}
@@ -344,21 +360,23 @@ export default function ContactForm({
             onDecr: () => setAdults((v) => Math.max(0, v - 1)),
             onIncr: () => setAdults((v) => v + 1),
             decrDis: adults === 0 || (adults === 1 && children + babies > 0),
-            incrDis: guestTotal >= 40 },
+            incrDis: atCapacity },
           { label: ts("children"), sub: ts("childrenSub"), val: children,
             onDecr: () => setChildren((v) => Math.max(0, v - 1)),
             onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
             decrDis: children === 0,
-            incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
+            incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
           { label: ts("babies"), sub: ts("babiesSub"), val: babies,
             onDecr: () => setBabies((v) => Math.max(0, v - 1)),
             onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
             decrDis: babies === 0,
-            incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-          { label: ts("pets"), sub: ts("petsSub"), val: pets,
+            incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
+          ...(petsAllowed ? [{
+            label: ts("pets"), sub: ts("petsSub"), val: pets,
             onDecr: () => setPets((v) => Math.max(0, v - 1)),
             onIncr: () => setPets((v) => v + 1),
-            decrDis: pets === 0, incrDis: pets >= 5 },
+            decrDis: pets === 0, incrDis: pets >= 5 || atCapacity,
+          }] : []),
         ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx) => (
           <div key={label} className={idx > 0 ? "border-t border-[#ebebeb]" : ""}>
             <div className="flex items-center justify-between px-3 py-2.5">
@@ -389,15 +407,20 @@ export default function ContactForm({
           </div>
         ))}
       </div>
+      {atCapacity && (
+        <p className="text-xs text-charcoal-400">{t("capacityMaxMessage", { count: capacity })}</p>
+      )}
 
-      {/* Message */}
-      <textarea
-        placeholder={t("messagePlaceholderOptional")}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        rows={3}
-        className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
-      />
+      {/* Message — masqué en mobile (feuille modale, voir MobileContactTrigger) */}
+      {!hideMessage && (
+        <textarea
+          placeholder={t("messagePlaceholderOptional")}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
+        />
+      )}
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 

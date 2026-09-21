@@ -2,6 +2,7 @@ import Link from "next/link";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import ContactForm from "@/components/chalets/ContactForm";
+import MobileContactTrigger from "@/components/chalets/MobileContactTrigger";
 import AvailabilityView from "@/components/chalets/AvailabilityView";
 import ListingMap from "@/components/chalets/ListingMap";
 import ExpandableText from "@/components/chalets/ExpandableText";
@@ -107,6 +108,11 @@ export default async function ListingDetail({ listing, user, searchParams, local
     .eq("listing_id", id)
     .eq("is_blocked", true)
     .order("date", { ascending: true });
+
+  // Widget dates/voyageurs de la fiche publique (ContactForm) — mêmes dates
+  // bloquées que la section "Disponibilités" (AvailabilityView) plus bas,
+  // une seule requête pour les deux.
+  const blockedDateStrings = (availability ?? []).map((a) => a.date as string);
 
   const { data: rooms } = await supabase
     .from("rooms")
@@ -619,6 +625,9 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     initialAdults={parseInt(urlCapacity ?? "0") || 0}
                     price={listing.price_low as number | null}
                     priceOnRequest={!!(listing.price_on_request)}
+                    capacity={listing.capacity as number}
+                    petsAllowed={!!listing.pets_allowed}
+                    blockedDates={blockedDateStrings}
                   />
                   <p className="text-xs text-charcoal-400 text-center mt-3">
                     {t("contactDirect")}
@@ -646,18 +655,30 @@ export default async function ListingDetail({ listing, user, searchParams, local
               </div>
             )}
             {user ? (
-              <a
-                href="#contact-form"
-                className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
-              >
-                {t("mobileContactCta")}
-              </a>
+              <MobileContactTrigger
+                label={t("quoteRequestCta")}
+                listingId={listing.id}
+                hostId={host?.id ?? ""}
+                hostName={host?.name ?? "le propriétaire"}
+                hostAvatarUrl={host?.avatar_url ?? null}
+                hostCreatedAt={host?.created_at ?? null}
+                listingTitle={listing.title}
+                currentUserId={user?.id ?? null}
+                initialCheckin={urlCheckin}
+                initialCheckout={urlCheckout}
+                initialAdults={parseInt(urlCapacity ?? "0") || 0}
+                price={listing.price_low as number | null}
+                priceOnRequest={!!(listing.price_on_request)}
+                capacity={listing.capacity as number}
+                petsAllowed={!!listing.pets_allowed}
+                blockedDates={blockedDateStrings}
+              />
             ) : (
               <a
                 href={`${localePath("/login", locale)}?next=${canonicalPath}`}
                 className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
               >
-                {t("mobileContactCta")}
+                {t("quoteRequestCta")}
               </a>
             )}
           </div>
