@@ -88,17 +88,17 @@ const SECTIONS: Array<{
   sectionKey: string;
   isComplete: (f: FormState) => boolean;
 }> = [
-  { id: "photos",       sectionKey: "photos",    isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
   { id: "titre",        sectionKey: "title",     isComplete: (f) => f.title.trim().length > 0 },
   { id: "description",  sectionKey: "description", isComplete: (f) => f.description.trim().length >= DESC_MIN },
+  { id: "photos",       sectionKey: "photos",    isComplete: (f) => (f.photos as PhotoItem[]).length >= MIN_PHOTOS },
   { id: "capacite",     sectionKey: "capacity",  isComplete: (f) => f.capacity > 0 && f.bedrooms > 0 },
   { id: "chambres",     sectionKey: "rooms",     isComplete: () => true },
   { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
+  { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
+  { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
   { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
-  { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
-  { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
   { id: "lienPersonnalise", sectionKey: "customSlug", isComplete: () => true },
   { id: "promotions",   sectionKey: "promotions", isComplete: () => true },
   { id: "analyse",      sectionKey: "analysis",  isComplete: () => true },
