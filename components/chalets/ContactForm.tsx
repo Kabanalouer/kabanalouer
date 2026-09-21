@@ -156,6 +156,8 @@ export default function ContactForm({
   const [children, setChildren] = useState(initialChildren ?? 0);
   const [babies, setBabies] = useState(initialBabies ?? 0);
   const [pets, setPets] = useState(initialPets ?? 0);
+  const [guestsOpen, setGuestsOpen] = useState(false);
+  const guestsRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
 
   const [sending, setSending] = useState(false);
@@ -172,6 +174,16 @@ export default function ContactForm({
     return () => document.removeEventListener("mousedown", h);
   }, [calendarOpen]);
 
+  // Close guests panel on outside click
+  useEffect(() => {
+    if (!guestsOpen) return;
+    const h = (e: MouseEvent) => {
+      if (!guestsRef.current?.contains(e.target as Node)) setGuestsOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [guestsOpen]);
+
   const canGoPrev = calYear > now.getFullYear() || (calYear === now.getFullYear() && calMonth > now.getMonth());
   const goPrev = () => { if (calMonth === 0) { setCalYear((y) => y - 1); setCalMonth(11); } else setCalMonth((m) => m - 1); };
   const goNext = () => { if (calMonth === 11) { setCalYear((y) => y + 1); setCalMonth(0); } else setCalMonth((m) => m + 1); };
@@ -185,6 +197,16 @@ export default function ContactForm({
   const guestTotal = adults + children + babies + pets;
   const atCapacity = guestTotal >= capacity;
   const canSubmit = !!(checkin || guestTotal > 0 || pets > 0 || message.trim());
+
+  // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
+  // (adultes + enfants + bébés) et les animaux sont deux clauses distinctes,
+  // jamais fondues dans un seul total (ex. "1 voyageur, 1 animal de
+  // compagnie"), même si les animaux comptent dans guestTotal ci-dessus pour
+  // le plafond de capacité.
+  const humanTotal = adults + children + babies;
+  const guestsSummary = pets > 0
+    ? `${ts("guestsCount", { count: humanTotal })}, ${t("guestPetsSummary", { count: pets })}`
+    : ts("guestsCount", { count: humanTotal });
 
   const handleSubmit = async () => {
     setSending(true);
@@ -353,63 +375,76 @@ export default function ContactForm({
         )}
       </div>
 
-      {/* Guests */}
-      <div className="rounded-xl border border-[#ebebeb]">
-        {([
-          { label: ts("adults"), sub: ts("adultsSub"), val: adults,
-            onDecr: () => setAdults((v) => Math.max(0, v - 1)),
-            onIncr: () => setAdults((v) => v + 1),
-            decrDis: adults === 0 || (adults === 1 && children + babies > 0),
-            incrDis: atCapacity },
-          { label: ts("children"), sub: ts("childrenSub"), val: children,
-            onDecr: () => setChildren((v) => Math.max(0, v - 1)),
-            onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
-            decrDis: children === 0,
-            incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
-          { label: ts("babies"), sub: ts("babiesSub"), val: babies,
-            onDecr: () => setBabies((v) => Math.max(0, v - 1)),
-            onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
-            decrDis: babies === 0,
-            incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
-          ...(petsAllowed ? [{
-            label: ts("pets"), sub: ts("petsSub"), val: pets,
-            onDecr: () => setPets((v) => Math.max(0, v - 1)),
-            onIncr: () => setPets((v) => v + 1),
-            decrDis: pets === 0, incrDis: pets >= 5 || atCapacity,
-          }] : []),
-        ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx) => (
-          <div key={label} className={idx > 0 ? "border-t border-[#ebebeb]" : ""}>
-            <div className="flex items-center justify-between px-3 py-2.5">
-              <div>
-                <p className="text-sm font-medium text-charcoal-800">{label}</p>
-                <p className="text-xs text-charcoal-400">{sub}</p>
+      {/* Voyageurs — champ replié, s'ouvre sur clic comme le champ dates */}
+      <div ref={guestsRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setGuestsOpen((o) => !o)}
+          className="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-left rounded-xl border border-[#ebebeb] hover:border-charcoal-200 transition-colors"
+        >
+          <span className="text-[11px] font-medium text-charcoal-400">{ts("guestsPlaceholder")}</span>
+          <span className="text-sm text-charcoal-800 font-medium">{guestsSummary}</span>
+        </button>
+
+        {guestsOpen && (
+          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] z-50 w-full">
+            {([
+              { label: ts("adults"), sub: ts("adultsSub"), val: adults,
+                onDecr: () => setAdults((v) => Math.max(0, v - 1)),
+                onIncr: () => setAdults((v) => v + 1),
+                decrDis: adults === 0 || (adults === 1 && children + babies > 0),
+                incrDis: atCapacity },
+              { label: ts("children"), sub: ts("childrenSub"), val: children,
+                onDecr: () => setChildren((v) => Math.max(0, v - 1)),
+                onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
+                decrDis: children === 0,
+                incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
+              { label: ts("babies"), sub: ts("babiesSub"), val: babies,
+                onDecr: () => setBabies((v) => Math.max(0, v - 1)),
+                onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
+                decrDis: babies === 0,
+                incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
+              ...(petsAllowed ? [{
+                label: ts("pets"), sub: ts("petsSub"), val: pets,
+                onDecr: () => setPets((v) => Math.max(0, v - 1)),
+                onIncr: () => setPets((v) => v + 1),
+                decrDis: pets === 0, incrDis: pets >= 5 || atCapacity,
+              }] : []),
+            ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx) => (
+              <div key={label} className={idx > 0 ? "border-t border-[#ebebeb]" : ""}>
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <div>
+                    <p className="text-sm font-medium text-charcoal-800">{label}</p>
+                    <p className="text-xs text-charcoal-400">{sub}</p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={onDecr}
+                      disabled={decrDis}
+                      className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <span className="w-4 text-center text-sm font-medium text-charcoal-800">{val}</span>
+                    <button
+                      type="button"
+                      onClick={onIncr}
+                      disabled={incrDis}
+                      className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={onDecr}
-                  disabled={decrDis}
-                  className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
-                </button>
-                <span className="w-4 text-center text-sm font-medium text-charcoal-800">{val}</span>
-                <button
-                  type="button"
-                  onClick={onIncr}
-                  disabled={incrDis}
-                  className="w-7 h-7 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                </button>
-              </div>
-            </div>
+            ))}
+            {atCapacity && (
+              <p className="text-xs text-charcoal-400 px-3 pb-2.5">{t("capacityMaxMessage", { count: capacity })}</p>
+            )}
           </div>
-        ))}
+        )}
       </div>
-      {atCapacity && (
-        <p className="text-xs text-charcoal-400">{t("capacityMaxMessage", { count: capacity })}</p>
-      )}
 
       {/* Message — masqué en mobile (feuille modale, voir MobileContactTrigger) */}
       {!hideMessage && (

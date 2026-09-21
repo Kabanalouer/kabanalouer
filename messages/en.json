@@ -730,6 +730,7 @@
     "guestChildrenCount": "{count, plural, one {{count} child} other {{count} children}}",
     "guestBabiesCount": "{count, plural, one {{count} infant} other {{count} infants}}",
     "guestPetsCount": "{count, plural, one {{count} pet} other {{count} pets}}",
+    "guestPetsSummary": "{count, plural, one {{count} pet} other {{count} pets}}",
     "datesLine": "Dates: {range}",
     "departureOnly": "arrival only",
     "guestsLine": "Travelers: {detail}"
