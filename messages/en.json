@@ -471,6 +471,11 @@
     "addLink": "Add",
     "dismiss": "Close"
   },
+  "profileCompletionReminder": {
+    "message": "Add a profile photo and a bio to optimize your listing.",
+    "completeLink": "Complete my profile",
+    "dismiss": "Close"
+  },
   "reviews": {
     "heading": "My reviews",
     "count": "{count} reviews received",

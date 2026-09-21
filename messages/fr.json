@@ -471,6 +471,11 @@
     "addLink": "Ajouter",
     "dismiss": "Fermer"
   },
+  "profileCompletionReminder": {
+    "message": "Ajouter une photo de profil et une bio pour optimiser votre annonce.",
+    "completeLink": "Compléter mon profil",
+    "dismiss": "Fermer"
+  },
   "reviews": {
     "heading": "Mes avis",
     "count": "{count} avis reçus",
