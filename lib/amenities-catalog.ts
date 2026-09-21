@@ -32,6 +32,16 @@ export interface AmenityDetailField {
   // tel quel — n'affecte aucun champ qui ne les définit pas.
   summaryLabels?: string[];
   summaryLabelsEn?: string[];
+  // Équivalent de summaryLabels/summaryLabelsEn pour un champ "boolean" (une
+  // seule valeur affichée, à true) — ex. "Disponible toute l'année" devient
+  // "À l'année" dans le résumé. Si absent, retombe sur label/labelEn.
+  summaryLabel?: string;
+  summaryLabelEn?: string;
+  // N'affiche jamais ce champ dans le résumé (dashboard + fiche publique +
+  // JSON-LD), même rempli — reste éditable dans le panneau de détails, juste
+  // jamais mentionné dans le texte généré. Ex. l'emplacement du Spa
+  // (Intérieur/Extérieur), jugé redondant à afficher.
+  excludeFromSummary?: boolean;
 }
 
 export interface AmenityCategory {
@@ -326,10 +336,13 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     categoryId: "exterieur",
     icon: "SpaSteam",
     detailSchema: [
-      { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieur", "Extérieur"], optionsEn: ["Indoor", "Outdoor"] },
+      { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieur", "Extérieur"], optionsEn: ["Indoor", "Outdoor"], excludeFromSummary: true },
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
       { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20, unit: "pers." },
-      { key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round" },
+      {
+        key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round",
+        summaryLabel: "À l'année", summaryLabelEn: "Year-round",
+      },
     ],
   },
   {
@@ -551,6 +564,10 @@ export function summarizeAmenityDetails(
   const combo = RENTAL_SUMMARY_COMBOS[entry.id];
 
   for (const field of entry.detailSchema) {
+    // Champ jamais affiché dans le résumé (ex. l'emplacement du Spa) — reste
+    // éditable dans le panneau de détails, juste jamais mentionné ici.
+    if (field.excludeFromSummary) continue;
+
     // Le champ Gratuit/Payant d'une combo est plié dans son champ déclencheur
     // ci-dessous — jamais affiché comme une partie séparée du résumé.
     if (combo && field.key === combo.priceKey) continue;
@@ -575,7 +592,7 @@ export function summarizeAmenityDetails(
     if (value === undefined || value === null || value === "") continue;
 
     if (field.type === "boolean") {
-      if (value === true) parts.push(isEn ? field.labelEn : field.label);
+      if (value === true) parts.push(isEn ? (field.summaryLabelEn ?? field.labelEn) : (field.summaryLabel ?? field.label));
     } else if (field.type === "number") {
       parts.push(field.unit ? `${value} ${field.unit}` : String(value));
     } else if (field.type === "hours" && typeof value === "object") {
@@ -587,12 +604,9 @@ export function summarizeAmenityDetails(
     } else if (field.type === "multi-select" && Array.isArray(value)) {
       const values = (value as unknown[]).filter((v): v is string => typeof v === "string");
       if (values.length === 0) continue;
-      // Au-delà de 2 choix, l'énumération complète (ex. les 4 types de
-      // cafetière) devient trop longue pour un résumé sur une seule ligne —
-      // le nombre de choix suffit, le détail complet reste visible dans le
-      // panneau d'édition.
-      if (values.length > 2) parts.push(isEn ? `${values.length} options` : `${values.length} choix`);
-      else parts.push(values.map((v) => translateOptionValue(field, v, locale)).join("/"));
+      // Énumération complète, en toutes lettres — un seul type (ex.
+      // cafetière filtre seule) s'affiche donc directement sans séparateur.
+      parts.push(values.map((v) => translateOptionValue(field, v, locale)).join(", "));
     }
   }
 
