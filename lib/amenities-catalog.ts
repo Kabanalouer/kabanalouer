@@ -67,48 +67,55 @@ export interface AmenityValue {
 }
 
 export const AMENITY_CATEGORIES: AmenityCategory[] = [
-  { id: "essentiels", label: "Essentiels", labelEn: "Essentials" },
-  { id: "salle-de-bain", label: "Salle de bain", labelEn: "Bathroom" },
-  { id: "chambre-et-linge", label: "Chambre et linge", labelEn: "Bedroom and laundry" },
-  { id: "divertissement", label: "Divertissement", labelEn: "Entertainment" },
-  { id: "famille", label: "Famille", labelEn: "Family" },
-  { id: "chauffage-et-climatisation", label: "Chauffage et climatisation", labelEn: "Heating and cooling" },
-  { id: "securite", label: "Sécurité", labelEn: "Safety" },
-  { id: "internet-et-bureau", label: "Internet et bureau", labelEn: "Internet and office" },
   { id: "cuisine-et-repas", label: "Cuisine et repas", labelEn: "Kitchen and dining" },
   { id: "emplacement", label: "Emplacement", labelEn: "Location" },
+  { id: "divertissement", label: "Divertissement", labelEn: "Entertainment" },
   { id: "exterieur", label: "Extérieur", labelEn: "Outdoor" },
+  { id: "essentiels", label: "Essentiels", labelEn: "Essentials" },
+  { id: "chauffage-et-climatisation", label: "Chauffage et climatisation", labelEn: "Heating and cooling" },
   { id: "stationnement", label: "Stationnement", labelEn: "Parking" },
+  { id: "securite", label: "Sécurité", labelEn: "Safety" },
   { id: "services", label: "Services", labelEn: "Services" },
 ];
 
 export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
-  // Essentiels
-  { id: "literie-serviettes", label: "Literie et serviettes incluses", labelEn: "Bedding and towels included", categoryId: "essentiels", icon: "BedDouble" },
-  { id: "savon-shampoing", label: "Savon et shampoing", labelEn: "Soap and shampoo", categoryId: "essentiels", icon: "Droplet" },
-  { id: "papier-hygienique", label: "Papier hygiénique", labelEn: "Toilet paper", categoryId: "essentiels", icon: "Package" },
-  { id: "produits-nettoyage", label: "Produits de nettoyage", labelEn: "Cleaning products", categoryId: "essentiels", icon: "Sparkles" },
-
-  // Salle de bain
-  { id: "baignoire", label: "Baignoire", labelEn: "Bathtub", categoryId: "salle-de-bain", icon: "Bath" },
-  { id: "seche-cheveux", label: "Sèche-cheveux", labelEn: "Hair dryer", categoryId: "salle-de-bain", icon: "Wind" },
-  { id: "serviettes-piscine", label: "Serviettes de piscine", labelEn: "Pool towels", categoryId: "salle-de-bain", icon: "Waves" },
-
-  // Chambre et linge
-  { id: "cintres", label: "Cintres", labelEn: "Hangers", categoryId: "chambre-et-linge", icon: "Shirt" },
-  { id: "fer-a-repasser", label: "Fer à repasser", labelEn: "Iron", categoryId: "chambre-et-linge", icon: "Sparkles" },
+  // Cuisine et repas
+  { id: "cuisine-complete", label: "Cuisine complète avec vaisselle et chaudrons", labelEn: "Fully equipped kitchen", categoryId: "cuisine-et-repas", icon: "CookingPot" },
+  { id: "refrigerateur", label: "Réfrigérateur", labelEn: "Refrigerator", categoryId: "cuisine-et-repas", icon: "Refrigerator" },
+  { id: "four", label: "Four", labelEn: "Oven", categoryId: "cuisine-et-repas", icon: "Flame" },
+  { id: "cuisiniere", label: "Cuisinière", labelEn: "Stove", categoryId: "cuisine-et-repas", icon: "Flame" },
+  { id: "micro-ondes", label: "Four à micro-ondes", labelEn: "Microwave", categoryId: "cuisine-et-repas", icon: "Microwave" },
+  { id: "lave-vaisselle", label: "Lave-vaisselle", labelEn: "Dishwasher", categoryId: "cuisine-et-repas", icon: "Sparkles" },
   {
-    id: "buanderie",
-    label: "Buanderie",
-    labelEn: "Laundry",
-    categoryId: "chambre-et-linge",
-    icon: "WashingMachine",
+    id: "cafetiere",
+    label: "Cafetière",
+    labelEn: "Coffee maker",
+    categoryId: "cuisine-et-repas",
+    icon: "Coffee",
     detailSchema: [
-      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+      {
+        key: "type", type: "multi-select", label: "Type", labelEn: "Type",
+        options: ["Filtre", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Espresso manuelle", "Percolateur"],
+        optionsEn: ["Drip", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Manual espresso", "Percolator"],
+      },
     ],
   },
-  { id: "draps-supplementaires", label: "Draps et oreillers supplémentaires", labelEn: "Extra sheets and pillows", categoryId: "chambre-et-linge", icon: "BedDouble" },
-  { id: "rideaux-occultants", label: "Rideaux occultants", labelEn: "Blackout curtains", categoryId: "chambre-et-linge", icon: "Moon" },
+
+  // Emplacement
+  { id: "bord-eau", label: "Bord de l'eau", labelEn: "Waterfront", categoryId: "emplacement", icon: "Waves" },
+  { id: "ski-in-ski-out", label: "Ski in / Ski out", labelEn: "Ski in / Ski out", categoryId: "emplacement", icon: "Mountain" },
+  {
+    id: "situe-resort",
+    label: "Situé sur un resort",
+    labelEn: "Resort location",
+    categoryId: "emplacement",
+    icon: "Building2",
+    detailSchema: [
+      { key: "accesInclus", type: "boolean", label: "Accès inclus", labelEn: "Access included" },
+    ],
+  },
+  { id: "sentiers-randonnee", label: "Sentier de randonnée sur le site", labelEn: "On-site hiking trail", categoryId: "emplacement", icon: "Footprints" },
+  { id: "acces-motoneige-vtt", label: "Accès direct aux sentiers de motoneige/VTT", labelEn: "Direct access to snowmobile/ATV trails", categoryId: "emplacement", icon: "Route" },
 
   // Divertissement
   {
@@ -179,77 +186,24 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
   },
-
-  // Famille
   {
-    id: "module-jeux-enfant",
-    label: "Module de jeux pour enfant",
-    labelEn: "Children's play area",
-    categoryId: "famille",
-    icon: "Baby",
+    id: "piscine-interieure",
+    label: "Piscine intérieure",
+    labelEn: "Indoor pool",
+    categoryId: "divertissement",
+    icon: "IndoorPool",
     detailSchema: [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+      { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
+      { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
   },
-  { id: "lit-bebe", label: "Lit de bébé (parc)", labelEn: "Crib", categoryId: "famille", icon: "Baby" },
-  { id: "chaise-haute", label: "Chaise haute", labelEn: "High chair", categoryId: "famille", icon: "Baby" },
-  { id: "barrieres-securite", label: "Barrières de sécurité pour enfants", labelEn: "Child safety gates", categoryId: "famille", icon: "ShieldCheck" },
-  { id: "jouets-enfants", label: "Jouets et livres pour enfants", labelEn: "Toys and books for children", categoryId: "famille", icon: "Blocks" },
-
-  // Chauffage et climatisation
-  { id: "climatisation", label: "Climatisation", labelEn: "Air conditioning", categoryId: "chauffage-et-climatisation", icon: "Snowflake" },
-  { id: "chauffage-central", label: "Chauffage central", labelEn: "Central heating", categoryId: "chauffage-et-climatisation", icon: "Thermometer" },
-  {
-    id: "foyer-interieur-bois",
-    label: "Foyer intérieur",
-    labelEn: "Indoor fireplace",
-    categoryId: "chauffage-et-climatisation",
-    icon: "Flame",
-    detailSchema: [
-      {
-        key: "type", type: "single-select", label: "Type", labelEn: "Type",
-        options: ["Bois", "Gaz"], optionsEn: ["Wood", "Gas"],
-        summaryLabels: ["Au bois", "Gaz"],
-      },
-      {
-        key: "boisInclus", type: "single-select", label: "Bois inclus", labelEn: "Wood included",
-        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
-        summaryLabels: ["Bois inclus", "Bois non inclus"], summaryLabelsEn: ["Wood included", "Wood not included"],
-        showIf: { key: "type", equals: "Bois" },
-      },
-    ],
-  },
-  { id: "thermopompe", label: "Thermopompe", labelEn: "Heat pump", categoryId: "chauffage-et-climatisation", icon: "Wind" },
-  { id: "ventilateurs", label: "Ventilateurs", labelEn: "Fans", categoryId: "chauffage-et-climatisation", icon: "Fan" },
-
-  // Sécurité
-  { id: "detecteur-fumee", label: "Détecteur de fumée", labelEn: "Smoke detector", categoryId: "securite", icon: "Siren" },
-  { id: "detecteur-co", label: "Détecteur de monoxyde de carbone", labelEn: "Carbon monoxide detector", categoryId: "securite", icon: "Siren" },
-  { id: "extincteur", label: "Extincteur", labelEn: "Fire extinguisher", categoryId: "securite", icon: "FireExtinguisher" },
-  { id: "trousse-premiers-soins", label: "Trousse de premiers soins", labelEn: "First aid kit", categoryId: "securite", icon: "Cross" },
-  { id: "camera-exterieure", label: "Caméra de sécurité extérieure", labelEn: "Outdoor security camera", categoryId: "securite", icon: "Camera" },
-  {
-    id: "serrure-electronique",
-    label: "Arrivée autonome",
-    labelEn: "Self check-in",
-    categoryId: "securite",
-    icon: "KeyRound",
-    detailSchema: [
-      {
-        key: "type", type: "single-select", label: "Type", labelEn: "Type",
-        options: ["Serrure électronique", "Boîte à clé"],
-        optionsEn: ["Electronic lock", "Lockbox"],
-      },
-    ],
-  },
-
-  // Internet et bureau
-  { id: "wifi", label: "Wifi", labelEn: "Wifi", categoryId: "internet-et-bureau", icon: "Wifi" },
+  { id: "wifi", label: "Wifi", labelEn: "Wifi", categoryId: "divertissement", icon: "Wifi" },
   {
     id: "espace-travail",
     label: "Espace de travail (télétravail)",
     labelEn: "Workspace (remote work)",
-    categoryId: "internet-et-bureau",
+    categoryId: "divertissement",
     icon: "Laptop",
     detailSchema: [
       {
@@ -259,44 +213,6 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
       },
     ],
   },
-
-  // Cuisine et repas
-  { id: "cuisine-complete", label: "Cuisine complète avec vaisselle et chaudrons", labelEn: "Fully equipped kitchen", categoryId: "cuisine-et-repas", icon: "CookingPot" },
-  { id: "refrigerateur", label: "Réfrigérateur", labelEn: "Refrigerator", categoryId: "cuisine-et-repas", icon: "Refrigerator" },
-  { id: "four", label: "Four", labelEn: "Oven", categoryId: "cuisine-et-repas", icon: "Flame" },
-  { id: "cuisiniere", label: "Cuisinière", labelEn: "Stove", categoryId: "cuisine-et-repas", icon: "Flame" },
-  { id: "micro-ondes", label: "Four à micro-ondes", labelEn: "Microwave", categoryId: "cuisine-et-repas", icon: "Microwave" },
-  { id: "lave-vaisselle", label: "Lave-vaisselle", labelEn: "Dishwasher", categoryId: "cuisine-et-repas", icon: "Sparkles" },
-  {
-    id: "cafetiere",
-    label: "Cafetière",
-    labelEn: "Coffee maker",
-    categoryId: "cuisine-et-repas",
-    icon: "Coffee",
-    detailSchema: [
-      {
-        key: "type", type: "multi-select", label: "Type", labelEn: "Type",
-        options: ["Filtre", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Espresso manuelle", "Percolateur"],
-        optionsEn: ["Drip", "Nespresso Original", "Nespresso Vertuo", "Keurig", "Manual espresso", "Percolator"],
-      },
-    ],
-  },
-
-  // Emplacement
-  { id: "bord-eau", label: "Bord de l'eau", labelEn: "Waterfront", categoryId: "emplacement", icon: "Waves" },
-  { id: "ski-in-ski-out", label: "Ski in / Ski out", labelEn: "Ski in / Ski out", categoryId: "emplacement", icon: "Mountain" },
-  {
-    id: "situe-resort",
-    label: "Situé sur un resort",
-    labelEn: "Resort location",
-    categoryId: "emplacement",
-    icon: "Building2",
-    detailSchema: [
-      { key: "accesInclus", type: "boolean", label: "Accès inclus", labelEn: "Access included" },
-    ],
-  },
-  { id: "sentiers-randonnee", label: "Sentier de randonnée sur le site", labelEn: "On-site hiking trail", categoryId: "emplacement", icon: "Footprints" },
-  { id: "acces-motoneige-vtt", label: "Accès direct aux sentiers de motoneige/VTT", labelEn: "Direct access to snowmobile/ATV trails", categoryId: "emplacement", icon: "Route" },
 
   // Extérieur
   { id: "terrasse", label: "Terrasse", labelEn: "Terrace / deck", categoryId: "exterieur", icon: "Armchair" },
@@ -353,18 +269,6 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     icon: "Thermometer",
     detailSchema: [
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
-    ],
-  },
-  {
-    id: "piscine-interieure",
-    label: "Piscine intérieure",
-    labelEn: "Indoor pool",
-    categoryId: "exterieur",
-    icon: "IndoorPool",
-    detailSchema: [
-      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
-      { key: "chauffee", type: "boolean", label: "Chauffée", labelEn: "Heated" },
-      { key: "horaires", type: "hours", label: "Horaires d'ouverture", labelEn: "Opening hours" },
     ],
   },
   {
@@ -455,6 +359,69 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     ],
   },
   { id: "chalet-bois-rond", label: "Chalet en bois rond", labelEn: "Log cabin", categoryId: "exterieur", icon: "TreePine" },
+  {
+    id: "module-jeux-enfant",
+    label: "Module de jeux pour enfant",
+    labelEn: "Children's play area",
+    categoryId: "exterieur",
+    icon: "Baby",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+
+  // Essentiels
+  { id: "literie-serviettes", label: "Literie et serviettes incluses", labelEn: "Bedding and towels included", categoryId: "essentiels", icon: "BedDouble" },
+  { id: "savon-shampoing", label: "Savon et shampoing", labelEn: "Soap and shampoo", categoryId: "essentiels", icon: "Droplet" },
+  { id: "papier-hygienique", label: "Papier hygiénique", labelEn: "Toilet paper", categoryId: "essentiels", icon: "Package" },
+  { id: "produits-nettoyage", label: "Produits de nettoyage", labelEn: "Cleaning products", categoryId: "essentiels", icon: "Sparkles" },
+  { id: "baignoire", label: "Baignoire", labelEn: "Bathtub", categoryId: "essentiels", icon: "Bath" },
+  { id: "seche-cheveux", label: "Sèche-cheveux", labelEn: "Hair dryer", categoryId: "essentiels", icon: "Wind" },
+  { id: "serviettes-piscine", label: "Serviettes de piscine", labelEn: "Pool towels", categoryId: "essentiels", icon: "Waves" },
+  { id: "cintres", label: "Cintres", labelEn: "Hangers", categoryId: "essentiels", icon: "Shirt" },
+  { id: "fer-a-repasser", label: "Fer à repasser", labelEn: "Iron", categoryId: "essentiels", icon: "Sparkles" },
+  {
+    id: "buanderie",
+    label: "Buanderie",
+    labelEn: "Laundry",
+    categoryId: "essentiels",
+    icon: "WashingMachine",
+    detailSchema: [
+      { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
+    ],
+  },
+  { id: "draps-supplementaires", label: "Draps et oreillers supplémentaires", labelEn: "Extra sheets and pillows", categoryId: "essentiels", icon: "BedDouble" },
+  { id: "rideaux-occultants", label: "Rideaux occultants", labelEn: "Blackout curtains", categoryId: "essentiels", icon: "Moon" },
+  { id: "lit-bebe", label: "Lit de bébé (parc)", labelEn: "Crib", categoryId: "essentiels", icon: "Baby" },
+  { id: "chaise-haute", label: "Chaise haute", labelEn: "High chair", categoryId: "essentiels", icon: "Baby" },
+  { id: "barrieres-securite", label: "Barrières de sécurité pour enfants", labelEn: "Child safety gates", categoryId: "essentiels", icon: "ShieldCheck" },
+  { id: "jouets-enfants", label: "Jouets et livres pour enfants", labelEn: "Toys and books for children", categoryId: "essentiels", icon: "Blocks" },
+
+  // Chauffage et climatisation
+  { id: "climatisation", label: "Climatisation", labelEn: "Air conditioning", categoryId: "chauffage-et-climatisation", icon: "Snowflake" },
+  { id: "chauffage-central", label: "Chauffage central", labelEn: "Central heating", categoryId: "chauffage-et-climatisation", icon: "Thermometer" },
+  {
+    id: "foyer-interieur-bois",
+    label: "Foyer intérieur",
+    labelEn: "Indoor fireplace",
+    categoryId: "chauffage-et-climatisation",
+    icon: "Flame",
+    detailSchema: [
+      {
+        key: "type", type: "single-select", label: "Type", labelEn: "Type",
+        options: ["Bois", "Gaz"], optionsEn: ["Wood", "Gas"],
+        summaryLabels: ["Au bois", "Gaz"],
+      },
+      {
+        key: "boisInclus", type: "single-select", label: "Bois inclus", labelEn: "Wood included",
+        options: ["Oui", "Non"], optionsEn: ["Yes", "No"],
+        summaryLabels: ["Bois inclus", "Bois non inclus"], summaryLabelsEn: ["Wood included", "Wood not included"],
+        showIf: { key: "type", equals: "Bois" },
+      },
+    ],
+  },
+  { id: "thermopompe", label: "Thermopompe", labelEn: "Heat pump", categoryId: "chauffage-et-climatisation", icon: "Wind" },
+  { id: "ventilateurs", label: "Ventilateurs", labelEn: "Fans", categoryId: "chauffage-et-climatisation", icon: "Fan" },
 
   // Stationnement
   {
@@ -470,6 +437,27 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
   },
   { id: "garage", label: "Garage", labelEn: "Garage", categoryId: "stationnement", icon: "Warehouse" },
   { id: "borne-recharge-vr", label: "Borne de recharge pour véhicule électrique", labelEn: "EV charging station", categoryId: "stationnement", icon: "Zap" },
+
+  // Sécurité
+  { id: "detecteur-fumee", label: "Détecteur de fumée", labelEn: "Smoke detector", categoryId: "securite", icon: "Siren" },
+  { id: "detecteur-co", label: "Détecteur de monoxyde de carbone", labelEn: "Carbon monoxide detector", categoryId: "securite", icon: "Siren" },
+  { id: "extincteur", label: "Extincteur", labelEn: "Fire extinguisher", categoryId: "securite", icon: "FireExtinguisher" },
+  { id: "trousse-premiers-soins", label: "Trousse de premiers soins", labelEn: "First aid kit", categoryId: "securite", icon: "Cross" },
+  { id: "camera-exterieure", label: "Caméra de sécurité extérieure", labelEn: "Outdoor security camera", categoryId: "securite", icon: "Camera" },
+  {
+    id: "serrure-electronique",
+    label: "Arrivée autonome",
+    labelEn: "Self check-in",
+    categoryId: "securite",
+    icon: "KeyRound",
+    detailSchema: [
+      {
+        key: "type", type: "single-select", label: "Type", labelEn: "Type",
+        options: ["Serrure électronique", "Boîte à clé"],
+        optionsEn: ["Electronic lock", "Lockbox"],
+      },
+    ],
+  },
 
   // Services
   { id: "menage-inclus", label: "Ménage inclus", labelEn: "Cleaning included", categoryId: "services", icon: "Sparkles" },
