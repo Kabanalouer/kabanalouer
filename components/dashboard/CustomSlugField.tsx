@@ -85,8 +85,11 @@ export default function CustomSlugField({
   return (
     <div>
       {urlPrefix ? (
-        <div className="flex items-stretch border border-[#ebebeb] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition">
-          <span className="flex items-center pl-4 pr-0.5 text-sm text-charcoal-400 bg-charcoal-50 whitespace-nowrap select-none">
+        <div className="flex flex-col sm:flex-row sm:items-stretch border border-[#ebebeb] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition">
+          <span
+            className="block sm:flex sm:items-center px-4 py-2 sm:py-0 sm:pl-4 sm:pr-0.5 text-xs sm:text-sm text-charcoal-400 bg-charcoal-50 border-b sm:border-b-0 border-[#ebebeb] truncate sm:whitespace-nowrap select-none"
+            title={urlPrefix}
+          >
             {urlPrefix}
           </span>
           <input
@@ -97,7 +100,7 @@ export default function CustomSlugField({
               setError(null);
               setJustSaved(false);
             }}
-            className="flex-1 min-w-0 px-1 py-2.5 text-sm text-charcoal-800 focus:outline-none"
+            className="flex-1 min-w-0 px-4 sm:px-1 py-2.5 text-sm text-charcoal-800 focus:outline-none"
             placeholder={tEdit("customSlugPlaceholder")}
           />
         </div>

@@ -225,15 +225,18 @@ export default function AvailabilityCalendar({
         </button>
       </div>
 
-      {/* Day headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      {/* Day headers — étirés en pleine largeur sur mobile (annule le padding
+          de la carte) pour que les cellules du jour ci-dessous atteignent la
+          cible tactile de 44px, sans réduire le nombre de colonnes (7 jours
+          fixes) ni le nombre de mois affichés. */}
+      <div className="-mx-6 sm:mx-0 grid grid-cols-7 gap-0.5 sm:gap-1 mb-1">
         {DAY_NAMES.map((d) => (
           <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
         ))}
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-1" onMouseLeave={() => !readOnly && rangeStart && setHoverDate(null)}>
+      <div className="-mx-6 sm:mx-0 grid grid-cols-7 gap-0.5 sm:gap-1" onMouseLeave={() => !readOnly && rangeStart && setHoverDate(null)}>
         {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`empty-${i}`} />)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day      = i + 1;

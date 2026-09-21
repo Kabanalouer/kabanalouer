@@ -786,7 +786,7 @@ export default function EditListingForm({
           <select
             value={activeSection}
             onChange={(e) => { setActiveSection(e.target.value as SectionId); setSaveError(""); setJustSaved(false); }}
-            className="w-full border border-primary rounded-full text-primary px-4 py-2 pr-8 text-sm font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full min-h-[44px] border border-primary rounded-full text-primary px-4 py-2.5 pr-8 text-sm font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {SECTIONS.map((s) => {
               let suffix = "";
@@ -903,14 +903,14 @@ export default function EditListingForm({
           {isPublished && subStatus === "active" ? (
             <button
               onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
-              className="w-full py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
+              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
             >
               {tEdit("publishedButton")} <span className="text-green-600">✓</span>
             </button>
           ) : (
             <button
               onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
-              className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
+              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
             >
               {tEdit("publishButton")}
             </button>
@@ -920,7 +920,7 @@ export default function EditListingForm({
               type="button"
               onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
               disabled={!isPublished}
-              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
               {tEdit("boostButton")}
             </button>
@@ -935,13 +935,13 @@ export default function EditListingForm({
               onClick={() => setPreviewOpen(true)}
               disabled={!canPreview}
               title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
-              className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
               {tEdit("previewButton")}
             </button>
             <button
               onClick={() => setDeleteModalOpen(true)}
-              className="w-full text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center"
+              className="w-full min-h-[44px] text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center flex items-center justify-center"
             >
               {tEdit("deleteButton")}
             </button>
@@ -1072,7 +1072,7 @@ export default function EditListingForm({
 
                 const titleEnBlock = (
                   <>
-                    <div className="flex items-center justify-between gap-4 mb-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 mb-1.5">
                       <label className="text-sm font-medium text-charcoal-700">{tEdit("titleLabelEn")}</label>
                       <TranslateButton
                         sourceText={form.title}
@@ -1406,11 +1406,11 @@ export default function EditListingForm({
           {/* Section: Calendrier */}
           {activeSection === "calendrier" && (
             <SectionShell title={t("sections.calendar")}>
-              <div className="flex gap-2 mb-6 -mt-1">
+              <div className="flex flex-col sm:flex-row gap-2 mb-6 -mt-1">
                 <button
                   type="button"
                   onClick={() => switchCalendarMode("manual")}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
+                  className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "manual"
                       ? "bg-primary text-white"
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
@@ -1421,7 +1421,7 @@ export default function EditListingForm({
                 <button
                   type="button"
                   onClick={() => switchCalendarMode("ical")}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
+                  className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "ical"
                       ? "bg-primary text-white"
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"

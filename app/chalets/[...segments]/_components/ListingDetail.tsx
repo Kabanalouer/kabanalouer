@@ -676,7 +676,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
             ) : (
               <a
                 href={`${localePath("/login", locale)}?next=${canonicalPath}`}
-                className="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
+                className="bg-primary text-white px-5 py-2.5 min-h-[44px] rounded-full font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
               >
                 {t("quoteRequestCta")}
               </a>
