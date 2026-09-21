@@ -343,7 +343,7 @@ function AddedAmenityRow({
   const hasDetails = !!entry.detailSchema && entry.detailSchema.length > 0;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 border border-[#ebebeb] rounded-xl">
+    <div className="flex items-center gap-3 px-3 py-2.5 bg-white border border-[#ebebeb] border-l-2 border-l-[#636e40] rounded-xl">
       <span className="shrink-0 text-primary">
         <AmenityIcon name={entry.icon} />
       </span>
@@ -465,15 +465,15 @@ export default function AmenitiesPicker({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <h4 className="text-sm font-semibold text-charcoal-800 mb-3">
-          {isEn ? "Added amenities" : "Équipements ajoutés"}
+        <h4 className="sticky top-20 z-10 bg-white text-sm font-semibold text-charcoal-800 pb-3 border-b border-[#ebebeb]">
+          {isEn ? `Added amenities (${selected.length})` : `Équipements ajoutés (${selected.length})`}
         </h4>
         {selected.length === 0 ? (
-          <p className="text-sm text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-6 text-center">
+          <p className="mt-3 text-sm text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-6 text-center">
             {isEn ? "No amenities added yet" : "Aucun équipement ajouté pour l'instant"}
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="mt-3 space-y-2">
             {selected.map((value, index) => {
               const entry = getAmenityCatalogEntry(value.id);
               if (!entry) return null;
@@ -492,12 +492,12 @@ export default function AmenitiesPicker({
         )}
       </div>
 
-      <div>
-        <h4 className="text-sm font-semibold text-charcoal-800 mb-3">
+      <div className="bg-[#f5f6ec] rounded-2xl p-4">
+        <h4 className="sticky top-20 z-10 bg-[#f5f6ec] text-sm font-semibold text-charcoal-800 pb-3">
           {isEn ? "Add amenities" : "Ajouter des équipements"}
         </h4>
 
-        <div className="relative mb-3">
+        <div className="relative mt-3 mb-3">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-300"
             fill="none"
@@ -513,7 +513,7 @@ export default function AmenitiesPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isEn ? "Search an amenity" : "Rechercher un équipement"}
-            className="w-full border border-[#ebebeb] rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full bg-white border border-[#ebebeb] rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
           />
         </div>
 
@@ -544,7 +544,7 @@ export default function AmenitiesPicker({
             filteredCatalog.map((entry) => {
               const active = selectedIds.has(entry.id);
               return (
-                <div key={entry.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-[#ebebeb]">
+                <div key={entry.id} className="flex items-center gap-3 px-3 py-2.5 bg-white rounded-xl border border-[#ebebeb]">
                   <span className="shrink-0 text-charcoal-500">
                     <AmenityIcon name={entry.icon} />
                   </span>
