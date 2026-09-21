@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
-const MONTH_NAMES = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
-const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+const MONTH_KEYS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const;
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 export type BlockedEntry = { date: string; source: "manual" | "ical" };
 type RangePos = "start" | "end" | "middle" | "single";
@@ -81,6 +79,7 @@ export default function AvailabilityCalendar({
   initialBlocked: BlockedEntry[];
   readOnly?: boolean;
 }) {
+  const t = useTranslations("listings.calendar");
   const today = new Date().toISOString().slice(0, 10);
   const now   = new Date();
 
@@ -152,6 +151,7 @@ export default function AvailabilityCalendar({
       });
       setIsDirty(false);
       setSavedAt(new Date().toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" }));
+      // ^ format fr-CA volontaire (24h), le libellé affiché ("Sauvegardé à HH:MM") est traduit, pas le format d'heure.
     } finally {
       setSaving(false);
     }
@@ -173,26 +173,26 @@ export default function AvailabilityCalendar({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-bold text-gray-900">Calendrier de disponibilités</h2>
+          <h2 className="font-bold text-gray-900">{t("heading")}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {readOnly
-              ? "Lecture seule — dates importées depuis votre calendrier iCal"
+              ? t("readOnlyHint")
               : rangeStart
-              ? "Cliquez une deuxième date pour sélectionner une plage"
-              : "Cliquez une date pour la bloquer, ou sélectionnez une plage de deux clics"}
+              ? t("secondDateHint")
+              : t("firstDateHint")}
           </p>
         </div>
         {!readOnly && (
           <div className="flex items-center gap-3">
             {savedAt && !isDirty && (
-              <span className="text-xs text-gray-400">Sauvegardé à {savedAt}</span>
+              <span className="text-xs text-gray-400">{t("savedAt", { time: savedAt })}</span>
             )}
             {rangeStart && (
               <button
                 onClick={() => { setRangeStart(null); setHoverDate(null); }}
                 className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5"
               >
-                Annuler sélection ×
+                {t("cancelSelection")}
               </button>
             )}
             <button
@@ -204,7 +204,7 @@ export default function AvailabilityCalendar({
                   : "bg-primary text-white hover:bg-primary-dark"
               }`}
             >
-              {saving ? "Sauvegarde…" : "Sauvegarder"}
+              {saving ? t("saving") : t("save")}
             </button>
           </div>
         )}
@@ -217,7 +217,7 @@ export default function AvailabilityCalendar({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span className="font-semibold text-gray-900">{MONTH_NAMES[viewMonth]} {viewYear}</span>
+        <span className="font-semibold text-gray-900">{t(MONTH_KEYS[viewMonth])} {viewYear}</span>
         <button onClick={nextMonth} disabled={!canGoNext} className="p-2 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-30">
           <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -230,8 +230,8 @@ export default function AvailabilityCalendar({
           cible tactile de 44px, sans réduire le nombre de colonnes (7 jours
           fixes) ni le nombre de mois affichés. */}
       <div className="-mx-6 sm:mx-0 grid grid-cols-7 gap-0.5 sm:gap-1 mb-1">
-        {DAY_NAMES.map((d) => (
-          <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+        {DAY_KEYS.map((d) => (
+          <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{t(d)}</div>
         ))}
       </div>
 
@@ -289,14 +289,14 @@ export default function AvailabilityCalendar({
 
       {/* Legend */}
       <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-gray-100 text-xs">
-        <LegendItem type="available" label="Disponible" />
+        <LegendItem type="available" label={t("available")} />
         {readOnly ? (
-          <LegendItem type="middle" color={ICAL_COLOR} label="Non disponible (iCal)" />
+          <LegendItem type="middle" color={ICAL_COLOR} label={t("unavailableIcal")} />
         ) : (
           <>
-            <LegendItem type="middle" color={MANUAL_COLOR} label="Non disponible (manuel)" />
-            <LegendItem type="start"  color={MANUAL_COLOR} label="Arrivée" />
-            <LegendItem type="end"    color={MANUAL_COLOR} label="Départ" />
+            <LegendItem type="middle" color={MANUAL_COLOR} label={t("unavailableManual")} />
+            <LegendItem type="start"  color={MANUAL_COLOR} label={t("arrival")} />
+            <LegendItem type="end"    color={MANUAL_COLOR} label={t("departure")} />
           </>
         )}
       </div>

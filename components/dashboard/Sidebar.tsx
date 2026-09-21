@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { localePath } from "@/lib/localePath";
 
 export default function DashboardSidebar({
   userName,
@@ -13,6 +14,7 @@ export default function DashboardSidebar({
   userRole: string;
 }) {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -88,7 +90,7 @@ export default function DashboardSidebar({
 
         <div className="pt-3 border-t border-[#ebebeb] mt-3">
           <Link
-            href="/dashboard/listings/new"
+            href={localePath("/dashboard/listings/new", locale)}
             className="flex items-center justify-center gap-2 w-full bg-primary text-white py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

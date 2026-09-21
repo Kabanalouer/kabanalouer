@@ -132,6 +132,15 @@
       "aiOptimize": "Optimize with AI",
       "descRestore": "Restore previous version",
       "captionEnPlaceholder": "Caption in English (optional)",
+      "coverCaptionPlaceholder": "Caption (optional)",
+      "captionPlaceholder": "Caption",
+      "movePhotoAria": "Move to position",
+      "movePhotoTitle": "Type a number to move this photo",
+      "photoTooSmall": "This photo is too small and may look blurry. Minimum required dimensions: 1200 x 800 px.",
+      "photoUnreadable": "Unreadable file.",
+      "canvasUnavailable": "Canvas unavailable.",
+      "compressionTooLarge": "Unable to compress this photo below 8 MB.",
+      "compressionError": "Compression error.",
       "capacityLabel": "Maximum capacity (people)",
       "bedroomsLabel": "Number of bedroom(s)",
       "bathroomsLabel": "Number of bathrooms",
@@ -195,6 +204,9 @@
       "boostDisabled": "Publish your listing to access the boost options",
       "previewButton": "Preview my listing",
       "previewDisabledTitle": "Add a title and at least one photo to preview your listing.",
+      "previewCloseAria": "Close preview",
+      "previewDesktopFrameTitle": "Desktop preview",
+      "previewMobileFrameTitle": "Mobile preview",
       "deleteButton": "Delete my listing",
       "featuredSectionTitle": "Listing boost",
       "citqError": "CITQ number must be exactly 6 digits.",
@@ -227,7 +239,8 @@
       "subscriptionNote": "Subscriptions are non-refundable and non-transferable.",
       "cancel": "Cancel",
       "confirm": "Delete permanently",
-      "deleting": "Deleting…"
+      "deleting": "Deleting…",
+      "error": "Something went wrong. Please try again."
     },
     "new": {
       "successTitle": "Request sent",
@@ -243,7 +256,22 @@
       "importLabel": "Your listing URL",
       "importPlaceholder": "https://www.airbnb.ca/rooms/...",
       "sending": "Sending…",
-      "send": "Send →"
+      "send": "Send →",
+      "duplicateTitle": "Already imported",
+      "duplicateMessage": "You've already imported this listing. You'll receive an email as soon as it's published by our team.",
+      "manualBadge": "Full control",
+      "manualFeature1": "Full control over your content",
+      "manualFeature2": "No limits",
+      "manualFeature3": "Start from scratch",
+      "importBadge": "The fastest way",
+      "importFeature1": "Listing ready within 24 hours",
+      "importFeature2": "Photos and description already filled in",
+      "importFeature3": "No re-typing",
+      "consentLabel": "I confirm I hold the rights to the photos in this listing.",
+      "pendingMessage1": "Fetching your listing…",
+      "pendingMessage2": "Analyzing photos…",
+      "pendingMessage3": "Writing the description…",
+      "pendingMessage4": "Finishing touches…"
     },
     "publish": {
       "launchOffer": "Launch offer",
@@ -297,7 +325,10 @@
       "neverSynced": "Never synced",
       "syncNow": "Sync now",
       "syncing": "Syncing…",
-      "errorNoUrl": "Please enter an iCal URL first."
+      "errorNoUrl": "Please enter an iCal URL first.",
+      "saveError": "Error while saving.",
+      "syncError": "Sync error",
+      "unknownError": "Unknown error"
     },
     "rooms": {
       "proTip": "Cabins with bedroom photos receive 3× more traveler inquiries.",
@@ -470,7 +501,20 @@
       "wed": "Wed",
       "thu": "Thu",
       "fri": "Fri",
-      "sat": "Sat"
+      "sat": "Sat",
+      "heading": "Availability calendar",
+      "readOnlyHint": "Read-only — dates imported from your iCal calendar",
+      "secondDateHint": "Click a second date to select a range",
+      "firstDateHint": "Click a date to block it, or select a range with two clicks",
+      "savedAt": "Saved at {time}",
+      "cancelSelection": "Cancel selection ×",
+      "save": "Save",
+      "saving": "Saving…",
+      "available": "Available",
+      "unavailableManual": "Unavailable (manual)",
+      "unavailableIcal": "Unavailable (iCal)",
+      "arrival": "Arrival",
+      "departure": "Departure"
     }
   },
   "messages": {
@@ -599,6 +643,7 @@
     "redirecting": "Redirecting…",
     "manage": "Manage my subscription",
     "subscribe": "Subscribe for $299/yr",
+    "switchToPaid": "Switch to a paid subscription",
     "redirectingPayment": "Redirecting to payment…",
     "securePayment": "Secure payment by Stripe · Cancel anytime"
   },

@@ -1,15 +1,18 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { importAirbnbListing } from "@/lib/listingImport";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
+import { localePath } from "@/lib/localePath";
 
 export async function createBlankListing() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const locale = await getLocale();
 
-  if (!user) redirect("/login");
+  if (!user) redirect(localePath("/login", locale));
 
   const listingNumber = await generateUniqueListingNumber(supabase);
 
@@ -40,9 +43,9 @@ export async function createBlankListing() {
     .select("id")
     .single();
 
-  if (error || !data) redirect("/dashboard/listings");
+  if (error || !data) redirect(localePath("/dashboard/listings", locale));
 
-  redirect(`/dashboard/listings/${data.id}/edit`);
+  redirect(localePath(`/dashboard/listings/${data.id}/edit`, locale));
 }
 
 export type ImportState =

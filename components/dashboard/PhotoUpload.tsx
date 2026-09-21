@@ -17,12 +17,12 @@ const CAPTION_MAX = 100;
 
 // ── Image compression ────────────────────────────────────────────────────────
 
-function loadImage(file: File): Promise<HTMLImageElement> {
+function loadImage(file: File, unreadableMessage: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     const url = URL.createObjectURL(file);
     img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Fichier illisible.")); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(unreadableMessage)); };
     img.src = url;
   });
 }
@@ -38,14 +38,15 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
 }
 
 async function compressToWebP(
-  file: File
+  file: File,
+  t: (key: string) => string
 ): Promise<{ blob: Blob; sizeMb: number } | { error: string }> {
   try {
-    const img = await loadImage(file);
+    const img = await loadImage(file, t("photoUnreadable"));
     const longestSide = Math.max(img.naturalWidth, img.naturalHeight);
     const shortestSide = Math.min(img.naturalWidth, img.naturalHeight);
     if (longestSide < MIN_LONG_SIDE || shortestSide < MIN_SHORT_SIDE) {
-      return { error: "Cette photo est trop petite et risque d'être floue. Dimension minimale requise : 1200 x 800 px." };
+      return { error: t("photoTooSmall") };
     }
     let w = img.naturalWidth;
     let h = img.naturalHeight;
@@ -59,16 +60,16 @@ async function compressToWebP(
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return { error: "Canvas non disponible." };
+    if (!ctx) return { error: t("canvasUnavailable") };
     ctx.drawImage(img, 0, 0, w, h);
     for (const quality of [0.85, 0.75, 0.65, 0.5]) {
       const blob = await canvasToBlob(canvas, quality);
       const sizeMb = blob.size / 1024 / 1024;
       if (sizeMb <= MAX_SIZE_MB) return { blob, sizeMb };
     }
-    return { error: "Impossible de compresser cette photo sous 8 Mo." };
+    return { error: t("compressionTooLarge") };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Erreur de compression." };
+    return { error: e instanceof Error ? e.message : t("compressionError") };
   }
 }
 
@@ -205,7 +206,7 @@ export default function PhotoUpload({
       const file = imageFiles[i];
       const slotId = slots[i].id;
 
-      const compressed = await compressToWebP(file);
+      const compressed = await compressToWebP(file, tEdit);
       if ("error" in compressed) {
         setProcessing((prev) =>
           prev.map((p) => (p.id === slotId ? { ...p, phase: "error", error: compressed.error } : p))
@@ -370,7 +371,7 @@ export default function PhotoUpload({
             if (e.key === "Escape") setPositionEditIdx(null);
           }}
           onBlur={(e) => movePhotoToPosition(i, e.currentTarget.value)}
-          aria-label="Déplacer à la position"
+          aria-label={tEdit("movePhotoAria")}
           className="absolute bottom-1.5 left-1.5 w-11 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
       ) : (
@@ -378,7 +379,7 @@ export default function PhotoUpload({
           type="button"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
-          title="Taper un numéro pour déplacer cette photo"
+          title={tEdit("movePhotoTitle")}
           className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full cursor-pointer hover:bg-black/75 transition-colors"
         >
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -509,7 +510,7 @@ export default function PhotoUpload({
           <CaptionField
             value={photos[0].caption}
             valueEn={photos[0].caption_en ?? ""}
-            placeholder="Légende (optionnel)"
+            placeholder={tEdit("coverCaptionPlaceholder")}
             placeholderEn={tEdit("captionEnPlaceholder")}
             onChange={(v) => updateCaption(0, v)}
             onChangeEn={(v) => updateCaptionEn(0, v)}
@@ -584,7 +585,7 @@ export default function PhotoUpload({
                   <CaptionField
                     value={item.caption}
                     valueEn={item.caption_en ?? ""}
-                    placeholder="Légende"
+                    placeholder={tEdit("captionPlaceholder")}
                     placeholderEn={tEdit("captionEnPlaceholder")}
                     onChange={(v) => updateCaption(i, v)}
                     onChangeEn={(v) => updateCaptionEn(i, v)}

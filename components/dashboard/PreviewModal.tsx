@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type ViewMode = "desktop" | "mobile";
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function PreviewModal({ listingId, onClose }: Props) {
+  const t = useTranslations("listings.edit");
   const [viewMode, setViewMode] = useState<ViewMode>("desktop");
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
         {/* Left: close */}
         <button
           onClick={onClose}
-          aria-label="Fermer l'aperçu"
+          aria-label={t("previewCloseAria")}
           className="p-2 rounded-full hover:bg-gray-100 transition-colors"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -69,7 +71,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
                 key="desktop"
                 src={`/chalets/${listingId}?preview=1`}
                 className="w-full h-full border-none block bg-white"
-                title="Aperçu desktop"
+                title={t("previewDesktopFrameTitle")}
               />
             </div>
           </div>
@@ -91,7 +93,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
                   src={`/chalets/${listingId}?preview=1`}
                   className="border-none block bg-white"
                   style={{ width: 390, height: 780 }}
-                  title="Aperçu mobile"
+                  title={t("previewMobileFrameTitle")}
                 />
               </div>
               {/* Home bar */}

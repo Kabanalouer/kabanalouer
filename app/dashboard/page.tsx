@@ -9,6 +9,7 @@ import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { buildListingPath } from "@/lib/listingUrl";
+import { localePath } from "@/lib/localePath";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -111,7 +112,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-charcoal-800 text-lg">{t("myListings")}</h2>
         <Link
-          href="/dashboard/listings/new"
+          href={localePath("/dashboard/listings/new", locale)}
           className="flex items-center gap-1.5 bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,7 +208,7 @@ export default async function DashboardPage() {
             {t("emptyDescription")}
           </p>
           <Link
-            href="/dashboard/listings/new"
+            href={localePath("/dashboard/listings/new", locale)}
             className="inline-block bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
           >
             {t("emptyCta")}

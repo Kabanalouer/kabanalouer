@@ -25,6 +25,7 @@ import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { localePath } from "@/lib/localePath";
 
 
 type FormState = {
@@ -758,7 +759,7 @@ export default function EditListingForm({
         listingId={listingId}
         listingTitle={form.title}
         onClose={() => setDeleteModalOpen(false)}
-        onDeleted={() => router.push("/dashboard/listings?deleted=1")}
+        onDeleted={() => router.push(localePath("/dashboard/listings?deleted=1", locale))}
       />
     )}
     {isAdminReview && localImportStatus === "pending_review" && safeImportSourceUrl && (
@@ -1768,7 +1769,7 @@ export default function EditListingForm({
                           {tEdit(daysUntilExpiry === 1 ? "expiringWarningDay" : "expiringWarningDays", { days: daysUntilExpiry })}
                         </p>
                         <Link
-                          href="/dashboard/subscription"
+                          href={localePath("/dashboard/subscription", locale)}
                           className="text-sm text-amber-700 font-semibold hover:underline"
                         >
                           {tEdit("renewNow")}

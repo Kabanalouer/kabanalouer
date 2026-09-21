@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
 import { computeScore } from "@/lib/listingScore";
 import { normalizePhotos } from "@/lib/photo";
 import type { AmenityValue } from "@/lib/amenities-catalog";
+import { localePath } from "@/lib/localePath";
 
 export const metadata = { title: "Mes chalets" };
 
@@ -19,7 +20,7 @@ export default async function ListingsPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const t = await getTranslations("listings");
+  const [t, locale] = await Promise.all([getTranslations("listings"), getLocale()]);
 
   const [{ data: listings }, { data: profile }] = await Promise.all([
     supabase.from("listings").select("*").eq("host_id", user.id).order("created_at", { ascending: false }),
@@ -115,7 +116,7 @@ export default async function ListingsPage({
           </p>
         </div>
         <Link
-          href="/dashboard/listings/new"
+          href={localePath("/dashboard/listings/new", locale)}
           className="flex items-center gap-1.5 bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +140,7 @@ export default async function ListingsPage({
             {t("emptyDescription")}
           </p>
           <Link
-            href="/dashboard/listings/new"
+            href={localePath("/dashboard/listings/new", locale)}
             className="inline-block bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
           >
             {t("emptyCta")}

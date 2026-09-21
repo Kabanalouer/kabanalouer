@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 type ListingSub = {
@@ -18,6 +19,7 @@ type ListingRow = {
 };
 
 export default function SubscriptionClient() {
+  const t = useTranslations("subscription");
   const supabase = createClient();
 
   const [rows, setRows] = useState<ListingRow[]>([]);
@@ -143,7 +145,7 @@ export default function SubscriptionClient() {
                         disabled={redirecting}
                         className="w-full mt-4 border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
                       >
-                        {redirectingId === row.id ? "Redirection vers le paiement…" : "Passer à l'abonnement payant"}
+                        {redirectingId === row.id ? t("redirectingPayment") : t("switchToPaid")}
                       </button>
                     </>
                   ) : isActive ? (
@@ -152,7 +154,7 @@ export default function SubscriptionClient() {
                       disabled={redirecting}
                       className="w-full border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
                     >
-                      {redirectingId === "portal" ? "Redirection…" : "Gérer mon abonnement"}
+                      {redirectingId === "portal" ? t("redirecting") : t("manage")}
                     </button>
                   ) : isPastDue ? (
                     <>
@@ -164,7 +166,7 @@ export default function SubscriptionClient() {
                         disabled={redirecting}
                         className="w-full border border-[#ebebeb] text-charcoal-700 py-3 rounded-full font-semibold text-sm hover:bg-charcoal-50 transition-colors disabled:opacity-50"
                       >
-                        {redirectingId === "portal" ? "Redirection…" : "Gérer mon abonnement"}
+                        {redirectingId === "portal" ? t("redirecting") : t("manage")}
                       </button>
                     </>
                   ) : (

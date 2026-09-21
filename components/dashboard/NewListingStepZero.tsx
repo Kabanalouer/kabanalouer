@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createBlankListing, submitImportRequest, type ImportState } from "@/app/dashboard/listings/new/actions";
 
 const initialState: ImportState = { status: "idle" };
@@ -11,15 +12,13 @@ const inputCls =
 // Le pipeline d'import ne renvoie aucune étape intermédiaire réelle — ces
 // messages ne font que rassurer pendant l'attente (jusqu'à 90s), sans
 // prétendre suivre un vrai statut technique.
-const PENDING_MESSAGES = [
-  "Récupération de l'annonce…",
-  "Analyse des photos…",
-  "Rédaction de la description…",
-  "Dernières touches…",
-];
+const PENDING_MESSAGE_KEYS = [
+  "pendingMessage1", "pendingMessage2", "pendingMessage3", "pendingMessage4",
+] as const;
 const PENDING_MESSAGE_INTERVAL_MS = 22000;
 
 export default function NewListingStepZero() {
+  const t = useTranslations("listings.new");
   const [state, importAction, isPending] = useActionState(submitImportRequest, initialState);
   const [photosConfirmed, setPhotosConfirmed] = useState(false);
   const [pendingMessageIdx, setPendingMessageIdx] = useState(0);
@@ -30,7 +29,7 @@ export default function NewListingStepZero() {
       return;
     }
     const id = setInterval(() => {
-      setPendingMessageIdx((i) => Math.min(i + 1, PENDING_MESSAGES.length - 1));
+      setPendingMessageIdx((i) => Math.min(i + 1, PENDING_MESSAGE_KEYS.length - 1));
     }, PENDING_MESSAGE_INTERVAL_MS);
     return () => clearInterval(id);
   }, [isPending]);
@@ -45,12 +44,10 @@ export default function NewListingStepZero() {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
-          {isDuplicate ? "Déjà importée" : "Annonce importée"}
+          {isDuplicate ? t("duplicateTitle") : t("successTitle")}
         </h2>
         <p className="text-charcoal-500 leading-relaxed">
-          {isDuplicate
-            ? "Vous avez déjà importé cette annonce. Vous recevrez un courriel dès qu'elle sera publiée par notre équipe."
-            : "Vous recevrez un courriel dès qu'elle sera publiée par notre équipe."}
+          {isDuplicate ? t("duplicateMessage") : t("successMessage")}
         </p>
       </div>
     );
@@ -59,9 +56,9 @@ export default function NewListingStepZero() {
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-2xl font-bold text-charcoal-800">Ajouter un chalet</h1>
+        <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
         <p className="text-charcoal-500 mt-1.5 text-sm">
-          Comment voulez-vous créer votre annonce ?
+          {t("subheading")}
         </p>
       </div>
 
@@ -70,26 +67,26 @@ export default function NewListingStepZero() {
         {/* Card 1 — Créer manuellement */}
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-7 flex flex-col hover:border-primary/30 transition-colors">
           <span className="inline-flex self-start rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 mb-5">
-            Contrôle total
+            {t("manualBadge")}
           </span>
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <PencilIcon />
           </div>
           <h2 className="text-lg font-bold text-charcoal-800 mb-2">
-            Créer mon annonce manuellement
+            {t("manualTitle")}
           </h2>
           <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Contrôle total du contenu</span>
+              <span>{t("manualFeature1")}</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Aucune limite</span>
+              <span>{t("manualFeature2")}</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Partir de zéro</span>
+              <span>{t("manualFeature3")}</span>
             </li>
           </ul>
           <form action={createBlankListing}>
@@ -97,7 +94,7 @@ export default function NewListingStepZero() {
               type="submit"
               className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
             >
-              Commencer →
+              {t("manualCta")}
             </button>
           </form>
         </div>
@@ -105,39 +102,39 @@ export default function NewListingStepZero() {
         {/* Card 2 — Import depuis Airbnb */}
         <div className="bg-white border border-[#ebebeb] rounded-2xl p-7 flex flex-col hover:border-primary/30 transition-colors">
           <span className="inline-flex self-start rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 mb-5">
-            Le plus rapide
+            {t("importBadge")}
           </span>
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <LinkIcon />
           </div>
           <h2 className="text-lg font-bold text-charcoal-800 mb-2">
-            J&apos;ai déjà une annonce Airbnb
+            {t("importTitle")}
           </h2>
           <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Annonce prête en 24h</span>
+              <span>{t("importFeature1")}</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Photos et description déjà remplies</span>
+              <span>{t("importFeature2")}</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckIcon />
-              <span>Aucune ressaisie</span>
+              <span>{t("importFeature3")}</span>
             </li>
           </ul>
           <form action={importAction} className="space-y-3 mt-auto">
             <div>
               <label htmlFor="listing-url" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-                Lien de votre annonce
+                {t("importLabel")}
               </label>
               <input
                 id="listing-url"
                 name="listing_url"
                 type="url"
                 required
-                placeholder="https://www.airbnb.ca/rooms/..."
+                placeholder={t("importPlaceholder")}
                 className={inputCls}
               />
             </div>
@@ -161,7 +158,7 @@ export default function NewListingStepZero() {
                   </svg>
                 )}
               </span>
-              <span>Je confirme détenir les droits sur les photos de cette annonce.</span>
+              <span>{t("consentLabel")}</span>
             </label>
             {state.status === "error" && (
               <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
@@ -180,10 +177,10 @@ export default function NewListingStepZero() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    {PENDING_MESSAGES[pendingMessageIdx]}
+                    {t(PENDING_MESSAGE_KEYS[pendingMessageIdx])}
                   </>
                 ) : (
-                  "Envoyer →"
+                  t("send")
                 )}
               </button>
               {isPending && (

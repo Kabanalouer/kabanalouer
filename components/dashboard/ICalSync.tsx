@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ICalSync({
@@ -12,6 +13,8 @@ export default function ICalSync({
   initialUrl: string | null;
   initialLastSync: string | null;
 }) {
+  const t = useTranslations("listings.ical");
+  const locale = useLocale();
   const supabase = createClient();
   const [icalUrl, setIcalUrl] = useState(initialUrl ?? "");
   const [lastSync, setLastSync] = useState(initialLastSync);
@@ -29,12 +32,12 @@ export default function ICalSync({
       .update({ ical_url: icalUrl.trim() || null })
       .eq("id", listingId);
     setSaving(false);
-    if (error) { setError("Erreur lors de la sauvegarde."); return; }
+    if (error) { setError(t("saveError")); return; }
     setUrlSaved(true);
   };
 
   const handleSync = async () => {
-    if (!icalUrl.trim()) { setError("Entrez d'abord une URL iCal."); return; }
+    if (!icalUrl.trim()) { setError(t("errorNoUrl")); return; }
     setSyncing(true);
     setError("");
     try {
@@ -44,10 +47,10 @@ export default function ICalSync({
         body: JSON.stringify({ listingId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur de synchronisation");
+      if (!res.ok) throw new Error(data.error ?? t("syncError"));
       setLastSync(new Date().toISOString());
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
+      setError(err instanceof Error ? err.message : t("unknownError"));
     } finally {
       setSyncing(false);
     }
@@ -56,23 +59,23 @@ export default function ICalSync({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6">
       <div>
-        <h2 className="font-bold text-gray-900 mb-1">Synchronisation iCal</h2>
+        <h2 className="font-bold text-gray-900 mb-1">{t("title")}</h2>
         <p className="text-sm text-gray-500">
-          Importez votre calendrier de disponibilités depuis votre logiciel de gestion locative (Lodgify, Guesty,...), Airbnb, Booking.com ou autres. Synchronisation automatique toutes les heures.
+          {t("description")}
         </p>
       </div>
 
       {/* Import URL */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          URL iCal à importer
+          {t("urlLabel")}
         </label>
         <div className="flex gap-2">
           <input
             type="url"
             value={icalUrl}
             onChange={(e) => { setIcalUrl(e.target.value); setUrlSaved(false); }}
-            placeholder="https://www.airbnb.ca/calendar/ical/..."
+            placeholder={t("placeholder")}
             className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           <button
@@ -80,7 +83,7 @@ export default function ICalSync({
             disabled={saving}
             className="border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
-            {saving ? "…" : urlSaved ? "✓ Sauvegardé" : "Sauvegarder"}
+            {saving ? t("saving") : urlSaved ? t("saved") : t("save")}
           </button>
         </div>
       </div>
@@ -88,14 +91,14 @@ export default function ICalSync({
       {/* Sync controls */}
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
         <div>
-          <p className="text-sm font-medium text-gray-700">Dernière synchronisation</p>
+          <p className="text-sm font-medium text-gray-700">{t("lastSync")}</p>
           <p className="text-xs text-gray-400 mt-0.5">
             {lastSync
-              ? new Date(lastSync).toLocaleString("fr-CA", {
+              ? new Date(lastSync).toLocaleString(locale === "en" ? "en-CA" : "fr-CA", {
                   day: "numeric", month: "long", year: "numeric",
                   hour: "2-digit", minute: "2-digit",
                 })
-              : "Jamais synchronisé"}
+              : t("neverSynced")}
           </p>
         </div>
         <button
@@ -110,7 +113,7 @@ export default function ICalSync({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {syncing ? "Synchronisation…" : "Synchroniser maintenant"}
+          {syncing ? t("syncing") : t("syncNow")}
         </button>
       </div>
 

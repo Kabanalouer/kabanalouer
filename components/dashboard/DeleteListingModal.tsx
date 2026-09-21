@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   listingId: string;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function DeleteListingModal({ listingId, onClose, onDeleted }: Props) {
+  const t = useTranslations("listings.delete");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,7 +20,7 @@ export default function DeleteListingModal({ listingId, onClose, onDeleted }: Pr
     setError("");
     const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" });
     if (!res.ok) {
-      setError("Une erreur s'est produite. Réessayez.");
+      setError(t("error"));
       setLoading(false);
       return;
     }
@@ -29,12 +31,12 @@ export default function DeleteListingModal({ listingId, onClose, onDeleted }: Pr
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-        <h2 className="text-lg font-bold text-charcoal-800 mb-5">Supprimer cette annonce</h2>
+        <h2 className="text-lg font-bold text-charcoal-800 mb-5">{t("title")}</h2>
 
         <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-sm text-red-700 space-y-1.5 leading-relaxed">
-          <p>Cette action est irréversible.</p>
-          <p>Votre annonce et toutes ses photos seront supprimées définitivement.</p>
-          <p>L&apos;abonnement n&apos;est pas remboursable, ni transférable.</p>
+          <p>{t("irreversible")}</p>
+          <p>{t("warning")}</p>
+          <p>{t("subscriptionNote")}</p>
         </div>
 
         {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
@@ -44,14 +46,14 @@ export default function DeleteListingModal({ listingId, onClose, onDeleted }: Pr
             onClick={onClose}
             className="flex-1 border border-[#ebebeb] text-charcoal-700 py-2.5 rounded-full text-sm font-semibold hover:bg-charcoal-50 transition-colors"
           >
-            Annuler
+            {t("cancel")}
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
             className="flex-1 bg-red-600 text-white py-2.5 rounded-full text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Suppression…" : "Supprimer définitivement"}
+            {loading ? t("deleting") : t("confirm")}
           </button>
         </div>
       </div>

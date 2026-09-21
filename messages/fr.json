@@ -132,6 +132,15 @@
       "aiOptimize": "Optimiser avec l'IA",
       "descRestore": "Restaurer la version précédente",
       "captionEnPlaceholder": "Légende en anglais (optionnel)",
+      "coverCaptionPlaceholder": "Légende (optionnel)",
+      "captionPlaceholder": "Légende",
+      "movePhotoAria": "Déplacer à la position",
+      "movePhotoTitle": "Taper un numéro pour déplacer cette photo",
+      "photoTooSmall": "Cette photo est trop petite et risque d'être floue. Dimension minimale requise : 1200 x 800 px.",
+      "photoUnreadable": "Fichier illisible.",
+      "canvasUnavailable": "Canvas non disponible.",
+      "compressionTooLarge": "Impossible de compresser cette photo sous 8 Mo.",
+      "compressionError": "Erreur de compression.",
       "capacityLabel": "Capacité maximale (personnes)",
       "bedroomsLabel": "Nombre de chambre(s)",
       "bathroomsLabel": "Nombre de salle de bain",
@@ -195,6 +204,9 @@
       "boostDisabled": "Publiez votre annonce pour accéder aux options de boost",
       "previewButton": "Aperçu de mon annonce",
       "previewDisabledTitle": "Ajoutez un titre et au moins une photo pour prévisualiser votre annonce.",
+      "previewCloseAria": "Fermer l'aperçu",
+      "previewDesktopFrameTitle": "Aperçu desktop",
+      "previewMobileFrameTitle": "Aperçu mobile",
       "deleteButton": "Supprimer mon annonce",
       "featuredSectionTitle": "Boost de l'annonce",
       "citqError": "Le numéro CITQ doit contenir exactement 6 chiffres.",
@@ -227,7 +239,8 @@
       "subscriptionNote": "L'abonnement n'est pas remboursable, ni transférable.",
       "cancel": "Annuler",
       "confirm": "Supprimer définitivement",
-      "deleting": "Suppression…"
+      "deleting": "Suppression…",
+      "error": "Une erreur s'est produite. Réessayez."
     },
     "new": {
       "successTitle": "Demande envoyée",
@@ -243,7 +256,22 @@
       "importLabel": "Lien de votre annonce",
       "importPlaceholder": "https://www.airbnb.ca/rooms/...",
       "sending": "Envoi en cours…",
-      "send": "Envoyer →"
+      "send": "Envoyer →",
+      "duplicateTitle": "Déjà importée",
+      "duplicateMessage": "Vous avez déjà importé cette annonce. Vous recevrez un courriel dès qu'elle sera publiée par notre équipe.",
+      "manualBadge": "Contrôle total",
+      "manualFeature1": "Contrôle total du contenu",
+      "manualFeature2": "Aucune limite",
+      "manualFeature3": "Partir de zéro",
+      "importBadge": "Le plus rapide",
+      "importFeature1": "Annonce prête en 24h",
+      "importFeature2": "Photos et description déjà remplies",
+      "importFeature3": "Aucune ressaisie",
+      "consentLabel": "Je confirme détenir les droits sur les photos de cette annonce.",
+      "pendingMessage1": "Récupération de l'annonce…",
+      "pendingMessage2": "Analyse des photos…",
+      "pendingMessage3": "Rédaction de la description…",
+      "pendingMessage4": "Dernières touches…"
     },
     "publish": {
       "launchOffer": "Offre de lancement",
@@ -297,7 +325,10 @@
       "neverSynced": "Jamais synchronisé",
       "syncNow": "Synchroniser maintenant",
       "syncing": "Synchronisation…",
-      "errorNoUrl": "Entrez d'abord une URL iCal."
+      "errorNoUrl": "Entrez d'abord une URL iCal.",
+      "saveError": "Erreur lors de la sauvegarde.",
+      "syncError": "Erreur de synchronisation",
+      "unknownError": "Erreur inconnue"
     },
     "rooms": {
       "proTip": "Les chalets avec photos de chambres reçoivent 3× plus de demandes de la part des voyageurs.",
@@ -470,7 +501,20 @@
       "wed": "Mer",
       "thu": "Jeu",
       "fri": "Ven",
-      "sat": "Sam"
+      "sat": "Sam",
+      "heading": "Calendrier de disponibilités",
+      "readOnlyHint": "Lecture seule — dates importées depuis votre calendrier iCal",
+      "secondDateHint": "Cliquez une deuxième date pour sélectionner une plage",
+      "firstDateHint": "Cliquez une date pour la bloquer, ou sélectionnez une plage de deux clics",
+      "savedAt": "Sauvegardé à {time}",
+      "cancelSelection": "Annuler sélection ×",
+      "save": "Sauvegarder",
+      "saving": "Sauvegarde…",
+      "available": "Disponible",
+      "unavailableManual": "Non disponible (manuel)",
+      "unavailableIcal": "Non disponible (iCal)",
+      "arrival": "Arrivée",
+      "departure": "Départ"
     }
   },
   "messages": {
@@ -599,6 +643,7 @@
     "redirecting": "Redirection…",
     "manage": "Gérer mon abonnement",
     "subscribe": "S'abonner pour 299 $/an",
+    "switchToPaid": "Passer à l'abonnement payant",
     "redirectingPayment": "Redirection vers le paiement…",
     "securePayment": "Paiement sécurisé par Stripe · Annulable à tout moment"
   },

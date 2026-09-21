@@ -1,7 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/siteUrl";
+import { localePath } from "@/lib/localePath";
 import AvailabilityCalendar from "@/components/dashboard/AvailabilityCalendar";
 import ICalSync from "@/components/dashboard/ICalSync";
 
@@ -17,8 +19,9 @@ export default async function AvailabilityPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const locale = await getLocale();
 
-  if (!user) redirect("/login");
+  if (!user) redirect(localePath("/login", locale));
 
   const [{ data: listing }, { data: availability }] = await Promise.all([
     supabase
@@ -46,7 +49,7 @@ export default async function AvailabilityPage({ params }: Props) {
     <div className="max-w-3xl">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-        <Link href="/dashboard/listings" className="hover:text-gray-600 transition-colors">
+        <Link href={localePath("/dashboard/listings", locale)} className="hover:text-gray-600 transition-colors">
           Mes chalets
         </Link>
         <span>›</span>

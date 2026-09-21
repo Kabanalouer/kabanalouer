@@ -8,6 +8,7 @@ import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { localePath } from "@/lib/localePath";
 
 type DbData = {
   roomsAllHavePhotos: boolean;
@@ -228,7 +229,7 @@ export default function AnalyseSection({
             </div>
           ))}
           <Link
-            href="/dashboard/profile"
+            href={localePath("/dashboard/profile", locale)}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors mt-1"
           >
             {t("completeProfile")}
