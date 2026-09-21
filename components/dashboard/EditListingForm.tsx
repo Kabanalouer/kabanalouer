@@ -229,7 +229,7 @@ export default function EditListingForm({
 
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<SectionId>(
-    searchParams.get("section") === "vedette" ? "vedette" : "photos"
+    searchParams.get("section") === "vedette" ? "vedette" : "titre"
   );
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
