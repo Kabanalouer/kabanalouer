@@ -72,7 +72,6 @@ export default async function MessagesPage() {
       last_message: string;
       last_message_at: string;
       unread_count: number;
-      has_quote_request: boolean;
     }
   >();
 
@@ -95,7 +94,6 @@ export default async function MessagesPage() {
         last_message: msg.content,
         last_message_at: msg.created_at,
         unread_count: 0,
-        has_quote_request: false,
       });
     }
 
@@ -105,18 +103,6 @@ export default async function MessagesPage() {
     if (msg.receiver_id === user.id && !msg.is_read) {
       conv.unread_count++;
     }
-
-    // Écrasé à chaque itération : comme on parcourt du plus récent au plus
-    // ancien, la dernière écriture (donc le message le plus ancien) est celle
-    // qui compte — le widget "Devis structuré" n'est offert que si CE
-    // premier message vient du CTA principal "Demande de devis" (voyageurs),
-    // jamais du CTA secondaire "Contacter le propriétaire" (qui n'envoie
-    // jamais num_guests, voir ContactButton.tsx). Ne dépend plus aussi de
-    // check_in/check_out : depuis que ContactForm.tsx fixe 1 adulte par
-    // défaut, une vraie demande de devis peut être envoyée sans dates
-    // choisies — les exiger en plus de num_guests cachait alors le widget
-    // pour de vraies demandes.
-    conv.has_quote_request = !!msg.num_guests;
   }
 
   const conversations = Array.from(convMap.values());

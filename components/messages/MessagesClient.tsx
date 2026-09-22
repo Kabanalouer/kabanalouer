@@ -39,7 +39,6 @@ type Conversation = {
   last_message: string;
   last_message_at: string;
   unread_count: number;
-  has_quote_request: boolean;
 };
 
 export default function MessagesClient({
@@ -74,23 +73,23 @@ export default function MessagesClient({
   // Réglage global par utilisateur (pas par conversation) — contrôle
   // uniquement l'affichage des traductions REÇUES, jamais l'envoi.
   const [translationEnabled, setTranslationEnabled] = useState(initialTranslationEnabled);
-  const [showQuoteWidget, setShowQuoteWidget] = useState(false);
+  // Identifie le message de demande de devis pour lequel QuoteWidget est
+  // actuellement ouvert inline (un seul à la fois) — remplace l'ancien toggle
+  // global "Message libre / Devis structuré" au bas de la conversation.
+  const [activeQuoteMessageId, setActiveQuoteMessageId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
   );
-  // Le widget "Devis structuré" n'est offert que si l'utilisateur courant est
-  // le proprio de l'annonce concernée par CETTE conversation précise (pas
-  // juste son rôle global — un même compte peut être proprio d'un chalet et
-  // avoir contacté un autre proprio ailleurs comme voyageur) ET que le fil a
-  // débuté via le CTA principal "Demande de devis" (dates + voyageurs) —
-  // jamais pour une conversation ouverte via "Contacter le propriétaire".
+  // L'action rapide "Devis structuré" n'est offerte que si l'utilisateur
+  // courant est le proprio de l'annonce concernée par CETTE conversation
+  // précise (pas juste son rôle global — un même compte peut être proprio
+  // d'un chalet et avoir contacté un autre proprio ailleurs comme voyageur).
   const isHostOfListing = !!activeConv && activeConv.listing_host_id === currentUserId;
-  const canSendStructuredQuote = isHostOfListing && !!activeConv?.has_quote_request;
 
   useEffect(() => {
-    setShowQuoteWidget(false);
+    setActiveQuoteMessageId(null);
   }, [selectedListingId, selectedWithId]);
 
   useEffect(() => {
@@ -403,45 +402,77 @@ export default function MessagesClient({
                     );
                   }
 
+                  // Demande de devis : message du voyageur (jamais du proprio),
+                  // avec dates + voyageurs remplis, pas déjà une réponse
+                  // (quote_data exclu ci-dessus) — l'action rapide n'est
+                  // proposée qu'au vrai proprio de cette annonce.
+                  const isQuoteRequest =
+                    isHostOfListing && !isMine && !!msg.check_in && !!msg.check_out && !!msg.num_guests;
+
                   return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                          isMine
-                            ? "bg-primary text-white rounded-br-sm"
-                            : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
-                        }`}
-                      >
-                        {showTranslation && (
-                          <span className="inline-flex items-center text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 mb-1.5">
-                            {t("translatedBadge")}
-                          </span>
-                        )}
-
-                        <p className="whitespace-pre-wrap">
-                          {showTranslation ? msg.content_translated : msg.content}
-                        </p>
-
-                        {showTranslation && (
-                          <p className="whitespace-pre-wrap text-charcoal-400 text-xs mt-2 pt-2 border-t border-[#ebebeb]">
-                            {msg.content}
-                          </p>
-                        )}
-
-                        <p
-                          className={`text-xs mt-1 ${
-                            isMine ? "text-white/50" : "text-charcoal-400"
+                    <div key={msg.id} className={`flex flex-col gap-1.5 ${isMine ? "items-end" : "items-start"}`}>
+                      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                            isMine
+                              ? "bg-primary text-white rounded-br-sm"
+                              : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
                           }`}
                         >
-                          {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
+                          {showTranslation && (
+                            <span className="inline-flex items-center text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 mb-1.5">
+                              {t("translatedBadge")}
+                            </span>
+                          )}
+
+                          <p className="whitespace-pre-wrap">
+                            {showTranslation ? msg.content_translated : msg.content}
+                          </p>
+
+                          {showTranslation && (
+                            <p className="whitespace-pre-wrap text-charcoal-400 text-xs mt-2 pt-2 border-t border-[#ebebeb]">
+                              {msg.content}
+                            </p>
+                          )}
+
+                          <p
+                            className={`text-xs mt-1 ${
+                              isMine ? "text-white/50" : "text-charcoal-400"
+                            }`}
+                          >
+                            {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
                       </div>
+
+                      {isQuoteRequest && activeConv && (
+                        <div className="max-w-[80%] md:max-w-sm w-full">
+                          {activeQuoteMessageId === msg.id ? (
+                            <div className="bg-white border border-[#ebebeb] rounded-2xl p-3 shadow-sm">
+                              <QuoteWidget
+                                listingId={activeConv.listing_id}
+                                receiverId={activeConv.other_user_id}
+                                sourceMessageId={msg.id}
+                                checkIn={msg.check_in}
+                                checkOut={msg.check_out}
+                                numGuests={msg.num_guests}
+                                onSent={() => setActiveQuoteMessageId(null)}
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setActiveQuoteMessageId(msg.id)}
+                              className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                            >
+                              Envoyer un devis pour cette demande
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -449,57 +480,28 @@ export default function MessagesClient({
               <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
+            {/* Input — toujours le message libre : l'action "Devis structuré"
+                vit maintenant en ligne, sous chaque message de demande de
+                devis précis (voir la boucle des messages ci-dessus). */}
             <div id="message-composer" className="bg-white border-t border-[#ebebeb] px-4 py-3">
-              {canSendStructuredQuote && (
-                <div className="flex gap-2 mb-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setShowQuoteWidget(false)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                      !showQuoteWidget ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-500 hover:border-charcoal-300"
-                    }`}
-                  >
-                    Message libre
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowQuoteWidget(true)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                      showQuoteWidget ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-500 hover:border-charcoal-300"
-                    }`}
-                  >
-                    Devis structuré
-                  </button>
-                </div>
-              )}
-
-              {canSendStructuredQuote && showQuoteWidget && activeConv ? (
-                <QuoteWidget
-                  listingId={activeConv.listing_id}
-                  receiverId={activeConv.other_user_id}
-                  onSent={() => setShowQuoteWidget(false)}
+              <div className="flex gap-3 items-end">
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={t("messagePlaceholder")}
+                  rows={1}
+                  className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
+                  style={{ minHeight: "42px" }}
                 />
-              ) : (
-                <div className="flex gap-3 items-end">
-                  <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={t("messagePlaceholder")}
-                    rows={1}
-                    className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
-                    style={{ minHeight: "42px" }}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={sending || !newMessage.trim()}
-                    className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
-                  >
-                    {sending ? "…" : "Envoyer"}
-                  </button>
-                </div>
-              )}
+                <button
+                  onClick={handleSend}
+                  disabled={sending || !newMessage.trim()}
+                  className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
+                >
+                  {sending ? "…" : "Envoyer"}
+                </button>
+              </div>
             </div>
           </>
         )}

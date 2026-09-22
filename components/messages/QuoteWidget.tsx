@@ -2,16 +2,36 @@
 
 import { useState } from "react";
 
+const MONTHS_SHORT_FR = [
+  "janv.", "févr.", "mars", "avr.", "mai", "juin",
+  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+];
+
+function formatDateShort(iso: string): string {
+  const [, m, d] = iso.split("-").map(Number);
+  return `${d} ${MONTHS_SHORT_FR[m - 1]}`;
+}
+
 // Le proprio n'entre que le prix total (taxes incluses, en dollars) — tout le
 // reste du devis (dates/voyageurs de la demande initiale, prénom du voyageur,
-// section "Devis" de l'annonce) est assemblé automatiquement côté serveur.
+// section "Devis" de l'annonce) est assemblé automatiquement côté serveur, à
+// partir de sourceMessageId (revalidé côté serveur, jamais depuis checkIn/
+// checkOut/numGuests ci-dessous — ces trois-là ne servent qu'à l'aperçu affiché).
 export default function QuoteWidget({
   listingId,
   receiverId,
+  sourceMessageId,
+  checkIn,
+  checkOut,
+  numGuests,
   onSent,
 }: {
   listingId: string;
   receiverId: string;
+  sourceMessageId: string;
+  checkIn: string | null;
+  checkOut: string | null;
+  numGuests: number | null;
   onSent: () => void;
 }) {
   const [price, setPrice] = useState("");
@@ -20,6 +40,11 @@ export default function QuoteWidget({
 
   const priceValue = parseFloat(price.replace(",", "."));
   const canSend = Number.isFinite(priceValue) && priceValue > 0;
+
+  const summary = [
+    checkIn && checkOut ? `${formatDateShort(checkIn)} → ${formatDateShort(checkOut)}` : null,
+    numGuests ? `${numGuests} voyageur${numGuests > 1 ? "s" : ""}` : null,
+  ].filter(Boolean).join(" · ");
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -32,6 +57,7 @@ export default function QuoteWidget({
       body: JSON.stringify({
         listingId,
         receiverId,
+        sourceMessageId,
         priceCents: Math.round(priceValue * 100),
       }),
     });
@@ -49,6 +75,7 @@ export default function QuoteWidget({
 
   return (
     <div className="flex flex-col gap-2.5">
+      {summary && <p className="text-xs text-charcoal-500">{summary}</p>}
       <div>
         <label className="block text-xs font-medium text-charcoal-500 mb-1">
           Prix total (taxes incluses)
