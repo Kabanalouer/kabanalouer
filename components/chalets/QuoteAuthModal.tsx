@@ -35,7 +35,14 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
+    // Portals still bubble through the REACT tree, not the DOM tree — a caller
+    // like FavoriteButton can sit inside a <Link> (ListingCard.tsx), so a plain
+    // backdrop click here would otherwise bubble up and trigger that Link's
+    // navigation. stopPropagation keeps this self-contained regardless of caller.
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+      onClick={(e) => { e.stopPropagation(); onClose(); }}
+    >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <h3 className="font-bold text-charcoal-800 text-lg pr-4">{t("authModalTitle")}</h3>
