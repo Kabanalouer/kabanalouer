@@ -239,10 +239,13 @@ export default function ContactForm({
       checkin ? t("quoteMessageArrivalLine", { date: formatShort(checkin, monthNamesShort) }) : null,
       checkout ? t("quoteMessageDepartureLine", { date: formatShort(checkout, monthNamesShort) }) : null,
     ].filter((l): l is string => l !== null);
-    const datesBlock = datesLines.length > 0 ? [t("quoteMessageDatesHeading"), ...datesLines].join("\n") : null;
+    // Sous-titres "Dates"/"Nombre total de voyageurs" en majuscules — appliqué
+    // après interpolation, donc jamais sur les accolades {count}/{date} de la
+    // clé i18n brute (qui casseraient l'interpolation next-intl si en MAJ).
+    const datesBlock = datesLines.length > 0 ? [t("quoteMessageDatesHeading").toUpperCase(), ...datesLines].join("\n") : null;
 
     const guestsBlock = [
-      t("quoteMessageGuestsTotalLine", { count: humanTotal }),
+      t("quoteMessageGuestsTotalLine", { count: humanTotal }).toUpperCase(),
       t("quoteMessageAdultsLine", { count: adults }),
       t("quoteMessageChildrenLine", { count: children }),
       t("quoteMessageBabiesLine", { count: babies }),
@@ -250,12 +253,14 @@ export default function ContactForm({
     ].join("\n");
 
     // Signature omise si le compte voyageur n'a aucun nom renseigné (rare —
-    // requis au signup — mais évite "undefined du voyageur" le cas échéant).
+    // requis au signup — mais évite une signature vide le cas échéant).
     const senderFullName = [senderFirstName, senderLastName].filter(Boolean).join(" ").trim();
-    const messageAndSignatureBlock = [
-      message.trim() || null,
-      senderFullName ? t("quoteMessageSignatureLine", { name: senderFullName }) : null,
-    ].filter((l): l is string => l !== null).join("\n") || null;
+    const messageLine = message.trim() || null;
+    const signatureLine = senderFullName ? t("quoteMessageSignatureLine", { name: senderFullName }) : null;
+    // Ligne vide supplémentaire entre le message et la signature (espace plus
+    // généreux) — uniquement quand les deux sont présents, sinon un seul bloc.
+    const messageAndSignatureBlock =
+      messageLine && signatureLine ? `${messageLine}\n\n${signatureLine}` : messageLine ?? signatureLine ?? null;
 
     const hostGreetingName = hostFirstName ?? t("ownerLabel");
     const lines = [

@@ -827,12 +827,12 @@
     "quoteMessageDatesHeading": "Dates",
     "quoteMessageArrivalLine": "Check-in: {date}",
     "quoteMessageDepartureLine": "Check-out: {date}",
-    "quoteMessageGuestsTotalLine": "Number of travelers: {count}",
+    "quoteMessageGuestsTotalLine": "Total number of guests: {count}",
     "quoteMessageAdultsLine": "Adults: {count}",
     "quoteMessageChildrenLine": "Children (2 to 12 years): {count}",
     "quoteMessageBabiesLine": "Infants (0 to 2 years): {count}",
     "quoteMessagePetsLine": "Pets: {count}",
-    "quoteMessageSignatureLine": "{name}, traveler"
+    "quoteMessageSignatureLine": "{name}"
   },
   "favoris": {
     "title": "My favorites",
