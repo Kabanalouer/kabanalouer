@@ -10,7 +10,6 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
-const PHONE_REGEX = /^(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
 type Mode = "login" | "signup";
 
@@ -183,8 +182,6 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [phoneError, setPhoneError] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -197,12 +194,6 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!turnstileToken) return;
-    const trimmedPhone = phone.trim();
-    if (trimmedPhone && !PHONE_REGEX.test(trimmedPhone)) {
-      setPhoneError(t("phoneInvalid"));
-      return;
-    }
-    setPhoneError("");
     setLoading(true);
     setError("");
     setAccountExists(false);
@@ -219,7 +210,6 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           name: `${firstName} ${lastName}`,
           role: "traveler",
           preferred_language: locale,
-          phone: trimmedPhone || null,
         },
       },
     });
@@ -315,23 +305,6 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           placeholder={t("emailPlaceholder")}
           required
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("phoneLabel")} <span className="text-charcoal-400 font-normal">{t("phoneOptionalTag")}</span>
-        </label>
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            if (phoneError) setPhoneError("");
-          }}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-          placeholder={t("phonePlaceholder")}
-        />
-        {phoneError && <p className="mt-1 text-xs text-red-600">{phoneError}</p>}
       </div>
 
       <div>

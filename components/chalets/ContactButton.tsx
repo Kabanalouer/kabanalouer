@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
 
 export default function ContactButton({
   listingId,
@@ -20,16 +21,30 @@ export default function ContactButton({
   const t = useTranslations("listing");
   const tc = useTranslations("common");
   const [open, setOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const router = useRouter();
 
   if (!currentUserId) {
     return (
-      <a
-        href={`/login?next=/chalets/${listingId}`}
-        className="block w-full bg-primary text-white py-4 rounded-xl font-bold text-center hover:bg-primary-dark transition-colors"
-      >
-        {t("mobileContactCta")}
-      </a>
+      <>
+        <button
+          type="button"
+          onClick={() => setAuthModalOpen(true)}
+          className="block w-full bg-primary text-white py-4 rounded-xl font-bold text-center hover:bg-primary-dark transition-colors"
+        >
+          {t("mobileContactCta")}
+        </button>
+
+        {authModalOpen && (
+          <QuoteAuthModal
+            onClose={() => setAuthModalOpen(false)}
+            onAuthenticated={() => {
+              setAuthModalOpen(false);
+              router.refresh();
+            }}
+          />
+        )}
+      </>
     );
   }
 
