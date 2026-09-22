@@ -2,9 +2,11 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale";
+import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -135,6 +137,7 @@ export default function ContactForm({
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
   const locale = useLocale();
+  const router = useRouter();
   const monthNames = getMonthNames(locale);
   const monthNamesShort = getMonthNamesShort(locale);
   const dayNames = getDayNames(locale);
@@ -163,6 +166,7 @@ export default function ContactForm({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // Close calendar on outside click
   useEffect(() => {
@@ -208,6 +212,22 @@ export default function ContactForm({
     ? `${ts("guestsCount", { count: humanTotal })}, ${t("guestPetsSummary", { count: pets })}`
     : ts("guestsCount", { count: humanTotal });
 
+  const handleSubmitClick = () => {
+    if (!currentUserId) {
+      setAuthModalOpen(true);
+      return;
+    }
+    handleSubmit();
+  };
+
+  // Refresh re-fetches ListingDetail's server props (currentUserId included)
+  // without remounting this client component, so checkin/checkout/guests/message
+  // stay exactly as the visitor left them.
+  const handleAuthenticated = () => {
+    setAuthModalOpen(false);
+    router.refresh();
+  };
+
   const handleSubmit = async () => {
     setSending(true);
     setError("");
@@ -246,18 +266,6 @@ export default function ContactForm({
     }
     setSent(true);
   };
-
-  // ── Not logged in ──────────────────────────────────────────────────────────
-  if (!currentUserId) {
-    return (
-      <Link
-        href={`/login?next=/chalets/${listingId}`}
-        className="block w-full bg-primary text-white py-3.5 rounded-full font-bold text-center hover:bg-primary/90 transition-colors text-sm"
-      >
-        {t("quoteRequestCta")}
-      </Link>
-    );
-  }
 
   // ── Sent confirmation ──────────────────────────────────────────────────────
   if (sent) {
@@ -460,12 +468,16 @@ export default function ContactForm({
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       <button
-        onClick={handleSubmit}
+        onClick={handleSubmitClick}
         disabled={sending || !canSubmit}
         className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {sending ? t("sendingRequest") : t("sendRequestCta")}
       </button>
+
+      {authModalOpen && (
+        <QuoteAuthModal onClose={() => setAuthModalOpen(false)} onAuthenticated={handleAuthenticated} />
+      )}
     </div>
   );
 }

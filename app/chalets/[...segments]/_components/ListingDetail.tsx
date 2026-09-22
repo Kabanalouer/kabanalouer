@@ -654,33 +654,24 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 <span className="text-xs text-charcoal-400"> {t("perNight")}</span>
               </div>
             )}
-            {user ? (
-              <MobileContactTrigger
-                label={t("quoteRequestCta")}
-                listingId={listing.id}
-                hostId={host?.id ?? ""}
-                hostName={host?.name ?? "le propriétaire"}
-                hostAvatarUrl={host?.avatar_url ?? null}
-                hostCreatedAt={host?.created_at ?? null}
-                listingTitle={listing.title}
-                currentUserId={user?.id ?? null}
-                initialCheckin={urlCheckin}
-                initialCheckout={urlCheckout}
-                initialAdults={parseInt(urlCapacity ?? "0") || 0}
-                price={listing.price_low as number | null}
-                priceOnRequest={!!(listing.price_on_request)}
-                capacity={listing.capacity as number}
-                petsAllowed={!!listing.pets_allowed}
-                blockedDates={blockedDateStrings}
-              />
-            ) : (
-              <a
-                href={`${localePath("/login", locale)}?next=${canonicalPath}`}
-                className="bg-primary text-white px-5 py-2.5 min-h-[44px] rounded-full font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
-              >
-                {t("quoteRequestCta")}
-              </a>
-            )}
+            <MobileContactTrigger
+              label={t("quoteRequestCta")}
+              listingId={listing.id}
+              hostId={host?.id ?? ""}
+              hostName={host?.name ?? "le propriétaire"}
+              hostAvatarUrl={host?.avatar_url ?? null}
+              hostCreatedAt={host?.created_at ?? null}
+              listingTitle={listing.title}
+              currentUserId={user?.id ?? null}
+              initialCheckin={urlCheckin}
+              initialCheckout={urlCheckout}
+              initialAdults={parseInt(urlCapacity ?? "0") || 0}
+              price={listing.price_low as number | null}
+              priceOnRequest={!!(listing.price_on_request)}
+              capacity={listing.capacity as number}
+              petsAllowed={!!listing.pets_allowed}
+              blockedDates={blockedDateStrings}
+            />
           </div>
         )}
       </main>
