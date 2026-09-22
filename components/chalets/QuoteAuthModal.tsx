@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -25,8 +26,17 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
   const tc = useTranslations("common");
   const [mode, setMode] = useState<Mode>("login");
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4" onClick={onClose}>
+  // Portal — renders outside any stacking context. Without it, this modal is
+  // nested inside ContactForm's ancestor `sticky top-24` wrapper (right sidebar,
+  // see ListingDetail.tsx), and `position: sticky` always creates its own
+  // stacking context regardless of z-index — trapping this modal's z-index so
+  // it only wins against siblings inside that wrapper, not the rest of the
+  // page (e.g. the availability calendar bleeding through in a band). Same
+  // fix already used by FiltersModal.tsx for the same reason.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <h3 className="font-bold text-charcoal-800 text-lg pr-4">{t("authModalTitle")}</h3>
@@ -60,7 +70,8 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
           <SignupTab onSwitchToLogin={() => setMode("login")} />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
