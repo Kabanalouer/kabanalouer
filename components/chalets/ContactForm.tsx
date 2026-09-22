@@ -100,6 +100,8 @@ interface Props {
   hostCreatedAt?: string | null;
   listingTitle: string;
   currentUserId: string | null;
+  senderFirstName?: string;
+  senderLastName?: string;
   initialCheckin?: string;
   initialCheckout?: string;
   initialAdults?: number;
@@ -129,6 +131,7 @@ function hostSinceDuration(
 
 export default function ContactForm({
   listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
+  senderFirstName, senderLastName,
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
@@ -155,7 +158,7 @@ export default function ContactForm({
 
   const blockedSet = useMemo(() => new Set(blockedDates ?? []), [blockedDates]);
 
-  const [adults, setAdults] = useState(initialAdults ?? 0);
+  const [adults, setAdults] = useState(initialAdults ?? 1);
   const [children, setChildren] = useState(initialChildren ?? 0);
   const [babies, setBabies] = useState(initialBabies ?? 0);
   const [pets, setPets] = useState(initialPets ?? 0);
@@ -232,21 +235,36 @@ export default function ContactForm({
     setSending(true);
     setError("");
 
-    const guestDetail = [
-      adults > 0 ? t("guestAdultsCount", { count: adults }) : null,
-      children > 0 ? t("guestChildrenCount", { count: children }) : null,
-      babies > 0 ? t("guestBabiesCount", { count: babies }) : null,
-      pets > 0 ? t("guestPetsCount", { count: pets }) : null,
-    ].filter(Boolean).join(", ");
+    const datesLines = [
+      checkin ? t("quoteMessageArrivalLine", { date: formatShort(checkin, monthNamesShort) }) : null,
+      checkout ? t("quoteMessageDepartureLine", { date: formatShort(checkout, monthNamesShort) }) : null,
+    ].filter((l): l is string => l !== null);
+    const datesBlock = datesLines.length > 0 ? [t("quoteMessageDatesHeading"), ...datesLines].join("\n") : null;
 
+    const guestsBlock = [
+      t("quoteMessageGuestsTotalLine", { count: humanTotal }),
+      t("quoteMessageAdultsLine", { count: adults }),
+      t("quoteMessageChildrenLine", { count: children }),
+      t("quoteMessageBabiesLine", { count: babies }),
+      t("quoteMessagePetsLine", { count: pets }),
+    ].join("\n");
+
+    // Signature omise si le compte voyageur n'a aucun nom renseigné (rare —
+    // requis au signup — mais évite "undefined du voyageur" le cas échéant).
+    const senderFullName = [senderFirstName, senderLastName].filter(Boolean).join(" ").trim();
+    const messageAndSignatureBlock = [
+      message.trim() || null,
+      senderFullName ? t("quoteMessageSignatureLine", { name: senderFullName }) : null,
+    ].filter((l): l is string => l !== null).join("\n") || null;
+
+    const hostGreetingName = hostFirstName ?? t("ownerLabel");
     const lines = [
-      checkin ? t("datesLine", {
-        range: `${formatShort(checkin, monthNamesShort)}${checkout ? ` → ${formatShort(checkout, monthNamesShort)}` : ` (${t("departureOnly")})`}`,
-      }) : null,
-      guestDetail ? t("guestsLine", { detail: guestDetail }) : null,
-      "",
-      message.trim(),
-    ].filter((l) => l !== null).join("\n");
+      t("quoteMessageGreeting", { name: hostGreetingName }),
+      t("quoteMessageIntro", { title: listingTitle }),
+      datesBlock,
+      guestsBlock,
+      messageAndSignatureBlock,
+    ].filter((l): l is string => l !== null).join("\n\n");
 
     const res = await fetch("/api/messages", {
       method: "POST",
@@ -398,20 +416,20 @@ export default function ContactForm({
           <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] z-50 w-full">
             {([
               { label: ts("adults"), sub: ts("adultsSub"), val: adults,
-                onDecr: () => setAdults((v) => Math.max(0, v - 1)),
+                onDecr: () => setAdults((v) => Math.max(1, v - 1)),
                 onIncr: () => setAdults((v) => v + 1),
-                decrDis: adults === 0 || (adults === 1 && children + babies > 0),
+                decrDis: adults <= 1,
                 incrDis: atCapacity },
               { label: ts("children"), sub: ts("childrenSub"), val: children,
                 onDecr: () => setChildren((v) => Math.max(0, v - 1)),
-                onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
+                onIncr: () => setChildren((v) => v + 1),
                 decrDis: children === 0,
-                incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
+                incrDis: atCapacity },
               { label: ts("babies"), sub: ts("babiesSub"), val: babies,
                 onDecr: () => setBabies((v) => Math.max(0, v - 1)),
-                onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
+                onIncr: () => setBabies((v) => v + 1),
                 decrDis: babies === 0,
-                incrDis: adults === 0 ? guestTotal >= capacity - 1 : atCapacity },
+                incrDis: atCapacity },
               ...(petsAllowed ? [{
                 label: ts("pets"), sub: ts("petsSub"), val: pets,
                 onDecr: () => setPets((v) => Math.max(0, v - 1)),

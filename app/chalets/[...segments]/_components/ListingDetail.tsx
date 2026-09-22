@@ -620,9 +620,11 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     hostCreatedAt={host?.created_at ?? null}
                     listingTitle={listing.title}
                     currentUserId={user?.id ?? null}
+                    senderFirstName={profileFirstName}
+                    senderLastName={profileLastName}
                     initialCheckin={urlCheckin}
                     initialCheckout={urlCheckout}
-                    initialAdults={parseInt(urlCapacity ?? "0") || 0}
+                    initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}
                     price={listing.price_low as number | null}
                     priceOnRequest={!!(listing.price_on_request)}
                     capacity={listing.capacity as number}
@@ -663,9 +665,11 @@ export default async function ListingDetail({ listing, user, searchParams, local
               hostCreatedAt={host?.created_at ?? null}
               listingTitle={listing.title}
               currentUserId={user?.id ?? null}
+              senderFirstName={profileFirstName}
+              senderLastName={profileLastName}
               initialCheckin={urlCheckin}
               initialCheckout={urlCheckout}
-              initialAdults={parseInt(urlCapacity ?? "0") || 0}
+              initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}
               price={listing.price_low as number | null}
               priceOnRequest={!!(listing.price_on_request)}
               capacity={listing.capacity as number}
