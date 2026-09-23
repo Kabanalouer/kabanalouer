@@ -38,6 +38,7 @@ export default function NoAvailabilityWidget({
   travelerFirstName,
   listingTitle,
   onSent,
+  onCancel,
 }: {
   listingId: string;
   receiverId: string;
@@ -45,6 +46,7 @@ export default function NoAvailabilityWidget({
   travelerFirstName: string | null;
   listingTitle: string;
   onSent: (insertedMessage: Message) => void;
+  onCancel: () => void;
 }) {
   const t = useTranslations("quote");
   const supabase = createClient();
@@ -163,13 +165,22 @@ export default function NoAvailabilityWidget({
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
-      <button
-        onClick={handleSend}
-        disabled={sending || !canSend}
-        className="self-start bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
-      >
-        {sending ? t("sendingGeneric") : t("sendNoAvailabilityButton")}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={handleSend}
+          disabled={sending || !canSend}
+          className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+        >
+          {sending ? t("sendingGeneric") : t("sendNoAvailabilityButton")}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-white border border-[#ebebeb] text-charcoal-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-charcoal-50 transition-colors"
+        >
+          {t("cancelButton")}
+        </button>
+      </div>
     </div>
   );
 }
