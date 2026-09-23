@@ -3,20 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { SIGNATURE_TOKEN, detokenizeClosing, tokenizeClosing } from "@/lib/quoteMessage";
+import {
+  SIGNATURE_TOKEN,
+  TRAVELER_FIRST_NAME_TOKEN,
+  LISTING_TITLE_TOKEN,
+  detokenizeMessage,
+  tokenizeMessage,
+} from "@/lib/quoteMessage";
 import type { Message } from "./MessagesClient";
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 
-// Marqueur du début de la section réutilisable/sauvegardable — tout à partir
-// de "J'ai bien reçu votre demande de devis...", jamais la salutation
-// d'ouverture ni la phrase de remerciement (toujours régénérées).
-function buildClosingMarker(t: Translate): string {
-  return t("noAvailabilityIntroSentence");
-}
-
-function buildDefaultClosingTemplate(t: Translate): string {
+// Gabarit par défaut, jetons non substitués — utilisé tant que le proprio
+// n'a jamais sauvegardé son propre modèle.
+function buildDefaultTemplate(t: Translate): string {
   return [
+    t("greeting", { name: TRAVELER_FIRST_NAME_TOKEN }),
+    t("noAvailabilityIntro", { title: LISTING_TITLE_TOKEN }),
     t("noAvailabilityIntroSentence"),
     t("noAvailabilityFlexible"),
     t("noAvailabilityClosing"),
@@ -24,22 +27,10 @@ function buildDefaultClosingTemplate(t: Translate): string {
   ].join("\n\n");
 }
 
-function buildHeaderBlock(
-  t: Translate,
-  { travelerFirstName, listingTitle }: { travelerFirstName: string | null; listingTitle: string }
-): string {
-  return [
-    travelerFirstName ? t("greeting", { name: travelerFirstName }) : t("greetingFallback"),
-    t("noAvailabilityIntro", { title: listingTitle }),
-  ].join("\n\n");
-}
-
-// Calque QuoteWidget.tsx (texte complet édité côté client, header régénéré
-// tant que le proprio n'a pas édité manuellement + section de fermeture
-// personnalisable/sauvegardable) mais sans dates/voyageurs/prix — voir
-// app/api/messages/quote/route.ts, qui accepte maintenant type:
-// "no_availability" et écrit no_availability_template_closing au lieu de
-// quote_template_closing.
+// Calque QuoteWidget.tsx (texte complet édité côté client, modèle sauvegardé
+// couvrant tout le message) mais sans dates/voyageurs/prix — voir
+// app/api/messages/quote/route.ts, qui accepte type: "no_availability" et
+// écrit no_availability_template_closing au lieu de quote_template_closing.
 export default function NoAvailabilityWidget({
   listingId,
   receiverId,
@@ -61,7 +52,6 @@ export default function NoAvailabilityWidget({
   const [templateLoaded, setTemplateLoaded] = useState(false);
   const [hostFirstName, setHostFirstName] = useState("");
   const [hostLastName, setHostLastName] = useState("");
-  const [closingTemplate, setClosingTemplate] = useState("");
 
   const [editedText, setEditedText] = useState("");
   const hasEditedText = useRef(false);
@@ -70,8 +60,8 @@ export default function NoAvailabilityWidget({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  // Chargement du modèle du proprio (self-read, RLS auth.uid() = id) — une
-  // seule fois au montage.
+  // Chargement du modèle du proprio (self-read, RLS auth.uid() = id) et
+  // construction du texte initial — une seule fois au montage.
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -89,8 +79,16 @@ export default function NoAvailabilityWidget({
       setHostLastName(lastName);
 
       const savedTemplate = (data?.no_availability_template_closing as string | null) ?? null;
-      const closing = detokenizeClosing(savedTemplate ?? buildDefaultClosingTemplate(t), firstName ?? "", lastName);
-      setClosingTemplate(closing);
+      if (!hasEditedText.current) {
+        setEditedText(
+          detokenizeMessage(savedTemplate ?? buildDefaultTemplate(t), {
+            hostFirstName: firstName ?? "",
+            hostLastName: lastName,
+            travelerFirstName,
+            listingTitle,
+          })
+        );
+      }
       setTemplateLoaded(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,26 +96,14 @@ export default function NoAvailabilityWidget({
 
   const canSend = !!editedText.trim();
 
-  // Construit le texte initial une seule fois, dès que le modèle est chargé.
-  useEffect(() => {
-    if (!templateLoaded || hasEditedText.current) return;
-    const header = buildHeaderBlock(t, { travelerFirstName, listingTitle });
-    setEditedText(`${header}\n\n${closingTemplate}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateLoaded, closingTemplate]);
-
   const handleSend = async () => {
     if (!canSend) return;
     setSending(true);
     setError("");
 
-    let closingTemplateToSave: string | undefined;
-    if (saveAsTemplate) {
-      const idx = editedText.indexOf(buildClosingMarker(t));
-      if (idx !== -1) {
-        closingTemplateToSave = tokenizeClosing(editedText.slice(idx), hostFirstName, hostLastName);
-      }
-    }
+    const closingTemplateToSave = saveAsTemplate
+      ? tokenizeMessage(editedText, { hostFirstName, hostLastName, travelerFirstName, listingTitle })
+      : undefined;
 
     const res = await fetch("/api/messages/quote", {
       method: "POST",

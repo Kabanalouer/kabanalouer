@@ -548,7 +548,7 @@
     "badgeQuote": "Devis",
     "badgeNoAvailability": "Non disponible",
     "loading": "Chargement…",
-    "saveTemplateCheckbox": "Enregistrer ce texte de fermeture comme modèle pour la prochaine fois",
+    "saveTemplateCheckbox": "Enregistrer ce texte comme modèle pour la prochaine fois",
     "sendError": "Erreur lors de l'envoi. Réessayez.",
     "sendingGeneric": "Envoi en cours…",
     "greeting": "Bonjour {name},",

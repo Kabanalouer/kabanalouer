@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { SIGNATURE_TOKEN, detokenizeClosing, tokenizeClosing } from "@/lib/quoteMessage";
+import {
+  SIGNATURE_TOKEN,
+  TRAVELER_FIRST_NAME_TOKEN,
+  LISTING_TITLE_TOKEN,
+  DATES_GUESTS_TOKEN,
+  detokenizeMessage,
+  tokenizeMessage,
+} from "@/lib/quoteMessage";
 import type { Message } from "./MessagesClient";
 
 const MONTHS_SHORT_FR = [
@@ -18,27 +25,13 @@ function formatDateShort(iso: string): string {
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 
-// Marqueur du début de la section "fermeture" réutilisable/sauvegardable —
-// dérivé de la même clé traduite que celle affichée, pour que la recherche
-// indexOf() reste cohérente peu importe la langue (FR ou EN).
-function buildClosingMarker(t: Translate): string {
-  return t("reservationHeading");
-}
-
-function buildDefaultClosingTemplate(t: Translate): string {
-  return [
-    `${t("reservationHeading")}\n${t("reservationParagraph")}`,
-    t("defaultClosingBlock2"),
-    t("defaultClosingBlock3"),
-    SIGNATURE_TOKEN,
-  ].join("\n\n");
-}
-
-function buildHeaderBlock(
+// Bloc dates + voyageurs — seule partie du message qui reste toujours
+// calculée depuis les vraies données de CETTE demande, jamais figée dans le
+// modèle sauvegardé (remplacée par DATES_GUESTS_TOKEN à la sauvegarde, voir
+// lib/quoteMessage.ts).
+function buildDatesGuestsBlock(
   t: Translate,
   {
-    travelerFirstName,
-    listingTitle,
     checkIn,
     checkOut,
     numAdults,
@@ -46,8 +39,6 @@ function buildHeaderBlock(
     numBabies,
     numPets,
   }: {
-    travelerFirstName: string | null;
-    listingTitle: string;
     checkIn: string | null;
     checkOut: string | null;
     numAdults: number;
@@ -72,25 +63,34 @@ function buildHeaderBlock(
     t("petsLabel", { count: numPets }),
   ].join("\n");
 
-  // "PRIX$" est un jeton littéral que le proprio remplace lui-même dans le
-  // textarea — texte brut, aucun champ numérique séparé (voir Correction 2).
-  const priceBlock = [t("priceHeading"), t("priceLine")].join("\n");
-
-  return [
-    travelerFirstName ? t("greeting", { name: travelerFirstName }) : t("greetingFallback"),
-    t("quoteIntro", { title: listingTitle }),
-    t("quoteComingUp"),
-    datesBlock,
-    guestsBlock,
-    priceBlock,
-  ].filter((l): l is string => l !== null).join("\n\n");
+  return [datesBlock, guestsBlock].filter((l): l is string => l !== null).join("\n\n");
 }
 
-// Le proprio édite un texte complet (header régénéré automatiquement tant
-// qu'il n'a pas commencé à éditer manuellement + section de fermeture
-// personnalisable) puis l'envoie tel quel — voir app/api/messages/quote/route.ts,
-// qui revalide sourceMessageId côté serveur et n'utilise jamais checkIn/
-// checkOut/numAdults/etc. ci-dessous pour autre chose que régénérer l'aperçu.
+// Gabarit par défaut, jetons non substitués — utilisé tant que le proprio
+// n'a jamais sauvegardé son propre modèle.
+function buildDefaultTemplate(t: Translate): string {
+  return [
+    t("greeting", { name: TRAVELER_FIRST_NAME_TOKEN }),
+    t("quoteIntro", { title: LISTING_TITLE_TOKEN }),
+    t("quoteComingUp"),
+    DATES_GUESTS_TOKEN,
+    // "PRIX$" est un jeton littéral que le proprio remplace lui-même dans le
+    // textarea — texte brut, aucun champ numérique séparé (voir Correction 2).
+    [t("priceHeading"), t("priceLine")].join("\n"),
+    `${t("reservationHeading")}\n${t("reservationParagraph")}`,
+    t("defaultClosingBlock2"),
+    t("defaultClosingBlock3"),
+    SIGNATURE_TOKEN,
+  ].join("\n\n");
+}
+
+// Le proprio édite le texte complet du devis (salutation, intro, dates,
+// voyageurs, prix, section de réservation) puis l'envoie tel quel — voir
+// app/api/messages/quote/route.ts, qui revalide sourceMessageId côté
+// serveur. Le modèle sauvegardé (quote_template_closing) couvre maintenant
+// tout le message : nom du voyageur, titre du chalet et bloc dates/
+// voyageurs sont remis en jetons avant sauvegarde pour rester dynamiques au
+// prochain envoi (voir lib/quoteMessage.ts, detokenizeMessage/tokenizeMessage).
 export default function QuoteWidget({
   listingId,
   receiverId,
@@ -124,7 +124,6 @@ export default function QuoteWidget({
   const [templateLoaded, setTemplateLoaded] = useState(false);
   const [hostFirstName, setHostFirstName] = useState("");
   const [hostLastName, setHostLastName] = useState("");
-  const [closingTemplate, setClosingTemplate] = useState("");
 
   const [editedText, setEditedText] = useState("");
   const hasEditedText = useRef(false);
@@ -138,8 +137,17 @@ export default function QuoteWidget({
   const babiesCount = numBabies ?? 0;
   const petsCount = numPets ?? 0;
 
-  // Chargement du modèle du proprio (self-read, RLS auth.uid() = id) — une
-  // seule fois au montage.
+  const datesGuestsBlock = buildDatesGuestsBlock(t, {
+    checkIn,
+    checkOut,
+    numAdults: adultsCount,
+    numChildren: childrenCount,
+    numBabies: babiesCount,
+    numPets: petsCount,
+  });
+
+  // Chargement du modèle du proprio (self-read, RLS auth.uid() = id) et
+  // construction du texte initial — une seule fois au montage.
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -157,48 +165,38 @@ export default function QuoteWidget({
       setHostLastName(lastName);
 
       const savedTemplate = (data?.quote_template_closing as string | null) ?? null;
-      const closing = detokenizeClosing(savedTemplate ?? buildDefaultClosingTemplate(t), firstName ?? "", lastName);
-      setClosingTemplate(closing);
+      if (!hasEditedText.current) {
+        setEditedText(
+          detokenizeMessage(savedTemplate ?? buildDefaultTemplate(t), {
+            hostFirstName: firstName ?? "",
+            hostLastName: lastName,
+            travelerFirstName,
+            listingTitle,
+            datesGuestsBlock,
+          })
+        );
+      }
       setTemplateLoaded(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Prix retiré du texte structuré — canSend ne dépend plus que d'un texte
-  // non vide (le prix fait partie du texte libre, sans validation séparée).
   const canSend = !!editedText.trim();
-
-  // Construit le texte initial une seule fois, dès que le modèle est chargé
-  // — plus de régénération automatique liée au prix puisqu'il n'y a plus de
-  // champ prix séparé.
-  useEffect(() => {
-    if (!templateLoaded || hasEditedText.current) return;
-    const header = buildHeaderBlock(t, {
-      travelerFirstName,
-      listingTitle,
-      checkIn,
-      checkOut,
-      numAdults: adultsCount,
-      numChildren: childrenCount,
-      numBabies: babiesCount,
-      numPets: petsCount,
-    });
-    setEditedText(`${header}\n\n${closingTemplate}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateLoaded, closingTemplate]);
 
   const handleSend = async () => {
     if (!canSend) return;
     setSending(true);
     setError("");
 
-    let closingTemplateToSave: string | undefined;
-    if (saveAsTemplate) {
-      const idx = editedText.indexOf(buildClosingMarker(t));
-      if (idx !== -1) {
-        closingTemplateToSave = tokenizeClosing(editedText.slice(idx), hostFirstName, hostLastName);
-      }
-    }
+    const closingTemplateToSave = saveAsTemplate
+      ? tokenizeMessage(editedText, {
+          hostFirstName,
+          hostLastName,
+          travelerFirstName,
+          listingTitle,
+          datesGuestsBlock,
+        })
+      : undefined;
 
     const res = await fetch("/api/messages/quote", {
       method: "POST",

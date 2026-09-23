@@ -548,7 +548,7 @@
     "badgeQuote": "Quote",
     "badgeNoAvailability": "Not available",
     "loading": "Loading…",
-    "saveTemplateCheckbox": "Save this closing text as a template for next time",
+    "saveTemplateCheckbox": "Save this text as a template for next time",
     "sendError": "Error sending. Please try again.",
     "sendingGeneric": "Sending…",
     "greeting": "Hi {name},",
