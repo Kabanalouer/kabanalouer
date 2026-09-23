@@ -30,6 +30,10 @@ export async function insertMessageAndTranslate(
     checkIn,
     checkOut,
     numGuests,
+    numAdults,
+    numChildren,
+    numBabies,
+    numPets,
     quoteData,
   }: {
     listingId: string;
@@ -39,6 +43,10 @@ export async function insertMessageAndTranslate(
     checkIn?: string | null;
     checkOut?: string | null;
     numGuests?: number | null;
+    numAdults?: number | null;
+    numChildren?: number | null;
+    numBabies?: number | null;
+    numPets?: number | null;
     quoteData?: Record<string, unknown> | null;
   }
 ): Promise<{ id: string } | { error: string }> {
@@ -60,6 +68,10 @@ export async function insertMessageAndTranslate(
   if (checkIn !== undefined) insertPayload.check_in = checkIn;
   if (checkOut !== undefined) insertPayload.check_out = checkOut;
   if (numGuests !== undefined) insertPayload.num_guests = numGuests;
+  if (numAdults !== undefined) insertPayload.num_adults = numAdults;
+  if (numChildren !== undefined) insertPayload.num_children = numChildren;
+  if (numBabies !== undefined) insertPayload.num_babies = numBabies;
+  if (numPets !== undefined) insertPayload.num_pets = numPets;
   if (quoteData !== undefined) insertPayload.quote_data = quoteData;
 
   const { data: message, error: insertError } = await admin

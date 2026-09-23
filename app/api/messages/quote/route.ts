@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { adminSupabase, insertMessageAndTranslate, toLang } from "@/lib/sendMessage";
-import { buildQuoteMessage, type QuoteData } from "@/lib/quoteMessage";
+import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
+import type { QuoteData } from "@/lib/quoteMessage";
 
-// Devis structuré — le proprio n'entre que le prix total (taxes incluses).
-// Le reste (dates/voyageurs de la demande initiale, prénom du voyageur) est
-// assemblé automatiquement ici.
+// Devis structuré — le proprio édite le texte complet côté client
+// (QuoteWidget.tsx, gabarit + section de fermeture personnalisable) ; cette
+// route ne fait que revalider le message source et enregistrer le résultat.
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -13,8 +13,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { listingId, receiverId, priceCents, sourceMessageId } = await request.json().catch(() => ({}));
-  if (!listingId || !receiverId || !sourceMessageId || !Number.isFinite(priceCents) || priceCents <= 0) {
+  const { listingId, receiverId, priceCents, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
+    await request.json().catch(() => ({}));
+  if (
+    !listingId ||
+    !receiverId ||
+    !sourceMessageId ||
+    !editedContent?.trim() ||
+    !Number.isFinite(priceCents) ||
+    priceCents <= 0
+  ) {
     return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
   }
 
@@ -22,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("host_id, title")
+    .select("host_id")
     .eq("id", listingId)
     .single();
 
@@ -30,12 +38,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
   }
 
-  const [{ data: sender }, { data: receiver }, { data: sourceMessage }] = await Promise.all([
-    admin.from("users").select("preferred_language").eq("id", user.id).single(),
+  const [{ data: receiver }, { data: sourceMessage }] = await Promise.all([
     admin.from("users").select("name").eq("id", receiverId).single(),
     admin
       .from("messages")
-      .select("check_in, check_out, num_guests, listing_id, sender_id, receiver_id")
+      .select("check_in, check_out, num_guests, num_adults, num_children, num_babies, num_pets, listing_id, sender_id, receiver_id")
       .eq("id", sourceMessageId)
       .maybeSingle(),
   ]);
@@ -53,35 +60,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Message introuvable" }, { status: 404 });
   }
 
-  const senderLang = toLang(sender?.preferred_language);
   const travelerFirstName = receiver?.name?.split(" ")[0] ?? null;
-  const checkIn = (sourceMessage.check_in as string | null) ?? null;
-  const checkOut = (sourceMessage.check_out as string | null) ?? null;
-  const numGuests = (sourceMessage.num_guests as number | null) ?? null;
-
-  const content = buildQuoteMessage(senderLang, {
-    travelerFirstName,
-    listingTitle: listing.title ?? "",
-    checkIn,
-    checkOut,
-    numGuests,
-    priceCents,
-  });
 
   const quoteData: QuoteData = {
-    checkIn, checkOut, numGuests, priceCents, travelerFirstName,
+    checkIn: (sourceMessage.check_in as string | null) ?? null,
+    checkOut: (sourceMessage.check_out as string | null) ?? null,
+    numGuests: (sourceMessage.num_guests as number | null) ?? null,
+    numAdults: (sourceMessage.num_adults as number | null) ?? null,
+    numChildren: (sourceMessage.num_children as number | null) ?? null,
+    numBabies: (sourceMessage.num_babies as number | null) ?? null,
+    numPets: (sourceMessage.num_pets as number | null) ?? null,
+    priceCents,
+    travelerFirstName,
   };
 
   const result = await insertMessageAndTranslate(admin, {
     listingId,
     senderId: user.id,
     receiverId,
-    content,
+    content: editedContent.trim(),
     quoteData,
   });
 
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: 500 });
+  }
+
+  // Sauvegarde du modèle de fermeture — best-effort, n'échoue jamais l'envoi
+  // du devis si ça rate (même logique que la traduction automatique).
+  if (saveAsTemplate && typeof closingTemplateToSave === "string" && closingTemplateToSave.trim()) {
+    const { error: templateError } = await admin
+      .from("users")
+      .update({ quote_template_closing: closingTemplateToSave.trim() })
+      .eq("id", user.id);
+    if (templateError) {
+      console.error("quote: échec sauvegarde du modèle de fermeture", templateError);
+    }
   }
 
   return NextResponse.json({ id: result.id }, { status: 201 });

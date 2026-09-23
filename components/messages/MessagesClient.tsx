@@ -23,6 +23,10 @@ type Message = {
   check_in: string | null;
   check_out: string | null;
   num_guests: number | null;
+  num_adults: number | null;
+  num_children: number | null;
+  num_babies: number | null;
+  num_pets: number | null;
   quote_data: QuoteData | null;
   created_at: string;
   sender: { id: string; name: string; avatar_url: string | null };
@@ -397,7 +401,7 @@ export default function MessagesClient({
                   if (msg.quote_data) {
                     return (
                       <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                        <QuoteCard quote={msg.quote_data} listingTitle={activeConv?.listing_title ?? ""} />
+                        <QuoteCard quote={msg.quote_data} listingTitle={activeConv?.listing_title ?? ""} isMine={isMine} />
                       </div>
                     );
                   }
@@ -458,7 +462,12 @@ export default function MessagesClient({
                                 sourceMessageId={msg.id}
                                 checkIn={msg.check_in}
                                 checkOut={msg.check_out}
-                                numGuests={msg.num_guests}
+                                numAdults={msg.num_adults}
+                                numChildren={msg.num_children}
+                                numBabies={msg.num_babies}
+                                numPets={msg.num_pets}
+                                travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
+                                listingTitle={activeConv.listing_title}
                                 onSent={() => setActiveQuoteMessageId(null)}
                               />
                             </div>

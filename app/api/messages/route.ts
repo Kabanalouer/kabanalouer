@@ -9,11 +9,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  // checkIn/checkOut/numGuests : capturés uniquement sur la demande de devis
-  // initiale (bouton "Demande de devis" sur la fiche du chalet, via
-  // ContactForm.tsx) — permet de générer un devis structuré plus tard sans
-  // reparser le texte du message. Absents pour un message libre normal.
-  const { listingId, receiverId, content, checkIn, checkOut, numGuests } =
+  // checkIn/checkOut/numGuests(+répartition) : capturés uniquement sur la
+  // demande de devis initiale (bouton "Demande de devis" sur la fiche du
+  // chalet, via ContactForm.tsx) — permet de générer un devis structuré plus
+  // tard sans reparser le texte du message. Absents pour un message libre normal.
+  const { listingId, receiverId, content, checkIn, checkOut, numGuests, numAdults, numChildren, numBabies, numPets } =
     await request.json().catch(() => ({}));
   if (!listingId || !receiverId || !content?.trim()) {
     return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
@@ -30,6 +30,10 @@ export async function POST(request: NextRequest) {
     checkIn: checkIn ?? undefined,
     checkOut: checkOut ?? undefined,
     numGuests: numGuests ?? undefined,
+    numAdults: numAdults ?? undefined,
+    numChildren: numChildren ?? undefined,
+    numBabies: numBabies ?? undefined,
+    numPets: numPets ?? undefined,
   });
 
   if ("error" in result) {

@@ -279,6 +279,10 @@ export default function ContactForm({
         checkIn: checkin || undefined,
         checkOut: checkout || undefined,
         numGuests: guestTotal > 0 ? guestTotal : undefined,
+        numAdults: adults,
+        numChildren: children,
+        numBabies: babies,
+        numPets: pets,
       }),
     });
 
