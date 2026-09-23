@@ -10,6 +10,7 @@ import QuoteWidget from "./QuoteWidget";
 import NoAvailabilityWidget from "./NoAvailabilityWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
+import { buildListingPath } from "@/lib/listingUrl";
 
 export type Message = {
   id: string;
@@ -41,6 +42,10 @@ type Conversation = {
   listing_id: string;
   listing_title: string;
   listing_host_id: string | null;
+  listing_region: string | null;
+  listing_city: string | null;
+  listing_number: number | null;
+  listing_custom_slug: string | null;
   last_message: string;
   last_message_at: string;
   unread_count: number;
@@ -105,6 +110,20 @@ export default function MessagesClient({
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
   );
+  // Lien vers la fiche publique du chalet (icône cliquable dans l'en-tête du
+  // fil) — même construction que ListingCard.tsx. null si la région est
+  // inconnue ou si l'annonce n'a ni lien personnalisé ni numéro d'annonce.
+  const activeListingPath = activeConv
+    ? buildListingPath(
+        {
+          region: activeConv.listing_region,
+          city: activeConv.listing_city,
+          listing_number: activeConv.listing_number,
+          custom_slug: activeConv.listing_custom_slug,
+        },
+        locale === "en" ? "en" : "fr"
+      )
+    : null;
   // L'action rapide "Devis structuré" n'est offerte que si l'utilisateur
   // courant est le proprio de l'annonce concernée par CETTE conversation
   // précise (pas juste son rôle global — un même compte peut être proprio
@@ -384,7 +403,23 @@ export default function MessagesClient({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-charcoal-800 text-sm">{activeConv.other_user_name}</p>
-                    <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                      {activeListingPath && (
+                        <a
+                          href={activeListingPath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={t("viewListing")}
+                          title={t("viewListing")}
+                          className="text-charcoal-400 hover:text-primary transition-colors shrink-0"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H18m0 0v4.5m0-4.5L11 13.5M6 6H4.5a1.5 1.5 0 00-1.5 1.5v9a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V15" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </>
               )}

@@ -543,7 +543,8 @@
     "translatedBadge": "Traduit automatiquement",
     "backToList": "Retour à la liste",
     "messagePlaceholder": "Écrivez votre message… (Entrée pour envoyer)",
-    "unread": "Non lu"
+    "unread": "Non lu",
+    "viewListing": "Voir la fiche du chalet"
   },
   "quote": {
     "badgeQuote": "Devis",

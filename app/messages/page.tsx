@@ -37,7 +37,7 @@ export default async function MessagesPage() {
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
     .from("messages")
-    .select("*, listing:listing_id(id, title, host_id)")
+    .select("*, listing:listing_id(id, title, host_id, region, city, listing_number, custom_slug)")
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
@@ -53,7 +53,15 @@ export default async function MessagesPage() {
     check_in: string | null;
     check_out: string | null;
     num_guests: number | null;
-    listing: { id: string; title: string; host_id: string };
+    listing: {
+      id: string;
+      title: string;
+      host_id: string;
+      region: string | null;
+      city: string | null;
+      listing_number: number | null;
+      custom_slug: string | null;
+    };
   };
 
   const messages = (rawMessages ?? []) as RawMsg[];
@@ -79,6 +87,10 @@ export default async function MessagesPage() {
       listing_id: string;
       listing_title: string;
       listing_host_id: string | null;
+      listing_region: string | null;
+      listing_city: string | null;
+      listing_number: number | null;
+      listing_custom_slug: string | null;
       last_message: string;
       last_message_at: string;
       unread_count: number;
@@ -101,6 +113,10 @@ export default async function MessagesPage() {
         listing_id: msg.listing_id,
         listing_title: msg.listing?.title ?? "",
         listing_host_id: msg.listing?.host_id ?? null,
+        listing_region: msg.listing?.region ?? null,
+        listing_city: msg.listing?.city ?? null,
+        listing_number: msg.listing?.listing_number ?? null,
+        listing_custom_slug: msg.listing?.custom_slug ?? null,
         last_message: msg.content,
         last_message_at: msg.created_at,
         unread_count: 0,
