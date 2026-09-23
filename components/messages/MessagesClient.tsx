@@ -404,7 +404,19 @@ export default function MessagesClient({
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-charcoal-800 text-sm">{activeConv.other_user_name}</p>
                     <div className="flex items-center gap-1 min-w-0">
-                      <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                      {activeListingPath ? (
+                        <a
+                          href={activeListingPath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t("viewListing")}
+                          className="text-xs text-charcoal-400 truncate max-w-xs hover:underline"
+                        >
+                          {activeConv.listing_title}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                      )}
                       {activeListingPath && (
                         <a
                           href={activeListingPath}
