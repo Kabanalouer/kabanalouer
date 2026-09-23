@@ -13,15 +13,13 @@ const FROM = "Kabanalouer <messages@kabanalouer.ca>";
 
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-const PREVIEW_MAX_LENGTH = 150;
-
 const TEMPLATE: Record<"fr" | "en", {
   subjectOne: (senderFirstName: string, listingTitle: string) => string;
   subjectMany: (count: number, senderFirstName: string, listingTitle: string) => string;
   greeting: (firstName: string) => string;
   headingOne: (senderFirstName: string) => string;
   headingMany: (count: number, senderFirstName: string) => string;
-  body: (listingTitle: string, preview: string) => string;
+  body: (listingTitle: string, content: string) => string;
   buttonLabel: string;
   footerNote: string;
 }> = {
@@ -31,9 +29,9 @@ const TEMPLATE: Record<"fr" | "en", {
     greeting: (firstName) => `Bonjour ${firstName},`,
     headingOne: (senderFirstName) => `Nouveau message de ${senderFirstName}`,
     headingMany: (count, senderFirstName) => `${count} nouveaux messages de ${senderFirstName}`,
-    body: (listingTitle, preview) => `À propos de : ${listingTitle}<br/><br/><em>"${preview}"</em>`,
-    buttonLabel: "Voir la conversation",
-    footerNote: "Ceci est un courriel automatique — réponds directement à ce courriel, ou dans ta messagerie Kabanalouer.",
+    body: (listingTitle, content) => `À propos de : ${listingTitle}<br/><br/><em>"${content}"</em>`,
+    buttonLabel: "Répondre",
+    footerNote: "Vous pouvez répondre à ce message en répondant à cet email (reply) ou directement dans la messagerie de Kabanalouer en cliquant sur le bouton ci-dessus.",
   },
   en: {
     subjectOne: (senderFirstName, listingTitle) => `New message from ${senderFirstName} about ${listingTitle}`,
@@ -41,9 +39,9 @@ const TEMPLATE: Record<"fr" | "en", {
     greeting: (firstName) => `Hi ${firstName},`,
     headingOne: (senderFirstName) => `New message from ${senderFirstName}`,
     headingMany: (count, senderFirstName) => `${count} new messages from ${senderFirstName}`,
-    body: (listingTitle, preview) => `About: ${listingTitle}<br/><br/><em>"${preview}"</em>`,
-    buttonLabel: "View conversation",
-    footerNote: "This is an automated email — reply directly to this email, or in your Kabanalouer messaging.",
+    body: (listingTitle, content) => `About: ${listingTitle}<br/><br/><em>"${content}"</em>`,
+    buttonLabel: "Reply",
+    footerNote: "You can reply to this message by replying to this email, or directly in your Kabanalouer messaging by clicking the button above.",
   },
 };
 
@@ -81,7 +79,7 @@ export async function sendNewMessageNotificationEmail(
   // jamais interpolées telles quelles dans le HTML (voir lib/escapeHtml.ts).
   const safeSender = escapeHtml(senderFirstName);
   const safeListingTitle = escapeHtml(listingTitle);
-  // Le gabarit entoure déjà l'aperçu de guillemets (voir body() ci-dessus) —
+  // Le gabarit entoure déjà le message de guillemets (voir body() ci-dessus) —
   // si le message lui-même commence ou finit par un guillemet (tapé par
   // l'utilisateur, ex. "...texte"), on se retrouve avec deux guillemets
   // collés. On retire ceux en trop aux extrémités avant le gabarit.
@@ -89,10 +87,9 @@ export async function sendNewMessageNotificationEmail(
     /^["'‘’“”«»]+|["'‘’“”«»]+$/g,
     ""
   );
-  const truncated = trimmedQuotes.length > PREVIEW_MAX_LENGTH
-    ? `${trimmedQuotes.slice(0, PREVIEW_MAX_LENGTH)}…`
-    : trimmedQuotes;
-  const safePreview = escapeHtml(truncated);
+  // Message complet (plus de troncature à 150 caractères) — sauts de ligne
+  // préservés en <br/>, même pattern que lib/emails/contactMessageNotification.ts.
+  const safePreview = escapeHtml(trimmedQuotes).replace(/\n/g, "<br/>");
 
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
   const buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
