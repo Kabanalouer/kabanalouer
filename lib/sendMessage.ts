@@ -49,7 +49,7 @@ export async function insertMessageAndTranslate(
     numPets?: number | null;
     quoteData?: Record<string, unknown> | null;
   }
-): Promise<{ id: string } | { error: string }> {
+): Promise<{ message: Record<string, unknown> } | { error: string }> {
   const [{ data: sender }, { data: receiver }] = await Promise.all([
     admin.from("users").select("preferred_language").eq("id", senderId).single(),
     admin.from("users").select("preferred_language, translation_enabled").eq("id", receiverId).single(),
@@ -77,7 +77,7 @@ export async function insertMessageAndTranslate(
   const { data: message, error: insertError } = await admin
     .from("messages")
     .insert(insertPayload)
-    .select("id")
+    .select("*")
     .single();
 
   if (insertError || !message) {
@@ -102,5 +102,5 @@ export async function insertMessageAndTranslate(
     console.error("sendMessage: échec traduction automatique", translateErr);
   }
 
-  return { id: message.id as string };
+  return { message };
 }

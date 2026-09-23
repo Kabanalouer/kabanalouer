@@ -93,5 +93,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ id: result.id }, { status: 201 });
+  return NextResponse.json({ id: result.message.id, message: result.message }, { status: 201 });
 }

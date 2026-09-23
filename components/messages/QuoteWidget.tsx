@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { Message } from "./MessagesClient";
 
 const MONTHS_SHORT_FR = [
   "janv.", "févr.", "mars", "avr.", "mai", "juin",
@@ -123,7 +124,7 @@ export default function QuoteWidget({
   numPets: number | null;
   travelerFirstName: string | null;
   listingTitle: string;
-  onSent: () => void;
+  onSent: (insertedMessage: Message) => void;
 }) {
   const supabase = createClient();
 
@@ -225,8 +226,9 @@ export default function QuoteWidget({
       return;
     }
 
+    const { message } = await res.json();
     setSending(false);
-    onSent();
+    onSent(message as Message);
   };
 
   if (!templateLoaded) {

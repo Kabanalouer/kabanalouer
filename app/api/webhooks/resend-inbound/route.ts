@@ -118,5 +118,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, messageId: result.id });
+  return NextResponse.json({ ok: true, messageId: result.message.id });
 }

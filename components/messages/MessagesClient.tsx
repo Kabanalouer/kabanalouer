@@ -10,7 +10,7 @@ import QuoteWidget from "./QuoteWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 
-type Message = {
+export type Message = {
   id: string;
   listing_id: string;
   sender_id: string;
@@ -153,7 +153,12 @@ export default function MessagesClient({
             .single();
 
           if (data) {
-            setMessages((prev) => [...prev, data as Message]);
+            // Anti-doublon : le devis structuré est déjà ajouté de façon
+            // optimiste dès la réponse de /api/messages/quote (voir onSent
+            // plus bas) — cet événement Realtime arrive ensuite pour tout le
+            // monde, dont l'expéditeur lui-même, sans dédoublonnage il
+            // apparaîtrait deux fois.
+            setMessages((prev) => (prev.some((m) => m.id === (data as Message).id) ? prev : [...prev, data as Message]));
           }
 
           if (msg.receiver_id === currentUserId) {
@@ -468,7 +473,14 @@ export default function MessagesClient({
                                 numPets={msg.num_pets}
                                 travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
                                 listingTitle={activeConv.listing_title}
-                                onSent={() => setActiveQuoteMessageId(null)}
+                                onSent={(insertedMessage) => {
+                                  setActiveQuoteMessageId(null);
+                                  // Affichage optimiste immédiat — ne pas attendre l'événement
+                                  // Realtime (dédoublonné plus haut quand il arrive ensuite).
+                                  setMessages((prev) =>
+                                    prev.some((m) => m.id === insertedMessage.id) ? prev : [...prev, insertedMessage]
+                                  );
+                                }}
                               />
                             </div>
                           ) : (
