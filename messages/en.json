@@ -578,7 +578,8 @@
     "noAvailabilityFlexible": "If your dates are flexible, feel free to submit a new quote request for your new dates.",
     "noAvailabilityClosing": "If you have any questions, don't hesitate to ask.\nHave a great day!",
     "sendQuoteCta": "Send a quick quote",
-    "sendNoAvailabilityCta": "No longer available"
+    "sendNoAvailabilityCta": "No longer available",
+    "cancelButton": "Cancel"
   },
   "phoneReminder": {
     "message": "Add your cell phone number to receive your alerts by text message.",
