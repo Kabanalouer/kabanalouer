@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import QuoteCard from "./QuoteCard";
@@ -46,6 +46,21 @@ type Conversation = {
   unread_count: number;
 };
 
+// Heure seule si le dernier message est d'aujourd'hui, sinon date courte —
+// même convention que les autres listes admin du projet (jour + mois abrégé).
+function formatConversationDate(iso: string, locale: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const localeCode = locale === "en" ? "en-CA" : "fr-CA";
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+  return isToday
+    ? date.toLocaleTimeString(localeCode, { hour: "2-digit", minute: "2-digit" })
+    : date.toLocaleDateString(localeCode, { day: "numeric", month: "short" });
+}
+
 export default function MessagesClient({
   currentUserId,
   currentUserLanguage,
@@ -61,6 +76,7 @@ export default function MessagesClient({
 }) {
   const t = useTranslations("messages");
   const tq = useTranslations("quote");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -296,15 +312,18 @@ export default function MessagesClient({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold text-charcoal-800 text-sm truncate">
                           {conv.other_user_name}
                         </span>
-                        {conv.unread_count > 0 && (
-                          <span className="ml-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                            {conv.unread_count}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className="text-[11px] text-charcoal-400">
+                            {formatConversationDate(conv.last_message_at, locale)}
                           </span>
-                        )}
+                          {conv.unread_count > 0 && (
+                            <span className="w-2 h-2 rounded-full bg-[#f04e45]" aria-label={t("unread")} />
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs text-charcoal-400 truncate mt-0.5">{conv.listing_title}</p>
                       <p className="text-xs text-charcoal-500 truncate mt-0.5">{conv.last_message}</p>

@@ -542,7 +542,8 @@
     "translationToggleLabel": "Automatic translation",
     "translatedBadge": "Automatically translated",
     "backToList": "Back to list",
-    "messagePlaceholder": "Write your message… (Enter to send)"
+    "messagePlaceholder": "Write your message… (Enter to send)",
+    "unread": "Unread"
   },
   "quote": {
     "badgeQuote": "Quote",

@@ -542,7 +542,8 @@
     "translationToggleLabel": "Traduction automatique",
     "translatedBadge": "Traduit automatiquement",
     "backToList": "Retour à la liste",
-    "messagePlaceholder": "Écrivez votre message… (Entrée pour envoyer)"
+    "messagePlaceholder": "Écrivez votre message… (Entrée pour envoyer)",
+    "unread": "Non lu"
   },
   "quote": {
     "badgeQuote": "Devis",
