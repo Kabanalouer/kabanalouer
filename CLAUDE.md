@@ -398,7 +398,7 @@ L'ancien outil "Devis" (`QuoteSection.tsx`, section de `EditListingForm.tsx` où
 
 - **Retiré** : entrée `SECTIONS` de la section "Devis" dans `EditListingForm.tsx`, `QuoteSection.tsx` (fichier supprimé), toute référence à `quote_inclusions`/`quote_exclusions`/`quote_booking_instructions` dans `app/api/messages/quote/route.ts`, `lib/quoteMessage.ts`, `components/messages/QuoteCard.tsx`, et les clés i18n devenues orphelines.
 - **Colonnes conservées mais non lues** : `listings.quote_inclusions`/`quote_exclusions`/`quote_booking_instructions` restent en base (aucune perte de données) — migration de suppression proposée mais **non exécutée**, voir `supabase/drop-quote-tool-columns.sql` (section 12).
-- **Le devis "prix seulement" existe déjà et fonctionne**, indépendant des champs retirés : `components/messages/QuoteWidget.tsx` (bouton dans une conversation) → `POST /api/messages/quote` (le proprio n'entre que le prix total taxes incluses, le reste — dates/voyageurs/prénom — est assemblé automatiquement) → `lib/quoteMessage.ts` → message inséré normalement → affiché via `components/messages/QuoteCard.tsx` dans `MessagesClient.tsx`.
+- **Le devis "prix seulement" existe déjà et fonctionne**, indépendant des champs retirés : `components/messages/QuoteWidget.tsx` (bouton dans une conversation) → `POST /api/messages/quote` (le proprio n'entre que le prix total taxes incluses, le reste — dates/voyageurs/prénom — est assemblé automatiquement) → `lib/quoteMessage.ts` → message inséré normalement → affiché via `components/messages/QuoteCard.tsx` dans `MessagesClient.tsx`. **Architecture entièrement revue le 2026-09-23** — voir section 13, ce n'est plus juste "prix seulement" : deux types de réponse rapide (devis/indisponible), texte intégral éditable et sauvegardable comme modèle. Ce paragraphe garde la mécanique de base (bouton dans une conversation → route API → message normal), le détail à jour est dans la session du 2026-09-23.
 
 ### URL de fiche chalet — numéro d'annonce stable + lien personnalisé (2026-09-17)
 
@@ -566,6 +566,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `drop-quote-tool-columns.sql` | Supprime `listings.quote_inclusions`/`quote_exclusions`/`quote_booking_instructions`, plus lues nulle part depuis le retrait de l'outil "Devis" (voir section 9) | Proposée, non exécutée — aucune urgence, colonnes juste inertes |
 | `slugs-migration.sql` | Ajoute un index UNIQUE partiel sur `listings.slug_fr`/`slug_en` — **plus prioritaire** depuis le 2026-09-17 (voir section 9, "URL de fiche chalet") : ces colonnes ne servent plus qu'au repli historique 1 segment pour d'anciens liens déjà indexés, `ensureListingSlugs()` qui l'appuyait a été retiré. Reste sans danger à exécuter si désiré, juste plus urgent. | Optionnel, à exécuter par Simon dans Supabase SQL Editor si désiré |
 | `add-listing-number-custom-slug.sql` | Ajoute `listings.listing_number`/`custom_slug`/`previous_custom_slug` + 2 index UNIQUE partiels, et assigne `listing_number = 48347` à la fiche déjà publiée (776cbb0b-f45f-4b0b-bea9-ebaf0ced7a72) — voir section 9, "URL de fiche chalet" | Exécutée et confirmée en prod le 2026-09-17 |
+| `add-no-availability-template-closing-column.sql` | Ajoute `users.no_availability_template_closing` (modèle réutilisable pour la réponse rapide "Indisponible", même principe que `quote_template_closing`) — voir section 13, session du 2026-09-23 | Exécutée et confirmée en prod le 2026-09-23 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
@@ -691,6 +692,56 @@ Audit de code (sans session live) de l'espace proprio et de l'édition d'annonce
 - **Correction #3 (suite au retour de Simon)** : reste de `SubscriptionClient.tsx` traduit intégralement (titre, description, statuts, prix via `formatPriceLabel()` existant, date de renouvellement locale-aware, bandeau offre de lancement) ; messages d'erreur de l'import Airbnb traduits dans `lib/listingImport.ts` et `lib/apify.ts` (fonctions non-composants, `t` passé en paramètre plutôt que hook `useTranslations`) — deux appelants mis à jour : `submitImportRequest` (vraie langue du proprio via `getTranslations`) et `app/api/listings/import/route.ts` (route API confirmée sans appelant UI actuel, hors du middleware next-intl donc fixée explicitement en `fr` pour préserver son comportement).
 - **Leçon technique retenue** : plusieurs composants dashboard avaient déjà leurs clés de traduction FR/EN complètes dans `messages/fr.json`/`en.json` (calendrier, modale de suppression, sync iCal) sans jamais appeler `useTranslations()` — les clés existaient mais n'étaient pas branchées. Un audit de parité de clés seul (`fr.json` vs `en.json`) ne détecte pas ce cas ; il faut aussi vérifier que chaque composant appelle réellement `useTranslations`/`getTranslations`.
 - **Code mort trouvé, non supprimé** : `components/dashboard/Sidebar.tsx` (`DashboardSidebar`) n'est importé nulle part dans le projet — navigation desktop dashboard gérée ailleurs (probablement `Navbar.tsx`), mobile via `DashboardBottomNav.tsx`. Simon a choisi de le garder pour un futur ménage de code mort plutôt que de le retirer maintenant.
+
+### Session du 2026-09-23 — Refonte complète du système de devis/indisponibilité + diagnostic en direct + petites améliorations messagerie
+
+Longue session centrée sur le système de réponse rapide dans la messagerie (devis + nouveau type "indisponible"), avec un vrai bug de fond trouvé après plusieurs fausses pistes en diagnostic live. Tout committé/pushé (10 commits, `293d0e5` → `1ca3108`).
+
+**1. Ajout du 2ᵉ type de réponse rapide "Indisponible" + passage FR/EN complet (`293d0e5`)**
+- `QuoteData.type: "quote" | "no_availability"` (`lib/quoteMessage.ts`), nouvelle colonne `users.no_availability_template_closing` (migration `add-no-availability-template-closing-column.sql`, exécutée), nouveau composant `NoAvailabilityWidget.tsx` calqué sur `QuoteWidget.tsx`.
+- `app/api/messages/quote/route.ts` étendu (pas dupliqué) pour accepter `type` dans le body et écrire dans la bonne colonne de modèle selon le cas.
+- `MessagesClient.tsx` : deux boutons sous chaque demande de devis ("Envoyer un devis rapide" / à l'origine "Plus de disponibilités", renommé plus tard).
+- Tout le texte des deux widgets + `QuoteCard.tsx` (badge différencié "Devis"/"Non disponible") passé par `useTranslations("quote")`, ~34 nouvelles clés `messages/fr.json`/`en.json`.
+
+**2. Diagnostic en direct : "le modèle ne s'enregistre pas" — deux causes réelles trouvées, une fausse piste écartée**
+
+Simon a signalé que cocher "Enregistrer ce texte de fermeture comme modèle" ne fonctionnait pas. Diagnostic fait avec la même méthode déjà documentée dans ce fichier (sessions injectées via jetons Supabase Admin, isolatedContext chrome-devtools) — **trois hypothèses testées dans l'ordre, deux confirmées, une écartée** :
+- *Hypothèse 1 (écartée)* : onglet resté ouvert sur l'ancien bundle JS avant déploiement — déjà arrivé plusieurs fois dans le projet, mais pas la cause cette fois (reconfirmé après rechargement forcé, toujours pas de sauvegarde).
+- *Hypothèse 2 (bug réel, corrigé, `c8a2a68`)* : `postgrest-js` n'envoie jamais d'option `cache` sur ses `fetch()`, et Supabase ne renvoie aucun header `Cache-Control` sur ses réponses REST — un composant remonté **sans rechargement de page** pouvait donc recevoir une réponse GET mise en cache par le navigateur au lieu d'une vraie requête réseau, montrant une valeur périmée juste après une écriture confirmée en base. Corrigé en forçant `cache: "no-store"` sur le `fetch` du client Supabase navigateur (`lib/supabase/client.ts`, `global.fetch` custom) — correctif systémique, pas juste pour les widgets de devis. Reproduit et confirmé résolu en isolation (édition → sauvegarde confirmée en base → réouverture du widget sans recharger la page → donnée à jour).
+- *Cause réelle du rapport initial de Simon (pas un bug — refonte, `fc51ad1`)* : Simon éditait la salutation/l'intro du message (juste après "Bonjour {voyageur},"), qui n'avait jamais été incluse dans la section sauvegardable par design (seule la partie à partir de "COMMENT RÉSERVER ?" était mémorisée). Confirmé en comparant le contenu réellement envoyé (`messages.content`) avec le texte censé être sauvegardé.
+
+**Pendant ce diagnostic**, plusieurs tests en direct se sont déroulés **en même temps** que Simon testait de son côté sur le même compte partagé (`info@chaletauthentik.com`) — les deux séries d'écritures se sont mutuellement écrasées un moment, brouillant temporairement le signal. Leçon : demander explicitement à l'utilisateur de mettre son propre test en pause avant un diagnostic live sur un compte partagé, plutôt que de le découvrir après coup via des messages de test inattendus dans la base.
+
+**3. Refonte : le message entier devient un seul modèle éditable et sauvegardable (`fc51ad1`)**
+
+Suite à la vraie cause ci-dessus, Simon a demandé que **tout le texte** soit modifiable et mémorisé, salutation incluse — pas seulement la fermeture. Nouveau système de jetons dans `lib/quoteMessage.ts` (étend le principe déjà existant `{prenomProprio}`/`{nomProprio}`) :
+- `{prenomVoyageur}` (prénom du voyageur), `{titreChalet}` (titre de l'annonce), `{datesEtVoyageurs}` (bloc dates + répartition voyageurs, QuoteWidget seulement — jamais figé, toujours recalculé).
+- `detokenizeMessage()`/`tokenizeMessage()` remplacent les anciens `detokenizeClosing()`/`tokenizeClosing()` (supprimés) — un seul texte complet chargé/sauvegardé, plus de split "en-tête toujours régénéré" / "fermeture sauvegardée", donc plus de marqueur `CLOSING_MARKER` ni de recherche `indexOf()`.
+- **Bug trouvé et corrigé pendant les tests** : si le prénom du voyageur est identique au prénom du proprio (cas réel testé : les deux comptes de test s'appellent "Simon"), un remplacement naïf substituait la mauvaise occurrence en premier et corrompait la signature sauvegardée (`{prenomVoyageur} {nomProprio}` au lieu de `{prenomProprio} {nomProprio}`). Corrigé en tokenisant d'abord le nom complet du proprio (prénom+nom accolés, tel qu'il apparaît dans la signature) comme un seul bloc, avant toute substitution individuelle de prénom.
+- Migration de données : `quote_template_closing`/`no_availability_template_closing` remis à `NULL` pour `info@chaletauthentik.com` après le changement de format (l'ancien contenu, fermeture seulement, aurait été chargé à tort comme message complet). Prochaine sauvegarde repart proprement avec le nouveau format.
+- Libellé de la case à cocher changé de "Enregistrer ce texte **de fermeture**..." à "Enregistrer ce texte..." (FR/EN) pour refléter que tout le message est maintenant couvert.
+
+**4. Bouton Annuler (`4fab8bb`, repositionné dans `4fae931`)**
+
+D'abord ajouté en haut à droite du widget ouvert, puis déplacé à la demande de Simon juste à droite du bouton "Envoyer" en bas (blanc/contour, `bg-white border border-[#ebebeb]`), plus rien en haut à droite — jugé plus clair. `onCancel` passé en prop à `QuoteWidget`/`NoAvailabilityWidget` plutôt que géré uniquement dans `MessagesClient.tsx`.
+
+**5. CTA "Indisponible" + boutons agrandis (`c90ebca`)**
+
+"Plus de disponibilités" → "Indisponible" (EN : "Unavailable", raccourci pour la même raison). Les deux CTA sous une demande de devis agrandis (`text-xs`→`text-sm`, padding augmenté) — `flex-nowrap`/`flex-shrink-0`/`whitespace-nowrap` ajoutés pour garantir qu'ils restent sur une seule ligne même en mobile 375px (vérifié par capture d'écran avant de pousser, comme l'exige la règle "aperçu visuel obligatoire" section 15).
+
+**6. Messagerie — sidebar : date du dernier message + pastille rouge non lu (`a41039d`)**
+
+`app/messages/page.tsx` fournissait déjà `last_message_at`/`unread_count`, juste jamais affichés dans la liste de conversations. Ajout d'une date (heure si aujourd'hui, sinon jour+mois abrégé — `formatConversationDate()`, locale-aware) et remplacement de l'ancien badge numéroté olive par une simple pastille coral `#f04e45` (cohérent avec la pastille déjà existante sur le lien "Messages" de la navbar).
+
+**7. Lien vers la fiche du chalet dans l'en-tête de conversation (`ed2b5d4`, `20f525b`)**
+
+Icône de lien externe + nom du chalet lui-même cliquable (souligné en rollover), tous deux vers la fiche publique dans un nouvel onglet. Nécessite `region`/`city`/`listing_number`/`custom_slug` du listing, pas sélectionnés avant dans `app/messages/page.tsx` — ajoutés à l'embed PostgREST et propagés jusqu'au `Conversation` type de `MessagesClient.tsx`. Construction du chemin via `buildListingPath()` (`lib/listingUrl.ts`), même helper que `ListingCard.tsx`.
+
+**8. Courriel de notification "nouveau message" — message complet + CTA "Répondre" (`1ca3108`)**
+
+`lib/emails/newMessageNotification.ts` : suppression de la troncature à 150 caractères (le message complet s'affiche maintenant, sauts de ligne préservés via `<br/>` — même pattern que `contactMessageNotification.ts`), bouton "Voir la conversation"/"View conversation" renommé "Répondre"/"Reply", nouveau texte de bas de page FR/EN expliquant qu'on peut répondre par reply-to email ou en cliquant le bouton. Aperçu visuel généré et vérifié (rendu HTML réel du gabarit) avant de pousser, puis republié comme Artifact partageable à la demande de Simon pour qu'il puisse le voir lui-même (un aperçu généré en session n'est pas visible côté utilisateur).
+
+**Aussi fait, hors code** : question de Simon sur le fonctionnement du système d'avis — exploré en lecture seule (`reviews`/`review_requests`, cron quotidien, formulaires à jeton sans connexion, réponse proprio non modifiable, affichage public sans modération) et expliqué, rien modifié.
 
 ---
 
