@@ -578,7 +578,7 @@
     "noAvailabilityFlexible": "Si vos dates sont flexibles, je vous invite à refaire une demande de devis pour vos nouvelles dates.",
     "noAvailabilityClosing": "Si vous avez des questions, n'hésitez pas.\nBonne journée !",
     "sendQuoteCta": "Envoyer un devis rapide",
-    "sendNoAvailabilityCta": "Plus de disponibilités",
+    "sendNoAvailabilityCta": "Indisponible",
     "cancelButton": "Annuler"
   },
   "phoneReminder": {
