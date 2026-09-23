@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
-import type { QuoteData } from "@/lib/quoteMessage";
+import type { QuoteData, QuoteReplyType } from "@/lib/quoteMessage";
 
 // Devis structuré — le proprio édite le texte complet côté client
 // (QuoteWidget.tsx, gabarit + section de fermeture personnalisable) ; cette
@@ -13,11 +13,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { listingId, receiverId, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
+  const { type, listingId, receiverId, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
     await request.json().catch(() => ({}));
   if (!listingId || !receiverId || !sourceMessageId || !editedContent?.trim()) {
     return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
   }
+  const replyType: QuoteReplyType = type === "no_availability" ? "no_availability" : "quote";
 
   const admin = adminSupabase();
 
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
   const travelerFirstName = receiver?.name?.split(" ")[0] ?? null;
 
   const quoteData: QuoteData = {
+    type: replyType,
     checkIn: (sourceMessage.check_in as string | null) ?? null,
     checkOut: (sourceMessage.check_out as string | null) ?? null,
     numGuests: (sourceMessage.num_guests as number | null) ?? null,
@@ -84,9 +86,10 @@ export async function POST(request: NextRequest) {
   // Sauvegarde du modèle de fermeture — best-effort, n'échoue jamais l'envoi
   // du devis si ça rate (même logique que la traduction automatique).
   if (saveAsTemplate && typeof closingTemplateToSave === "string" && closingTemplateToSave.trim()) {
+    const templateColumn = replyType === "no_availability" ? "no_availability_template_closing" : "quote_template_closing";
     const { error: templateError } = await admin
       .from("users")
-      .update({ quote_template_closing: closingTemplateToSave.trim() })
+      .update({ [templateColumn]: closingTemplateToSave.trim() })
       .eq("id", user.id);
     if (templateError) {
       console.error("quote: échec sauvegarde du modèle de fermeture", templateError);

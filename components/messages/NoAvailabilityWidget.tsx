@@ -6,101 +6,44 @@ import { createClient } from "@/lib/supabase/client";
 import { SIGNATURE_TOKEN, detokenizeClosing, tokenizeClosing } from "@/lib/quoteMessage";
 import type { Message } from "./MessagesClient";
 
-const MONTHS_SHORT_FR = [
-  "janv.", "févr.", "mars", "avr.", "mai", "juin",
-  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
-];
-
-function formatDateShort(iso: string): string {
-  const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS_SHORT_FR[m - 1]}`;
-}
-
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 
-// Marqueur du début de la section "fermeture" réutilisable/sauvegardable —
-// dérivé de la même clé traduite que celle affichée, pour que la recherche
-// indexOf() reste cohérente peu importe la langue (FR ou EN).
+// Marqueur du début de la section réutilisable/sauvegardable — tout à partir
+// de "J'ai bien reçu votre demande de devis...", jamais la salutation
+// d'ouverture ni la phrase de remerciement (toujours régénérées).
 function buildClosingMarker(t: Translate): string {
-  return t("reservationHeading");
+  return t("noAvailabilityIntroSentence");
 }
 
 function buildDefaultClosingTemplate(t: Translate): string {
   return [
-    `${t("reservationHeading")}\n${t("reservationParagraph")}`,
-    t("defaultClosingBlock2"),
-    t("defaultClosingBlock3"),
+    t("noAvailabilityIntroSentence"),
+    t("noAvailabilityFlexible"),
+    t("noAvailabilityClosing"),
     SIGNATURE_TOKEN,
   ].join("\n\n");
 }
 
 function buildHeaderBlock(
   t: Translate,
-  {
-    travelerFirstName,
-    listingTitle,
-    checkIn,
-    checkOut,
-    numAdults,
-    numChildren,
-    numBabies,
-    numPets,
-  }: {
-    travelerFirstName: string | null;
-    listingTitle: string;
-    checkIn: string | null;
-    checkOut: string | null;
-    numAdults: number;
-    numChildren: number;
-    numBabies: number;
-    numPets: number;
-  }
+  { travelerFirstName, listingTitle }: { travelerFirstName: string | null; listingTitle: string }
 ): string {
-  const humanTotal = numAdults + numChildren + numBabies;
-
-  const datesLines = [
-    checkIn ? t("arrivalLabel", { date: formatDateShort(checkIn) }) : null,
-    checkOut ? t("departureLabel", { date: formatDateShort(checkOut) }) : null,
-  ].filter((l): l is string => l !== null);
-  const datesBlock = datesLines.length > 0 ? [t("datesHeading"), ...datesLines].join("\n") : null;
-
-  const guestsBlock = [
-    t("guestsTotalLabel", { count: humanTotal }),
-    t("adultsLabel", { count: numAdults }),
-    t("childrenLabel", { count: numChildren }),
-    t("babiesLabel", { count: numBabies }),
-    t("petsLabel", { count: numPets }),
-  ].join("\n");
-
-  // "PRIX$" est un jeton littéral que le proprio remplace lui-même dans le
-  // textarea — texte brut, aucun champ numérique séparé (voir Correction 2).
-  const priceBlock = [t("priceHeading"), t("priceLine")].join("\n");
-
   return [
     travelerFirstName ? t("greeting", { name: travelerFirstName }) : t("greetingFallback"),
-    t("quoteIntro", { title: listingTitle }),
-    t("quoteComingUp"),
-    datesBlock,
-    guestsBlock,
-    priceBlock,
-  ].filter((l): l is string => l !== null).join("\n\n");
+    t("noAvailabilityIntro", { title: listingTitle }),
+  ].join("\n\n");
 }
 
-// Le proprio édite un texte complet (header régénéré automatiquement tant
-// qu'il n'a pas commencé à éditer manuellement + section de fermeture
-// personnalisable) puis l'envoie tel quel — voir app/api/messages/quote/route.ts,
-// qui revalide sourceMessageId côté serveur et n'utilise jamais checkIn/
-// checkOut/numAdults/etc. ci-dessous pour autre chose que régénérer l'aperçu.
-export default function QuoteWidget({
+// Calque QuoteWidget.tsx (texte complet édité côté client, header régénéré
+// tant que le proprio n'a pas édité manuellement + section de fermeture
+// personnalisable/sauvegardable) mais sans dates/voyageurs/prix — voir
+// app/api/messages/quote/route.ts, qui accepte maintenant type:
+// "no_availability" et écrit no_availability_template_closing au lieu de
+// quote_template_closing.
+export default function NoAvailabilityWidget({
   listingId,
   receiverId,
   sourceMessageId,
-  checkIn,
-  checkOut,
-  numAdults,
-  numChildren,
-  numBabies,
-  numPets,
   travelerFirstName,
   listingTitle,
   onSent,
@@ -108,12 +51,6 @@ export default function QuoteWidget({
   listingId: string;
   receiverId: string;
   sourceMessageId: string;
-  checkIn: string | null;
-  checkOut: string | null;
-  numAdults: number | null;
-  numChildren: number | null;
-  numBabies: number | null;
-  numPets: number | null;
   travelerFirstName: string | null;
   listingTitle: string;
   onSent: (insertedMessage: Message) => void;
@@ -133,11 +70,6 @@ export default function QuoteWidget({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  const adultsCount = numAdults ?? 0;
-  const childrenCount = numChildren ?? 0;
-  const babiesCount = numBabies ?? 0;
-  const petsCount = numPets ?? 0;
-
   // Chargement du modèle du proprio (self-read, RLS auth.uid() = id) — une
   // seule fois au montage.
   useEffect(() => {
@@ -146,7 +78,7 @@ export default function QuoteWidget({
       if (!user) { setTemplateLoaded(true); return; }
       const { data } = await supabase
         .from("users")
-        .select("name, quote_template_closing")
+        .select("name, no_availability_template_closing")
         .eq("id", user.id)
         .single();
 
@@ -156,7 +88,7 @@ export default function QuoteWidget({
       setHostFirstName(firstName ?? "");
       setHostLastName(lastName);
 
-      const savedTemplate = (data?.quote_template_closing as string | null) ?? null;
+      const savedTemplate = (data?.no_availability_template_closing as string | null) ?? null;
       const closing = detokenizeClosing(savedTemplate ?? buildDefaultClosingTemplate(t), firstName ?? "", lastName);
       setClosingTemplate(closing);
       setTemplateLoaded(true);
@@ -164,25 +96,12 @@ export default function QuoteWidget({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Prix retiré du texte structuré — canSend ne dépend plus que d'un texte
-  // non vide (le prix fait partie du texte libre, sans validation séparée).
   const canSend = !!editedText.trim();
 
-  // Construit le texte initial une seule fois, dès que le modèle est chargé
-  // — plus de régénération automatique liée au prix puisqu'il n'y a plus de
-  // champ prix séparé.
+  // Construit le texte initial une seule fois, dès que le modèle est chargé.
   useEffect(() => {
     if (!templateLoaded || hasEditedText.current) return;
-    const header = buildHeaderBlock(t, {
-      travelerFirstName,
-      listingTitle,
-      checkIn,
-      checkOut,
-      numAdults: adultsCount,
-      numChildren: childrenCount,
-      numBabies: babiesCount,
-      numPets: petsCount,
-    });
+    const header = buildHeaderBlock(t, { travelerFirstName, listingTitle });
     setEditedText(`${header}\n\n${closingTemplate}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateLoaded, closingTemplate]);
@@ -204,7 +123,7 @@ export default function QuoteWidget({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: "quote",
+        type: "no_availability",
         listingId,
         receiverId,
         sourceMessageId,
@@ -233,7 +152,7 @@ export default function QuoteWidget({
     <div className="flex flex-col gap-2.5">
       <div>
         <label className="block text-xs font-medium text-charcoal-500 mb-1">
-          {t("quoteTextareaLabel")}
+          {t("noAvailabilityTextareaLabel")}
         </label>
         <textarea
           value={editedText}
@@ -241,7 +160,7 @@ export default function QuoteWidget({
             hasEditedText.current = true;
             setEditedText(e.target.value);
           }}
-          rows={14}
+          rows={10}
           className="w-full border border-[#ebebeb] rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y whitespace-pre-wrap"
         />
       </div>
@@ -263,7 +182,7 @@ export default function QuoteWidget({
         disabled={sending || !canSend}
         className="self-start bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
       >
-        {sending ? t("sendingGeneric") : t("sendQuoteButton")}
+        {sending ? t("sendingGeneric") : t("sendNoAvailabilityButton")}
       </button>
     </div>
   );

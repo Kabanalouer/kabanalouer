@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import QuoteCard from "./QuoteCard";
 import QuoteWidget from "./QuoteWidget";
+import NoAvailabilityWidget from "./NoAvailabilityWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 
@@ -59,6 +60,7 @@ export default function MessagesClient({
   hasPhone: boolean;
 }) {
   const t = useTranslations("messages");
+  const tq = useTranslations("quote");
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -77,10 +79,11 @@ export default function MessagesClient({
   // Réglage global par utilisateur (pas par conversation) — contrôle
   // uniquement l'affichage des traductions REÇUES, jamais l'envoi.
   const [translationEnabled, setTranslationEnabled] = useState(initialTranslationEnabled);
-  // Identifie le message de demande de devis pour lequel QuoteWidget est
-  // actuellement ouvert inline (un seul à la fois) — remplace l'ancien toggle
-  // global "Message libre / Devis structuré" au bas de la conversation.
-  const [activeQuoteMessageId, setActiveQuoteMessageId] = useState<string | null>(null);
+  // Identifie le message de demande de devis pour lequel un widget de
+  // réponse rapide (devis ou non-disponibilité) est actuellement ouvert
+  // inline, et lequel des deux — un seul widget à la fois, remplace l'ancien
+  // toggle global "Message libre / Devis structuré" au bas de la conversation.
+  const [activeQuickReply, setActiveQuickReply] = useState<{ messageId: string; type: "quote" | "no_availability" } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find(
@@ -93,7 +96,7 @@ export default function MessagesClient({
   const isHostOfListing = !!activeConv && activeConv.listing_host_id === currentUserId;
 
   useEffect(() => {
-    setActiveQuoteMessageId(null);
+    setActiveQuickReply(null);
   }, [selectedListingId, selectedWithId]);
 
   useEffect(() => {
@@ -406,7 +409,7 @@ export default function MessagesClient({
                   if (msg.quote_data) {
                     return (
                       <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                        <QuoteCard content={msg.content} isMine={isMine} />
+                        <QuoteCard content={msg.content} isMine={isMine} type={msg.quote_data.type ?? "quote"} />
                       </div>
                     );
                   }
@@ -459,38 +462,63 @@ export default function MessagesClient({
 
                       {isQuoteRequest && activeConv && (
                         <div className="max-w-[80%] md:max-w-sm w-full">
-                          {activeQuoteMessageId === msg.id ? (
+                          {activeQuickReply?.messageId === msg.id ? (
                             <div className="bg-white border border-[#ebebeb] rounded-2xl p-3 shadow-sm">
-                              <QuoteWidget
-                                listingId={activeConv.listing_id}
-                                receiverId={activeConv.other_user_id}
-                                sourceMessageId={msg.id}
-                                checkIn={msg.check_in}
-                                checkOut={msg.check_out}
-                                numAdults={msg.num_adults}
-                                numChildren={msg.num_children}
-                                numBabies={msg.num_babies}
-                                numPets={msg.num_pets}
-                                travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
-                                listingTitle={activeConv.listing_title}
-                                onSent={(insertedMessage) => {
-                                  setActiveQuoteMessageId(null);
-                                  // Affichage optimiste immédiat — ne pas attendre l'événement
-                                  // Realtime (dédoublonné plus haut quand il arrive ensuite).
-                                  setMessages((prev) =>
-                                    prev.some((m) => m.id === insertedMessage.id) ? prev : [...prev, insertedMessage]
-                                  );
-                                }}
-                              />
+                              {activeQuickReply.type === "quote" ? (
+                                <QuoteWidget
+                                  listingId={activeConv.listing_id}
+                                  receiverId={activeConv.other_user_id}
+                                  sourceMessageId={msg.id}
+                                  checkIn={msg.check_in}
+                                  checkOut={msg.check_out}
+                                  numAdults={msg.num_adults}
+                                  numChildren={msg.num_children}
+                                  numBabies={msg.num_babies}
+                                  numPets={msg.num_pets}
+                                  travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
+                                  listingTitle={activeConv.listing_title}
+                                  onSent={(insertedMessage) => {
+                                    setActiveQuickReply(null);
+                                    // Affichage optimiste immédiat — ne pas attendre l'événement
+                                    // Realtime (dédoublonné plus haut quand il arrive ensuite).
+                                    setMessages((prev) =>
+                                      prev.some((m) => m.id === insertedMessage.id) ? prev : [...prev, insertedMessage]
+                                    );
+                                  }}
+                                />
+                              ) : (
+                                <NoAvailabilityWidget
+                                  listingId={activeConv.listing_id}
+                                  receiverId={activeConv.other_user_id}
+                                  sourceMessageId={msg.id}
+                                  travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
+                                  listingTitle={activeConv.listing_title}
+                                  onSent={(insertedMessage) => {
+                                    setActiveQuickReply(null);
+                                    setMessages((prev) =>
+                                      prev.some((m) => m.id === insertedMessage.id) ? prev : [...prev, insertedMessage]
+                                    );
+                                  }}
+                                />
+                              )}
                             </div>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => setActiveQuoteMessageId(msg.id)}
-                              className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
-                            >
-                              Envoyer un devis pour cette demande
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setActiveQuickReply({ messageId: msg.id, type: "quote" })}
+                                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                              >
+                                {tq("sendQuoteCta")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setActiveQuickReply({ messageId: msg.id, type: "no_availability" })}
+                                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50 transition-colors"
+                              >
+                                {tq("sendNoAvailabilityCta")}
+                              </button>
+                            </div>
                           )}
                         </div>
                       )}
