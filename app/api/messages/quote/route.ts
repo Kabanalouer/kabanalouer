@@ -13,16 +13,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { listingId, receiverId, priceCents, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
+  const { listingId, receiverId, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
     await request.json().catch(() => ({}));
-  if (
-    !listingId ||
-    !receiverId ||
-    !sourceMessageId ||
-    !editedContent?.trim() ||
-    !Number.isFinite(priceCents) ||
-    priceCents <= 0
-  ) {
+  if (!listingId || !receiverId || !sourceMessageId || !editedContent?.trim()) {
     return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
   }
 
@@ -70,7 +63,9 @@ export async function POST(request: NextRequest) {
     numChildren: (sourceMessage.num_children as number | null) ?? null,
     numBabies: (sourceMessage.num_babies as number | null) ?? null,
     numPets: (sourceMessage.num_pets as number | null) ?? null,
-    priceCents,
+    // Plus de champ prix numérique séparé côté client (Correction 2) — le
+    // prix fait partie du texte libre de `content`, conservé null ici.
+    priceCents: null,
     travelerFirstName,
   };
 

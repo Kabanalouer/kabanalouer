@@ -11,7 +11,9 @@ export type QuoteData = {
   numChildren: number | null;
   numBabies: number | null;
   numPets: number | null;
-  priceCents: number;
+  // Redevenu facultatif — QuoteWidget.tsx n'a plus de champ prix numérique
+  // séparé (le prix fait partie du texte libre du devis, voir Correction 2).
+  priceCents: number | null;
   travelerFirstName: string | null;
 };
 

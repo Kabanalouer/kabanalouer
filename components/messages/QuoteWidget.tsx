@@ -13,26 +13,16 @@ function formatDateShort(iso: string): string {
   return `${d} ${MONTHS_SHORT_FR[m - 1]}`;
 }
 
-function formatPriceNumber(value: number): string {
-  const hasCents = Math.round(value * 100) % 100 !== 0;
-  return value.toLocaleString("fr-CA", {
-    minimumFractionDigits: hasCents ? 2 : 0,
-    maximumFractionDigits: 2,
-  });
-}
-
 // Valeur par défaut du modèle "fermeture" — utilisée telle quelle tant que le
 // proprio n'a jamais rien sauvegardé. {prenomProprio}/{nomProprio} sont des
 // jetons substitués à l'affichage puis remis en jetons avant sauvegarde
 // (voir tokenizeClosing/detokenizeClosing plus bas).
 const DEFAULT_CLOSING_TEMPLATE = [
-  "COMMENT RÉSERVER ?",
-  "Si vous désirez réserver ce chalet, vous avez simplement à me faire part de votre intérêt et je vous ferai parvenir les informations de paiements pour procéder au dépôt.",
-  "Si vous avez des questions, n'hésitez surtout pas.",
-  "Ce serait un plaisir de vous accueillir chez nous.",
+  "COMMENT RÉSERVER ?\nSi vous désirez réserver ce chalet, vous avez simplement à me faire part de votre intérêt et je vous ferai parvenir les informations de paiements pour procéder au dépôt.",
+  "Si vous avez des questions, n'hésitez surtout pas.\nCe serait un plaisir de vous accueillir chez nous.",
   "Bonne journée !",
   "{prenomProprio} {nomProprio}",
-].join("\n");
+].join("\n\n");
 
 const CLOSING_MARKER = "COMMENT RÉSERVER ?";
 
@@ -63,7 +53,6 @@ function buildHeaderBlock({
   numChildren,
   numBabies,
   numPets,
-  priceValue,
 }: {
   travelerFirstName: string | null;
   listingTitle: string;
@@ -73,7 +62,6 @@ function buildHeaderBlock({
   numChildren: number;
   numBabies: number;
   numPets: number;
-  priceValue: number | null;
 }): string {
   const humanTotal = numAdults + numChildren + numBabies;
 
@@ -91,8 +79,9 @@ function buildHeaderBlock({
     `Animaux : ${numPets}`,
   ].join("\n");
 
-  const priceDisplay = priceValue !== null && priceValue > 0 ? formatPriceNumber(priceValue) : "0";
-  const priceBlock = ["PRIX", `${priceDisplay}$, toutes taxes comprises`].join("\n");
+  // "PRIX$" est un jeton littéral que le proprio remplace lui-même dans le
+  // textarea — texte brut, aucun champ numérique séparé (voir Correction 2).
+  const priceBlock = ["PRIX", "PRIX$, toutes taxes comprises"].join("\n");
 
   return [
     travelerFirstName ? `Bonjour ${travelerFirstName},` : "Bonjour,",
@@ -143,7 +132,6 @@ export default function QuoteWidget({
   const [hostLastName, setHostLastName] = useState("");
   const [closingTemplate, setClosingTemplate] = useState("");
 
-  const [price, setPrice] = useState("");
   const [editedText, setEditedText] = useState("");
   const hasEditedText = useRef(false);
 
@@ -182,14 +170,13 @@ export default function QuoteWidget({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const priceValue = (() => {
-    const v = parseFloat(price.replace(",", "."));
-    return Number.isFinite(v) ? v : null;
-  })();
-  const canSend = priceValue !== null && priceValue > 0 && !!editedText.trim();
+  // Prix retiré du texte structuré — canSend ne dépend plus que d'un texte
+  // non vide (le prix fait partie du texte libre, sans validation séparée).
+  const canSend = !!editedText.trim();
 
-  // Régénère le texte complet tant que le proprio n'a pas commencé à éditer
-  // le textarea à la main — dès qu'il édite, le prix ne l'écrase plus.
+  // Construit le texte initial une seule fois, dès que le modèle est chargé
+  // — plus de régénération automatique liée au prix puisqu'il n'y a plus de
+  // champ prix séparé.
   useEffect(() => {
     if (!templateLoaded || hasEditedText.current) return;
     const header = buildHeaderBlock({
@@ -201,11 +188,10 @@ export default function QuoteWidget({
       numChildren: childrenCount,
       numBabies: babiesCount,
       numPets: petsCount,
-      priceValue,
     });
     setEditedText(`${header}\n\n${closingTemplate}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateLoaded, closingTemplate, priceValue]);
+  }, [templateLoaded, closingTemplate]);
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -227,7 +213,6 @@ export default function QuoteWidget({
         listingId,
         receiverId,
         sourceMessageId,
-        priceCents: Math.round((priceValue as number) * 100),
         editedContent: editedText,
         saveAsTemplate,
         closingTemplateToSave,
@@ -240,7 +225,6 @@ export default function QuoteWidget({
       return;
     }
 
-    setPrice("");
     setSending(false);
     onSent();
   };
@@ -251,23 +235,6 @@ export default function QuoteWidget({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div>
-        <label className="block text-xs font-medium text-charcoal-500 mb-1">
-          Prix total (taxes incluses)
-        </label>
-        <div className="relative max-w-[160px]">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={price}
-            onChange={(e) => setPrice(e.target.value.replace(/[^0-9.,]/g, ""))}
-            placeholder="450"
-            className="w-full border border-[#ebebeb] rounded-xl pl-7 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
-        </div>
-      </div>
-
       <div>
         <label className="block text-xs font-medium text-charcoal-500 mb-1">
           Texte du devis

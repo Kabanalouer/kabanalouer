@@ -37,7 +37,7 @@ export default async function MessagesPage() {
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
     .from("messages")
-    .select("*, sender:sender_id(id, name, avatar_url), receiver:receiver_id(id, name, avatar_url), listing:listing_id(id, title, host_id)")
+    .select("*, listing:listing_id(id, title, host_id)")
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
@@ -53,12 +53,22 @@ export default async function MessagesPage() {
     check_in: string | null;
     check_out: string | null;
     num_guests: number | null;
-    sender: { id: string; name: string; avatar_url: string | null };
-    receiver: { id: string; name: string; avatar_url: string | null };
     listing: { id: string; title: string; host_id: string };
   };
 
   const messages = (rawMessages ?? []) as RawMsg[];
+
+  // Jointure PostgREST retirée : sender:sender_id(...)/receiver:receiver_id(...)
+  // suivaient la vraie FK vers public.users, dont la RLS ne permet la lecture
+  // qu'à soi-même (auth.uid() = id) — fetch séparé via la vue public_profiles,
+  // fusionné ici. Même pattern que app/dashboard/avis/page.tsx et
+  // ListingDetail.tsx (pas de helper partagé, juste répété — cohérent avec le
+  // reste du projet, voir CLAUDE.md section 8).
+  const otherUserIds = [...new Set(messages.map((m) => (m.sender_id === user.id ? m.receiver_id : m.sender_id)))];
+  const { data: otherProfiles } = otherUserIds.length > 0
+    ? await supabase.from("public_profiles").select("id, name, avatar_url").in("id", otherUserIds)
+    : { data: [] as { id: string; name: string | null; avatar_url: string | null }[] };
+  const profileById = new Map((otherProfiles ?? []).map((p) => [p.id, p]));
 
   const convMap = new Map<
     string,
@@ -80,7 +90,7 @@ export default async function MessagesPage() {
   // toujours au tout premier message du fil.
   for (const msg of messages) {
     const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-    const other = msg.sender_id === user.id ? msg.receiver : msg.sender;
+    const other = profileById.get(otherId);
     const key = `${msg.listing_id}::${otherId}`;
 
     if (!convMap.has(key)) {

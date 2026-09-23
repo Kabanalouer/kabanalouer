@@ -401,7 +401,7 @@ export default function MessagesClient({
                   if (msg.quote_data) {
                     return (
                       <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                        <QuoteCard quote={msg.quote_data} listingTitle={activeConv?.listing_title ?? ""} isMine={isMine} />
+                        <QuoteCard content={msg.content} isMine={isMine} />
                       </div>
                     );
                   }
