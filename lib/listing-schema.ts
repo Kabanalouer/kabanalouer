@@ -118,7 +118,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
   const questions: { question: string; answer: string }[] = [];
 
   questions.push({
-    question: isEn ? `Are pets allowed at ${input.title}?` : `Les animaux sont-ils acceptés à ${input.title} ?`,
+    question: isEn ? `Are pets allowed at ${input.title}?` : `Les animaux sont-ils acceptés à ${input.title} ?`,
     answer: input.petsAllowed
       ? isEn
         ? `Yes, pets are allowed at ${input.title}.`
@@ -129,7 +129,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
   });
 
   questions.push({
-    question: isEn ? `Is smoking allowed at ${input.title}?` : `Peut-on fumer à ${input.title} ?`,
+    question: isEn ? `Is smoking allowed at ${input.title}?` : `Peut-on fumer à ${input.title} ?`,
     answer: input.smokingAllowed
       ? isEn
         ? `Yes, smoking is allowed at ${input.title}.`

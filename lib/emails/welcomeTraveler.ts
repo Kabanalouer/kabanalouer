@@ -19,8 +19,8 @@ const TEMPLATES: Record<"fr" | "en", {
 }> = {
   fr: {
     subjectGeneric: "Bienvenue sur Kabanalouer !",
-    subjectNamed: (firstName) => `Bienvenue ${firstName} !`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    subjectNamed: (firstName) => `Bienvenue ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Ton compte est prêt !",
     body: "Tu peux maintenant explorer les chalets du Québec et contacter les propriétaires directement — sans frais de service.",
     buttonLabel: "Voir les chalets",

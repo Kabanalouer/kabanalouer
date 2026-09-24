@@ -22,7 +22,7 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
     fr: {
       subjectGeneric: "Ton abonnement Kabanalouer expire dans 30 jours",
       subjectNamed: (firstName) => `${firstName}, ton abonnement Kabanalouer expire dans 30 jours`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "Ton abonnement expire dans 30 jours",
       body: (dateStr, listingTitle) => `Un petit rappel amical : ton accès gratuit (offre de lancement) pour ${listingTitle} arrive à échéance le ${dateStr}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.`,
       buttonLabel: "Renouveler mon annonce",
@@ -42,7 +42,7 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
     fr: {
       subjectGeneric: "Il reste 10 jours avant l'expiration de ton abonnement",
       subjectNamed: (firstName) => `${firstName}, il reste 10 jours avant l'expiration de ton abonnement`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "Plus que 10 jours",
       body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}, dans 10 jours. Renouvelle ton abonnement dès maintenant pour éviter toute interruption.`,
       buttonLabel: "Renouveler mon annonce",
@@ -62,7 +62,7 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
     fr: {
       subjectGeneric: "Ton abonnement expire dans 3 jours",
       subjectNamed: (firstName) => `${firstName}, ton abonnement expire dans 3 jours`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "Dernier rappel : 3 jours",
       body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}. Si rien ne change avant cette date, ton annonce disparaîtra des résultats de recherche. Renouvelle ton abonnement dès aujourd'hui pour l'éviter.`,
       buttonLabel: "Renouveler mon annonce",
@@ -143,7 +143,7 @@ const AUTO_RENEWAL_TEMPLATE: Record<"fr" | "en", {
   fr: {
     subjectGeneric: (dateStr) => `Ton abonnement Kabanalouer se renouvelle automatiquement le ${dateStr}`,
     subjectNamed: (firstName, dateStr) => `${firstName}, ton abonnement Kabanalouer se renouvelle automatiquement le ${dateStr}`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: (dateStr) => `Renouvellement automatique le ${dateStr}`,
     body: (dateStr, listingTitle, priceLabel) => `Ton abonnement annuel Kabanalouer pour ${listingTitle} (${priceLabel}) sera renouvelé automatiquement le ${dateStr} — tu n'as rien à faire. Si tu veux mettre à jour ta méthode de paiement ou annuler ton abonnement, tu peux le faire à tout moment.`,
     buttonLabel: "Gérer mon abonnement",
@@ -214,7 +214,7 @@ const PAYMENT_FAILED_TEMPLATE: Record<"fr" | "en", {
   fr: {
     subjectGeneric: "Le paiement de ton abonnement Kabanalouer a échoué",
     subjectNamed: (firstName) => `${firstName}, le paiement de ton abonnement Kabanalouer a échoué`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Ton paiement n'a pas pu être traité",
     body: (listingTitle, priceLabel) => `Le renouvellement automatique de ton abonnement annuel pour ${listingTitle} (${priceLabel}) n'a pas fonctionné — ta carte a probablement été refusée. Stripe va retenter automatiquement dans les prochains jours, mais tu peux aussi mettre à jour ta méthode de paiement dès maintenant pour éviter toute interruption.`,
     buttonLabel: "Mettre à jour mon paiement",

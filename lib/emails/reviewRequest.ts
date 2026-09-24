@@ -19,7 +19,7 @@ const INITIAL_TEMPLATE: Record<"fr" | "en", {
 }> = {
   fr: {
     subjectGeneric: "Comment s'est passé votre contact avec le propriétaire ?",
-    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre contact avec le propriétaire ?`,
+    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre contact avec le propriétaire ?`,
     greeting: (firstName) => `Bonjour ${firstName},`,
     heading: "Partagez votre expérience",
     body: (listingTitle) => `Vous avez échangé avec le propriétaire de ${listingTitle} sur Kabanalouer. On aimerait connaître votre expérience — ça prend 30 secondes.`,
@@ -94,7 +94,7 @@ const STAY_TEMPLATE: Record<"fr" | "en", {
 }> = {
   fr: {
     subjectGeneric: "Comment s'est passé votre séjour ?",
-    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre séjour ?`,
+    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre séjour ?`,
     greeting: (firstName) => `Bonjour ${firstName},`,
     heading: "Comment s'est passé votre séjour ?",
     body: (listingTitle) => `Vous avez récemment séjourné à ${listingTitle}. Racontez-nous comment ça s'est passé — ça prend 30 secondes et ça aide les prochains voyageurs.`,

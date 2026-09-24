@@ -19,7 +19,7 @@ const TEMPLATES: Record<"fr" | "en", {
   fr: {
     subjectGeneric: "Bienvenue ! Ton abonnement Kabanalouer est actif",
     subjectNamed: (firstName) => `Bienvenue ${firstName} ! Ton abonnement Kabanalouer est actif`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Ton abonnement est actif !",
     body: (listingTitle) => `Merci de faire confiance à Kabanalouer. Ton abonnement annuel pour ${listingTitle} est maintenant actif — si ce n'est pas déjà fait, complète et publie ton annonce pour commencer à recevoir des demandes de voyageurs.`,
     buttonLabel: "Compléter mon annonce",

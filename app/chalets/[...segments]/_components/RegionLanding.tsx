@@ -286,7 +286,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
               {isEn
                 ? `Why choose ${content.region_en}?`
-                : `Pourquoi louer un chalet ${regionConfig.locative} ?`}
+                : `Pourquoi louer un chalet ${regionConfig.locative} ?`}
             </h2>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4">
               {(isEn ? content.highlights_en : content.highlights_fr).map((item, i) => (

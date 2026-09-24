@@ -21,7 +21,7 @@ const TEMPLATES: Record<WinbackThreshold, Record<"fr" | "en", {
     fr: {
       subjectGeneric: "Ton annonce Kabanalouer est invisible pour l'instant",
       subjectNamed: (firstName) => `${firstName}, ton annonce Kabanalouer est invisible pour l'instant`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "Ton annonce n'apparaît plus dans les résultats",
       body: (listingTitle) => `Depuis quelques jours, ${listingTitle} est invisible pour les voyageurs qui cherchent un chalet — ton abonnement Kabanalouer n'est plus actif. Rien n'est perdu : ta fiche, tes photos, tes avis sont toujours là. Réactive ton abonnement pour la rendre visible à nouveau.`,
       buttonLabel: "Réactiver mon abonnement",
@@ -41,7 +41,7 @@ const TEMPLATES: Record<WinbackThreshold, Record<"fr" | "en", {
     fr: {
       subjectGeneric: "14 jours que ton annonce est invisible — des voyageurs te cherchent peut-être",
       subjectNamed: (firstName) => `${firstName}, 14 jours que ton annonce est invisible — des voyageurs te cherchent peut-être`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "14 jours d'invisibilité, des réservations potentiellement manquées",
       body: (listingTitle) => `${listingTitle} est invisible depuis 14 jours — pendant ce temps, des voyageurs qui cherchaient un chalet dans ta région n'ont pas pu te trouver. Rien n'est perdu : ta fiche, tes photos, tes avis sont toujours intacts. Réactive ton abonnement pour redevenir visible.`,
       buttonLabel: "Réactiver mon abonnement",

@@ -95,7 +95,7 @@ const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
   fr: {
     subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est confirmé`,
     subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est confirmé`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Le boost de ton annonce est confirmé !",
     body: (listingTitle, monthLabel, placement, pageField, isCurrentMonth) =>
       `Félicitations ! Le boost de ${listingTitle} est maintenant confirmé.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>` +
@@ -181,7 +181,7 @@ const EXPIRING_TEMPLATE: Record<"fr" | "en", {
   fr: {
     subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
     subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Le boost de ton annonce se termine dans 3 jours",
     body: (listingTitle, monthLabel, placement, pageField) =>
       `${listingTitle} bénéficie en ce moment d'un boost de visibilité dans ${placement}.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Les annonces boostées reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ton boost dès maintenant pour l'éviter.`,
@@ -258,7 +258,7 @@ const EXPIRED_TEMPLATE: Record<"fr" | "en", {
   fr: {
     subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est maintenant terminé`,
     subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est maintenant terminé`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Le boost de ton annonce est terminé",
     body: (listingTitle, monthLabel, placement, pageField) =>
       `La période de boost de ${listingTitle} est terminée — ton annonce est repassée en affichage standard.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Elle n'apparaît plus dans ${placement}. Réactive ton boost pour lui redonner cette visibilité prioritaire.`,

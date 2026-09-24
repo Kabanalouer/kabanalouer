@@ -23,8 +23,8 @@ const TEMPLATES: Record<"fr" | "en", {
 }> = {
   fr: {
     subjectGeneric: "Ton annonce Kabanalouer est en ligne !",
-    subjectNamed: (firstName) => `${firstName}, ton annonce Kabanalouer est en ligne !`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
+    subjectNamed: (firstName) => `${firstName}, ton annonce Kabanalouer est en ligne !`,
+    greeting: (firstName) => `Bonjour ${firstName} !`,
     heading: "Ton annonce est en ligne !",
     bodyFree: (listingTitle) =>
       `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer, et ta première année d'accès est gratuite. Les voyageurs peuvent dès maintenant te contacter directement.`,
