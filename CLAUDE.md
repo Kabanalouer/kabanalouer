@@ -68,7 +68,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Erreur | `error-{50…800}` (ex. `bg-error-50 text-error-600`) | messages d'erreur, états négatifs (« complet », « aucune disponibilité »), suppression |
 | Avertissement | `warning-{50…800}` | avis importants, en attente, à compléter |
 | Succès | `success-{50…800}` | confirmations, « publiée », « actif » |
-| Étoiles des avis | `text-star` | notes en étoiles uniquement |
+| Étoiles des avis | `text-star` (gris foncé `#222222`, comme Airbnb) · étoile vide `text-[#ebebeb]` | **toutes** les notes en étoiles, sans exception — jamais olive ni jaune |
 | IA | `text-ai`, `bg-ai-light` | badges et résumés générés par IA |
 
 > Ne jamais coder le hex directement pour les couleurs qui ont un token. **Jamais les palettes Tailwind par défaut** (`gray-*`, `red-*`, `amber-*`, `green-*`, `yellow-*`, `blue-*`…) — toujours `charcoal-*` pour les gris et les jetons d'état ci-dessus (ménage fait le 2026-09-24 : palettes corail/sarcelle/sauge et anciens alias CSS retirés de `globals.css`).

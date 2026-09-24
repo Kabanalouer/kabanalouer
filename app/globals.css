@@ -40,8 +40,8 @@
   --color-success-700: #15803d;
   --color-success-800: #166534;
 
-  /* Étoiles des avis */
-  --color-star: #facc15;
+  /* Étoiles des avis — gris foncé, comme Airbnb (sobre, meilleur contraste) */
+  --color-star: #222222;
 
   /* Accent — orange brûlé, réservé aux signaux (promo, favoris, notifications).
      Jamais sur le bouton d'action principal, qui reste olive (voir CLAUDE.md § Couleurs). */

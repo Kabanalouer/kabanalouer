@@ -78,7 +78,7 @@ export default function EchangeReviewClient({
             aria-label={t("starLabel", { count: star })}
           >
             <svg
-              className={`w-8 h-8 fill-current transition-colors ${active >= star ? "text-primary" : "text-[#ebebeb]"}`}
+              className={`w-8 h-8 fill-current transition-colors ${active >= star ? "text-star" : "text-[#ebebeb]"}`}
               viewBox="0 0 20 20"
             >
               <path d={STAR_PATH} />

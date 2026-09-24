@@ -15,7 +15,7 @@ function Stars({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} className={`w-3.5 h-3.5 fill-current ${i <= rating ? "text-primary" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
+        <svg key={i} className={`w-3.5 h-3.5 fill-current ${i <= rating ? "text-star" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
           <path d={STAR_PATH} />
         </svg>
       ))}
