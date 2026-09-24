@@ -147,6 +147,7 @@ export default async function MessagesPage() {
         initialConversations={conversations}
         hasPhone={!!profile?.phone}
         hasAvatar={!!profile?.avatar_url}
+        isHost={isHost}
       />
       {isHost && <DashboardBottomNav />}
     </>

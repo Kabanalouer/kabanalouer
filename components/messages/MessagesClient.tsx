@@ -12,6 +12,8 @@ import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 import { buildListingPath } from "@/lib/listingUrl";
 import PhotoReminderBanner from "@/components/PhotoReminderBanner";
+import Link from "next/link";
+import { localePath } from "@/lib/localePath";
 
 export type Message = {
   id: string;
@@ -76,6 +78,7 @@ export default function MessagesClient({
   initialConversations,
   hasPhone,
   hasAvatar,
+  isHost,
 }: {
   currentUserId: string;
   currentUserLanguage: string;
@@ -83,6 +86,7 @@ export default function MessagesClient({
   initialConversations: Conversation[];
   hasPhone: boolean;
   hasAvatar: boolean;
+  isHost: boolean;
 }) {
   const t = useTranslations("messages");
   const tq = useTranslations("quote");
@@ -306,13 +310,25 @@ export default function MessagesClient({
       {/* Sidebar: conversation list */}
       <div className={`flex-col bg-white border-r border-[#ebebeb] w-full md:w-80 ${mobileView === "list" ? "flex" : "hidden"} md:flex`}>
         <div className="p-4 border-b border-[#ebebeb]">
-          <h1 className="font-bold text-charcoal-800 text-heading-3">Messages</h1>
+          <h1 className="font-bold text-charcoal-800 text-heading-3">{t("title")}</h1>
+          {/* Mobile : la liste est seule à l'écran, l'invite se place ici */}
+          {conversations.length > 0 && !selectedListingId && (
+            <p className="md:hidden text-sm text-charcoal-500 mt-1">{t("selectHintMobile")}</p>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="p-6 text-center text-charcoal-400 text-base">
-              Aucune conversation pour le moment.
+            <div className="p-6 text-center">
+              <p className="text-base text-charcoal-500">{t("emptyList")}</p>
+              {!isHost && (
+                <Link
+                  href={localePath("/chalets", locale)}
+                  className="md:hidden mt-4 inline-flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                >
+                  {t("browseCabins")}
+                </Link>
+              )}
             </div>
           ) : (
             conversations.map((conv) => {
@@ -370,14 +386,25 @@ export default function MessagesClient({
       {/* Main: thread view */}
       <div className={`flex-1 flex-col bg-charcoal-50 ${mobileView === "thread" ? "flex" : "hidden"} md:flex`}>
         {!selectedListingId || !selectedWithId ? (
-          <div className="flex-1 flex items-center justify-center text-charcoal-400">
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-full bg-white border border-[#ebebeb] flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-sm">
+              <div className="w-20 h-20 rounded-full bg-white border border-[#ebebeb] shadow-sm flex items-center justify-center mx-auto mb-5">
+                <svg className="w-9 h-9 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
                 </svg>
               </div>
-              <p className="font-medium text-charcoal-500">Sélectionnez une conversation</p>
+              <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h2>
+              <p className="text-base text-charcoal-500 leading-relaxed">
+                {conversations.length > 0 ? t("selectHint") : isHost ? t("emptyHintHost") : t("emptyHintTraveler")}
+              </p>
+              {conversations.length === 0 && !isHost && (
+                <Link
+                  href={localePath("/chalets", locale)}
+                  className="mt-6 inline-flex bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                >
+                  {t("browseCabins")}
+                </Link>
+              )}
             </div>
           </div>
         ) : (
@@ -393,7 +420,7 @@ export default function MessagesClient({
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
-                Retour
+                {t("back")}
               </button>
 
               {activeConv && (
@@ -475,11 +502,11 @@ export default function MessagesClient({
               {isHostOfListing && activeConv && <TravelerCard conv={activeConv} />}
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="text-charcoal-400 text-sm">Chargement…</div>
+                  <div className="text-charcoal-400 text-sm">{t("loading")}</div>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center text-charcoal-400 text-base">
-                  Commencez la conversation !
+                  {t("startConversation")}
                 </div>
               ) : (
                 messages.map((msg) => {

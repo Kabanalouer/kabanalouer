@@ -552,6 +552,16 @@
     }
   },
   "messages": {
+    "emptyTitle": "Messagerie",
+    "selectHint": "Sélectionnez une conversation dans la colonne de gauche pour afficher vos échanges.",
+    "selectHintMobile": "Touchez une conversation pour l'ouvrir.",
+    "emptyList": "Aucune conversation pour le moment.",
+    "emptyHintTraveler": "Quand vous contacterez un proprio, vos échanges apparaîtront ici.",
+    "emptyHintHost": "Quand un voyageur vous écrira, vos échanges apparaîtront ici.",
+    "browseCabins": "Parcourir les chalets",
+    "back": "Retour",
+    "loading": "Chargement…",
+    "startConversation": "Commencez la conversation !",
     "travelerCardTitle": "À propos de {name}",
     "travelerMemberSince": "Membre depuis {date}",
     "travelerNoBio": "{name} n'a pas encore ajouté de présentation.",

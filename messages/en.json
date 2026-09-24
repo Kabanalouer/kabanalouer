@@ -552,6 +552,16 @@
     }
   },
   "messages": {
+    "emptyTitle": "Messages",
+    "selectHint": "Select a conversation in the left column to see your messages.",
+    "selectHintMobile": "Tap a conversation to open it.",
+    "emptyList": "No conversations yet.",
+    "emptyHintTraveler": "When you contact an owner, your conversations will appear here.",
+    "emptyHintHost": "When a traveler writes to you, your conversations will appear here.",
+    "browseCabins": "Browse cabins",
+    "back": "Back",
+    "loading": "Loading…",
+    "startConversation": "Start the conversation!",
     "travelerCardTitle": "About {name}",
     "travelerMemberSince": "Member since {date}",
     "travelerNoBio": "{name} hasn't added an introduction yet.",
