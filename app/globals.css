@@ -262,3 +262,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Titres principaux : Plus Jakarta Sans a des espaces entre les mots étroites,
+   surtout en grande taille — on les élargit un peu (voir CLAUDE.md § Typographie).
+   Dans @layer base pour qu'une classe utilitaire puisse encore l'outrepasser. */
+@layer base {
+  h1 {
+    word-spacing: 0.08em;
+  }
+}

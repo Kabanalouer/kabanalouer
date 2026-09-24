@@ -84,6 +84,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Minimum | `text-xs` | 12px | badges, légendes, mentions |
 
 - **Jamais sous 12px** — pas de `text-[10px]` / `text-[11px]`.
+- **H1 : espace entre les mots +0,08em** appliqué globalement (`h1` dans `@layer base`, `app/globals.css`) — Plus Jakarta Sans a des espaces étroites. Ne pas resserrer les lettres des H1 (pas de `tracking-tight` ni `tracking-[-0.0Xem]`, pas de `font-extrabold`). Attention : `--tracking-normal` est redéfini à -0,01em et `--tracking-tight` à -0,035em dans `:root`.
 - Un titre de section doit toujours être nettement plus gros que le texte qui le suit (jamais un H2 sans classe de taille, qui retombe à 16px).
 
 ### Règles UI strictes
