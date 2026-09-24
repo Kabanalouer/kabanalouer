@@ -110,7 +110,7 @@ Fichiers dans `public/` :
 - `logo-wordmark-light.svg` — wordmark sur fonds sombres/colorés
 - `logo-mark.svg` — icône seule
 - `app/icon.svg` — favicon (copie de `favicon.svg`) · `app/favicon.ico` (16/32/48)
-- PNG dérivés : `logo-wordmark.png` (factures PDF), `logo-mark.png` / `logo-mark-white.png` (512px), `favicon.png` (64px), `favicon-32.png`
+- PNG dérivés : `logo-email.png` (courriels : fond blanc arrondi intégré pour le mode sombre, affiché 143×45, texte alternatif stylisé olive si images bloquées), `logo-wordmark.png` (factures PDF), `logo-mark.png` / `logo-mark-white.png` (512px), `favicon.png` (64px), `favicon-32.png`
 
 **Logo v2 (2026-09-24)** — texte **vectorisé** (tracés, plus de `<text>` : un SVG affiché en `<img>` n'a pas accès aux polices du site et retombait sur San Francisco/Segoe/Roboto selon l'appareil). Réglages : Plus Jakarta Sans **600**, lettres **+0,01em**, traits de l'icône **3,3**. Favicon simplifié pour les petites tailles (traits 4,2, 2 étages de branches, plus de marge).
 - **Ne jamais éditer les fichiers du logo à la main** : modifier `scripts/logo/logo.cjs` puis lancer `node scripts/logo/build.cjs` (régénère tous les SVG, PNG et l'ICO).

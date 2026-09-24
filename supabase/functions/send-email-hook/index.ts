@@ -77,8 +77,8 @@ function renderEmail({
         <td align="center">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:16px;overflow:hidden;">
             <tr>
-              <td style="padding:32px 32px 8px 32px;text-align:center;">
-                <img src="https://kabanalouer.ca/logo-wordmark.png" width="130" height="32" alt="kabanalouer" style="display:inline-block;border:0;outline:none;height:32px;width:130px;">
+              <td style="padding:26px 32px 2px 32px;text-align:center;">
+                <img src="https://kabanalouer.ca/logo-email.png" width="143" height="45" alt="kabanalouer" style="display:inline-block;border:0;outline:none;height:45px;width:143px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;line-height:1.2;color:#636e40;">
               </td>
             </tr>
             <tr>

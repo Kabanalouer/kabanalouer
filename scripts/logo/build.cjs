@@ -33,6 +33,14 @@ const mark = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64
   const vbW = Number(wm.match(/viewBox="0 0 (\d+) 80"/)[1]);
   fs.writeFileSync("public/logo-wordmark.png", await png(wm, Math.round(vbW * 300 / 80), 300));
 
+  // Logo des courriels : fond blanc arrondi intégré, pour rester lisible quand
+  // une messagerie en mode sombre assombrit le fond de la carte (invisible en
+  // mode clair, la carte étant blanche). Affiché à 143×45 px, rendu en 3×.
+  const PAD = 16, W = vbW + PAD * 2, H = 80 + PAD * 2;
+  const inner = wm.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+  const emailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" rx="16" fill="#ffffff"/><g transform="translate(${PAD},${PAD})">${inner}</g></svg>`;
+  fs.writeFileSync("public/logo-email.png", await png(emailSvg, Math.round(W * 1.2), Math.round(H * 1.2)));
+
   // favicon.ico : conteneur ICO avec PNG embarqués (16, 32, 48)
   const sizes = [16, 32, 48];
   const imgs = await Promise.all(sizes.map((s) => png(fav, s, s)));
