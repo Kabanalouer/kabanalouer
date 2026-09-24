@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
@@ -75,7 +76,6 @@ export default function ContactButton({
           hostName={hostName}
           listingTitle={listingTitle}
           onClose={() => setOpen(false)}
-          onSent={() => router.push(`/messages?listing=${listingId}&with=${hostId}`)}
         />
       )}
     </>
@@ -88,14 +88,12 @@ function ContactModal({
   hostName,
   listingTitle,
   onClose,
-  onSent,
 }: {
   listingId: string;
   hostId: string;
   hostName: string;
   listingTitle: string;
   onClose: () => void;
-  onSent: () => void;
 }) {
   const t = useTranslations("listing");
   const tc = useTranslations("common");
@@ -122,7 +120,6 @@ function ContactModal({
     }
 
     setSent(true);
-    setTimeout(onSent, 1500);
   };
 
   return (
@@ -136,7 +133,21 @@ function ContactModal({
               </svg>
             </div>
             <h3 className="font-bold text-gray-900 text-lg mb-1">{t("messageSent")}</h3>
-            <p className="text-gray-500 text-sm">{t("redirectingToMessages")}</p>
+            <p className="text-gray-500 text-sm mb-6">{t("messageSentHint", { name: hostName.split(" ")[0] })}</p>
+            <div className="flex gap-3">
+              <Link
+                href={`/messages?listing=${listingId}&with=${hostId}`}
+                className="flex-1 text-center border border-gray-200 text-gray-600 py-3 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                {t("viewConversation")}
+              </Link>
+              <button
+                onClick={onClose}
+                className="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
+              >
+                {tc("close")}
+              </button>
+            </div>
           </div>
         ) : (
           <>
