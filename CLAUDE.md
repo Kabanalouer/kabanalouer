@@ -97,7 +97,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 - **Pas d'emojis** dans l'UI — icônes SVG inline uniquement (style Heroicons, `strokeWidth={1.75}`)
 - **Sentence case** partout (titres, labels, boutons)
 - **Boutons CTA** → `rounded-full` (pill)
-- **Prix québécois** → `120 $/nuit`, `299 $/an` (espace avant `$`)
+- **Prix québécois** → `120 $/nuit`, `299 $/an` — l'espace avant `$` est **insécable** (U+00A0), pour que le `$` ne tombe jamais seul en début de ligne (appliqué à tout le site le 2026-09-24). En anglais : `$120/night`.
 - **Nombres décimaux** → toujours `formatDecimal()` / `formatPercent()` de `lib/formatNumber.ts` (« 4,8 » et « 12,5 % » en FR, « 4.8 » et « 12.5% » en EN) — jamais `toFixed()` pour un nombre affiché. Seule exception : coordonnées GPS.
 - Fonds de section → `bg-charcoal-50`
 - Titres principaux → `text-charcoal-800`

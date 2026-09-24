@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = isEn ? "Pricing" : "Tarifs et abonnement";
   const description = isEn
     ? "One simple, transparent annual subscription. $299/year per cabin. Free for your first year."
-    : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Gratuit pour votre première année.";
+    : "Un seul abonnement annuel simple et transparent. 299 $/an par chalet. Gratuit pour votre première année.";
   return {
     title,
     description,
@@ -92,7 +92,7 @@ export default async function TarifsPage() {
 
             <div className="mb-6">
               <div className="flex items-end gap-3">
-                <span className="text-6xl font-bold text-primary">0 $</span>
+                <span className="text-6xl font-bold text-primary">0 $</span>
                 <div className="mb-2">
                   <p className="text-sm text-charcoal-400 line-through">{t("annualPrice")}</p>
                   <p className="text-sm text-charcoal-500">{t("firstYear")}</p>

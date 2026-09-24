@@ -34,7 +34,7 @@ export function formatPriceCad(cents: number): string {
     minimumFractionDigits: hasCents ? 2 : 0,
     maximumFractionDigits: 2,
   });
-  return `${formatted} $`;
+  return `${formatted} $`;
 }
 
 // Jetons littéraux — jamais traduits (un nom/titre ne change pas de langue) :

@@ -38,7 +38,7 @@ export function priceForRank(rank: number): { priceId: string; cents: number; ti
 
 export function formatPriceLabel(cents: number, lang: "fr" | "en"): string {
   const amount = (cents / 100).toLocaleString(lang === "en" ? "en-CA" : "fr-CA");
-  return lang === "en" ? `$${amount}` : `${amount} $`;
+  return lang === "en" ? `$${amount}` : `${amount} $`;
 }
 
 // Rang de la PROCHAINE annonce payante de ce proprio. Compte les abonnements

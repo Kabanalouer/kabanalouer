@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = isEn ? "List My Cabin" : "Inscrire mon chalet";
   const description = isEn
     ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free for your first year."
-    : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Gratuit pour votre première année.";
+    : "Rejoignez la marketplace de chalets au Québec. Contact direct avec les voyageurs, zéro commission, 299 $/an. Gratuit pour votre première année.";
   return {
     title,
     description,
@@ -197,7 +197,7 @@ export default async function DevenirHotePage() {
               <div className="bg-[#F8FAF9] rounded-2xl border border-[#ebebeb] p-8 text-center">
                 <p className="text-sm text-charcoal-400 mb-1">{t("priceForFirst")}</p>
                 <div className="flex items-end justify-center gap-1 mb-1">
-                  <span className="text-5xl font-bold text-primary">0 $</span>
+                  <span className="text-5xl font-bold text-primary">0 $</span>
                   <span className="text-charcoal-400 mb-1.5">{t("pricePerYear")}</span>
                 </div>
                 <p className="text-xs text-charcoal-400 mb-6">{t("priceThen")}</p>

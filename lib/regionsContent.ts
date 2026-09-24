@@ -54,7 +54,7 @@ const REGIONS_CONTENT: RegionContent[] = [
       },
       {
         question: "Combien coûte la location d'un chalet dans les Laurentides ?",
-        answer: "Les prix varient selon la taille, la saison et les équipements. Comptez en général entre 150 $ et 500 $ la nuit pour un chalet familial. Les weekends de ski et les vacances scolaires sont les périodes les plus achalandées — réservez à l'avance pour les meilleures disponibilités.",
+        answer: "Les prix varient selon la taille, la saison et les équipements. Comptez en général entre 150 $ et 500 $ la nuit pour un chalet familial. Les weekends de ski et les vacances scolaires sont les périodes les plus achalandées — réservez à l'avance pour les meilleures disponibilités.",
       },
     ],
     faq_en: [

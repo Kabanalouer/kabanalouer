@@ -200,7 +200,7 @@ export default function ListingCard({
           <p className="text-sm text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
         ) : listing.price > 0 ? (
           <p className="text-sm font-semibold text-charcoal-800">
-            {listing.price} $ <span className="text-charcoal-400">{t("perNight")}</span>
+            {listing.price} $ <span className="text-charcoal-400">{t("perNight")}</span>
           </p>
         ) : null}
       </div>

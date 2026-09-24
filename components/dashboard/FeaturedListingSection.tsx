@@ -173,7 +173,7 @@ function FeaturedCard({
         <div className="flex items-center justify-between mb-1">
           <p className="text-heading-3 font-semibold text-charcoal-800">{title}</p>
           <span className="text-base font-bold text-charcoal-800">
-            {price} $<span className="text-sm font-normal text-charcoal-400">{t("perMonth")}</span>
+            {price} $<span className="text-sm font-normal text-charcoal-400">{t("perMonth")}</span>
           </span>
         </div>
         <p className="text-sm text-charcoal-500 leading-snug">{desc}</p>

@@ -232,7 +232,7 @@ export default function AdminFeaturedClient({
               {totalHomeActive}/{MAX_FEATURED_HOME} emplacement{totalHomeActive !== 1 ? "s" : ""} occupé{totalHomeActive !== 1 ? "s" : ""}
             </p>
           </div>
-          <span className="text-sm text-charcoal-400">99 $/mois</span>
+          <span className="text-sm text-charcoal-400">99 $/mois</span>
         </div>
         <div className="space-y-2.5">
           {homeRows.map((row) => (
@@ -254,7 +254,7 @@ export default function AdminFeaturedClient({
         <div className="mb-4">
           <h2 className="text-heading-2 font-bold text-charcoal-800">Par région</h2>
           <p className="text-sm text-charcoal-400 mt-0.5">
-            {totalRegionActive} boost{totalRegionActive !== 1 ? "s" : ""} actif{totalRegionActive !== 1 ? "s" : ""} · 49 $/mois
+            {totalRegionActive} boost{totalRegionActive !== 1 ? "s" : ""} actif{totalRegionActive !== 1 ? "s" : ""} · 49 $/mois
           </p>
         </div>
         <div className="space-y-6">

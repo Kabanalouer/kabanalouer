@@ -112,7 +112,7 @@ export interface InvoiceData {
 }
 
 function formatCad(amount: number): string {
-  return `${amount.toLocaleString("fr-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
+  return `${amount.toLocaleString("fr-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
 }
 
 export default function InvoiceDocument({ data }: { data: InvoiceData }) {

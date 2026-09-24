@@ -36,7 +36,7 @@ const FILTER_LABELS: { key: FilterKey; label: string }[] = [
 
 const TYPE_BADGE: Record<SubType, { bg: string; text: string; label: string }> = {
   free_launch: { bg: "bg-[#f5f6ec]", text: "text-primary", label: "Gratuit lancement" },
-  annual:      { bg: "bg-success-50",  text: "text-success-700", label: "Annuel 299 $/an" },
+  annual:      { bg: "bg-success-50",  text: "text-success-700", label: "Annuel 299 $/an" },
   degressive:  { bg: "bg-charcoal-100", text: "text-charcoal-700", label: "Dégressif" },
 };
 
@@ -190,8 +190,8 @@ export default function AdminSubscriptionsClient({
         <MetricCard label="Payants" value={metrics.paid} />
         <MetricCard
           label="Revenus estimés"
-          value={`${metrics.revenue.toLocaleString("fr-CA")} $`}
-          sub="299 $/an × abonnements payants"
+          value={`${metrics.revenue.toLocaleString("fr-CA")} $`}
+          sub="299 $/an × abonnements payants"
         />
       </div>
 

@@ -221,7 +221,7 @@ export default async function HomePage() {
 
         {/* Stats footer — masquées en mobile */}
         <div className="hidden lg:flex absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm divide-x divide-white/20">
-          <HeroStat value="0 $" label={t("statFeeLabel")} footer />
+          <HeroStat value="0 $" label={t("statFeeLabel")} footer />
           <HeroStat value="Direct" label={t("statDirectLabel")} footer />
           <HeroStat value="100 %" label={t("statVerifiedLabel")} footer />
           <HeroStat value={t("statFreeValue")} label={t("statFreeLabel")} footer />

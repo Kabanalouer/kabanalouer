@@ -353,7 +353,7 @@ export default function ContactForm({
         <p className="text-xs text-charcoal-400 mb-0.5">{t("startingFromLabel")}</p>
         {price && price > 0 && !priceOnRequest ? (
           <p>
-            <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
+            <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
             <span className="text-charcoal-400 text-sm font-semibold"> {t("perNight")}</span>
           </p>
         ) : (

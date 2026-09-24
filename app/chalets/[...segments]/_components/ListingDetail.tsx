@@ -653,7 +653,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     {formatPromoLines(activePromo).line1}
                   </p>
                 )}
-                <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
+                <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
                 <span className="text-xs text-charcoal-400"> {t("perNight")}</span>
               </div>
             )}

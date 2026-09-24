@@ -32,8 +32,8 @@ export function formatPromoLabel(promo: PromoDisplay): string {
         : `-${value}%`;
     case "amount":
       return start_date && end_date
-        ? `-${value} $ du ${fmtDate(start_date)} au ${fmtDate(end_date)}`
-        : `-${value} $/nuit`;
+        ? `-${value} $ du ${fmtDate(start_date)} au ${fmtDate(end_date)}`
+        : `-${value} $/nuit`;
     case "duration":
       return end_date
         ? `${min_nights} nuits pour le prix de ${value} — jusqu'au ${fmtDate(end_date)}`
@@ -41,7 +41,7 @@ export function formatPromoLabel(promo: PromoDisplay): string {
     case "lastminute":
       return `-${value}% pour toute réservation faite moins de ${days_before} jours avant l'arrivée`;
     case "lastminute_amount":
-      return `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`;
+      return `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`;
     default:
       return "";
   }
@@ -69,7 +69,7 @@ export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: 
   }
   if (type === "amount") {
     return {
-      line1: `Promo -${value} $/nuit`,
+      line1: `Promo -${value} $/nuit`,
       line2: start_date && end_date
         ? `Sur tous les séjours entre le ${fmtDate(start_date)} et ${fmtDate(end_date)}`
         : undefined,
@@ -92,7 +92,7 @@ export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: 
   if (type === "lastminute_amount") {
     return {
       line1: "Promo Dernière Minute",
-      line2: `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`,
+      line2: `-${value} $/nuit pour toute réservation faite moins de ${days_before} jours avant l'arrivée`,
     };
   }
   return { line1: formatPromoLabel(promo) };
