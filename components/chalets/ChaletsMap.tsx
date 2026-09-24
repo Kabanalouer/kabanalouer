@@ -45,7 +45,7 @@ function ScaleBar({ zoom, lat }: { zoom: number; lat: number }) {
         className="flex flex-col items-end gap-1.5 px-3 py-2 rounded-xl"
         style={{ background: "rgba(0,0,0,0.60)" }}
       >
-        <span className="text-[13px] font-semibold text-white leading-none tracking-wide">
+        <span className="text-sm font-semibold text-white leading-none tracking-wide">
           {label}
         </span>
         <div className="h-[3px] bg-white rounded-full w-full" />

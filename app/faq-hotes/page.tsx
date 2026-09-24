@@ -126,7 +126,7 @@ export default async function FaqHotesPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-14">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-3 border-b border-[#ebebeb]">
+              <h2 className="text-heading-2 font-bold text-charcoal-800 mb-4 pb-3 border-b border-[#ebebeb]">
                 {section.title}
               </h2>
               <div className="space-y-3">
@@ -135,7 +135,7 @@ export default async function FaqHotesPage() {
                     key={q}
                     className="group border border-[#ebebeb] rounded-2xl bg-[#F8FAF9] overflow-hidden"
                   >
-                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-sm select-none">
+                    <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-base select-none">
                       {q}
                       <svg
                         className="w-4 h-4 text-charcoal-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
@@ -147,7 +147,7 @@ export default async function FaqHotesPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                       </svg>
                     </summary>
-                    <div className="px-6 pb-5 text-sm text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
+                    <div className="px-6 pb-5 text-base text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
                       {a}
                     </div>
                   </details>

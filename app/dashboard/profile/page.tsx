@@ -24,7 +24,7 @@ export default async function ProfilePage() {
     <div className="max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
-        <p className="text-sm text-charcoal-500 mt-1">{t("description")}</p>
+        <p className="text-base text-charcoal-500 mt-1">{t("description")}</p>
       </div>
       <ProfileForm
         userId={user.id}

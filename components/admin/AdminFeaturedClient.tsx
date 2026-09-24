@@ -227,7 +227,7 @@ export default function AdminFeaturedClient({
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-charcoal-800">Page d&apos;accueil</h2>
+            <h2 className="text-heading-2 font-bold text-charcoal-800">Page d&apos;accueil</h2>
             <p className="text-sm text-charcoal-400 mt-0.5">
               {totalHomeActive}/{MAX_FEATURED_HOME} emplacement{totalHomeActive !== 1 ? "s" : ""} occupé{totalHomeActive !== 1 ? "s" : ""}
             </p>
@@ -252,7 +252,7 @@ export default function AdminFeaturedClient({
       {/* Section régions */}
       <section>
         <div className="mb-4">
-          <h2 className="text-lg font-bold text-charcoal-800">Par région</h2>
+          <h2 className="text-heading-2 font-bold text-charcoal-800">Par région</h2>
           <p className="text-sm text-charcoal-400 mt-0.5">
             {totalRegionActive} boost{totalRegionActive !== 1 ? "s" : ""} actif{totalRegionActive !== 1 ? "s" : ""} · 49 $/mois
           </p>
@@ -290,7 +290,7 @@ export default function AdminFeaturedClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-charcoal-800 text-base">
+              <h2 className="font-bold text-charcoal-800 text-heading-3">
                 Ajouter un boost —{" "}
                 {modal.type === "home" ? "Page d'accueil" : modal.region ?? "Région"}
               </h2>

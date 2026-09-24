@@ -294,12 +294,12 @@ export default function MessagesClient({
       {/* Sidebar: conversation list */}
       <div className={`flex-col bg-white border-r border-[#ebebeb] w-full md:w-80 ${mobileView === "list" ? "flex" : "hidden"} md:flex`}>
         <div className="p-4 border-b border-[#ebebeb]">
-          <h1 className="font-bold text-charcoal-800 text-lg">Messages</h1>
+          <h1 className="font-bold text-charcoal-800 text-heading-3">Messages</h1>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="p-6 text-center text-charcoal-400 text-sm">
+            <div className="p-6 text-center text-charcoal-400 text-base">
               Aucune conversation pour le moment.
             </div>
           ) : (
@@ -332,11 +332,11 @@ export default function MessagesClient({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-charcoal-800 text-sm truncate">
+                        <span className="font-semibold text-charcoal-800 text-base truncate">
                           {conv.other_user_name}
                         </span>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className="text-[11px] text-charcoal-400">
+                          <span className="text-xs text-charcoal-400">
                             {formatConversationDate(conv.last_message_at, locale)}
                           </span>
                           {conv.unread_count > 0 && (
@@ -345,7 +345,7 @@ export default function MessagesClient({
                         </div>
                       </div>
                       <p className="text-xs text-charcoal-400 truncate mt-0.5">{conv.listing_title}</p>
-                      <p className="text-xs text-charcoal-500 truncate mt-0.5">{conv.last_message}</p>
+                      <p className="text-sm text-charcoal-500 truncate mt-0.5">{conv.last_message}</p>
                     </div>
                   </div>
                 </button>
@@ -402,7 +402,7 @@ export default function MessagesClient({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-charcoal-800 text-sm">{activeConv.other_user_name}</p>
+                    <p className="font-semibold text-charcoal-800 text-base">{activeConv.other_user_name}</p>
                     <div className="flex items-center gap-1 min-w-0">
                       {activeListingPath ? (
                         <a
@@ -410,12 +410,12 @@ export default function MessagesClient({
                           target="_blank"
                           rel="noopener noreferrer"
                           title={t("viewListing")}
-                          className="text-xs text-charcoal-400 truncate max-w-xs hover:underline"
+                          className="text-sm text-charcoal-400 truncate max-w-xs hover:underline"
                         >
                           {activeConv.listing_title}
                         </a>
                       ) : (
-                        <p className="text-xs text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                        <p className="text-sm text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
                       )}
                       {activeListingPath && (
                         <a
@@ -464,7 +464,7 @@ export default function MessagesClient({
                   <div className="text-charcoal-400 text-sm">Chargement…</div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center text-charcoal-400 text-sm">
+                <div className="flex-1 flex items-center justify-center text-charcoal-400 text-base">
                   Commencez la conversation !
                 </div>
               ) : (
@@ -491,14 +491,14 @@ export default function MessagesClient({
                     <div key={msg.id} className={`flex flex-col gap-1.5 ${isMine ? "items-end" : "items-start"}`}>
                       <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                          className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-base leading-relaxed ${
                             isMine
                               ? "bg-primary text-white rounded-br-sm"
                               : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
                           }`}
                         >
                           {showTranslation && (
-                            <span className="inline-flex items-center text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 mb-1.5">
+                            <span className="inline-flex items-center text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 mb-1.5">
                               {t("translatedBadge")}
                             </span>
                           )}
@@ -508,7 +508,7 @@ export default function MessagesClient({
                           </p>
 
                           {showTranslation && (
-                            <p className="whitespace-pre-wrap text-charcoal-400 text-xs mt-2 pt-2 border-t border-[#ebebeb]">
+                            <p className="whitespace-pre-wrap text-charcoal-400 text-sm mt-2 pt-2 border-t border-[#ebebeb]">
                               {msg.content}
                             </p>
                           )}
@@ -608,7 +608,7 @@ export default function MessagesClient({
                   onKeyDown={handleKeyDown}
                   placeholder={t("messagePlaceholder")}
                   rows={1}
-                  className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
+                  className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
                   style={{ minHeight: "42px" }}
                 />
                 <button

@@ -110,7 +110,7 @@ export default async function DashboardPage() {
 
       {/* ── Listings ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-charcoal-800 text-lg">{t("myListings")}</h2>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("myListings")}</h2>
         <Link
           href={localePath("/dashboard/listings/new", locale)}
           className="flex items-center gap-1.5 bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
@@ -150,7 +150,7 @@ export default async function DashboardPage() {
                   <p className="font-semibold text-charcoal-800 truncate">{listing.title || t("untitled")}</p>
                   <p className="text-xs text-charcoal-400 mt-0.5">{listing.region}</p>
                   <div className="flex items-center flex-wrap gap-2 mt-1.5">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                       listing.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                     }`}>
                       {listing.is_published ? t("published") : t("draft")}
@@ -203,8 +203,8 @@ export default async function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
           </div>
-          <h3 className="font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h3>
-          <p className="text-charcoal-400 text-sm mb-6 max-w-sm mx-auto">
+          <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-2">{t("emptyTitle")}</h3>
+          <p className="text-charcoal-400 text-base mb-6 max-w-sm mx-auto">
             {t("emptyDescription")}
           </p>
           <Link

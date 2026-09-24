@@ -50,7 +50,7 @@ function CalendarMonth({
       </div>
       <div className="grid grid-cols-7 mb-1">
         {dayNames.map((d) => (
-          <div key={d} className="h-7 flex items-center justify-center text-[10px] font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="h-7 flex items-center justify-center text-xs font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -303,11 +303,11 @@ export default function ContactForm({
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="font-semibold text-charcoal-800 text-sm mb-1">{t("requestSent")}</p>
-        <p className="text-xs text-charcoal-400">
+        <p className="font-semibold text-charcoal-800 text-base mb-1">{t("requestSent")}</p>
+        <p className="text-sm text-charcoal-400">
           {t("requestSentDetail")}
         </p>
-        <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-xs ${TEXT_LINK_CLASSNAME}`}>
+        <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
           {t("viewMessagesArrow")}
         </Link>
       </div>
@@ -362,7 +362,7 @@ export default function ContactForm({
       </div>
 
       {/* Dates */}
-      <p className="text-sm font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
+      <p className="text-base font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
       <div ref={calRef} className="relative">
         <div className="grid grid-cols-2 rounded-xl border border-[#ebebeb] overflow-hidden">
           <button
@@ -370,7 +370,7 @@ export default function ContactForm({
             onClick={() => setCalendarOpen((o) => !o)}
             className="flex flex-col items-start gap-0.5 px-3 py-2 text-left border-r border-[#ebebeb] hover:bg-charcoal-50 transition-colors"
           >
-            <span className="text-[11px] font-medium text-charcoal-400">{t("arrivalLabel")}</span>
+            <span className="text-xs font-medium text-charcoal-400">{t("arrivalLabel")}</span>
             <span className={`text-sm ${checkin ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
               {checkin ? formatShort(checkin, monthNamesShort) : t("addDate")}
             </span>
@@ -380,7 +380,7 @@ export default function ContactForm({
             onClick={() => setCalendarOpen((o) => !o)}
             className="flex flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-charcoal-50 transition-colors"
           >
-            <span className="text-[11px] font-medium text-charcoal-400">{t("departureLabel")}</span>
+            <span className="text-xs font-medium text-charcoal-400">{t("departureLabel")}</span>
             <span className={`text-sm ${checkout ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
               {checkout ? formatShort(checkout, monthNamesShort) : t("addDate")}
             </span>
@@ -400,7 +400,7 @@ export default function ContactForm({
               <div className="mt-3 pt-2.5 border-t border-[#ebebeb] flex justify-end">
                 <button
                   onClick={() => { setCheckin(""); setCheckout(""); setHoverDate(""); }}
-                  className="text-xs text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2"
+                  className="text-sm text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2"
                 >
                   {t("clearDates")}
                 </button>
@@ -417,7 +417,7 @@ export default function ContactForm({
           onClick={() => setGuestsOpen((o) => !o)}
           className="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-left rounded-xl border border-[#ebebeb] hover:border-charcoal-200 transition-colors"
         >
-          <span className="text-[11px] font-medium text-charcoal-400">{ts("guestsPlaceholder")}</span>
+          <span className="text-xs font-medium text-charcoal-400">{ts("guestsPlaceholder")}</span>
           <span className="text-sm text-charcoal-800 font-medium">{guestsSummary}</span>
         </button>
 
@@ -475,7 +475,7 @@ export default function ContactForm({
               </div>
             ))}
             {atCapacity && (
-              <p className="text-xs text-charcoal-400 px-3 pb-2.5">{t("capacityMaxMessage", { count: capacity })}</p>
+              <p className="text-sm text-charcoal-400 px-3 pb-2.5">{t("capacityMaxMessage", { count: capacity })}</p>
             )}
           </div>
         )}
@@ -488,11 +488,11 @@ export default function ContactForm({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
+          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
         />
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <button
         onClick={handleSubmitClick}

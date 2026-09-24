@@ -102,7 +102,7 @@ export default function AdminTravelersClient({ travelers }: { travelers: Travele
             placeholder="Nom ou email…"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="text-sm pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
+            className="text-base pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <span className="ml-auto text-xs text-charcoal-400">

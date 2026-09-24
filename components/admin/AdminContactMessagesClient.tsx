@@ -151,7 +151,7 @@ export default function AdminContactMessagesClient({
             placeholder="Nom, email ou sujet…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="text-sm pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
+            className="text-base pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <span className="ml-auto text-xs text-charcoal-400">
@@ -222,11 +222,11 @@ export default function AdminContactMessagesClient({
                   {/* Statut */}
                   <td className="px-4 py-3">
                     {m.isRead ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-charcoal-100 text-charcoal-500">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-charcoal-100 text-charcoal-500">
                         Lu
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-[#f04e45]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-[#f04e45]">
                         Non lu
                       </span>
                     )}
@@ -268,7 +268,7 @@ export default function AdminContactMessagesClient({
             {/* Header */}
             <div className="flex items-start justify-between mb-5 gap-4">
               <div className="min-w-0">
-                <h2 className="font-bold text-charcoal-800 text-base leading-snug">
+                <h2 className="font-bold text-charcoal-800 text-heading-3 leading-snug">
                   {modalMsg.subject}
                 </h2>
                 <p className="text-xs text-charcoal-400 mt-0.5">{fmtDate(modalMsg.createdAt)}</p>

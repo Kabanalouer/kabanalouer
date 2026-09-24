@@ -173,8 +173,8 @@ export default function AvailabilityCalendar({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-bold text-gray-900">{t("heading")}</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="text-heading-2 font-bold text-gray-900">{t("heading")}</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
             {readOnly
               ? t("readOnlyHint")
               : rangeStart
@@ -280,7 +280,7 @@ export default function AvailabilityCalendar({
               </span>
 
               {isIcal && (
-                <span className="absolute bottom-0.5 right-0.5 text-[8px] text-amber-600 z-20">⟳</span>
+                <span className="absolute bottom-0.5 right-0.5 text-[8px] leading-none text-amber-600 z-20">⟳</span>
               )}
             </button>
           );

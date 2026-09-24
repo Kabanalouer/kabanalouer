@@ -390,7 +390,7 @@ export default function PhotoUpload({
       )}
       {/* Size */}
       {item.sizeMb !== undefined && (
-        <span className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full pointer-events-none">
+        <span className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full pointer-events-none">
           {item.sizeMb.toFixed(1)} Mo
         </span>
       )}
@@ -423,7 +423,7 @@ export default function PhotoUpload({
       <svg className="w-6 h-6 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
       </svg>
-      <span className="text-[11px] text-charcoal-400 font-medium">{label}</span>
+      <span className="text-xs text-charcoal-400 font-medium">{label}</span>
     </button>
   );
 
@@ -488,8 +488,8 @@ export default function PhotoUpload({
 
       {/* ── Section 1: Photo de couverture ───────────────────────────────── */}
       <div>
-        <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photo de couverture</h3>
-        <p className="text-xs text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Photo de couverture</h3>
+        <p className="text-sm text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
         <div className="aspect-video w-full relative">
           {photos[0] ? (
             renderPhotoTile(photos[0], 0, "Couverture", "w-full h-full")
@@ -523,8 +523,8 @@ export default function PhotoUpload({
 
       {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
       <div className="bg-[#f5f6ec] rounded-2xl p-4">
-        <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
-        <p className="text-xs text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
+        <p className="text-sm text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
@@ -540,7 +540,7 @@ export default function PhotoUpload({
                   <svg className="w-5 h-5 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  <span className="text-[10px] text-charcoal-400">{label}</span>
+                  <span className="text-xs text-charcoal-400">{label}</span>
                 </button>
               );
             }
@@ -574,8 +574,8 @@ export default function PhotoUpload({
       {/* ── Section 3: Autres photos ─────────────────────────────────────── */}
       {others.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
-          <p className="text-xs text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
+          <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
+          <p className="text-sm text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
           <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
@@ -626,7 +626,7 @@ export default function PhotoUpload({
       )}
 
       {/* Footer */}
-      <div className="space-y-1 text-xs text-charcoal-400">
+      <div className="space-y-1 text-sm text-charcoal-400">
         <p className={photos.length >= MIN_PHOTOS ? "text-green-600" : "text-amber-600"}>
           {totalCount}/{MAX_PHOTOS} photos
         </p>
@@ -678,7 +678,7 @@ function CaptionField({
 
   const frField = (
     <div>
-      <p className="text-[10px] font-semibold text-charcoal-400 mb-0.5">Légende (français)</p>
+      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">Légende (français)</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={ref}
@@ -694,7 +694,7 @@ function CaptionField({
           className="flex-1 min-w-0 text-xs border border-[#ebebeb] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300 transition disabled:opacity-50 resize-none overflow-hidden"
         />
       </div>
-      <p className="text-right text-[10px] mt-0.5 tabular-nums text-charcoal-300">
+      <p className="text-right text-xs mt-0.5 tabular-nums text-charcoal-300">
         {value.length}/{CAPTION_MAX}
       </p>
     </div>
@@ -702,7 +702,7 @@ function CaptionField({
 
   const enField = (
     <div className="mt-1.5">
-      <p className="text-[10px] font-semibold text-charcoal-400 mb-0.5">Légende (anglais)</p>
+      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">Légende (anglais)</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={refEn}
@@ -727,7 +727,7 @@ function CaptionField({
           onTranslated={(en) => { onChangeEn(en); onBlur(); }}
         />
       </div>
-      <p className="text-right text-[10px] mt-0.5 tabular-nums text-charcoal-300">
+      <p className="text-right text-xs mt-0.5 tabular-nums text-charcoal-300">
         {valueEn.length}/{CAPTION_MAX}
       </p>
     </div>

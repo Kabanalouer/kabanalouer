@@ -150,8 +150,8 @@ function ValueCard({ icon, title, description }: { icon: React.ReactNode; title:
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="mb-4">{icon}</div>
-      <h3 className="font-bold text-charcoal-800 text-lg mb-2">{title}</h3>
-      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
+      <h3 className="font-bold text-charcoal-800 text-heading-3 mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-base leading-relaxed">{description}</p>
     </div>
   );
 }

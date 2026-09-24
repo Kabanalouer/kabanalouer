@@ -10,7 +10,7 @@ import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
 
 const inputCls =
-  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 function SaveButton({ saving, saved, onClick, tSave, tSaving, tSaved }: {
   saving: boolean;
@@ -69,8 +69,8 @@ function Section({ title, description, children }: { title: string; description?
   return (
     <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 space-y-5">
       <div>
-        <h2 className="text-base font-semibold text-charcoal-800">{title}</h2>
-        {description && <p className="text-sm text-charcoal-400 mt-0.5">{description}</p>}
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{title}</h2>
+        {description && <p className="text-base text-charcoal-400 mt-0.5">{description}</p>}
       </div>
       {children}
     </div>
@@ -133,7 +133,7 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         autoComplete={autoComplete}
-        className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+        className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
       />
       <button
         type="button"
@@ -478,7 +478,7 @@ export default function ProfileForm({
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value.slice(0, 300))}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
           placeholder={t("bioPlaceholder")}
           maxLength={300}
         />
@@ -507,7 +507,7 @@ export default function ProfileForm({
         <textarea
           value={bioEn}
           onChange={(e) => setBioEn(e.target.value.slice(0, 300))}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
           placeholder={t("bioEnPlaceholder")}
           maxLength={300}
         />
@@ -641,7 +641,7 @@ export default function ProfileForm({
             type="email"
             value={email}
             readOnly
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
           />
           <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
         </div>
@@ -740,8 +740,8 @@ export default function ProfileForm({
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-red-100 p-6">
-        <h2 className="text-base font-semibold text-charcoal-800 mb-1">{t("dangerZone")}</h2>
-        <p className="text-sm text-charcoal-500 mb-5">
+        <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-1">{t("dangerZone")}</h2>
+        <p className="text-base text-charcoal-500 mb-5">
           {t("dangerZoneDesc")}
         </p>
 

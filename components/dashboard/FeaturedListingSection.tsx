@@ -77,7 +77,7 @@ function MonthRow({
       <span>{label}</span>
       {state === "own" && <span className="text-xs shrink-0">{t("alreadyBooked")}</span>}
       {state === "full" && (
-        <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+        <span className="bg-[#f04e45] text-white text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
           {t("full", { count, max })}
         </span>
       )}
@@ -171,12 +171,12 @@ function FeaturedCard({
     <div className="bg-white border border-[#ebebeb] rounded-2xl p-5 flex flex-col gap-4">
       <div>
         <div className="flex items-center justify-between mb-1">
-          <p className="font-semibold text-charcoal-800">{title}</p>
+          <p className="text-heading-3 font-semibold text-charcoal-800">{title}</p>
           <span className="text-base font-bold text-charcoal-800">
             {price} $<span className="text-sm font-normal text-charcoal-400">{t("perMonth")}</span>
           </span>
         </div>
-        <p className="text-xs text-charcoal-500 leading-snug">{desc}</p>
+        <p className="text-sm text-charcoal-500 leading-snug">{desc}</p>
       </div>
 
       {counts === null ? (

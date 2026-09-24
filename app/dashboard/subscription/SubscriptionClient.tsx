@@ -79,7 +79,7 @@ export default function SubscriptionClient() {
       {loading ? (
         <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 animate-pulse h-40" />
       ) : rows.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 text-center text-charcoal-500 text-sm">
+        <div className="bg-white rounded-2xl border border-[#ebebeb] p-8 text-center text-charcoal-500 text-base">
           {t("noListings")}
         </div>
       ) : (

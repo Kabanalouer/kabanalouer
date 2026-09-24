@@ -92,7 +92,7 @@ function CalendarMonth({
       </div>
       <div className="grid grid-cols-7 mb-1">
         {dayNames.map((d) => (
-          <div key={d} className="h-8 flex items-center justify-center text-[11px] font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="h-8 flex items-center justify-center text-xs font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -308,14 +308,14 @@ function NavSearchBarInner() {
                   onChange={(e) => { setDestInput(e.target.value); setDestSelected(null); }}
                   placeholder={t("regionOrCity")}
                   autoFocus
-                  className="w-full text-sm outline-none text-charcoal-700 placeholder-charcoal-400"
+                  className="w-full text-base outline-none text-charcoal-700 placeholder-charcoal-400"
                 />
               </div>
               <div className="max-h-[220px] overflow-y-auto">
                 {!destInput.trim() ? (
                   <>
                     <div className="px-4 pt-3 pb-1">
-                      <p className="text-[11px] font-semibold text-charcoal-400 uppercase tracking-wide">
+                      <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">
                         {recentSearches.length > 0 ? t("recentLabel") : t("popularRegions")}
                       </p>
                     </div>

@@ -77,7 +77,7 @@ export default function AdminInvoicesClient({
       <div className="border border-[#ebebeb] rounded-2xl overflow-x-auto bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#ebebeb] text-left text-[11px] font-semibold text-charcoal-400 uppercase tracking-wide">
+            <tr className="border-b border-[#ebebeb] text-left text-xs font-semibold text-charcoal-400 uppercase tracking-wide">
               <th className="px-4 py-3">Prénom</th>
               <th className="px-4 py-3">Nom</th>
               <th className="px-4 py-3">Email</th>

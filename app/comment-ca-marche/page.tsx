@@ -200,7 +200,7 @@ function Step({
         {number < 3 && <div className="w-0.5 h-8 bg-primary/20 mt-3" />}
       </div>
       <div className="flex-1 pb-8">
-        <h3 className="text-xl font-bold text-charcoal-800 mb-3">{title}</h3>
+        <h3 className="text-heading-3 font-bold text-charcoal-800 mb-3">{title}</h3>
         <p className="text-charcoal-500 leading-relaxed max-w-xl">{description}</p>
         {action && (
           <Link
@@ -219,8 +219,8 @@ function WhyCard({ icon, title, description }: { icon: React.ReactNode; title: s
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb]">
       <div className="mb-4">{icon}</div>
-      <h3 className="font-bold text-charcoal-800 mb-2">{title}</h3>
-      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
+      <h3 className="text-heading-3 font-bold text-charcoal-800 mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-base leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -228,8 +228,8 @@ function WhyCard({ icon, title, description }: { icon: React.ReactNode; title: s
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-6 bg-[#F8FAF9]">
-      <p className="font-semibold text-charcoal-800 mb-2">{question}</p>
-      <p className="text-charcoal-500 text-sm leading-relaxed">{answer}</p>
+      <p className="text-heading-3 font-semibold text-charcoal-800 mb-2">{question}</p>
+      <p className="text-charcoal-500 text-base leading-relaxed">{answer}</p>
     </div>
   );
 }

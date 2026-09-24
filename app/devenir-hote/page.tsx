@@ -132,7 +132,7 @@ export default async function DevenirHotePage() {
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">
             {t("offerH2")}
           </h2>
-          <p className="text-charcoal-500 text-sm mb-8 max-w-sm mx-auto">
+          <p className="text-charcoal-500 text-base mb-8 max-w-sm mx-auto">
             {t("offerSub")}
           </p>
 
@@ -180,7 +180,7 @@ export default async function DevenirHotePage() {
                 {FEATURES.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
-                    <span className="text-charcoal-700 text-sm">{feature}</span>
+                    <span className="text-charcoal-700 text-base">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -246,8 +246,8 @@ function BenefitCard({ icon, title, description }: { icon: React.ReactNode; titl
   return (
     <div className="bg-white rounded-2xl p-6 border border-[#ebebeb] hover:border-primary/20 transition-colors">
       <div className="mb-4">{icon}</div>
-      <h3 className="font-bold text-charcoal-800 mb-2">{title}</h3>
-      <p className="text-charcoal-500 text-sm leading-relaxed">{description}</p>
+      <h3 className="text-heading-3 font-bold text-charcoal-800 mb-2">{title}</h3>
+      <p className="text-charcoal-500 text-base leading-relaxed">{description}</p>
     </div>
   );
 }

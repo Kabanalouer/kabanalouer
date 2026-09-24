@@ -179,7 +179,7 @@ export default function AnalyseSection({
 
       {/* Key message */}
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
-        <p className="text-sm text-charcoal-700">
+        <p className="text-base text-charcoal-700">
           {t("keyMessage")}
         </p>
       </div>
@@ -243,7 +243,7 @@ export default function AnalyseSection({
       {/* Regular missing */}
       {regularMissing.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">{t("improveTitle")}</h3>
+          <h3 className="text-heading-3 font-semibold text-charcoal-700 mb-3">{t("improveTitle")}</h3>
           <div className="divide-y divide-[#ebebeb]">
             {regularMissing.map((c) => (
               <div key={c.key} className="flex items-center justify-between gap-3 py-2.5">
@@ -276,7 +276,7 @@ export default function AnalyseSection({
       {/* Achieved */}
       {achieved.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-charcoal-700 mb-3">{t("achievedTitle")}</h3>
+          <h3 className="text-heading-3 font-semibold text-charcoal-700 mb-3">{t("achievedTitle")}</h3>
           <div className="divide-y divide-[#ebebeb]">
             {achieved.map((c) => (
               <div key={c.key} className="flex items-center gap-2 py-2">
@@ -322,7 +322,7 @@ export default function AnalyseSection({
           <div className="mt-4 space-y-3">
             {advice.map((conseil, i) => (
               <div key={i} className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
-                <p className="text-sm text-charcoal-700">{conseil}</p>
+                <p className="text-base text-charcoal-700">{conseil}</p>
               </div>
             ))}
           </div>

@@ -224,7 +224,7 @@ export default function AdminSubscriptionsClient({
             placeholder="Nom ou email…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); }}
-            className="text-sm pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
+            className="text-base pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <span className="text-xs text-charcoal-400">
@@ -322,14 +322,14 @@ export default function AdminSubscriptionsClient({
 
                     {/* Type */}
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${typeBadge.bg} ${typeBadge.text}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${typeBadge.bg} ${typeBadge.text}`}>
                         {typeBadge.label}
                       </span>
                     </td>
 
                     {/* Statut */}
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${statusBadge.bg} ${statusBadge.text}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge.bg} ${statusBadge.text}`}>
                         {statusBadge.label}
                       </span>
                     </td>
@@ -379,7 +379,7 @@ export default function AdminSubscriptionsClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-charcoal-800 text-base">Gérer l&apos;abonnement</h2>
+              <h2 className="font-bold text-charcoal-800 text-heading-3">Gérer l&apos;abonnement</h2>
               <button
                 onClick={() => setModalRow(null)}
                 className="text-charcoal-300 hover:text-charcoal-600 transition-colors"

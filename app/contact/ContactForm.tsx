@@ -7,7 +7,7 @@ import { submitContactForm, type ContactFormState } from "./actions";
 const initialState: ContactFormState = { status: "idle" };
 
 const inputCls =
-  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
 
 export default function ContactForm() {
   const t = useTranslations("contact");
@@ -30,8 +30,8 @@ export default function ContactForm() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-lg font-bold text-charcoal-800 mb-2">{t("successTitle")}</h3>
-        <p className="text-sm text-charcoal-600 leading-relaxed">
+        <h3 className="text-heading-3 font-bold text-charcoal-800 mb-2">{t("successTitle")}</h3>
+        <p className="text-base text-charcoal-600 leading-relaxed">
           {t("successBodyPre")}{" "}
           <strong>{t("successBodyStrong")}</strong>.
         </p>
@@ -99,7 +99,7 @@ export default function ContactForm() {
           name="subject"
           required
           defaultValue=""
-          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-white"
+          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-white"
         >
           <option value="" disabled>{t("formSubjectPlaceholder")}</option>
           {SUBJECTS.map((s) => (
@@ -118,7 +118,7 @@ export default function ContactForm() {
           name="message"
           required
           rows={5}
-          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
+          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
           placeholder={t("formMessagePlaceholder")}
         />
       </div>

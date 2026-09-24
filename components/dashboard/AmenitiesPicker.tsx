@@ -20,7 +20,7 @@ function normalizeForSearch(value: string): string {
 }
 
 const fieldInputCls =
-  "border border-[#ebebeb] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "border border-[#ebebeb] rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 function pillCls(active: boolean) {
   return `px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
@@ -274,7 +274,7 @@ function AmenityDetailsModal({
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb] shrink-0">
-          <h3 className="text-base font-bold text-charcoal-800">{isEn ? entry.labelEn : entry.label}</h3>
+          <h3 className="text-heading-3 font-bold text-charcoal-800">{isEn ? entry.labelEn : entry.label}</h3>
           <button
             type="button"
             onClick={onClose}
@@ -465,11 +465,11 @@ export default function AmenitiesPicker({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <h4 className="sticky top-20 z-10 bg-white text-sm font-semibold text-charcoal-800 pb-3 border-b border-[#ebebeb]">
+        <h4 className="sticky top-20 z-10 bg-white text-heading-3 font-semibold text-charcoal-800 pb-3 border-b border-[#ebebeb]">
           {isEn ? `Added amenities (${selected.length})` : `Équipements ajoutés (${selected.length})`}
         </h4>
         {selected.length === 0 ? (
-          <p className="mt-3 text-sm text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-6 text-center">
+          <p className="mt-3 text-base text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-6 text-center">
             {isEn ? "No amenities added yet" : "Aucun équipement ajouté pour l'instant"}
           </p>
         ) : (
@@ -493,7 +493,7 @@ export default function AmenitiesPicker({
       </div>
 
       <div className="bg-[#f5f6ec] rounded-2xl p-4">
-        <h4 className="sticky top-20 z-10 bg-[#f5f6ec] text-sm font-semibold text-charcoal-800 pb-3">
+        <h4 className="sticky top-20 z-10 bg-[#f5f6ec] text-heading-3 font-semibold text-charcoal-800 pb-3">
           {isEn ? "Add amenities" : "Ajouter des équipements"}
         </h4>
 
@@ -513,7 +513,7 @@ export default function AmenitiesPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isEn ? "Search an amenity" : "Rechercher un équipement"}
-            className="w-full bg-white border border-[#ebebeb] rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full bg-white border border-[#ebebeb] rounded-xl pl-9 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
           />
         </div>
 

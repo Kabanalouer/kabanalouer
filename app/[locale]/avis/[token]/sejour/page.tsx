@@ -44,7 +44,7 @@ export default async function SejourReviewPage({
       <Navbar />
       <section className="flex-1 py-16 px-4">
         <div className="max-w-md mx-auto">
-          <h1 className="text-xl font-bold text-charcoal-800 text-center mb-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800 text-center mb-1">
             {isEn ? "How was your stay?" : "Comment s'est passé votre séjour ?"}
           </h1>
           <p className="text-sm text-charcoal-400 text-center mb-6">{listingTitle}</p>
@@ -56,16 +56,16 @@ export default async function SejourReviewPage({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="font-semibold text-charcoal-800 text-sm mb-1">
+              <p className="text-heading-3 font-semibold text-charcoal-800 mb-1">
                 {isEn ? "You've already submitted this review" : "Vous avez déjà soumis cet avis"}
               </p>
-              <p className="text-xs text-charcoal-400">
+              <p className="text-base text-charcoal-400">
                 {isEn ? "Thanks again for sharing your experience." : "Merci encore d'avoir partagé votre expérience."}
               </p>
             </div>
           ) : !eligible ? (
             <div className="border border-[#ebebeb] rounded-2xl p-6 text-center">
-              <p className="text-sm text-charcoal-500">
+              <p className="text-base text-charcoal-500">
                 {isEn
                   ? "This review isn't available yet — we'll email you once your stay is over."
                   : "Cet avis n'est pas encore disponible — on vous écrira une fois votre séjour terminé."}

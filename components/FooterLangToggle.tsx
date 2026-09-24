@@ -25,13 +25,13 @@ export default function FooterLangToggle() {
       />
       <button
         onClick={() => switchTo("fr")}
-        className={`relative z-10 flex-1 flex items-center justify-center text-[13px] font-medium ${!isEn ? "text-white" : "text-[#888]"}`}
+        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium ${!isEn ? "text-white" : "text-[#888]"}`}
       >
         FR
       </button>
       <button
         onClick={() => switchTo("en")}
-        className={`relative z-10 flex-1 flex items-center justify-center text-[13px] font-medium ${isEn ? "text-white" : "text-[#888]"}`}
+        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium ${isEn ? "text-white" : "text-[#888]"}`}
       >
         EN
       </button>

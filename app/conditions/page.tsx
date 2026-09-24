@@ -69,7 +69,7 @@ export default async function ConditionsPage() {
           {/* 1 */}
           <section id="definitions" className="scroll-mt-24">
             <H2>{t("s1Title")}</H2>
-            <ul className="space-y-2 text-sm leading-relaxed">
+            <ul className="space-y-2 text-base leading-relaxed">
               <LegalItem term={t("s1T1")}>{t("s1D1")}</LegalItem>
               <LegalItem term={t("s1T2")}>{t("s1D2")}</LegalItem>
               <LegalItem term={t("s1T3")}>{t("s1D3")}</LegalItem>
@@ -81,13 +81,13 @@ export default async function ConditionsPage() {
           {/* 2 */}
           <section id="service" className="scroll-mt-24">
             <H2>{t("s2Title")}</H2>
-            <p className="text-sm leading-relaxed">{t("s2P1")}</p>
+            <p className="text-base leading-relaxed">{t("s2P1")}</p>
           </section>
 
           {/* 3 */}
           <section id="inscription" className="scroll-mt-24">
             <H2>{t("s3Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s3P1")}</p>
               <p>{t("s3P2")}</p>
               <p>{t("s3P3")}</p>
@@ -97,7 +97,7 @@ export default async function ConditionsPage() {
           {/* 4 */}
           <section id="hotes" className="scroll-mt-24">
             <H2>{t("s4Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s4Intro")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s4I1")}</li>
@@ -113,7 +113,7 @@ export default async function ConditionsPage() {
           {/* 5 */}
           <section id="voyageurs" className="scroll-mt-24">
             <H2>{t("s5Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s5Intro")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s5I1")}</li>
@@ -127,7 +127,7 @@ export default async function ConditionsPage() {
           {/* 6 */}
           <section id="abonnement" className="scroll-mt-24">
             <H2>{t("s6Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s6P1")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s6I1")}</li>
@@ -142,7 +142,7 @@ export default async function ConditionsPage() {
           {/* 7 */}
           <section id="contenu-interdit" className="scroll-mt-24">
             <H2>{t("s7Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s7Intro")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s7I1")}</li>
@@ -158,7 +158,7 @@ export default async function ConditionsPage() {
           {/* 8 */}
           <section id="propriete-intellectuelle" className="scroll-mt-24">
             <H2>{t("s8Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s8P1")}</p>
               <p>{t("s8P2")}</p>
               <p>{t("s8P3")}</p>
@@ -168,7 +168,7 @@ export default async function ConditionsPage() {
           {/* 9 */}
           <section id="responsabilite" className="scroll-mt-24">
             <H2>{t("s9Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s9P1")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s9I1")}</li>
@@ -183,7 +183,7 @@ export default async function ConditionsPage() {
           {/* 10 */}
           <section id="resiliation" className="scroll-mt-24">
             <H2>{t("s10Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s10P1")}</p>
               <p>{t("s10P2")}</p>
             </div>
@@ -192,13 +192,13 @@ export default async function ConditionsPage() {
           {/* 11 */}
           <section id="droit" className="scroll-mt-24">
             <H2>{t("s11Title")}</H2>
-            <p className="text-sm leading-relaxed">{t("s11P1")}</p>
+            <p className="text-base leading-relaxed">{t("s11P1")}</p>
           </section>
 
           {/* 12 */}
           <section id="contact" className="scroll-mt-24">
             <H2>{t("s12Title")}</H2>
-            <p className="text-sm leading-relaxed">
+            <p className="text-base leading-relaxed">
               {t("s12P1")}{" "}
               <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
                 support@kabanalouer.ca
@@ -226,7 +226,7 @@ export default async function ConditionsPage() {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
+    <h2 className="text-heading-2 font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
       {children}
     </h2>
   );

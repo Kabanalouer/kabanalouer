@@ -100,7 +100,7 @@ export default function CustomSlugField({
               setError(null);
               setJustSaved(false);
             }}
-            className="flex-1 min-w-0 px-4 sm:px-1 py-2.5 text-sm text-charcoal-800 focus:outline-none"
+            className="flex-1 min-w-0 px-4 sm:px-1 py-2.5 text-base text-charcoal-800 focus:outline-none"
             placeholder={tEdit("customSlugPlaceholder")}
           />
         </div>
@@ -113,7 +113,7 @@ export default function CustomSlugField({
             setError(null);
             setJustSaved(false);
           }}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
           placeholder={tEdit("customSlugPlaceholder")}
         />
       )}

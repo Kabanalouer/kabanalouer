@@ -64,13 +64,13 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                 <p className="font-semibold text-charcoal-800 truncate">{title}</p>
                 <p className="text-xs text-charcoal-400 mt-0.5">{listing.region}</p>
                 <div className="flex items-center flex-wrap gap-2 mt-1.5">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                     listing.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                   }`}>
                     {listing.is_published ? t("published") : t("draft")}
                   </span>
                   {translationPending[listing.id] && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
                       {t("translationPending")}
                     </span>
                   )}

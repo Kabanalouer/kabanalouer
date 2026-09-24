@@ -89,7 +89,7 @@ function ResetPasswordForm() {
       <div className="min-h-screen flex items-center justify-center bg-charcoal-50 px-4">
         <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 w-full max-w-md text-center">
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">{t("invalidTitle")}</h2>
-          <p className="text-charcoal-500 text-sm leading-relaxed mb-6">{t("invalidDesc")}</p>
+          <p className="text-charcoal-500 text-base leading-relaxed mb-6">{t("invalidDesc")}</p>
           <Link href={forgotPasswordHref} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("requestNewLink")}
           </Link>
@@ -108,7 +108,7 @@ function ResetPasswordForm() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">{t("successTitle")}</h2>
-          <p className="text-charcoal-500 text-sm leading-relaxed mb-6">{t("successDesc")}</p>
+          <p className="text-charcoal-500 text-base leading-relaxed mb-6">{t("successDesc")}</p>
           <button
             onClick={() => router.push(loginHref)}
             className="bg-primary text-white py-3 px-8 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
@@ -133,7 +133,7 @@ function ResetPasswordForm() {
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
-        <p className="text-charcoal-500 mb-8 text-sm">{t("subtitle")}</p>
+        <p className="text-charcoal-500 mb-8 text-base">{t("subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -149,7 +149,7 @@ function ResetPasswordForm() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="••••••••"
                 minLength={8}
                 required

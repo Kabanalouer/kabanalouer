@@ -36,15 +36,15 @@ export default function RoomPhotoPickerModal({
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="p-6 pb-4 border-b border-[#ebebeb]">
-          <h2 className="text-lg font-bold text-charcoal-800">Choisir une photo existante</h2>
-          <p className="text-sm text-charcoal-500 mt-1">
+          <h2 className="text-heading-3 font-bold text-charcoal-800">Choisir une photo existante</h2>
+          <p className="text-base text-charcoal-500 mt-1">
             Sélectionnez une ou plusieurs photos déjà présentes dans la galerie de l&apos;annonce.
           </p>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
           {selectable.length === 0 ? (
-            <p className="text-sm text-charcoal-400 text-center py-8">
+            <p className="text-base text-charcoal-400 text-center py-8">
               Toutes les photos de la galerie sont déjà assignées à cette chambre.
             </p>
           ) : (

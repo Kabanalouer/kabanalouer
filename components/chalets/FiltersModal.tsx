@@ -137,7 +137,7 @@ export default function FiltersModal({
         </svg>
         <span className="lg:hidden xl:inline">{t("button")}</span>
         {activeCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}
           </span>
         )}
@@ -151,7 +151,7 @@ export default function FiltersModal({
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] shrink-0">
-              <h2 className="text-base font-bold text-charcoal-800">{t("title")}</h2>
+              <h2 className="text-heading-3 font-bold text-charcoal-800">{t("title")}</h2>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-full hover:bg-charcoal-50 transition-colors"
@@ -167,7 +167,7 @@ export default function FiltersModal({
 
               {/* Chambres et lits */}
               <div>
-                <h3 className="text-sm font-bold text-charcoal-800 mb-1">{t("bedroomsAndBeds")}</h3>
+                <h3 className="text-base font-bold text-charcoal-800 mb-1">{t("bedroomsAndBeds")}</h3>
                 <CounterRow label={t("bedrooms")} value={minBedrooms} onChange={setMinBedrooms} anyLabel={t("any")} />
                 <div className="h-px bg-[#ebebeb]" />
                 <CounterRow label={t("beds")} value={minBeds} onChange={setMinBeds} anyLabel={t("any")} />
@@ -179,7 +179,7 @@ export default function FiltersModal({
 
               {/* Caractéristiques */}
               <div>
-                <h3 className="text-sm font-bold text-charcoal-800 mb-4">{t("amenities")}</h3>
+                <h3 className="text-base font-bold text-charcoal-800 mb-4">{t("amenities")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {AMENITY_CATALOG.map((entry) => {
                     const active = selectedAmenities.includes(entry.id);

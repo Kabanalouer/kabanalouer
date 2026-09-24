@@ -89,7 +89,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         </svg>
       </div>
       <p className="font-semibold text-charcoal-800 mb-1">{t("noResults")}</p>
-      <p className="text-charcoal-400 text-sm">{t("noResultsHint")}</p>
+      <p className="text-charcoal-400 text-base">{t("noResultsHint")}</p>
     </div>
   );
 
@@ -160,9 +160,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         {/* Left: 55% — hidden when expanded */}
         <div className={`flex-[55] min-w-0 px-5 pt-5 pb-10 ${isExpanded ? "hidden" : ""}`}>
           <div className="mb-5">
-            <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
+            <h1 className="text-2xl font-bold text-charcoal-800">{pageTitle}</h1>
             {!isLoading && (
-              <span className="text-xs text-charcoal-400 mt-0.5 block">
+              <span className="text-sm text-charcoal-400 mt-0.5 block">
                 {t("resultCount", { count: listings.length })}
               </span>
             )}
@@ -183,9 +183,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       <div className="lg:hidden">
         <div className="px-4 pt-5 pb-28">
           <div className="mb-5">
-            <h1 className="text-lg font-bold text-charcoal-800">{pageTitle}</h1>
+            <h1 className="text-2xl font-bold text-charcoal-800">{pageTitle}</h1>
             {!isLoading && listings.length > 0 && (
-              <span className="text-xs text-charcoal-400 mt-0.5 block">
+              <span className="text-sm text-charcoal-400 mt-0.5 block">
                 {t("resultCount", { count: listings.length })}
               </span>
             )}

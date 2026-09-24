@@ -45,7 +45,7 @@ export default function InvoicesClient({ rows }: { rows: InvoiceRow[] }) {
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-8 text-center">
+      <p className="text-base text-charcoal-400 border border-dashed border-charcoal-200 rounded-xl px-4 py-8 text-center">
         {t("empty")}
       </p>
     );
@@ -55,7 +55,7 @@ export default function InvoicesClient({ rows }: { rows: InvoiceRow[] }) {
     <div className="border border-[#ebebeb] rounded-2xl overflow-x-auto bg-white">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-[#ebebeb] text-left text-[11px] font-semibold text-charcoal-400 uppercase tracking-wide">
+          <tr className="border-b border-[#ebebeb] text-left text-xs font-semibold text-charcoal-400 uppercase tracking-wide">
             <th className="px-4 py-3">{t("columnListing")}</th>
             <th className="px-4 py-3">{t("columnType")}</th>
             <th className="px-4 py-3">{t("columnDate")}</th>

@@ -59,8 +59,8 @@ export default function ICalSync({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6">
       <div>
-        <h2 className="font-bold text-gray-900 mb-1">{t("title")}</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-heading-2 font-bold text-gray-900 mb-1">{t("title")}</h2>
+        <p className="text-base text-gray-500">
           {t("description")}
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function ICalSync({
             value={icalUrl}
             onChange={(e) => { setIcalUrl(e.target.value); setUrlSaved(false); }}
             placeholder={t("placeholder")}
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           <button
             onClick={handleSaveUrl}

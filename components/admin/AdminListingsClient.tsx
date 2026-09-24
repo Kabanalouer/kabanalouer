@@ -135,7 +135,7 @@ export default function AdminListingsClient({
             placeholder="Titre ou proprio…"
             value={search}
             onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
-            className="text-sm pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
+            className="text-base pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -208,7 +208,7 @@ export default function AdminListingsClient({
 
                     {/* Statut */}
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                         l.isPublished ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                       }`}>
                         {l.isPublished ? "Publié" : "Non publié"}

@@ -67,7 +67,7 @@ export default async function ConfidentialitePage() {
           {/* 1 */}
           <section id="responsable" className="scroll-mt-24">
             <H2>{t("s1Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s1P1")}</p>
               <p>
                 {t("s1P2")}{" "}
@@ -81,7 +81,7 @@ export default async function ConfidentialitePage() {
           {/* 2 */}
           <section id="donnees-collectees" className="scroll-mt-24">
             <H2>{t("s2Title")}</H2>
-            <div className="space-y-4 text-sm leading-relaxed">
+            <div className="space-y-4 text-base leading-relaxed">
               <p>{t("s2Intro")}</p>
               <div>
                 <p className="font-semibold text-charcoal-800 mb-2">{t("s2CatReg")}</p>
@@ -129,7 +129,7 @@ export default async function ConfidentialitePage() {
           {/* 3 */}
           <section id="utilisation" className="scroll-mt-24">
             <H2>{t("s3Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s3Intro")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s3I1")}</li>
@@ -147,7 +147,7 @@ export default async function ConfidentialitePage() {
           {/* 4 */}
           <section id="partage" className="scroll-mt-24">
             <H2>{t("s4Title")}</H2>
-            <div className="space-y-4 text-sm leading-relaxed">
+            <div className="space-y-4 text-base leading-relaxed">
               <p>{t("s4P1")}</p>
               <ul className="space-y-3">
                 <LegalItem term={t("s4T1")}>{t("s4D1")}</LegalItem>
@@ -163,7 +163,7 @@ export default async function ConfidentialitePage() {
           {/* 5 */}
           <section id="droits" className="scroll-mt-24">
             <H2>{t("s5Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s5P1")}</p>
               <ul className="space-y-3">
                 <LegalItem term={t("s5T1")}>{t("s5D1")}</LegalItem>
@@ -180,7 +180,7 @@ export default async function ConfidentialitePage() {
           {/* 6 */}
           <section id="conservation" className="scroll-mt-24">
             <H2>{t("s6Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <ul className="space-y-3">
                 <LegalItem term={t("s6T1")}>{t("s6D1")}</LegalItem>
                 <LegalItem term={t("s6T2")}>{t("s6D2")}</LegalItem>
@@ -194,7 +194,7 @@ export default async function ConfidentialitePage() {
           {/* 7 */}
           <section id="cookies" className="scroll-mt-24">
             <H2>{t("s7Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s7Intro")}</p>
               <ul className="space-y-3">
                 <LegalItem term={t("s7T1")}>{t("s7D1")}</LegalItem>
@@ -207,7 +207,7 @@ export default async function ConfidentialitePage() {
           {/* 8 */}
           <section id="securite" className="scroll-mt-24">
             <H2>{t("s8Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s8P1")}</p>
               <ul className="list-disc list-inside space-y-2 pl-2">
                 <li>{t("s8I1")}</li>
@@ -223,13 +223,13 @@ export default async function ConfidentialitePage() {
           {/* 9 */}
           <section id="modifications" className="scroll-mt-24">
             <H2>{t("s9Title")}</H2>
-            <p className="text-sm leading-relaxed">{t("s9P1")}</p>
+            <p className="text-base leading-relaxed">{t("s9P1")}</p>
           </section>
 
           {/* 10 */}
           <section id="contact" className="scroll-mt-24">
             <H2>{t("s10Title")}</H2>
-            <div className="space-y-3 text-sm leading-relaxed">
+            <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s10P1")}</p>
               <p>
                 <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
@@ -260,7 +260,7 @@ export default async function ConfidentialitePage() {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
+    <h2 className="text-heading-2 font-bold text-charcoal-800 mb-4 pb-2 border-b border-[#ebebeb]">
       {children}
     </h2>
   );

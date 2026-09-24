@@ -73,7 +73,7 @@ export default function AdminNav() {
               style={{ height: 32, width: "auto" }}
             />
           </Link>
-          <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest mt-2">Administration</p>
+          <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mt-2">Administration</p>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">{navLinks()}</nav>
         <div className="px-3 py-4 border-t border-[#ebebeb]">{backLink()}</div>
@@ -111,7 +111,7 @@ export default function AdminNav() {
                   className="pointer-events-none"
                   style={{ height: 28, width: "auto" }}
                 />
-                <p className="text-[10px] font-semibold text-charcoal-400 uppercase tracking-widest mt-1.5">Administration</p>
+                <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mt-1.5">Administration</p>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}

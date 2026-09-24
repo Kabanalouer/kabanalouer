@@ -143,7 +143,7 @@ function LocationForm({
   };
 
   const inputCls =
-    "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+    "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
   return (
     <div className="space-y-5">
@@ -194,7 +194,7 @@ function LocationForm({
             type="text"
             value={region}
             readOnly
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm bg-charcoal-50 text-charcoal-500 cursor-default focus:outline-none"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-500 cursor-default focus:outline-none"
             placeholder={t("regionPlaceholder")}
           />
           <p className="text-xs text-charcoal-400 mt-1">

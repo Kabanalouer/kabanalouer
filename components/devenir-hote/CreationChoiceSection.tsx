@@ -10,7 +10,7 @@ import { localePath } from "@/lib/localePath";
 const initialState: ImportRequestState = { status: "idle" };
 
 const inputCls =
-  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
 
 export default function CreationChoiceSection() {
   const t = useTranslations("creationChoice");
@@ -37,10 +37,10 @@ export default function CreationChoiceSection() {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
               <PencilIcon />
             </div>
-            <h3 className="text-xl font-bold text-charcoal-800 mb-3">
+            <h3 className="text-heading-3 font-bold text-charcoal-800 mb-3">
               {t("card1Title")}
             </h3>
-            <p className="text-charcoal-500 text-sm leading-relaxed mb-8 flex-1">
+            <p className="text-charcoal-500 text-base leading-relaxed mb-8 flex-1">
               {t("card1Desc")}
             </p>
             <Link
@@ -56,10 +56,10 @@ export default function CreationChoiceSection() {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
               <LinkIcon />
             </div>
-            <h3 className="text-xl font-bold text-charcoal-800 mb-3">
+            <h3 className="text-heading-3 font-bold text-charcoal-800 mb-3">
               {t("card2Title")}
             </h3>
-            <p className="text-charcoal-500 text-sm leading-relaxed mb-8">
+            <p className="text-charcoal-500 text-base leading-relaxed mb-8">
               {t("card2Desc")}
             </p>
 

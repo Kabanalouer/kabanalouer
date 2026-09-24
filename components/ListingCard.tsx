@@ -150,17 +150,17 @@ export default function ListingCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {listing.isFeatured && (
-            <span className="bg-[#636e40] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-[#636e40] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
               {t("featured")}
             </span>
           )}
           {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
-            <span className="bg-[#f04e45] text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-[#f04e45] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
               {formatPromoLines(listing.promoData).line1}
             </span>
           )}
           {listing.isNew && (
-            <span className="bg-white text-charcoal-800 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm">
+            <span className="bg-white text-charcoal-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
               {t("isNew")}
             </span>
           )}
@@ -179,12 +179,12 @@ export default function ListingCard({
       {/* ── Info ── */}
       <div>
         {/* Title */}
-        <h3 className="font-semibold text-[15px] text-charcoal-800 leading-snug truncate mb-1">
+        <h3 className="font-semibold text-base text-charcoal-800 leading-snug truncate mb-1">
           {listing.title}
         </h3>
 
         {/* Meta — location · capacity · bedrooms · beds */}
-        <p className="text-[13px] text-charcoal-400 mb-2">
+        <p className="text-sm text-charcoal-400 mb-2">
           {location}
           {" · "}
           {t("travelers", { count: listing.capacity })}
@@ -197,9 +197,9 @@ export default function ListingCard({
 
         {/* Price */}
         {listing.priceOnRequest ? (
-          <p className="text-[14px] text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
+          <p className="text-sm text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
         ) : listing.price > 0 ? (
-          <p className="text-[14px] font-semibold text-charcoal-800">
+          <p className="text-sm font-semibold text-charcoal-800">
             {listing.price} $ <span className="text-charcoal-400">{t("perNight")}</span>
           </p>
         ) : null}

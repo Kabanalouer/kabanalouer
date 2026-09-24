@@ -192,17 +192,17 @@ export default function RoomsSection({
 
       {/* Value-add message */}
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
-        <p className="text-sm text-charcoal-700">
+        <p className="text-base text-charcoal-700">
           {t("proTip")}
         </p>
       </div>
 
       {/* ── Chambres ──────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-charcoal-800 mb-4">{t("bedroomsTitle")}</h3>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{t("bedroomsTitle")}</h3>
 
         {bedrooms.length === 0 && (
-          <p className="text-sm text-charcoal-400 mb-4">{t("bedroomsEmpty")}</p>
+          <p className="text-base text-charcoal-400 mb-4">{t("bedroomsEmpty")}</p>
         )}
 
         <div className="space-y-4">
@@ -235,10 +235,10 @@ export default function RoomsSection({
 
       {/* ── Salons ────────────────────────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-charcoal-800 mb-4">{t("livingroomsTitle")}</h3>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{t("livingroomsTitle")}</h3>
 
         {livingRooms.length === 0 && (
-          <p className="text-sm text-charcoal-400 mb-4">{t("livingroomsEmpty")}</p>
+          <p className="text-base text-charcoal-400 mb-4">{t("livingroomsEmpty")}</p>
         )}
 
         <div className="space-y-4">
@@ -316,7 +316,7 @@ function BedsEditor({
             <select
               value={bed.type}
               onChange={(e) => onUpdateBed(i, { type: e.target.value as BedType })}
-              className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="flex-1 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-primary bg-white"
             >
               {(Object.keys(BED_LABELS) as BedType[]).map((k) => (
                 <option key={k} value={k}>{BED_LABELS[k]}</option>
@@ -326,7 +326,7 @@ function BedsEditor({
               type="number" min={1} max={4}
               value={bed.quantity}
               onChange={(e) => onUpdateBed(i, { quantity: parseInt(e.target.value) || 1 })}
-              className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-base text-center focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <button
               onClick={() => onRemoveBed(i)}
@@ -368,7 +368,7 @@ function RoomHeader({
       <input
         value={room.name}
         onChange={(e) => onUpdate({ name: e.target.value })}
-        className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-sm"
+        className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-base"
       />
       {room.photos.length === 0 && (
         <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
@@ -393,7 +393,7 @@ function RoomHeader({
         value={nameEn}
         onChange={(e) => onUpdate({ name_en: e.target.value })}
         placeholder={t("nameEnPlaceholder")}
-        className="flex-1 text-sm border border-[#ebebeb] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300"
+        className="flex-1 text-base border border-[#ebebeb] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300"
       />
       <TranslateButton
         sourceText={room.name}
@@ -414,7 +414,7 @@ function RoomHeader({
       <button
         type="button"
         onClick={() => setShowEn((s) => !s)}
-        className="mt-1 text-[10px] font-medium text-primary hover:underline"
+        className="mt-1 text-xs font-medium text-primary hover:underline"
       >
         {showEn ? t("nameEnHide") : (nameEn ? t("nameEnEdit") : t("nameEnAdd"))}
       </button>
@@ -451,7 +451,7 @@ function BedroomCard({
           type="number" min={1} max={20}
           value={room.capacity}
           onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
-          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-base text-center focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -499,7 +499,7 @@ function LivingRoomCard({
           type="number" min={1} max={10}
           value={room.capacity}
           onChange={(e) => onUpdate({ capacity: parseInt(e.target.value) || 1 })}
-          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-20 border border-[#ebebeb] rounded-lg px-3 py-1.5 text-base text-center focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 

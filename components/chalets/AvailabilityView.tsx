@@ -89,7 +89,7 @@ function MonthGrid({
             >
               {rangePos && <BlockBg pos={rangePos} />}
               <span className={[
-                "relative z-10 text-[11px]",
+                "relative z-10 text-xs",
                 isPast    ? "text-charcoal-100" :
                 isBlocked ? "text-red-500 font-medium" :
                             "text-charcoal-600",

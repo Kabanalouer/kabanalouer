@@ -7,7 +7,7 @@ import { createBlankListing, submitImportRequest, type ImportState } from "@/app
 const initialState: ImportState = { status: "idle" };
 
 const inputCls =
-  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-sm text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
 
 // Le pipeline d'import ne renvoie aucune étape intermédiaire réelle — ces
 // messages ne font que rassurer pendant l'attente (jusqu'à 90s), sans
@@ -57,7 +57,7 @@ export default function NewListingStepZero() {
     <div>
       <div className="mb-10">
         <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
-        <p className="text-charcoal-500 mt-1.5 text-sm">
+        <p className="text-charcoal-500 mt-1.5 text-base">
           {t("subheading")}
         </p>
       </div>
@@ -72,10 +72,10 @@ export default function NewListingStepZero() {
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <PencilIcon />
           </div>
-          <h2 className="text-lg font-bold text-charcoal-800 mb-2">
+          <h2 className="text-heading-3 font-bold text-charcoal-800 mb-2">
             {t("manualTitle")}
           </h2>
-          <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
+          <ul className="text-charcoal-500 text-base leading-relaxed mb-7 flex-1 space-y-2.5">
             <li className="flex items-start gap-2">
               <CheckIcon />
               <span>{t("manualFeature1")}</span>
@@ -107,10 +107,10 @@ export default function NewListingStepZero() {
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-5 shrink-0">
             <LinkIcon />
           </div>
-          <h2 className="text-lg font-bold text-charcoal-800 mb-2">
+          <h2 className="text-heading-3 font-bold text-charcoal-800 mb-2">
             {t("importTitle")}
           </h2>
-          <ul className="text-charcoal-500 text-sm leading-relaxed mb-7 flex-1 space-y-2.5">
+          <ul className="text-charcoal-500 text-base leading-relaxed mb-7 flex-1 space-y-2.5">
             <li className="flex items-start gap-2">
               <CheckIcon />
               <span>{t("importFeature1")}</span>
@@ -215,7 +215,7 @@ function LinkIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+    <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   );

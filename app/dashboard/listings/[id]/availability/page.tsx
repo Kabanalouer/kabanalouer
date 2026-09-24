@@ -61,7 +61,7 @@ export default async function AvailabilityPage({ params }: Props) {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Disponibilités</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-gray-500 text-base mt-1">
             Les dates non bloquées sont automatiquement disponibles pour les voyageurs.
           </p>
         </div>

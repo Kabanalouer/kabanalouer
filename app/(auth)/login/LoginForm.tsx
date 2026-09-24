@@ -83,7 +83,7 @@ function LoginForm() {
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
-        <p className="text-charcoal-500 mb-8 text-sm">{t("subtitle")}</p>
+        <p className="text-charcoal-500 mb-8 text-base">{t("subtitle")}</p>
 
         <button
           onClick={handleGoogleLogin}
@@ -108,7 +108,7 @@ function LoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder={t("emailPlaceholder")}
               required
             />
@@ -123,7 +123,7 @@ function LoginForm() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="••••••••"
                 required
               />
@@ -137,7 +137,7 @@ function LoginForm() {
               </button>
             </div>
             <div className="flex justify-end mt-1.5">
-              <Link href={localePath("/forgot-password", locale)} className={`text-xs ${TEXT_LINK_CLASSNAME}`}>
+              <Link href={localePath("/forgot-password", locale)} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
                 {t("forgotPasswordLink")}
               </Link>
             </div>

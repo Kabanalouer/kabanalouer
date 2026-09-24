@@ -47,8 +47,8 @@ export default function SejourReviewClient({ token }: { token: string }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="font-semibold text-charcoal-800 text-sm mb-1">{t("successTitle")}</p>
-        <p className="text-xs text-charcoal-400">{t("successSub")}</p>
+        <p className="text-heading-3 font-semibold text-charcoal-800 mb-1">{t("successTitle")}</p>
+        <p className="text-base text-charcoal-400">{t("successSub")}</p>
       </div>
     );
   }
@@ -84,7 +84,7 @@ export default function SejourReviewClient({ token }: { token: string }) {
         onChange={(e) => setComment(e.target.value)}
         rows={4}
         placeholder={t("placeholder")}
-        className="w-full border border-[#ebebeb] rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
+        className="w-full border border-[#ebebeb] rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
       />
 
       {error && <p className="text-sm text-red-500 mb-3">{error}</p>}

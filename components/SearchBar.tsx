@@ -99,7 +99,7 @@ function CalendarMonth({
       </div>
       <div className="grid grid-cols-7 mb-1">
         {dayNames.map((d) => (
-          <div key={d} className="h-8 flex items-center justify-center text-[11px] font-medium text-gray-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="h-8 flex items-center justify-center text-xs font-medium text-gray-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -391,7 +391,7 @@ export default function SearchBar({
               setDestSelected(null);
               setDestOpen(true);
             }}
-            className="flex-1 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400 min-w-0"
+            className="flex-1 bg-transparent text-base outline-none text-gray-700 placeholder-gray-400 min-w-0"
           />
           {destQuery && (
             <button onClick={clearDest} className="text-gray-400 hover:text-gray-600 transition-colors shrink-0">
@@ -410,7 +410,7 @@ export default function SearchBar({
               recentSearches.length > 0 ? (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("recentSearches")}</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("recentSearches")}</p>
                   </div>
                   {recentSearches.map((item, i) => (
                     <button
@@ -431,7 +431,7 @@ export default function SearchBar({
               ) : (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("popularRegions")}</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("popularRegions")}</p>
                   </div>
                   {popularRegions.map((item) => (
                     <button
@@ -456,7 +456,7 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "region").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("regionsGroup")}</p>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("regionsGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "region").map((item) => (
                         <button
@@ -476,7 +476,7 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "city").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{t("citiesGroup")}</p>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("citiesGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "city").map((item) => (
                         <button

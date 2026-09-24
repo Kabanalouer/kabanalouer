@@ -45,7 +45,7 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
     >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
-          <h3 className="font-bold text-charcoal-800 text-lg pr-4">{t("authModalTitle")}</h3>
+          <h3 className="font-bold text-charcoal-800 text-heading-3 pr-4">{t("authModalTitle")}</h3>
           <button onClick={onClose} aria-label={tc("close")} className="text-charcoal-400 hover:text-charcoal-700 transition-colors shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -127,7 +127,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
           placeholder={t("emailPlaceholder")}
           required
         />
@@ -140,7 +140,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             placeholder="••••••••"
             required
           />
@@ -154,7 +154,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
           </button>
         </div>
         <div className="flex justify-end mt-1.5">
-          <Link href={localePath("/forgot-password", locale)} className={`text-xs ${TEXT_LINK_CLASSNAME}`}>
+          <Link href={localePath("/forgot-password", locale)} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("forgotPasswordLink")}
           </Link>
         </div>
@@ -246,8 +246,8 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="font-bold text-charcoal-800 text-lg mb-2">{t("checkEmailTitle")}</h3>
-        <p className="text-charcoal-500 text-sm leading-relaxed mb-4">
+        <h3 className="font-bold text-charcoal-800 text-heading-3 mb-2">{t("checkEmailTitle")}</h3>
+        <p className="text-charcoal-500 text-base leading-relaxed mb-4">
           {t.rich("checkEmailDesc", {
             email,
             strong: (chunks) => <strong className="text-charcoal-800">{chunks}</strong>,
@@ -284,7 +284,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             placeholder={t("firstNamePlaceholder")}
             required
           />
@@ -295,7 +295,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             placeholder={t("lastNamePlaceholder")}
             required
           />
@@ -308,7 +308,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
           placeholder={t("emailPlaceholder")}
           required
         />
@@ -321,7 +321,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             placeholder={t("passwordPlaceholder")}
             minLength={8}
             required
@@ -352,7 +352,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         {loading ? t("submitting") : t("submit")}
       </button>
 
-      <p className="text-center text-xs text-charcoal-400">
+      <p className="text-center text-sm text-charcoal-400">
         {t("termsNote")}{" "}
         <Link href={localePath("/conditions", locale)} className="underline hover:text-charcoal-600">
           {t("termsLink")}

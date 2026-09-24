@@ -223,7 +223,7 @@ export default function Navbar() {
     const tabCls = (pathPrefix: string, exact = false) => {
       const active = exact ? strippedPathname === pathPrefix : strippedPathname.startsWith(pathPrefix);
       return [
-        "flex items-center gap-2 px-5 h-full text-[15px] font-semibold transition-colors border-b-2",
+        "flex items-center gap-2 px-5 h-full text-base font-semibold transition-colors border-b-2",
         active
           ? "border-charcoal-800 text-charcoal-800"
           : "border-transparent text-charcoal-400 hover:text-charcoal-700 hover:border-charcoal-200",
@@ -254,7 +254,7 @@ export default function Navbar() {
             <Link href={lp("/dashboard/avis")} className={tabCls("/dashboard/avis")}>
               {t("myReviews")}
               {unansweredReviewsCount > 0 && (
-                <span className="bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
+                <span className="bg-primary text-white text-xs font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
                   {unansweredReviewsCount > 9 ? "9+" : unansweredReviewsCount}
                 </span>
               )}
@@ -265,7 +265,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 ml-auto">
             <button
               onClick={enterVoyageurMode}
-              className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-[15px] font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
+              className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-base font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
             >
               {t("travelerMode")}
             </button>
@@ -338,7 +338,7 @@ export default function Navbar() {
             {isHost && voyageurMode && (
               <button
                 onClick={exitVoyageurMode}
-                className="hidden sm:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-[15px] font-medium hover:bg-primary/5 transition-all"
+                className="hidden sm:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-base font-medium hover:bg-primary/5 transition-all"
               >
                 {t("ownerMode")}
               </button>
@@ -419,13 +419,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center justify-end gap-1.5 flex-1">
             <Link
               href={lp("/login")}
-              className="whitespace-nowrap px-3 lg:px-2.5 xl:px-3 py-2.5 text-[15px] font-medium text-charcoal-700 hover:text-primary transition-colors"
+              className="whitespace-nowrap px-3 lg:px-2.5 xl:px-3 py-2.5 text-base font-medium text-charcoal-700 hover:text-primary transition-colors"
             >
               {t("login")}
             </Link>
             <Link
               href={lp("/signup")}
-              className="whitespace-nowrap bg-primary text-white text-[15px] px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
+              className="whitespace-nowrap bg-primary text-white text-base px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
             >
               {t("createAccount")}
             </Link>
@@ -470,7 +470,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="px-4 py-2.5 text-[15px] font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
+      className="px-4 py-2.5 text-base font-medium text-charcoal-700 hover:bg-charcoal-50 rounded-full transition-colors"
     >
       {children}
     </Link>

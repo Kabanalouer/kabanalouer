@@ -68,10 +68,10 @@ export default function HostCTA({ label, className }: Props) {
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
           <div className="bg-white rounded-2xl shadow-xl border border-[#ebebeb] p-8 w-full max-w-md">
-            <h2 className="text-xl font-bold text-charcoal-800 mb-3">
+            <h2 className="text-heading-3 font-bold text-charcoal-800 mb-3">
               Vous avez déjà un compte Kabanalouer
             </h2>
-            <p className="text-charcoal-500 text-sm leading-relaxed mb-6">
+            <p className="text-charcoal-500 text-base leading-relaxed mb-6">
               Voulez-vous activer le mode propriétaire sur votre compte existant ?
             </p>
             {error && (

@@ -114,7 +114,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
             placeholder="Nom ou email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="text-sm pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
+            className="text-base pl-9 pr-4 py-1.5 rounded-full border border-[#ebebeb] bg-white text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
         <span className="ml-auto text-xs text-charcoal-400">{filtered.length} proprio{filtered.length !== 1 ? "s" : ""}</span>
@@ -172,7 +172,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                     {/* Abonnement */}
                     <td className="px-4 py-3">
                       {h.subscriptions.length === 0 ? (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${SUB_BADGE.none.bg} ${SUB_BADGE.none.text}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_BADGE.none.bg} ${SUB_BADGE.none.text}`}>
                           {SUB_BADGE.none.label}
                         </span>
                       ) : (
@@ -181,7 +181,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                             <span
                               key={s.listingId}
                               title={s.listingTitle}
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${SUB_BADGE[s.subLabel].bg} ${SUB_BADGE[s.subLabel].text}`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_BADGE[s.subLabel].bg} ${SUB_BADGE[s.subLabel].text}`}
                             >
                               {SUB_BADGE[s.subLabel].label}
                             </span>

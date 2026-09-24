@@ -56,13 +56,13 @@ export default function DashboardBottomNav() {
 
   const cls = (path: string, exact = false) =>
     [
-      "flex flex-col items-center gap-0.5 flex-1 pt-2 pb-1 text-[10px] font-medium transition-colors",
+      "flex flex-col items-center gap-0.5 flex-1 pt-2 pb-1 text-xs font-medium transition-colors",
       active(path, exact) ? "text-primary" : "text-charcoal-400",
     ].join(" ");
 
   const Badge = ({ count }: { count: number }) =>
     count > 0 ? (
-      <span className="absolute -top-1 -right-2 bg-[#f04e45] text-white text-[9px] font-bold min-w-[15px] h-[15px] px-0.5 rounded-full flex items-center justify-center leading-none">
+      <span className="absolute -top-1 -right-2 bg-[#f04e45] text-white text-xs font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
         {count > 9 ? "9+" : count}
       </span>
     ) : null;

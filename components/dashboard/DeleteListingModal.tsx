@@ -31,9 +31,9 @@ export default function DeleteListingModal({ listingId, onClose, onDeleted }: Pr
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-        <h2 className="text-lg font-bold text-charcoal-800 mb-5">{t("title")}</h2>
+        <h2 className="text-heading-3 font-bold text-charcoal-800 mb-5">{t("title")}</h2>
 
-        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-sm text-red-700 space-y-1.5 leading-relaxed">
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6 text-base text-red-700 space-y-1.5 leading-relaxed">
           <p>{t("irreversible")}</p>
           <p>{t("warning")}</p>
           <p>{t("subscriptionNote")}</p>

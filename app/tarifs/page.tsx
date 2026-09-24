@@ -107,7 +107,7 @@ export default async function TarifsPage() {
                   <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
                     ✓
                   </span>
-                  <span className="text-charcoal-700 text-sm">{item}</span>
+                  <span className="text-charcoal-700 text-base">{item}</span>
                 </li>
               ))}
             </ul>
@@ -146,21 +146,21 @@ export default async function TarifsPage() {
                 key={row.feature}
                 className={`grid grid-cols-3 border-b border-[#ebebeb] ${i % 2 === 0 ? "bg-white" : "bg-charcoal-50/50"}`}
               >
-                <div className="px-3 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-sm text-charcoal-700 font-medium leading-snug">
+                <div className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-charcoal-700 font-medium leading-snug">
                   {row.feature}
                 </div>
                 <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   {row.kbl === true ? (
                     <span className="text-primary font-bold text-base sm:text-lg">✓</span>
                   ) : (
-                    <span className="text-[11px] sm:text-sm font-semibold text-primary">{row.kbl}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-primary">{row.kbl}</span>
                   )}
                 </div>
                 <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   {row.airbnb === false ? (
                     <span className="text-red-400 text-base sm:text-lg font-bold">✗</span>
                   ) : (
-                    <span className="text-[11px] sm:text-sm text-charcoal-500">{row.airbnb}</span>
+                    <span className="text-xs sm:text-sm text-charcoal-500">{row.airbnb}</span>
                   )}
                 </div>
               </div>
@@ -182,7 +182,7 @@ export default async function TarifsPage() {
                 key={q}
                 className="group border border-[#ebebeb] rounded-2xl bg-[#F8FAF9] overflow-hidden"
               >
-                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-sm select-none">
+                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-base select-none">
                   {q}
                   <svg
                     className="w-4 h-4 text-charcoal-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
@@ -194,7 +194,7 @@ export default async function TarifsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <div className="px-6 pb-5 text-sm text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
+                <div className="px-6 pb-5 text-base text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
                   {a}
                 </div>
               </details>

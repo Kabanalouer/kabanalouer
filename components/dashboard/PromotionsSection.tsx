@@ -8,7 +8,7 @@ import { formatPromoLines, type PromoRow } from "@/lib/promoLabel";
 type PromoFormType = "rabais" | "duree" | "lastminute";
 
 const inputCls =
-  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 function DateRangeFields({
   start, end, onStart, onEnd,
@@ -213,8 +213,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">{t("discountTitle")}</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("discountDesc")}</p>
+                <p className="font-semibold text-base text-charcoal-800">{t("discountTitle")}</p>
+                <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("discountDesc")}</p>
               </button>
               {formType === "rabais" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
@@ -281,8 +281,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">{t("freeNightTitle")}</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("freeNightDesc")}</p>
+                <p className="font-semibold text-base text-charcoal-800">{t("freeNightTitle")}</p>
+                <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("freeNightDesc")}</p>
               </button>
               {formType === "duree" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
@@ -328,8 +328,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="font-semibold text-sm text-charcoal-800">{t("lastMinuteTitle")}</p>
-                <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{t("lastMinuteDesc")}</p>
+                <p className="font-semibold text-base text-charcoal-800">{t("lastMinuteTitle")}</p>
+                <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("lastMinuteDesc")}</p>
               </button>
               {formType === "lastminute" && (
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">

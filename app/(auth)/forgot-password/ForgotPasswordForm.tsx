@@ -56,7 +56,7 @@ function ForgotPasswordForm() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-charcoal-800 mb-3">{t("checkEmailTitle")}</h2>
-          <p className="text-charcoal-500 text-sm leading-relaxed">
+          <p className="text-charcoal-500 text-base leading-relaxed">
             {t.rich("checkEmailDesc", {
               email,
               strong: (chunks) => (
@@ -85,7 +85,7 @@ function ForgotPasswordForm() {
         </Link>
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
-        <p className="text-charcoal-500 mb-8 text-sm">{t("subtitle")}</p>
+        <p className="text-charcoal-500 mb-8 text-base">{t("subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -100,7 +100,7 @@ function ForgotPasswordForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder={t("emailPlaceholder")}
               required
             />

@@ -25,14 +25,14 @@ export default function QuoteCard({
 
   return (
     <div
-      className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+      className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-base leading-relaxed ${
         isMine
           ? "bg-primary text-white rounded-br-sm"
           : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
       }`}
     >
       <span
-        className={`inline-flex items-center text-[11px] font-medium rounded-full px-2 py-0.5 mb-1.5 ${
+        className={`inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5 mb-1.5 ${
           isMine
             ? "bg-white/15 text-white"
             : isNoAvailability

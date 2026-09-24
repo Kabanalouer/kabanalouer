@@ -202,7 +202,7 @@ export default async function HomePage() {
 
           {/* Contenu : badge + titre + sous-titre + recherche */}
           <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
-            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
+            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
               {t("badge")}
             </div>
             <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-4 sm:mb-5 max-w-3xl">
@@ -271,7 +271,7 @@ export default async function HomePage() {
         ) : (
           <div className="text-center py-20 text-charcoal-400">
             <p className="text-lg font-medium mb-2">{t("noListings")}</p>
-            <p className="text-sm">{t("noListingsSoon")}</p>
+            <p className="text-base">{t("noListingsSoon")}</p>
           </div>
         )}
 
@@ -381,8 +381,8 @@ function WhyCard({
       <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
         {icon}
       </div>
-      <h3 className="font-bold text-charcoal-800 text-[17px] mb-2">{title}</h3>
-      <p className="text-charcoal-400 text-sm leading-relaxed">{description}</p>
+      <h3 className="font-bold text-charcoal-800 text-heading-3 mb-2">{title}</h3>
+      <p className="text-charcoal-400 text-base leading-relaxed">{description}</p>
     </div>
   );
 }

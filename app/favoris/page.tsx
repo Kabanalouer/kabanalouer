@@ -111,7 +111,7 @@ export default async function FavorisPage() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1">
-        <h1 className="text-xl font-bold text-charcoal-800 mb-6">{t("title")}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800 mb-6">{t("title")}</h1>
 
         {listings.length === 0 ? (
           <div className="py-24 text-center">
@@ -123,7 +123,7 @@ export default async function FavorisPage() {
             <p className="text-charcoal-700 font-medium mb-2">
               {t("empty")}
             </p>
-            <p className="text-charcoal-400 text-sm mb-6">
+            <p className="text-charcoal-400 text-base mb-6">
               {t("emptyHint")}
             </p>
             <Link

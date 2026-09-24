@@ -133,13 +133,13 @@ export default function NoAvailabilityWidget({
   };
 
   if (!templateLoaded) {
-    return <p className="text-xs text-charcoal-400">{t("loading")}</p>;
+    return <p className="text-sm text-charcoal-400">{t("loading")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-2.5">
       <div>
-        <label className="block text-xs font-medium text-charcoal-500 mb-1">
+        <label className="block text-sm font-medium text-charcoal-500 mb-1">
           {t("noAvailabilityTextareaLabel")}
         </label>
         <textarea
@@ -149,11 +149,11 @@ export default function NoAvailabilityWidget({
             setEditedText(e.target.value);
           }}
           rows={10}
-          className="w-full border border-[#ebebeb] rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y whitespace-pre-wrap"
+          className="w-full border border-[#ebebeb] rounded-xl px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y whitespace-pre-wrap"
         />
       </div>
 
-      <label className="flex items-center gap-2 text-xs text-charcoal-500 cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-charcoal-500 cursor-pointer">
         <input
           type="checkbox"
           checked={saveAsTemplate}
@@ -163,7 +163,7 @@ export default function NoAvailabilityWidget({
         {t("saveTemplateCheckbox")}
       </label>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div className="flex gap-2">
         <button

@@ -129,7 +129,7 @@ export default async function CityLanding({
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] border-b border-gray-100 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-xs text-gray-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
+          <nav className="text-sm text-gray-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
             <Link href={localePath("/chalets", locale)} className="hover:text-primary hover:underline transition-colors">
               {isEn ? "Cabins" : "Chalets"}
             </Link>
@@ -158,7 +158,7 @@ export default async function CityLanding({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-heading-2 font-bold text-gray-900">
               {isEn
                 ? `${count} cabin${count > 1 ? "s" : ""} in ${cityName}`
                 : `${count} chalet${count > 1 ? "s" : ""} à ${cityName}`}
@@ -189,7 +189,7 @@ export default async function CityLanding({
       {/* ── Other cities in region ── */}
       {otherCities.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
-          <h2 className="text-base font-bold text-gray-900 mb-4">
+          <h2 className="text-heading-2 font-bold text-gray-900 mb-4">
             {isEn ? `Other cities in ${displayRegionName}` : `Autres villes ${regionConfig.locative}`}
           </h2>
           <div className="flex flex-wrap gap-2">

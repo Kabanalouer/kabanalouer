@@ -126,7 +126,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
 };
 
 const inputCls =
-  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
+  "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
 const INDICATOR_SECTION_IDS = new Set<SectionId>([
   "photos", "titre", "description", "capacite", "chambres",
@@ -787,7 +787,7 @@ export default function EditListingForm({
           <select
             value={activeSection}
             onChange={(e) => { setActiveSection(e.target.value as SectionId); setSaveError(""); setJustSaved(false); }}
-            className="w-full min-h-[44px] border border-primary rounded-full text-primary px-4 py-2.5 pr-8 text-sm font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full min-h-[44px] border border-primary rounded-full text-primary px-4 py-2.5 pr-8 text-base font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {SECTIONS.map((s) => {
               let suffix = "";
@@ -1282,7 +1282,7 @@ export default function EditListingForm({
                         if (!isNaN(v)) set("capacity", Math.min(40, Math.max(1, v)));
                       }}
                       onBlur={() => { if (form.capacity < 1) set("capacity", 1); }}
-                      className="w-20 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                      className="w-20 text-center text-base font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                     />
                     <button
                       type="button"
@@ -1317,7 +1317,7 @@ export default function EditListingForm({
                         if (!isNaN(v)) set("bedrooms", Math.min(20, Math.max(1, v)));
                       }}
                       onBlur={() => { if (form.bedrooms < 1) set("bedrooms", 1); }}
-                      className="w-14 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                      className="w-14 text-center text-base font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                     />
                     <button
                       type="button"
@@ -1352,7 +1352,7 @@ export default function EditListingForm({
                         if (!isNaN(v)) set("bathrooms", Math.min(10, Math.max(1, v)));
                       }}
                       onBlur={() => { if (form.bathrooms < 1) set("bathrooms", 1); }}
-                      className="w-14 text-center text-sm font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                      className="w-14 text-center text-base font-semibold text-charcoal-800 border border-[#ebebeb] rounded-xl py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                     />
                     <button
                       type="button"
@@ -1502,12 +1502,12 @@ export default function EditListingForm({
                     <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                     </svg>
-                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingRequestTitle")}</p>
-                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingRequestDesc")}</p>
+                    <p className="font-semibold text-base text-charcoal-800">{tEdit("pricingRequestTitle")}</p>
+                    <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingRequestDesc")}</p>
                   </button>
                   {form.price_on_request && (
                     <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
-                      <p className="text-sm text-charcoal-600 leading-relaxed">
+                      <p className="text-base text-charcoal-600 leading-relaxed">
                         {tEdit("pricingRequestDisplay")}
                       </p>
                     </div>
@@ -1524,8 +1524,8 @@ export default function EditListingForm({
                     <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="font-semibold text-sm text-charcoal-800">{tEdit("pricingFromTitle")}</p>
-                    <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingFromDesc")}</p>
+                    <p className="font-semibold text-base text-charcoal-800">{tEdit("pricingFromTitle")}</p>
+                    <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{tEdit("pricingFromDesc")}</p>
                   </button>
                   {!form.price_on_request && (
                     <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
@@ -1692,7 +1692,7 @@ export default function EditListingForm({
                     <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
                       {t("publish.adminReviewBadge")}
                     </div>
-                    <p className="text-sm text-charcoal-500">{t("publish.adminReviewNote")}</p>
+                    <p className="text-base text-charcoal-500">{t("publish.adminReviewNote")}</p>
 
                     {publishError && (
                       <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{publishError}</p>
@@ -1723,7 +1723,7 @@ export default function EditListingForm({
                         <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p className="text-base font-bold text-green-700">{tEdit("publishedLabel")}</p>
+                        <p className="text-heading-3 font-bold text-green-700">{tEdit("publishedLabel")}</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
@@ -1744,7 +1744,7 @@ export default function EditListingForm({
                     </div>
 
                     <div>
-                      <p className="text-sm font-semibold text-charcoal-700 mb-3">{tEdit("myStats")}</p>
+                      <p className="text-heading-3 font-semibold text-charcoal-700 mb-3">{tEdit("myStats")}</p>
                       <div className="grid grid-cols-3 gap-2 text-sm">
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("statsViews")}</p>
@@ -1801,15 +1801,15 @@ export default function EditListingForm({
                   ) : null}
 
                   <div>
-                    <h3 className="text-base font-bold text-charcoal-800 mb-1">
+                    <h3 className="text-heading-3 font-bold text-charcoal-800 mb-1">
                       {isFree ? t("publish.headingFree") : t("publish.headingPaid")}
                     </h3>
                   </div>
 
                   <ul className="space-y-1.5">
                     {PUBLISH_FEATURES.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-charcoal-700">
-                        <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <li key={f} className="flex items-center gap-2 text-base text-charcoal-700">
+                        <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         {f}
@@ -1993,7 +1993,7 @@ function SectionShell({ title, children }: { title: string; children: React.Reac
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <h2 className="text-lg font-semibold text-charcoal-800">{title}</h2>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{title}</h2>
       </div>
       {children}
     </div>
@@ -2025,16 +2025,16 @@ function CheckinTypeField({ value, onChange, tEdit }: { value: "autonomous" | "i
         <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
         </svg>
-        <p className="font-semibold text-sm text-charcoal-800">{tEdit("checkinAutonomousTitle")}</p>
-        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinAutonomousDesc")}</p>
+        <p className="font-semibold text-base text-charcoal-800">{tEdit("checkinAutonomousTitle")}</p>
+        <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinAutonomousDesc")}</p>
       </button>
       <button type="button" onClick={() => onChange("in_person")}
         className={`text-left p-4 rounded-xl border-2 transition-colors ${value === "in_person" ? "border-primary bg-primary/5" : "border-[#ebebeb] bg-white hover:border-charcoal-300"}`}>
         <svg className="w-5 h-5 text-charcoal-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
         </svg>
-        <p className="font-semibold text-sm text-charcoal-800">{tEdit("checkinInPersonTitle")}</p>
-        <p className="text-xs text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinInPersonDesc")}</p>
+        <p className="font-semibold text-base text-charcoal-800">{tEdit("checkinInPersonTitle")}</p>
+        <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinInPersonDesc")}</p>
       </button>
     </div>
   );

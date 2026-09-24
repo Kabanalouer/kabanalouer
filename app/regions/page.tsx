@@ -120,7 +120,7 @@ export default async function RegionsPage() {
                   className="group flex items-center justify-between p-4 rounded-xl border border-[#ebebeb] hover:bg-charcoal-50 hover:border-charcoal-200 transition-colors"
                 >
                   <div className="min-w-0 mr-3">
-                    <p className="text-[15px] font-medium text-charcoal-800 truncate">
+                    <p className="text-base font-medium text-charcoal-800 truncate">
                       {isEn ? region.nameEn : region.name}
                     </p>
                     {count > 0 ? (

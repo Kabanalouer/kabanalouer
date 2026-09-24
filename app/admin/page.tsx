@@ -46,7 +46,7 @@ export default async function AdminOverviewPage() {
         {/* Dernières inscriptions */}
         <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
           <div className="px-5 py-4 border-b border-[#ebebeb]">
-            <h2 className="font-semibold text-charcoal-800">Dernières inscriptions</h2>
+            <h2 className="text-heading-3 font-semibold text-charcoal-800">Dernières inscriptions</h2>
             <p className="text-xs text-charcoal-400 mt-0.5">5 proprios les plus récents</p>
           </div>
           <table className="w-full text-sm">
@@ -77,7 +77,7 @@ export default async function AdminOverviewPage() {
         {/* Dernières annonces */}
         <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
           <div className="px-5 py-4 border-b border-[#ebebeb]">
-            <h2 className="font-semibold text-charcoal-800">Dernières annonces</h2>
+            <h2 className="text-heading-3 font-semibold text-charcoal-800">Dernières annonces</h2>
             <p className="text-xs text-charcoal-400 mt-0.5">5 annonces les plus récentes</p>
           </div>
           <table className="w-full text-sm">
@@ -100,7 +100,7 @@ export default async function AdminOverviewPage() {
                     </td>
                     <td className="px-5 py-3 text-charcoal-500 whitespace-nowrap">{l.region ?? "—"}</td>
                     <td className="px-5 py-3 text-right">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                         l.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
                       }`}>
                         {l.is_published ? "Publié" : "Brouillon"}

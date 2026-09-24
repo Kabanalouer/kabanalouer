@@ -132,8 +132,8 @@ function ContactModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">{t("messageSent")}</h3>
-            <p className="text-gray-500 text-sm mb-6">{t("messageSentHint", { name: hostName.split(" ")[0] })}</p>
+            <h3 className="font-bold text-gray-900 text-heading-3 mb-1">{t("messageSent")}</h3>
+            <p className="text-gray-500 text-base mb-6">{t("messageSentHint", { name: hostName.split(" ")[0] })}</p>
             <div className="flex gap-3">
               <Link
                 href={`/messages?listing=${listingId}&with=${hostId}`}
@@ -153,8 +153,8 @@ function ContactModal({
           <>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="font-bold text-gray-900">{t("contactModalTitle", { name: hostName.split(" ")[0] })}</h3>
-                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{listingTitle}</p>
+                <h3 className="text-heading-3 font-bold text-gray-900">{t("contactModalTitle", { name: hostName.split(" ")[0] })}</h3>
+                <p className="text-sm text-gray-400 mt-0.5 line-clamp-1">{listingTitle}</p>
               </div>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,7 +168,7 @@ function ContactModal({
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
               placeholder={t("yourMessagePlaceholder")}
-              className="w-full border border-gray-200 rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
+              className="w-full border border-gray-200 rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
             />
 
             {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
