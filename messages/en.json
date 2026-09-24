@@ -1371,7 +1371,10 @@
     "submitting": "Sending…",
     "successTitle": "Thank you for your review!",
     "successSub": "It will appear shortly.",
-    "errorSend": "Error sending review."
+    "errorSend": "Error sending review.",
+    "echangeQuestion": "How did your conversation with {name} go?",
+    "echangeQuestionGeneric": "How did your conversation with the owner go?",
+    "starLabel": "{count, plural, one {# star} other {# stars}}"
   },
   "terms": {
     "metaTitle": "Terms of Use",

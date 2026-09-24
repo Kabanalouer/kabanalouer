@@ -30,6 +30,13 @@ export default async function EchangeReviewPage({
     .single();
   const listingTitle = (listing?.title as string | undefined) ?? (isEn ? "your listing" : "ce chalet");
 
+  const { data: host } = await admin
+    .from("users")
+    .select("name")
+    .eq("id", reviewRequest.host_id)
+    .single();
+  const hostFirstName = (host?.name as string | undefined)?.trim().split(/\s+/)[0] || null;
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -55,7 +62,7 @@ export default async function EchangeReviewPage({
               </p>
             </div>
           ) : (
-            <EchangeReviewClient token={token} />
+            <EchangeReviewClient token={token} hostFirstName={hostFirstName} />
           )}
         </div>
       </section>

@@ -1371,7 +1371,10 @@
     "submitting": "Envoi…",
     "successTitle": "Merci pour votre avis !",
     "successSub": "Il apparaîtra dans quelques instants.",
-    "errorSend": "Erreur lors de l'envoi."
+    "errorSend": "Erreur lors de l'envoi.",
+    "echangeQuestion": "Comment s'est passée votre discussion avec {name} ?",
+    "echangeQuestionGeneric": "Comment s'est passée votre discussion avec le propriétaire ?",
+    "starLabel": "{count, plural, one {# étoile} other {# étoiles}}"
   },
   "terms": {
     "metaTitle": "Conditions d'utilisation",

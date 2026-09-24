@@ -64,7 +64,7 @@ export default function SejourReviewClient({ token }: { token: string }) {
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             className="p-1 transition-transform hover:scale-110 focus:outline-none"
-            aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
+            aria-label={t("starLabel", { count: star })}
           >
             <svg
               className={`w-8 h-8 fill-current transition-colors ${active >= star ? "text-primary" : "text-[#ebebeb]"}`}

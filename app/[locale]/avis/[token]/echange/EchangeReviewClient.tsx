@@ -9,7 +9,13 @@ const STAR_PATH =
 // Formulaire d'avis "échange" — soumis via token (jamais de session requise).
 // Repris de components/chalets/ReviewForm.tsx, adapté pour POSTer vers
 // /api/reviews/token au lieu de /api/reviews.
-export default function EchangeReviewClient({ token }: { token: string }) {
+export default function EchangeReviewClient({
+  token,
+  hostFirstName,
+}: {
+  token: string;
+  hostFirstName: string | null;
+}) {
   const t = useTranslations("reviewForm");
   const LABELS = ["", t("veryBad"), t("bad"), t("average"), t("good"), t("excellent")];
   const [rating, setRating] = useState(0);
@@ -55,6 +61,10 @@ export default function EchangeReviewClient({ token }: { token: string }) {
 
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-6">
+      <p className="font-semibold text-charcoal-800 mb-3">
+        {hostFirstName ? t("echangeQuestion", { name: hostFirstName }) : t("echangeQuestionGeneric")}
+      </p>
+
       {/* Stars */}
       <div className="flex items-center gap-0.5 mb-5">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -65,7 +75,7 @@ export default function EchangeReviewClient({ token }: { token: string }) {
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             className="p-1 transition-transform hover:scale-110 focus:outline-none"
-            aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
+            aria-label={t("starLabel", { count: star })}
           >
             <svg
               className={`w-8 h-8 fill-current transition-colors ${active >= star ? "text-primary" : "text-[#ebebeb]"}`}
