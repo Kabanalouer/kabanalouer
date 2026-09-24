@@ -804,6 +804,8 @@
     "mobileContactCta": "Contact the owner",
     "priceOnRequest": "Price on request",
     "isYourCabin": "This is your cabin",
+    "ownListingNote": "Travelers see the price request form here.",
+    "editListingCta": "Edit my listing",
     "contactDirect": "Direct contact · No service fees",
     "perNight": "/night",
     "hostReplyLabel": "Owner's response:",
