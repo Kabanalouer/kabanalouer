@@ -9,6 +9,7 @@ import { localePath } from "@/lib/localePath";
 import { createClient } from "@/lib/supabase/client";
 import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
+import { CountBadge, AvatarDot } from "@/components/CountBadge";
 
 type Profile = {
   name: string;
@@ -81,11 +82,6 @@ function IconMenu({ open }: { open: boolean }) {
   );
 }
 
-// ── Unread dot ────────────────────────────────────────────────────────────────
-function UnreadDot() {
-  return <span className="w-2 h-2 rounded-full bg-error-500 shrink-0" />;
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const t = useTranslations("nav");
@@ -106,6 +102,22 @@ export default function Navbar() {
   const [voyageurMode, setVoyageurMode] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Nombre de messages non lus dans l'onglet du navigateur (« (2) Titre »), comme
+  // Gmail. Next.js réécrit <title> à chaque navigation : on observe <head> et on
+  // réapplique le préfixe (idempotent, donc pas de boucle).
+  useEffect(() => {
+    const PREFIX = /^\(\d+\+?\) /;
+    const apply = () => {
+      const base = document.title.replace(PREFIX, "");
+      const next = unreadCount > 0 ? `(${unreadCount > 9 ? "9+" : unreadCount}) ${base}` : base;
+      if (document.title !== next) document.title = next;
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [unreadCount, pathname]);
 
   useEffect(() => {
     setVoyageurMode(localStorage.getItem("kbl_voyageur") === "1");
@@ -249,15 +261,11 @@ export default function Navbar() {
             </Link>
             <Link href={lp("/messages")} className={tabCls("/messages")}>
               {t("messages")}
-              {unreadCount > 0 && <UnreadDot />}
+              <CountBadge count={unreadCount} label={t("unreadMessages", { count: unreadCount })} />
             </Link>
             <Link href={lp("/dashboard/avis")} className={tabCls("/dashboard/avis")}>
               {t("myReviews")}
-              {unansweredReviewsCount > 0 && (
-                <span className="bg-primary text-white text-xs font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
-                  {unansweredReviewsCount > 9 ? "9+" : unansweredReviewsCount}
-                </span>
-              )}
+              <CountBadge count={unansweredReviewsCount} label={t("unansweredReviews", { count: unansweredReviewsCount })} />
             </Link>
           </div>
 
@@ -278,7 +286,13 @@ export default function Navbar() {
                 aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
-                <Avatar profile={profile} size={32} />
+                <span className="relative inline-flex">
+                  <Avatar profile={profile} size={32} />
+                  {/* Onglets masqués sur mobile : le point signale messages ou avis en attente */}
+                  {unreadCount + unansweredReviewsCount > 0 && (
+                    <AvatarDot className="md:hidden" label={t("newActivity")} />
+                  )}
+                </span>
               </button>
 
               {menuOpen && (
@@ -352,7 +366,10 @@ export default function Navbar() {
                 aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
-                <Avatar profile={profile} size={32} />
+                <span className="relative inline-flex">
+                  <Avatar profile={profile} size={32} />
+                  {unreadCount > 0 && <AvatarDot label={t("unreadMessages", { count: unreadCount })} />}
+                </span>
               </button>
 
               {menuOpen && (
@@ -372,7 +389,7 @@ export default function Navbar() {
                       className="flex items-center justify-between px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
                     >
                       {t("messages")}
-                      {unreadCount > 0 && <UnreadDot />}
+                      <CountBadge count={unreadCount} label={t("unreadMessages", { count: unreadCount })} />
                     </Link>
                     <DropdownLink href={lp("/devenir-hote")}>{t("registerCabin")}</DropdownLink>
                     {isHost && voyageurMode && (

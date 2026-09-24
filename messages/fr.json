@@ -13,6 +13,9 @@
     "close": "Fermer"
   },
   "nav": {
+    "unreadMessages": "{count, plural, one {# message non lu} other {# messages non lus}}",
+    "unansweredReviews": "{count, plural, one {# avis sans réponse} other {# avis sans réponse}}",
+    "newActivity": "Messages ou avis en attente",
     "ariaLabel": "Kabanalouer — accueil",
     "userMenu": "Menu utilisateur",
     "menu": "Menu",

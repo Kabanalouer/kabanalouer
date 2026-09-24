@@ -13,6 +13,9 @@
     "close": "Close"
   },
   "nav": {
+    "unreadMessages": "{count, plural, one {# unread message} other {# unread messages}}",
+    "unansweredReviews": "{count, plural, one {# unanswered review} other {# unanswered reviews}}",
+    "newActivity": "Messages or reviews waiting",
     "ariaLabel": "Kabanalouer — home",
     "userMenu": "User menu",
     "menu": "Menu",
