@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDecimal, formatPercent } from "@/lib/formatNumber";
 
 type Period = "7d" | "30d" | "year" | "all";
 
@@ -59,6 +60,7 @@ const StarOutlineIcon = () => (
 
 export default function DashboardStats({ listings = [] }: { listings?: { id: string; title: string }[] }) {
   const t = useTranslations("dashboard.stats");
+  const locale = useLocale();
   const [period, setPeriod] = useState<Period>("all");
   const [selectedListingId, setSelectedListingId] = useState<string>("");
   const [stats, setStats] = useState<Stats | null>(null);
@@ -156,7 +158,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
               ? "N/D"
               : (stats?.totalConsultations ?? 0) === 0
                 ? "—"
-                : `${(((stats?.totalContacts ?? 0) / (stats?.totalConsultations ?? 1)) * 100).toFixed(1)} %`
+                : formatPercent((stats?.totalContacts ?? 0) / (stats?.totalConsultations ?? 1), locale)
           }
           sub={viewsUnavailable ? t("unavailable") : t("conversionRateSub")}
           icon={<TrendingIcon />}
@@ -185,7 +187,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
           {avgRating !== null ? (
             <>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-2xl font-bold text-charcoal-800">{avgRating.toFixed(1)}</span>
+                <span className="text-2xl font-bold text-charcoal-800">{formatDecimal(avgRating, locale)}</span>
                 <span className="text-sm text-charcoal-400">/ 5</span>
               </div>
               <div className="flex gap-0.5 mb-1">

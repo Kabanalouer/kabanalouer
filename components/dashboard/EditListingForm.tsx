@@ -26,6 +26,7 @@ import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
+import { formatPercent } from "@/lib/formatNumber";
 
 
 type FormState = {
@@ -1757,7 +1758,7 @@ export default function EditListingForm({
                         <div>
                           <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("statsConversion")}</p>
                           <p className="font-semibold text-charcoal-800">
-                            {viewsListing > 0 ? `${((uniqueContacts / viewsListing) * 100).toFixed(1)} %` : "—"}
+                            {viewsListing > 0 ? formatPercent(uniqueContacts / viewsListing, locale) : "—"}
                           </p>
                         </div>
                       </div>

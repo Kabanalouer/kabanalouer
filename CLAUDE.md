@@ -98,6 +98,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 - **Sentence case** partout (titres, labels, boutons)
 - **Boutons CTA** → `rounded-full` (pill)
 - **Prix québécois** → `120 $/nuit`, `299 $/an` (espace avant `$`)
+- **Nombres décimaux** → toujours `formatDecimal()` / `formatPercent()` de `lib/formatNumber.ts` (« 4,8 » et « 12,5 % » en FR, « 4.8 » et « 12.5% » en EN) — jamais `toFixed()` pour un nombre affiché. Seule exception : coordonnées GPS.
 - Fonds de section → `bg-charcoal-50`
 - Titres principaux → `text-charcoal-800`
 - Texte secondaire → `text-charcoal-400`

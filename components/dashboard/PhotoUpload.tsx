@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { PhotoItem } from "@/lib/photo";
 import TranslateButton from "./TranslateButton";
+import { formatDecimal } from "@/lib/formatNumber";
 
 const MAX_PHOTOS = 80;
 const MAX_DIM = 3840;
@@ -391,7 +392,7 @@ export default function PhotoUpload({
       {/* Size */}
       {item.sizeMb !== undefined && (
         <span className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full pointer-events-none">
-          {item.sizeMb.toFixed(1)} Mo
+          {formatDecimal(item.sizeMb, locale)} Mo
         </span>
       )}
       {/* Delete */}
