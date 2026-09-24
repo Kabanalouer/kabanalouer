@@ -72,6 +72,20 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 
 **Plus Jakarta Sans** — chargé via `next/font/google`, variable `--font-jakarta`.
 
+**Échelle de tailles (inspirée d'Airbnb, adoptée le 2026-09-24)** — tokens définis dans `app/globals.css` (`@theme`) :
+
+| Niveau | Classe | Taille | Usage |
+|---|---|---|---|
+| H1 | `text-2xl sm:text-3xl` (pages de contenu) — plus grand permis sur les héros marketing | 24–30px | titre de page |
+| H2 | `text-heading-2 font-semibold` | 22px | titre de section |
+| H3 | `text-heading-3 font-semibold` | 18px | sous-titre, titre de carte/modale |
+| Texte principal | `text-base` | 16px | paragraphes, descriptions, listes, avis, contenu lu |
+| Texte secondaire | `text-sm` | 14px | métadonnées, dates, libellés de formulaire, tableaux denses, boutons secondaires |
+| Minimum | `text-xs` | 12px | badges, légendes, mentions |
+
+- **Jamais sous 12px** — pas de `text-[10px]` / `text-[11px]`.
+- Un titre de section doit toujours être nettement plus gros que le texte qui le suit (jamais un H2 sans classe de taille, qui retombe à 16px).
+
 ### Règles UI strictes
 
 - **Pas d'emojis** dans l'UI — icônes SVG inline uniquement (style Heroicons, `strokeWidth={1.75}`)
