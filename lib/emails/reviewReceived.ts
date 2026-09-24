@@ -29,7 +29,7 @@ const TEMPLATE: Record<"fr" | "en", {
       `<span style="color:#636e40;font-size:20px;letter-spacing:2px;">${stars}</span> <span style="color:#a8a29e;font-size:13px;">${rating}/5</span>` +
       (comment ? `<br><br><em>"${comment}"</em>` : ""),
     buttonLabel: "Voir l'avis et répondre",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: (listingTitle) => `You received a new review on ${listingTitle}`,

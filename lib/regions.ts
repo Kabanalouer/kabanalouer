@@ -19,7 +19,7 @@ export const REGIONS: RegionConfig[] = [
     locative: "dans les Laurentides",
     heroImage: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80",
     seoText: [
-      "Les Laurentides constituent la destination de chalet la plus populaire du Québec, et pour cause : ski alpin à Mont-Tremblant et Saint-Sauveur, randonnée pédestre, lacs cristallins et vélo de montagne rythment les quatre saisons. À moins de deux heures de Montréal, cette région enchante autant les familles en quête de calme que les groupes d'amis en mode aventure.",
+      "Les Laurentides constituent la destination de chalet la plus populaire du Québec, et pour cause : ski alpin à Mont-Tremblant et Saint-Sauveur, randonnée pédestre, lacs cristallins et vélo de montagne rythment les quatre saisons. À moins de deux heures de Montréal, cette région enchante autant les familles en quête de calme que les groupes d'amis en mode aventure.",
       "Louer un chalet dans les Laurentides, c'est choisir entre des propriétés au bord du lac idéales pour la baignade et le kayak, des refuges boisés avec jacuzzi au fond des bois, ou des chalets de luxe à deux pas des remontées mécaniques. L'hébergement s'adapte à tous les budgets et tous les styles de vacances.",
       "De Saint-Jérôme à Mont-Laurier en passant par Sainte-Agathe-des-Monts, les Laurentides offrent une diversité de paysages et d'activités incomparable. Réservez tôt — les chalets s'arrachent les fins de semaine de ski et les semaines d'été.",
     ],
@@ -35,7 +35,7 @@ export const REGIONS: RegionConfig[] = [
     seoText: [
       "Charlevoix est l'une des régions les plus spectaculaires du Québec, avec ses panoramas sur le fleuve Saint-Laurent, ses montagnes abruptes et ses villages de charme comme Baie-Saint-Paul et La Malbaie. Classé Réserve mondiale de la biosphère par l'UNESCO, Charlevoix attire les amateurs de nature, de gastronomie et d'art depuis des décennies.",
       "Un chalet en Charlevoix, c'est le privilège de se réveiller face au fleuve ou en altitude, d'observer les bélugas depuis la rive, et de dîner dans des restaurants qui valorisent les produits locaux — agneau de l'île aux Coudres, fromages fins, bières artisanales. Le Massif de Charlevoix offre l'une des meilleures descentes à ski de l'est du Canada.",
-      "Toutes saisons, Charlevoix séduira ceux qui cherchent l'authenticité québécoise : randonnée dans les parcs régionaux, kayak de mer, festival d'art, ou simplement se ressourcer dans un chalet face au fleuve avec un bon livre et un feu de foyer.",
+      "Toutes saisons, Charlevoix séduira ceux qui cherchent l'authenticité québécoise : randonnée dans les parcs régionaux, kayak de mer, festival d'art, ou simplement se ressourcer dans un chalet face au fleuve avec un bon livre et un feu de foyer.",
     ],
   },
   {
@@ -77,7 +77,7 @@ export const REGIONS: RegionConfig[] = [
     seoText: [
       "La Mauricie est une région de nature grandiose, dominée par le parc national de la Mauricie — 536 km² de forêts, de lacs et de rivières. Ce parc est l'un des plus beaux du Québec pour le canot-camping, la randonnée et l'observation de la faune. La rivière Saint-Maurice et ses paysages sauvages complètent le tableau.",
       "Louer un chalet en Mauricie, c'est profiter d'un accès direct aux sentiers du parc national, aux rivières à truites, aux forêts où rôdent l'orignal et l'ours. Shawinigan, réinventée en ville de culture et de plein air, est une base idéale pour explorer la région.",
-      "L'hiver, la région se transforme : motoneige sur des centaines de kilomètres de sentiers balisés, raquettes en forêt, pêche sur glace. Toute l'année, la Mauricie est une invitation à ralentir et à se reconnecter avec la nature.",
+      "L'hiver, la région se transforme : motoneige sur des centaines de kilomètres de sentiers balisés, raquettes en forêt, pêche sur glace. Toute l'année, la Mauricie est une invitation à ralentir et à se reconnecter avec la nature.",
     ],
   },
   {
@@ -152,7 +152,7 @@ export const REGIONS: RegionConfig[] = [
     heroImage: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920&q=80",
     seoText: [
       "L'Abitibi-Témiscamingue est une région de forêt boréale, de lacs immenses et de ciel étoilé comme nulle part ailleurs au Québec. Éloignée des grands centres, elle attire les voyageurs en quête de nature sauvage intacte, de pêche sportive et d'authenticité. Les aurores boréales y sont visibles plusieurs nuits par hiver.",
-      "Le lac Témiscamingue, le réservoir Kipawa et les centaines de lacs de la région offrent une pêche exceptionnelle : doré, brochet, touladi et omble de fontaine. Les pourvoiries de l'Abitibi sont parmi les meilleures du Québec.",
+      "Le lac Témiscamingue, le réservoir Kipawa et les centaines de lacs de la région offrent une pêche exceptionnelle : doré, brochet, touladi et omble de fontaine. Les pourvoiries de l'Abitibi sont parmi les meilleures du Québec.",
       "Louer un chalet en Abitibi-Témiscamingue, c'est choisir l'aventure et la déconnexion totale — et rentrer chez soi avec des souvenirs de nature pure qui durent toute une vie.",
     ],
   },
@@ -179,8 +179,8 @@ export const REGIONS: RegionConfig[] = [
     locative: "en Montérégie",
     heroImage: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1920&q=80",
     seoText: [
-      "La Montérégie est la région agricole par excellence du Québec, parsemée de vergers, de vignobles, de cidreries et de fromageries artisanales. À moins d'une heure de Montréal, elle offre un contraste saisissant avec la vie urbaine : champs à perte de vue, montérégiennes et le majestueux fleuve Saint-Laurent.",
-      "L'agrotourisme est roi en Montérégie : cueillette de pommes et de fraises, dégustations de vins et de cidres de glace, marchés publics. Les amateurs de plein air apprécieront les sentiers du parc national du Mont-Saint-Bruno et les pistes cyclables le long du Saint-Laurent.",
+      "La Montérégie est la région agricole par excellence du Québec, parsemée de vergers, de vignobles, de cidreries et de fromageries artisanales. À moins d'une heure de Montréal, elle offre un contraste saisissant avec la vie urbaine : champs à perte de vue, montérégiennes et le majestueux fleuve Saint-Laurent.",
+      "L'agrotourisme est roi en Montérégie : cueillette de pommes et de fraises, dégustations de vins et de cidres de glace, marchés publics. Les amateurs de plein air apprécieront les sentiers du parc national du Mont-Saint-Bruno et les pistes cyclables le long du Saint-Laurent.",
       "Un chalet en Montérégie, c'est profiter de la campagne québécoise dans ce qu'elle a de plus généreux, tout en restant proche de Montréal. Idéal pour les escapades de fin de semaine en famille ou en couple, toute l'année.",
     ],
   },
@@ -212,7 +212,7 @@ export const REGIONS: RegionConfig[] = [
     heroImage: "https://images.unsplash.com/photo-1548695607-9c73430379f9?w=1920&q=80",
     seoText: [
       "La région de la Capitale-Nationale englobe Québec, la vieille ville fortifiée, mais aussi les magnifiques campagnes de la Côte-de-Beaupré, de l'Île d'Orléans et du nord jusqu'à la réserve faunique des Laurentides. Louer un chalet dans cette région, c'est combiner culture urbaine et nature sauvage à quelques kilomètres de distance.",
-      "L'Île d'Orléans, surnommée le « jardin du Québec », offre des tables champêtres, des fromageries et des vergers dans un cadre pastoral unique. La Côte-de-Beaupré mène à la grandiose chute Montmorency et au mont Sainte-Anne, l'une des importantes stations de ski alpin de l'est du Canada.",
+      "L'Île d'Orléans, surnommée le « jardin du Québec », offre des tables champêtres, des fromageries et des vergers dans un cadre pastoral unique. La Côte-de-Beaupré mène à la grandiose chute Montmorency et au mont Sainte-Anne, l'une des importantes stations de ski alpin de l'est du Canada.",
       "Le parc de la Jacques-Cartier, au nord de Québec, est un paradis de canot-camping l'été et de raquettes l'hiver. Un chalet dans la Capitale-Nationale vous place au cœur de l'histoire et de la nature québécoise.",
     ],
   },
@@ -229,7 +229,7 @@ export const REGIONS: RegionConfig[] = [
     heroImage: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1920&q=80",
     seoText: [
       "Le Centre-du-Québec doit son nom à sa position géographique, à mi-chemin entre Montréal et Québec, sur la rive sud du Saint-Laurent. Région agricole et forestière, elle abrite la vaste plaine du lac Saint-Pierre — le plus grand lac fluvial du Saint-Laurent, reconnu Réserve mondiale de la biosphère par l'UNESCO — ainsi que les collines boisées des Bois-Francs, autour de Victoriaville.",
-      "Un chalet au Centre-du-Québec, c'est profiter d'une nature accessible et paisible : rives du lac Saint-Pierre pour l'observation d'oiseaux et la pêche, sentiers des Bois-Francs pour la randonnée et le vélo, et une tradition acéricole bien vivante avec de nombreuses cabanes à sucre familiales.",
+      "Un chalet au Centre-du-Québec, c'est profiter d'une nature accessible et paisible : rives du lac Saint-Pierre pour l'observation d'oiseaux et la pêche, sentiers des Bois-Francs pour la randonnée et le vélo, et une tradition acéricole bien vivante avec de nombreuses cabanes à sucre familiales.",
       "Drummondville, Victoriaville et Bécancour sont les principaux pôles de la région, mais la campagne environnante — rangs agricoles, villages tranquilles, rivières et forêts — reste l'attrait principal pour une escapade en chalet, à moins de deux heures de Montréal comme de Québec.",
     ],
   },

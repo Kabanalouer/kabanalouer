@@ -143,7 +143,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
     const checkin = input.checkinTime.replace(":", isEn ? ":" : "h");
     const checkout = input.checkoutTime.replace(":", isEn ? ":" : "h");
     questions.push({
-      question: isEn ? "What are the check-in and check-out times?" : "Quelle est l'heure d'arrivée et de départ ?",
+      question: isEn ? "What are the check-in and check-out times?" : "Quelle est l'heure d'arrivée et de départ ?",
       answer: isEn
         ? `Check-in is from ${checkin}, and check-out is before ${checkout}.`
         : `L'arrivée se fait à partir de ${checkin}, et le départ avant ${checkout}.`,
@@ -158,7 +158,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
   const parkingFree = parking?.details?.gratuit;
   if (parking && typeof parkingFree === "boolean") {
     questions.push({
-      question: isEn ? "Is parking free?" : "Le stationnement est-il gratuit ?",
+      question: isEn ? "Is parking free?" : "Le stationnement est-il gratuit ?",
       answer: parkingFree
         ? isEn
           ? "Yes, parking is free."

@@ -36,7 +36,7 @@ function buildSystemPrompt(fieldType: FieldType, sourceLang: Lang, targetLang: L
     `Ne reformule pas, n'améliore pas, ne raccourcis pas et ne résume pas le texte — traduis-le fidèlement, en conservant le sens et le ton d'origine. ` +
     `${FIELD_TONE[fieldType]} ` +
     (targetLang === "fr"
-      ? `N'utilise jamais le mot « hôte » — utilise « propriétaire » si le contexte s'y prête. `
+      ? `N'utilise jamais le mot « hôte » — utilise « propriétaire » si le contexte s'y prête. `
       : "") +
     `Ne tutoie jamais le voyageur si le texte s'adresse à lui — utilise "vous"/"you" selon la langue cible. ` +
     `Ne jamais ajouter de commentaire, d'explication, de guillemets ou de markdown. Retourne UNIQUEMENT le texte traduit, rien d'autre.`

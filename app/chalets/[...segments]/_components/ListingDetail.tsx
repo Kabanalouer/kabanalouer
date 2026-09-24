@@ -175,7 +175,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 250,
-        system: [{ type: "text", text: "Tu es un assistant qui résume des avis de voyageurs sur des chalets québécois. Style : chaleureux, synthétique, 2-3 phrases max.", cache_control: { type: "ephemeral" } }],
+        system: [{ type: "text", text: "Tu es un assistant qui résume des avis de voyageurs sur des chalets québécois. Style : chaleureux, synthétique, 2-3 phrases max.", cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: `Résume ces ${reviews.length} avis :\n${reviews.map((r) => `"${r.comment}" (${r.rating}/5)`).join("\n")}` }],
       });
       aiSummary = msg.content[0].type === "text" ? msg.content[0].text : null;

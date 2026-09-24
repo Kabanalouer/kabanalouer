@@ -72,7 +72,7 @@ export default function HostCTA({ label, className }: Props) {
               Vous avez déjà un compte Kabanalouer
             </h2>
             <p className="text-charcoal-500 text-sm leading-relaxed mb-6">
-              Voulez-vous activer le mode propriétaire sur votre compte existant ?
+              Voulez-vous activer le mode propriétaire sur votre compte existant ?
             </p>
             {error && (
               <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm mb-4">{error}</div>

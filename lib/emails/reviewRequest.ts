@@ -18,14 +18,14 @@ const INITIAL_TEMPLATE: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: "Comment s'est passé votre contact avec le propriétaire ?",
+    subjectGeneric: "Comment s'est passé votre contact avec le propriétaire ?",
     subjectNamed: (firstName) => `${firstName}, comment s'est passé votre contact avec le propriétaire ?`,
     greeting: (firstName) => `Bonjour ${firstName},`,
     heading: "Partagez votre expérience",
     body: (listingTitle) => `Vous avez échangé avec le propriétaire de ${listingTitle} sur Kabanalouer. On aimerait connaître votre expérience — ça prend 30 secondes.`,
     exchangeButtonLabel: "J'ai échangé avec le propriétaire",
     stayButtonLabel: "J'ai réservé le chalet",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: "How did your contact with the owner go?",
@@ -93,13 +93,13 @@ const STAY_TEMPLATE: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: "Comment s'est passé votre séjour ?",
+    subjectGeneric: "Comment s'est passé votre séjour ?",
     subjectNamed: (firstName) => `${firstName}, comment s'est passé votre séjour ?`,
     greeting: (firstName) => `Bonjour ${firstName},`,
-    heading: "Comment s'est passé votre séjour ?",
+    heading: "Comment s'est passé votre séjour ?",
     body: (listingTitle) => `Vous avez récemment séjourné à ${listingTitle}. Racontez-nous comment ça s'est passé — ça prend 30 secondes et ça aide les prochains voyageurs.`,
     buttonLabel: "Laisser mon avis de séjour",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: "How was your stay?",

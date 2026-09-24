@@ -45,13 +45,13 @@ const faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
-    { "@type": "Question", name: "Comment créer mon annonce ?", acceptedAnswer: { "@type": "Answer", text: "Créez un compte propriétaire gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce »." } },
-    { "@type": "Question", name: "Combien de temps faut-il pour créer une annonce ?", acceptedAnswer: { "@type": "Answer", text: "Entre 15 et 30 minutes pour une annonce complète. Notre IA peut générer votre titre et description automatiquement." } },
-    { "@type": "Question", name: "Ai-je besoin d'un numéro CITQ ?", acceptedAnswer: { "@type": "Answer", text: "Oui, un numéro CITQ valide à 6 chiffres est obligatoire pour publier votre annonce sur Kabanalouer, conformément à la réglementation québécoise." } },
-    { "@type": "Question", name: "Combien de photos puis-je ajouter ?", acceptedAnswer: { "@type": "Answer", text: "Jusqu'à 80 photos par annonce. Un minimum de 5 photos est requis pour publier. Les photos sont automatiquement compressées en WebP." } },
-    { "@type": "Question", name: "La synchronisation iCal est-elle automatique ?", acceptedAnswer: { "@type": "Answer", text: "Oui, une synchronisation automatique se fait toutes les heures. Vous pouvez aussi forcer une synchronisation manuelle à tout moment." } },
-    { "@type": "Question", name: "Que se passe-t-il si je ne renouvelle pas ?", acceptedAnswer: { "@type": "Answer", text: "Votre annonce est automatiquement dépubliée à l'expiration, mais vos données restent intactes — photos, description, avis — le temps que vous le souhaitiez. Rien n'est supprimé automatiquement." } },
-    { "@type": "Question", name: "Puis-je avoir plusieurs chalets ?", acceptedAnswer: { "@type": "Answer", text: "Oui, chaque chalet nécessite son propre abonnement à 299 $/an." } },
+    { "@type": "Question", name: "Comment créer mon annonce ?", acceptedAnswer: { "@type": "Answer", text: "Créez un compte propriétaire gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce »." } },
+    { "@type": "Question", name: "Combien de temps faut-il pour créer une annonce ?", acceptedAnswer: { "@type": "Answer", text: "Entre 15 et 30 minutes pour une annonce complète. Notre IA peut générer votre titre et description automatiquement." } },
+    { "@type": "Question", name: "Ai-je besoin d'un numéro CITQ ?", acceptedAnswer: { "@type": "Answer", text: "Oui, un numéro CITQ valide à 6 chiffres est obligatoire pour publier votre annonce sur Kabanalouer, conformément à la réglementation québécoise." } },
+    { "@type": "Question", name: "Combien de photos puis-je ajouter ?", acceptedAnswer: { "@type": "Answer", text: "Jusqu'à 80 photos par annonce. Un minimum de 5 photos est requis pour publier. Les photos sont automatiquement compressées en WebP." } },
+    { "@type": "Question", name: "La synchronisation iCal est-elle automatique ?", acceptedAnswer: { "@type": "Answer", text: "Oui, une synchronisation automatique se fait toutes les heures. Vous pouvez aussi forcer une synchronisation manuelle à tout moment." } },
+    { "@type": "Question", name: "Que se passe-t-il si je ne renouvelle pas ?", acceptedAnswer: { "@type": "Answer", text: "Votre annonce est automatiquement dépubliée à l'expiration, mais vos données restent intactes — photos, description, avis — le temps que vous le souhaitiez. Rien n'est supprimé automatiquement." } },
+    { "@type": "Question", name: "Puis-je avoir plusieurs chalets ?", acceptedAnswer: { "@type": "Answer", text: "Oui, chaque chalet nécessite son propre abonnement à 299 $/an." } },
   ],
 };
 

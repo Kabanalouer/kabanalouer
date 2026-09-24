@@ -18,14 +18,14 @@ const TEMPLATES: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: "Bienvenue sur Kabanalouer !",
+    subjectGeneric: "Bienvenue sur Kabanalouer !",
     subjectNamed: (firstName) => `Bienvenue ${firstName} !`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ton compte est prêt !",
+    heading: "Ton compte est prêt !",
     body: "Tu peux maintenant explorer les chalets du Québec et contacter les propriétaires directement — sans frais de service.",
     buttonLabel: "Voir les chalets",
     buttonPath: "/",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: "Welcome to Kabanalouer!",

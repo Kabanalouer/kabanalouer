@@ -2,7 +2,7 @@
 // description) — évite de dupliquer le même texte dans les deux routes.
 
 export const NO_GENERIC_ADJECTIVES_FR =
-  "N'utilise jamais d'adjectifs ou tournures génériques et vides de sens comme « charmant », « magnifique », « unique en son genre », « havre de paix », « incontournable », « paradis », « idéal », « parfait », ou toute formule équivalente qui pourrait s'appliquer à n'importe quel chalet. Ancre plutôt le texte dans au moins un fait concret et vérifiable tiré du contexte fourni (capacité précise en personnes, équipement nommé, région ou ville).";
+  "N'utilise jamais d'adjectifs ou tournures génériques et vides de sens comme « charmant », « magnifique », « unique en son genre », « havre de paix », « incontournable », « paradis », « idéal », « parfait », ou toute formule équivalente qui pourrait s'appliquer à n'importe quel chalet. Ancre plutôt le texte dans au moins un fait concret et vérifiable tiré du contexte fourni (capacité précise en personnes, équipement nommé, région ou ville).";
 
 export const NO_GENERIC_ADJECTIVES_EN =
   "Never use generic, meaningless adjectives or phrases like \"charming\", \"beautiful\", \"one of a kind\", \"haven of peace\", \"a must-see\", \"paradise\", \"ideal\", \"perfect\", or any equivalent that could apply to any cabin. Ground the text instead in at least one concrete, verifiable fact from the context provided (exact capacity in people, a named amenity, a region or city).";

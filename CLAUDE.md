@@ -98,6 +98,14 @@ Fichiers dans `public/` :
 - **Jamais "hôte"** dans l'UI (ni "host" visible côté public)
 - **Français québécois naturel**, jamais trop familier — pas de "Salut!", "Yo", "Hey"
 - Les voyageurs = "voyageurs" (pas "clients", pas "guests")
+- **Typographie française — espaces insécables obligatoires** (règle OQLF, appliquée à tout le site le 2026-09-24) — pour tout texte FR ajouté ou modifié (`messages/fr.json`, chaînes FR en dur dans le code, courriels, FAQ/JSON-LD) :
+  - avant `?` `!` `;` → **espace fine insécable** U+202F (ex. `avec {name} ?`)
+  - avant `:` → **espace insécable** U+00A0
+  - à l'intérieur des guillemets → `«` + U+00A0 … U+00A0 + `»`
+  - Pourquoi : une espace normale laisse le signe tomber seul au début de la ligne suivante. Ne jamais coller le signe au mot (convention anglaise, faute en français).
+  - **EN** : jamais d'espace avant `?` `!` `:` `;`.
+  - **Exceptions** : SMS (`lib/sms.ts`) — ces caractères font passer le SMS en UCS-2 (70 caractères/segment au lieu de 160, coût doublé), garder des espaces normales. Prompts IA (`app/api/ai/`) : non affichés, sans importance.
+  - Dans le JSX texte, écrire le caractère lui-même (l'échappement ` ` ne fonctionne que dans une chaîne JS/JSON).
 
 ---
 

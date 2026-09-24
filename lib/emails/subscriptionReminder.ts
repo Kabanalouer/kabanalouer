@@ -24,9 +24,9 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
       subjectNamed: (firstName) => `${firstName}, ton abonnement Kabanalouer expire dans 30 jours`,
       greeting: (firstName) => `Bonjour ${firstName} !`,
       heading: "Ton abonnement expire dans 30 jours",
-      body: (dateStr, listingTitle) => `Un petit rappel amical : ton accès gratuit (offre de lancement) pour ${listingTitle} arrive à échéance le ${dateStr}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.`,
+      body: (dateStr, listingTitle) => `Un petit rappel amical : ton accès gratuit (offre de lancement) pour ${listingTitle} arrive à échéance le ${dateStr}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.`,
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
     },
     en: {
       subjectGeneric: "Your Kabanalouer subscription expires in 30 days",
@@ -46,7 +46,7 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
       heading: "Plus que 10 jours",
       body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}, dans 10 jours. Renouvelle ton abonnement dès maintenant pour éviter toute interruption.`,
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
     },
     en: {
       subjectGeneric: "10 days left before your subscription expires",
@@ -63,10 +63,10 @@ const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
       subjectGeneric: "Ton abonnement expire dans 3 jours",
       subjectNamed: (firstName) => `${firstName}, ton abonnement expire dans 3 jours`,
       greeting: (firstName) => `Bonjour ${firstName} !`,
-      heading: "Dernier rappel : 3 jours",
+      heading: "Dernier rappel : 3 jours",
       body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}. Si rien ne change avant cette date, ton annonce disparaîtra des résultats de recherche. Renouvelle ton abonnement dès aujourd'hui pour l'éviter.`,
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
     },
     en: {
       subjectGeneric: "Your subscription expires in 3 days",
@@ -147,7 +147,7 @@ const AUTO_RENEWAL_TEMPLATE: Record<"fr" | "en", {
     heading: (dateStr) => `Renouvellement automatique le ${dateStr}`,
     body: (dateStr, listingTitle, priceLabel) => `Ton abonnement annuel Kabanalouer pour ${listingTitle} (${priceLabel}) sera renouvelé automatiquement le ${dateStr} — tu n'as rien à faire. Si tu veux mettre à jour ta méthode de paiement ou annuler ton abonnement, tu peux le faire à tout moment.`,
     buttonLabel: "Gérer mon abonnement",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: (dateStr) => `Your Kabanalouer subscription renews automatically on ${dateStr}`,
@@ -218,7 +218,7 @@ const PAYMENT_FAILED_TEMPLATE: Record<"fr" | "en", {
     heading: "Ton paiement n'a pas pu être traité",
     body: (listingTitle, priceLabel) => `Le renouvellement automatique de ton abonnement annuel pour ${listingTitle} (${priceLabel}) n'a pas fonctionné — ta carte a probablement été refusée. Stripe va retenter automatiquement dans les prochains jours, mais tu peux aussi mettre à jour ta méthode de paiement dès maintenant pour éviter toute interruption.`,
     buttonLabel: "Mettre à jour mon paiement",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: "Your Kabanalouer subscription payment failed",

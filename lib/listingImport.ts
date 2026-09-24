@@ -47,22 +47,22 @@ const REWRITE_SYSTEM_PROMPT =
 
 function buildRewriteUserMessage(data: ImportedListingData): string {
   const lines = [
-    data.title ? `Titre original : ${data.title}` : null,
-    data.region ? `Région : ${data.region}` : null,
-    data.city ? `Ville : ${data.city}` : null,
-    data.capacity ? `Capacité : ${data.capacity} personnes` : null,
-    data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
-    data.bathrooms ? `Salles de bain : ${data.bathrooms}` : null,
-    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
-    data.rawAmenities.length > 0 ? `Autres équipements mentionnés : ${data.rawAmenities.join(", ")}` : null,
-    data.priceLow ? `Prix : à partir de ${data.priceLow} $/nuit` : null,
+    data.title ? `Titre original : ${data.title}` : null,
+    data.region ? `Région : ${data.region}` : null,
+    data.city ? `Ville : ${data.city}` : null,
+    data.capacity ? `Capacité : ${data.capacity} personnes` : null,
+    data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
+    data.bathrooms ? `Salles de bain : ${data.bathrooms}` : null,
+    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
+    data.rawAmenities.length > 0 ? `Autres équipements mentionnés : ${data.rawAmenities.join(", ")}` : null,
+    data.priceLow ? `Prix : à partir de ${data.priceLow} $/nuit` : null,
     data.description ? `Description originale (source, ne pas copier) :\n${data.description}` : null,
   ].filter(Boolean);
 
   return (
     "Génère une description complète pour cette annonce de chalet importée. Retourne UNIQUEMENT le texte de la " +
     "description, sans titre, sans en-tête, sans label, sans section, sans markdown, sans astérisques, sans dièse (#). " +
-    "Commence directement par la première phrase. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de " +
+    "Commence directement par la première phrase. CONTRAINTE ABSOLUE : la description doit faire STRICTEMENT moins de " +
     "2500 caractères, espaces compris. Arrête-toi à une phrase complète avant la limite. Commence par une phrase " +
     "d'accroche forte.\n\nContexte :\n" + lines.join("\n")
   );
@@ -74,29 +74,29 @@ const REWRITE_TITLE_SYSTEM_PROMPT =
   "Tu es une experte en rédaction d'annonces de location touristique au Québec ET spécialiste en référencement (SEO). " +
   "On te donne les données brutes d'une annonce importée depuis Airbnb — ta tâche est de reformuler le titre pour " +
   "Kabanalouer, pas de recopier le titre source mot pour mot. " +
-  "Reste strictement fidèle au contenu réel de l'annonce : n'invente aucun équipement, lieu ou caractéristique qui " +
+  "Reste strictement fidèle au contenu réel de l'annonce : n'invente aucun équipement, lieu ou caractéristique qui " +
   "n'est pas confirmé dans le contexte fourni. " +
   "Si un nom propre de chalet apparaît dans le titre original (ex. \"Chalet Authentik 50\"), garde-le en premier — " +
   "c'est le mot-clé SEO le plus important pour les voyageurs qui cherchent ce chalet par son nom. " +
   "Tu rédiges en français québécois, avec un ton chaleureux et professionnel. Pas d'emojis. Sentence case — ne " +
   "capitalise pas chaque mot comme un titre marketing, seulement les noms propres. " +
   "N'utilise jamais le mot \"hôte\" — dis \"propriétaire\". " +
-  "CONTRAINTE ABSOLUE : le titre doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les " +
+  "CONTRAINTE ABSOLUE : le titre doit faire STRICTEMENT moins de 50 caractères, espaces compris. Compte les " +
   "caractères avant de répondre.";
 
 function buildRewriteTitleUserMessage(data: ImportedListingData): string {
   const lines = [
-    data.title ? `Titre original (Airbnb) : ${data.title}` : null,
-    data.region ? `Région : ${data.region}` : null,
-    data.city ? `Ville : ${data.city}` : null,
-    data.capacity ? `Capacité : ${data.capacity} personnes` : null,
-    data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
-    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
+    data.title ? `Titre original (Airbnb) : ${data.title}` : null,
+    data.region ? `Région : ${data.region}` : null,
+    data.city ? `Ville : ${data.city}` : null,
+    data.capacity ? `Capacité : ${data.capacity} personnes` : null,
+    data.bedrooms ? `Chambres : ${data.bedrooms}` : null,
+    data.amenities.length > 0 ? `Équipements reconnus : ${getAmenityLabels(data.amenities, "fr").join(", ")}` : null,
   ].filter(Boolean);
 
   return (
     "Reformule ce titre d'annonce de chalet importée, sans le recopier mot pour mot. Retourne UNIQUEMENT le " +
-    "nouveau titre, sans guillemets, sans explication, sans markdown. CONTRAINTE ABSOLUE : le titre doit faire " +
+    "nouveau titre, sans guillemets, sans explication, sans markdown. CONTRAINTE ABSOLUE : le titre doit faire " +
     "STRICTEMENT moins de 50 caractères, espaces compris. Compte les caractères avant de répondre.\n\n" +
     "Contexte :\n" + lines.join("\n")
   );

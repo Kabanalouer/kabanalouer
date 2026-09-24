@@ -32,7 +32,7 @@ export async function sendContactMessageNotification({
   const html = renderEmail({
     lang: "fr",
     heading: "Nouveau message de contact",
-    body: `<strong>${safeName}</strong> (${safeEmail}) a envoyé un message via le formulaire de contact.<br/><br/><strong>Sujet :</strong> ${safeSubject}<br/><br/>${safeMessage}`,
+    body: `<strong>${safeName}</strong> (${safeEmail}) a envoyé un message via le formulaire de contact.<br/><br/><strong>Sujet :</strong> ${safeSubject}<br/><br/>${safeMessage}`,
     buttonLabel: "Voir les messages",
     buttonUrl: `${SITE_URL}/admin/messages`,
     footerNote: "Notification automatique — file complète dans /admin/messages.",

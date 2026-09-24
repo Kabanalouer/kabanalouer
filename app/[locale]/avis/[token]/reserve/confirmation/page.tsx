@@ -31,7 +31,7 @@ export default async function ReserveConfirmationPage({
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-charcoal-800 mb-3">
-            {isEn ? "Noted — thank you!" : "Merci, c'est noté !"}
+            {isEn ? "Noted — thank you!" : "Merci, c'est noté !"}
           </h1>
           <p className="text-charcoal-500">
             {isEn

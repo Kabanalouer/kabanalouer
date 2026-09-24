@@ -22,16 +22,16 @@ const TEMPLATES: Record<"fr" | "en", {
   footerNote: string;
 }> = {
   fr: {
-    subjectGeneric: "Ton annonce Kabanalouer est en ligne !",
+    subjectGeneric: "Ton annonce Kabanalouer est en ligne !",
     subjectNamed: (firstName) => `${firstName}, ton annonce Kabanalouer est en ligne !`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ton annonce est en ligne !",
+    heading: "Ton annonce est en ligne !",
     bodyFree: (listingTitle) =>
-      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer, et ta première année d'accès est gratuite. Les voyageurs peuvent dès maintenant te contacter directement.`,
+      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer, et ta première année d'accès est gratuite. Les voyageurs peuvent dès maintenant te contacter directement.`,
     bodyPaid: (listingTitle) =>
-      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer. Les voyageurs peuvent dès maintenant te contacter directement.`,
+      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer. Les voyageurs peuvent dès maintenant te contacter directement.`,
     buttonLabel: "Voir mon annonce",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: "Your Kabanalouer listing is live!",

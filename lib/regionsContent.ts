@@ -45,15 +45,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in the Laurentians, Quebec. Skiing, lakes, hiking — direct contact with local owners. No service fees. Book your getaway today.",
     faq_fr: [
       {
-        question: "Quand est-il préférable de louer un chalet dans les Laurentides ?",
+        question: "Quand est-il préférable de louer un chalet dans les Laurentides ?",
         answer: "Les Laurentides sont magnifiques en toute saison. L'hiver (décembre à mars) est idéal pour le ski alpin à Mont-Tremblant et Saint-Sauveur. L'été (juin à août) attire les amoureux des lacs et de la randonnée. L'automne offre un feuillage splendide, et le printemps propose des escapades tranquilles à prix réduit.",
       },
       {
-        question: "Quelles activités faire dans les Laurentides ?",
+        question: "Quelles activités faire dans les Laurentides ?",
         answer: "Les Laurentides offrent le ski alpin et de fond, le vélo de montagne, la randonnée pédestre, le canot-kayak, la baignade en lac, la pêche, la motoneige et les spas nordiques. Il y a de quoi s'occuper pour toute la famille, peu importe la saison.",
       },
       {
-        question: "Combien coûte la location d'un chalet dans les Laurentides ?",
+        question: "Combien coûte la location d'un chalet dans les Laurentides ?",
         answer: "Les prix varient selon la taille, la saison et les équipements. Comptez en général entre 150 $ et 500 $ la nuit pour un chalet familial. Les weekends de ski et les vacances scolaires sont les périodes les plus achalandées — réservez à l'avance pour les meilleures disponibilités.",
       },
     ],
@@ -102,15 +102,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Charlevoix, Quebec. River views, skiing, gourmet food, whale watching — direct contact with local owners. No service fees.",
     faq_fr: [
       {
-        question: "Que faire en Charlevoix en été ?",
+        question: "Que faire en Charlevoix en été ?",
         answer: "En été, Charlevoix offre le kayak de mer, la randonnée pédestre dans les parcs régionaux, l'observation des baleines au large de Tadoussac, le vélo et la visite des producteurs artisanaux locaux. Les festivals d'art animent les villages tout au long de la belle saison.",
       },
       {
-        question: "Charlevoix est-il accessible en hiver ?",
+        question: "Charlevoix est-il accessible en hiver ?",
         answer: "Oui, Charlevoix est une destination hivernale de premier plan. Le Massif de Charlevoix est l'une des plus grandes stations de ski de l'est du Canada avec une dénivellation exceptionnelle. La raquette, le ski de fond et les séjours cocooning au chalet complètent l'offre hivernale.",
       },
       {
-        question: "Quelle est la meilleure façon de se rendre en Charlevoix ?",
+        question: "Quelle est la meilleure façon de se rendre en Charlevoix ?",
         answer: "Charlevoix est accessible en voiture depuis Québec en environ 1h30 en suivant la route 138 le long du fleuve. Cette route panoramique fait elle-même partie de l'expérience. La région est aussi accessible via le traversier de Saint-Siméon depuis la rive sud.",
       },
     ],
@@ -159,15 +159,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Quebec's Eastern Townships. Vineyards, skiing, hiking, and lakes — direct contact with local owners. No service fees.",
     faq_fr: [
       {
-        question: "Quels sont les meilleurs lacs des Cantons-de-l'Est pour louer un chalet ?",
+        question: "Quels sont les meilleurs lacs des Cantons-de-l'Est pour louer un chalet ?",
         answer: "Le lac Memphrémagog (autour de Magog) est le plus populaire pour les chalets au bord de l'eau, suivi du lac Massawippi (North Hatley) et du lac Orford. Ces lacs offrent baignade, nautisme et une ambiance estivale incomparable.",
       },
       {
-        question: "Les Cantons-de-l'Est sont-ils une bonne destination pour l'automne ?",
+        question: "Les Cantons-de-l'Est sont-ils une bonne destination pour l'automne ?",
         answer: "Absolument — les Cantons-de-l'Est sont l'une des plus belles destinations de feuillage au Québec. De mi-septembre à mi-octobre, les collines se couvrent de rouge, d'orange et de jaune. C'est aussi la période idéale pour visiter les vignobles et les cidreries.",
       },
       {
-        question: "Quelles activités hivernales sont disponibles dans les Cantons-de-l'Est ?",
+        question: "Quelles activités hivernales sont disponibles dans les Cantons-de-l'Est ?",
         answer: "Le ski alpin aux stations de Mont-Orford et Sutton est la principale attraction hivernale. Les Cantons offrent aussi le ski de fond, la raquette, la pêche sur glace et de nombreux spas nordiques pour se ressourcer après une journée en plein air.",
       },
     ],
@@ -216,15 +216,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Lanaudière, Quebec. Lakes, rivers, and boreal forests — direct contact with local owners. No service fees. Book your escape.",
     faq_fr: [
       {
-        question: "Quelles activités de plein air pratiquer en Lanaudière ?",
+        question: "Quelles activités de plein air pratiquer en Lanaudière ?",
         answer: "Lanaudière est une destination de choix pour le canot, le kayak et le rafting sur les rivières Rouge, Ouareau et L'Assomption. En été, les lacs du Haut-Lanaudière sont parfaits pour la baignade et la pêche. L'hiver, la région propose ski alpin, ski de fond et motoneige.",
       },
       {
-        question: "Où se trouve Lanaudière par rapport à Montréal ?",
+        question: "Où se trouve Lanaudière par rapport à Montréal ?",
         answer: "Lanaudière est située immédiatement au nord de Montréal — à moins d'une heure pour le Bas-Lanaudière, et environ 1h30 à 2h pour le Haut-Lanaudière (région de Saint-Donat et Rawdon). C'est l'une des escapades nature les plus proches de la métropole.",
       },
       {
-        question: "La Lanaudière est-elle une bonne région pour la pêche ?",
+        question: "La Lanaudière est-elle une bonne région pour la pêche ?",
         answer: "Oui, Lanaudière est reconnue pour sa pêche sportive de qualité. Les rivières Rouge, Ouareau et leurs affluents abritent la truite mouchetée, le doré et le grand brochet. De nombreuses pourvoiries proposent des accès exclusifs à des lacs peu exploités.",
       },
     ],
@@ -273,15 +273,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Mauricie, Quebec. National park, canoeing, fishing, snowmobiling — direct contact with owners. No service fees. Book today.",
     faq_fr: [
       {
-        question: "Que faire au parc national de la Mauricie ?",
-        answer: "Le parc national de la Mauricie est idéal pour le canot-camping, avec plus de 150 km de circuits navigables. Il propose aussi des sentiers de randonnée, de l'interprétation de la nature, de la pêche dans des lacs intérieurs et une observation de la faune exceptionnelle : orignal, ours, loup et castor.",
+        question: "Que faire au parc national de la Mauricie ?",
+        answer: "Le parc national de la Mauricie est idéal pour le canot-camping, avec plus de 150 km de circuits navigables. Il propose aussi des sentiers de randonnée, de l'interprétation de la nature, de la pêche dans des lacs intérieurs et une observation de la faune exceptionnelle : orignal, ours, loup et castor.",
       },
       {
-        question: "La Mauricie est-elle bien reliée aux grands centres ?",
+        question: "La Mauricie est-elle bien reliée aux grands centres ?",
         answer: "La Mauricie est à environ 1h45 de Montréal et 1h30 de Québec par l'autoroute 40. Trois-Rivières est la capitale régionale et Shawinigan est à 20 minutes de là. La région est très accessible en voiture.",
       },
       {
-        question: "Peut-on faire de la motoneige en Mauricie ?",
+        question: "Peut-on faire de la motoneige en Mauricie ?",
         answer: "Oui, la Mauricie est l'une des meilleures régions du Québec pour la motoneige. Le réseau de sentiers balisés couvre des centaines de kilomètres et relie plusieurs villages. La saison dure habituellement de décembre à mars selon les conditions d'enneigement.",
       },
     ],
@@ -330,15 +330,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in the Outaouais, Quebec. Gatineau Park, canoeing, cross-country skiing — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Quelles activités pratiquer dans le parc de la Gatineau ?",
+        question: "Quelles activités pratiquer dans le parc de la Gatineau ?",
         answer: "Le parc de la Gatineau propose de la randonnée sur plus de 165 km de sentiers, du ski de fond sur 200 km de pistes en hiver, de la baignade dans plusieurs lacs aménagés et une observation de la faune exceptionnelle. La vue du belvédère Champlain au coucher du soleil est légendaire.",
       },
       {
-        question: "L'Outaouais est-il accessible depuis Montréal ?",
+        question: "L'Outaouais est-il accessible depuis Montréal ?",
         answer: "Oui, l'Outaouais est à environ 2h30 de Montréal par l'autoroute 50 ou via Ottawa. Gatineau est au cœur de la région. De nombreux voyageurs combinent une visite d'Ottawa avec une escapade en chalet dans la vallée de la Petite-Nation.",
       },
       {
-        question: "La région de l'Outaouais est-elle différente du reste du Québec ?",
+        question: "La région de l'Outaouais est-elle différente du reste du Québec ?",
         answer: "L'Outaouais a une identité unique, à cheval entre le Québec et l'Ontario. Gatineau et Ottawa forment une région métropolitaine bilingue dynamique. La campagne environnante est typiquement québécoise, avec ses rangs, ses érablières et ses paysages boisés.",
       },
     ],
@@ -387,15 +387,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Saguenay–Lac-Saint-Jean. Fjord, fishing, cycling, snowmobiling — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Que voir et faire au Saguenay–Lac-Saint-Jean ?",
+        question: "Que voir et faire au Saguenay–Lac-Saint-Jean ?",
         answer: "Le fjord du Saguenay est incontournable — on peut l'explorer en kayak, en croisière ou depuis les belvédères des parcs nationaux. Le tour du Lac-Saint-Jean à vélo (250 km) est une aventure emblématique. La région offre aussi d'excellentes pourvoiries de pêche et une culture bleuette unique.",
       },
       {
-        question: "Comment se rendre au Saguenay–Lac-Saint-Jean depuis Québec ?",
+        question: "Comment se rendre au Saguenay–Lac-Saint-Jean depuis Québec ?",
         answer: "La région est à environ 2h de Québec par la route 175, une route pittoresque qui traverse la réserve faunique des Laurentides. Un service de traversier relie aussi Baie-Sainte-Catherine à Tadoussac en été.",
       },
       {
-        question: "La région est-elle accessible et active en hiver ?",
+        question: "La région est-elle accessible et active en hiver ?",
         answer: "Oui, le Saguenay–Lac-Saint-Jean est très actif en hiver. La motoneige est reine avec des milliers de kilomètres de sentiers balisés. La pêche sur glace sur le Lac-Saint-Jean et ses tributaires est une expérience unique, et les nuits étoilées y sont parmi les plus belles du Québec.",
       },
     ],
@@ -444,15 +444,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Bas-Saint-Laurent, Quebec. River landscapes, sea kayaking, salmon fishing — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Qu'est-ce qui rend le parc national du Bic si spécial ?",
+        question: "Qu'est-ce qui rend le parc national du Bic si spécial ?",
         answer: "Le parc national du Bic est unique au Québec avec ses promontoires rocheux qui plongent dans le fleuve Saint-Laurent, ses anses abritées et ses colonies de phoques gris. C'est une destination de choix pour la randonnée côtière, le kayak de mer et l'observation de la faune marine.",
       },
       {
-        question: "Peut-on observer des baleines depuis le Bas-Saint-Laurent ?",
-        answer: "Oui, les eaux au large du Bas-Saint-Laurent sont fréquentées par plusieurs espèces de cétacés : petit rorqual, baleine à bosse et, plus rarement, rorqual bleu. Des croisières d'observation partent régulièrement depuis Rimouski et d'autres ports de la région.",
+        question: "Peut-on observer des baleines depuis le Bas-Saint-Laurent ?",
+        answer: "Oui, les eaux au large du Bas-Saint-Laurent sont fréquentées par plusieurs espèces de cétacés : petit rorqual, baleine à bosse et, plus rarement, rorqual bleu. Des croisières d'observation partent régulièrement depuis Rimouski et d'autres ports de la région.",
       },
       {
-        question: "Le Bas-Saint-Laurent est-il loin des grands centres ?",
+        question: "Le Bas-Saint-Laurent est-il loin des grands centres ?",
         answer: "Rivière-du-Loup, la porte d'entrée du Bas-Saint-Laurent, est à environ 3h de Québec et 5h de Montréal. La route longeant le fleuve est magnifique et fait partie de l'expérience. La région récompense amplement le voyage pour ses paysages côtiers uniques.",
       },
     ],
@@ -501,15 +501,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Gaspésie, Quebec. Percé Rock, salmon fishing, alpine hiking — direct contact with owners. No service fees. Book now.",
     faq_fr: [
       {
-        question: "Combien de temps dure le tour de la Gaspésie ?",
-        answer: "Un tour complet de la péninsule gaspésienne représente environ 900 km. En prenant le temps de s'arrêter et d'explorer, comptez au minimum 7 à 10 jours. Beaucoup choisissent de séjourner en chalet dans plusieurs secteurs : Forillon, Percé, Bonaventure et la baie des Chaleurs.",
+        question: "Combien de temps dure le tour de la Gaspésie ?",
+        answer: "Un tour complet de la péninsule gaspésienne représente environ 900 km. En prenant le temps de s'arrêter et d'explorer, comptez au minimum 7 à 10 jours. Beaucoup choisissent de séjourner en chalet dans plusieurs secteurs : Forillon, Percé, Bonaventure et la baie des Chaleurs.",
       },
       {
-        question: "Quelle est la meilleure saison pour visiter la Gaspésie ?",
+        question: "Quelle est la meilleure saison pour visiter la Gaspésie ?",
         answer: "L'été (juillet-août) est la haute saison, avec le meilleur temps pour la randonnée et la baignade. Septembre est magnifique pour les couleurs d'automne et une fréquentation plus calme. L'hiver gaspésien, avec ses tempêtes et ses paysages enneigés face à la mer, a son propre charme sauvage.",
       },
       {
-        question: "Y a-t-il des activités pour les familles en Gaspésie ?",
+        question: "Y a-t-il des activités pour les familles en Gaspésie ?",
         answer: "Oui, la Gaspésie est une destination familiale authentique. Les plages de la baie des Chaleurs, les croisières d'observation des baleines, les randonnées adaptées en forêt et la visite du rocher Percé en bateau sont appréciés de tous les âges.",
       },
     ],
@@ -558,15 +558,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Abitibi-Témiscamingue. Fishing, northern lights, boreal wilderness — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Peut-on vraiment voir les aurores boréales en Abitibi-Témiscamingue ?",
+        question: "Peut-on vraiment voir les aurores boréales en Abitibi-Témiscamingue ?",
         answer: "Oui, l'Abitibi-Témiscamingue est l'une des meilleures régions du Québec pour observer les aurores boréales. La pollution lumineuse y est très faible et le ciel dégagé par grand froid offre des spectacles saisissants. Les nuits d'automne et d'hiver (septembre à mars) sont les plus propices.",
       },
       {
-        question: "Quels poissons peut-on pêcher en Abitibi-Témiscamingue ?",
+        question: "Quels poissons peut-on pêcher en Abitibi-Témiscamingue ?",
         answer: "La région est réputée pour la pêche au doré jaune, au grand brochet, au touladi (truite grise) et à l'omble de fontaine. De nombreuses pourvoiries proposent des accès exclusifs à des lacs peu exploités pour une expérience de pêche exceptionnelle.",
       },
       {
-        question: "L'Abitibi-Témiscamingue est-il accessible depuis Montréal ?",
+        question: "L'Abitibi-Témiscamingue est-il accessible depuis Montréal ?",
         answer: "La région est à environ 5h à 6h de route de Montréal selon le secteur (Rouyn-Noranda, Val-d'Or, Ville-Marie). Des vols régionaux depuis Montréal sont disponibles. La distance s'oublie vite quand on arrive dans ces grands espaces.",
       },
     ],
@@ -615,15 +615,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin on Quebec's North Shore. Whale watching, Mingan Archipelago, wilderness — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Où est-il le mieux d'observer les baleines sur la Côte-Nord ?",
+        question: "Où est-il le mieux d'observer les baleines sur la Côte-Nord ?",
         answer: "Tadoussac est le point de départ classique pour l'observation des baleines, à la confluence du Saguenay et du Saint-Laurent. Les Bergeronnes et Baie-Sainte-Catherine offrent également d'excellentes conditions. La saison s'étend de juin à octobre.",
       },
       {
-        question: "Comment se rendre sur la Côte-Nord ?",
+        question: "Comment se rendre sur la Côte-Nord ?",
         answer: "L'accès principal se fait par la route 138 depuis Québec vers l'ouest de la Côte-Nord (Tadoussac, Baie-Comeau). Pour les secteurs plus éloignés (Sept-Îles, Natashquan), le traversier ou l'avion régional sont parfois nécessaires. Le traversier Matane–Baie-Comeau est une option depuis la Gaspésie.",
       },
       {
-        question: "Qu'est-ce que l'archipel de Mingan ?",
+        question: "Qu'est-ce que l'archipel de Mingan ?",
         answer: "L'archipel de Mingan est un chapelet d'îles du golfe du Saint-Laurent, réputé pour ses impressionnantes formations calcaires en forme de monolithes. Classé Réserve de la biosphère de l'UNESCO, il abrite une faune et une flore marines uniques, accessibles depuis Havre-Saint-Pierre.",
       },
     ],
@@ -672,15 +672,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Montérégie, Quebec. Vineyards, agrotourism, nature near Montreal — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Quand est la meilleure période pour faire de l'agrotourisme en Montérégie ?",
+        question: "Quand est la meilleure période pour faire de l'agrotourisme en Montérégie ?",
         answer: "La saison agrotouristique s'étend de juin à octobre. La cueillette des fraises commence en juin, celle des framboises et bleuets en juillet-août, et la cueillette des pommes ainsi que les vendanges en septembre-octobre. L'automne est particulièrement beau avec les couleurs et les nombreux festivals locaux.",
       },
       {
-        question: "Peut-on faire du vélo en Montérégie ?",
+        question: "Peut-on faire du vélo en Montérégie ?",
         answer: "Absolument. La Montérégie dispose d'un excellent réseau de pistes cyclables, dont la Route verte. Les pistes longeant le fleuve Saint-Laurent et celles menant aux montérégiennes offrent des balades pittoresques. Le vélo est un excellent moyen de visiter les producteurs locaux.",
       },
       {
-        question: "Y a-t-il des activités hivernales en Montérégie ?",
+        question: "Y a-t-il des activités hivernales en Montérégie ?",
         answer: "L'hiver, la Montérégie propose la raquette et le ski de fond dans les parcs régionaux, ainsi que les repas en cabane à sucre traditionnellement en mars-avril. La région est davantage connue pour ses attraits des trois autres saisons.",
       },
     ],
@@ -729,15 +729,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin in Chaudière-Appalaches, Quebec. Appalachians, fishing, sugar shacks — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Quelles sont les activités de plein air en Chaudière-Appalaches ?",
+        question: "Quelles sont les activités de plein air en Chaudière-Appalaches ?",
         answer: "La région offre la randonnée pédestre et le vélo de montagne dans les parcs régionaux des Appalaches et de Frontenac, le canot-kayak sur la rivière Chaudière, la pêche à la truite dans les cours d'eau des Appalaches, et en hiver, le ski de fond, la raquette et la motoneige.",
       },
       {
-        question: "Pourquoi la région est-elle réputée pour l'acériculture ?",
+        question: "Pourquoi la région est-elle réputée pour l'acériculture ?",
         answer: "La Chaudière-Appalaches est l'une des plus grandes régions productrices de sirop d'érable au Québec, avec de nombreuses érablières primées. Les cabanes à sucre ouvrent traditionnellement en mars-avril et proposent des repas québécois avec sirop chaud, oreilles de crisse et tarte au sucre.",
       },
       {
-        question: "Les ponts couverts de la région valent-ils le détour ?",
+        question: "Les ponts couverts de la région valent-ils le détour ?",
         answer: "Oui, la Chaudière-Appalaches possède plusieurs des plus beaux ponts couverts du Québec, dont certains datant du XIXe siècle. Le circuit des ponts couverts est une balade pittoresque à faire en voiture ou à vélo, surtout en automne lors du feuillage.",
       },
     ],
@@ -786,15 +786,15 @@ const REGIONS_CONTENT: RegionContent[] = [
     meta_description_en: "Rent a cabin near Quebec City. Mont-Sainte-Anne, Montmorency Falls, Jacques-Cartier Park — direct contact with owners. No service fees.",
     faq_fr: [
       {
-        question: "Quelles sont les activités hivernales autour de Québec ?",
+        question: "Quelles sont les activités hivernales autour de Québec ?",
         answer: "La région offre le ski alpin au mont Sainte-Anne et au Stoneham, le ski de fond dans le parc de la Jacques-Cartier, la raquette, la glissade sur la terrasse Dufferin et le carnaval de Québec en février — le plus grand carnaval d'hiver au monde.",
       },
       {
-        question: "L'île d'Orléans mérite-t-elle une visite ?",
-        answer: "Absolument. L'île d'Orléans est surnommée le « jardin du Québec » pour ses tables champêtres, ses producteurs de fruits, ses fromageries et ses vignobles. Un circuit de 67 km fait le tour de l'île et permet de visiter six villages aux maisons ancestrales. La vue sur la chute Montmorency depuis le pont est mémorable.",
+        question: "L'île d'Orléans mérite-t-elle une visite ?",
+        answer: "Absolument. L'île d'Orléans est surnommée le « jardin du Québec » pour ses tables champêtres, ses producteurs de fruits, ses fromageries et ses vignobles. Un circuit de 67 km fait le tour de l'île et permet de visiter six villages aux maisons ancestrales. La vue sur la chute Montmorency depuis le pont est mémorable.",
       },
       {
-        question: "Le parc de la Jacques-Cartier est-il adapté aux familles ?",
+        question: "Le parc de la Jacques-Cartier est-il adapté aux familles ?",
         answer: "Oui, le parc national de la Jacques-Cartier est une excellente destination familiale. La rivière Jacques-Cartier, encaissée dans une vallée spectaculaire, est idéale pour le canot débutant. Des sentiers de randonnée variés conviennent à tous les niveaux. En hiver, la raquette et le ski de fond sont accessibles à toute la famille.",
       },
     ],

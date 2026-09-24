@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = isEn ? "About" : "À propos";
   const description = isEn
     ? "Kabanalouer is the leading marketplace for cabin rentals in Quebec. Our mission: connecting travelers and owners without intermediaries."
-    : "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.";
+    : "Kabanalouer est la marketplace de référence pour la location de chalets au Québec. Notre mission : connecter voyageurs et propriétaires sans intermédiaire.";
   return {
     title,
     description,

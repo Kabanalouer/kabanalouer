@@ -74,7 +74,7 @@ function pageFieldLabel(type: FeaturedType, region: string | null | undefined, l
 function detailsBlock(monthLabel: string, pageField: string, lang: "fr" | "en"): string {
   const monthWord = lang === "en" ? "Month" : "Mois";
   const pageWord = lang === "en" ? "Page" : "Page";
-  return `<strong>${monthWord}</strong> : ${monthLabel}<br/><strong>${pageWord}</strong> : ${pageField}`;
+  return `<strong>${monthWord}</strong> : ${monthLabel}<br/><strong>${pageWord}</strong> : ${pageField}`;
 }
 
 function boostButtonPath(listingId: string, lang: "fr" | "en"): string {
@@ -96,15 +96,15 @@ const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
     subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est confirmé`,
     subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est confirmé`,
     greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Le boost de ton annonce est confirmé !",
+    heading: "Le boost de ton annonce est confirmé !",
     body: (listingTitle, monthLabel, placement, pageField, isCurrentMonth) =>
-      `Félicitations ! Le boost de ${listingTitle} est maintenant confirmé.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>` +
+      `Félicitations ! Le boost de ${listingTitle} est maintenant confirmé.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>` +
       (isCurrentMonth
         ? `Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs.`
         : `Ton annonce apparaîtra dès le début de ${monthLabel} dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs.`) +
       ` Un petit rappel te sera envoyé avant le terme de ton boost, pour que tu gardes le contrôle facilement.<br/><br/>Merci pour ta confiance 🙏`,
     buttonLabel: "Voir mon annonce",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} is confirmed`,
@@ -186,7 +186,7 @@ const EXPIRING_TEMPLATE: Record<"fr" | "en", {
     body: (listingTitle, monthLabel, placement, pageField) =>
       `${listingTitle} bénéficie en ce moment d'un boost de visibilité dans ${placement}.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Les annonces boostées reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ton boost dès maintenant pour l'éviter.`,
     buttonLabel: "Renouveler mon boost",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} ends in 3 days`,
@@ -263,7 +263,7 @@ const EXPIRED_TEMPLATE: Record<"fr" | "en", {
     body: (listingTitle, monthLabel, placement, pageField) =>
       `La période de boost de ${listingTitle} est terminée — ton annonce est repassée en affichage standard.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Elle n'apparaît plus dans ${placement}. Réactive ton boost pour lui redonner cette visibilité prioritaire.`,
     buttonLabel: "Réactiver mon boost",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
   },
   en: {
     subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} has ended`,

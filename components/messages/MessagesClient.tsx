@@ -465,7 +465,7 @@ export default function MessagesClient({
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center text-charcoal-400 text-sm">
-                  Commencez la conversation !
+                  Commencez la conversation !
                 </div>
               ) : (
                 messages.map((msg) => {

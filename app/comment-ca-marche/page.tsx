@@ -48,7 +48,7 @@ const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "Est-ce que je paye sur Kabanalouer ?",
+      name: "Est-ce que je paye sur Kabanalouer ?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Non. Kabanalouer est une plateforme de mise en relation. Le paiement se fait directement entre vous et le propriétaire, selon les modalités convenues ensemble.",
@@ -56,15 +56,15 @@ const faqJsonLd = {
     },
     {
       "@type": "Question",
-      name: "Comment contacter un propriétaire ?",
+      name: "Comment contacter un propriétaire ?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message.",
+        text: "Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message.",
       },
     },
     {
       "@type": "Question",
-      name: "Est-ce que je dois payer pour créer un compte ?",
+      name: "Est-ce que je dois payer pour créer un compte ?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Non, la création de compte voyageur est entièrement gratuite.",
@@ -72,7 +72,7 @@ const faqJsonLd = {
     },
     {
       "@type": "Question",
-      name: "Comment savoir si un chalet est disponible ?",
+      name: "Comment savoir si un chalet est disponible ?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Chaque fiche affiche un calendrier de disponibilités mis à jour par le propriétaire. Vous pouvez aussi filtrer par dates dans la recherche.",
@@ -80,7 +80,7 @@ const faqJsonLd = {
     },
     {
       "@type": "Question",
-      name: "Que faire si le propriétaire ne répond pas ?",
+      name: "Que faire si le propriétaire ne répond pas ?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Nous vous recommandons d'attendre 24-48h. Si vous n'avez pas de réponse, n'hésitez pas à contacter un autre chalet similaire.",

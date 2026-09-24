@@ -41,7 +41,7 @@ export async function submitImportRequest(
     name,
     email,
     subject: "Import annonce externe",
-    message: `Lien de l'annonce : ${listingUrl}`,
+    message: `Lien de l'annonce : ${listingUrl}`,
   });
 
   if (error) {
@@ -63,9 +63,9 @@ export async function submitImportRequest(
         // Sujet : texte brut, jamais rendu en HTML — pas besoin d'échappement ici.
         subject: `Nouvelle demande d'import — ${name}`,
         html: `
-          <p><strong>Nom :</strong> ${safeName}</p>
-          <p><strong>Courriel :</strong> ${safeEmail}</p>
-          <p><strong>Lien de l'annonce :</strong> <a href="${safeListingUrl}">${safeListingUrl}</a></p>
+          <p><strong>Nom :</strong> ${safeName}</p>
+          <p><strong>Courriel :</strong> ${safeEmail}</p>
+          <p><strong>Lien de l'annonce :</strong> <a href="${safeListingUrl}">${safeListingUrl}</a></p>
         `,
       });
     } catch (emailErr) {

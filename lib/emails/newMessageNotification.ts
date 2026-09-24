@@ -29,7 +29,7 @@ const TEMPLATE: Record<"fr" | "en", {
     greeting: (firstName) => `Bonjour ${firstName},`,
     headingOne: (senderFirstName) => `Nouveau message de ${senderFirstName}`,
     headingMany: (count, senderFirstName) => `${count} nouveaux messages de ${senderFirstName}`,
-    body: (listingTitle, content) => `À propos de : ${listingTitle}<br/><br/><em>"${content}"</em>`,
+    body: (listingTitle, content) => `À propos de : ${listingTitle}<br/><br/><em>"${content}"</em>`,
     buttonLabel: "Répondre",
     footerNote: "Vous pouvez répondre à ce message en répondant à cet email (reply) ou directement dans la messagerie de Kabanalouer en cliquant sur le bouton ci-dessus.",
   },

@@ -45,7 +45,7 @@ export default async function SejourReviewPage({
       <section className="flex-1 py-16 px-4">
         <div className="max-w-md mx-auto">
           <h1 className="text-xl font-bold text-charcoal-800 text-center mb-1">
-            {isEn ? "How was your stay?" : "Comment s'est passé votre séjour ?"}
+            {isEn ? "How was your stay?" : "Comment s'est passé votre séjour ?"}
           </h1>
           <p className="text-sm text-charcoal-400 text-center mb-6">{listingTitle}</p>
 
