@@ -1,4 +1,14 @@
 {
+  "photoReminder": {
+    "bannerMessage": "Add a profile photo so the people you talk to know who they're talking to.",
+    "tipMessage": "Tip: add a profile photo. Owners find it easier to reply when they know who they're talking to.",
+    "addPhotoCta": "Add a photo",
+    "uploading": "Uploading…",
+    "thanks": "Thanks! Your photo has been added.",
+    "dismiss": "Close",
+    "errorImageSize": "Image exceeds 5 MB.",
+    "errorUpload": "The photo upload failed. Please try again."
+  },
   "common": {
     "save": "Save",
     "saving": "Saving…",
@@ -13,6 +23,7 @@
     "close": "Close"
   },
   "nav": {
+    "addPhoto": "Add a photo",
     "unreadMessages": "{count, plural, one {# unread message} other {# unread messages}}",
     "unansweredReviews": "{count, plural, one {# unanswered review} other {# unanswered reviews}}",
     "newActivity": "Messages or reviews waiting",
@@ -541,6 +552,9 @@
     }
   },
   "messages": {
+    "travelerCardTitle": "About {name}",
+    "travelerMemberSince": "Member since {date}",
+    "travelerNoBio": "{name} hasn't added an introduction yet.",
     "title": "Messages",
     "translationToggleLabel": "Automatic translation",
     "translatedBadge": "Automatically translated",
@@ -618,6 +632,9 @@
     "defaultAuthor": "Traveler"
   },
   "profile": {
+    "travelerAboutTitle": "About you",
+    "travelerAboutDesc": "A few words to introduce yourself to the owners you contact: they'll see them in your messages.",
+    "travelerAboutPlaceholder": "E.g.: Family of 4 from Québec City, outdoor and cross-country ski lovers.",
     "heading": "My profile",
     "description": "Manage your personal information and preferences",
     "showPassword": "Show password",

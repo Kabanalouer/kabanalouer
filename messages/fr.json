@@ -1,4 +1,14 @@
 {
+  "photoReminder": {
+    "bannerMessage": "Ajoutez une photo de profil : vos interlocuteurs sauront à qui ils parlent.",
+    "tipMessage": "Astuce : ajoutez une photo de profil. Les proprios répondent plus facilement quand ils savent à qui ils parlent.",
+    "addPhotoCta": "Ajouter une photo",
+    "uploading": "Envoi…",
+    "thanks": "Merci ! Votre photo a été ajoutée.",
+    "dismiss": "Fermer",
+    "errorImageSize": "L'image dépasse 5 Mo.",
+    "errorUpload": "L'envoi de la photo a échoué. Réessayez."
+  },
   "common": {
     "save": "Enregistrer",
     "saving": "Enregistrement…",
@@ -13,6 +23,7 @@
     "close": "Fermer"
   },
   "nav": {
+    "addPhoto": "Ajouter une photo",
     "unreadMessages": "{count, plural, one {# message non lu} other {# messages non lus}}",
     "unansweredReviews": "{count, plural, one {# avis sans réponse} other {# avis sans réponse}}",
     "newActivity": "Messages ou avis en attente",
@@ -541,6 +552,9 @@
     }
   },
   "messages": {
+    "travelerCardTitle": "À propos de {name}",
+    "travelerMemberSince": "Membre depuis {date}",
+    "travelerNoBio": "{name} n'a pas encore ajouté de présentation.",
     "title": "Messages",
     "translationToggleLabel": "Traduction automatique",
     "translatedBadge": "Traduit automatiquement",
@@ -618,6 +632,9 @@
     "defaultAuthor": "Voyageur"
   },
   "profile": {
+    "travelerAboutTitle": "À propos de vous",
+    "travelerAboutDesc": "Quelques mots pour vous présenter aux proprios que vous contactez : ils les verront dans la messagerie.",
+    "travelerAboutPlaceholder": "Ex. : Famille de 4 de Québec, amateurs de plein air et de ski de fond.",
     "heading": "Mon profil",
     "description": "Gérez vos informations personnelles et préférences",
     "showPassword": "Afficher le mot de passe",

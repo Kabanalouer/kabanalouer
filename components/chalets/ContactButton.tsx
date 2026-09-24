@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
+import { PhotoTip } from "@/components/PhotoReminderBanner";
 
 export default function ContactButton({
   listingId,
@@ -12,12 +13,14 @@ export default function ContactButton({
   hostName,
   listingTitle,
   currentUserId,
+  currentUserHasAvatar = true,
 }: {
   listingId: string;
   hostId: string;
   hostName: string;
   listingTitle: string;
   currentUserId: string | null;
+  currentUserHasAvatar?: boolean;
 }) {
   const t = useTranslations("listing");
   const tc = useTranslations("common");
@@ -75,6 +78,8 @@ export default function ContactButton({
           hostId={hostId}
           hostName={hostName}
           listingTitle={listingTitle}
+          currentUserId={currentUserId}
+          currentUserHasAvatar={currentUserHasAvatar}
           onClose={() => setOpen(false)}
         />
       )}
@@ -87,12 +92,16 @@ function ContactModal({
   hostId,
   hostName,
   listingTitle,
+  currentUserId,
+  currentUserHasAvatar,
   onClose,
 }: {
   listingId: string;
   hostId: string;
   hostName: string;
   listingTitle: string;
+  currentUserId: string;
+  currentUserHasAvatar: boolean;
   onClose: () => void;
 }) {
   const t = useTranslations("listing");
@@ -148,6 +157,7 @@ function ContactModal({
                 {tc("close")}
               </button>
             </div>
+            {!currentUserHasAvatar && <PhotoTip userId={currentUserId} />}
           </div>
         ) : (
           <>

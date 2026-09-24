@@ -26,7 +26,7 @@ export default async function MessagesPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, preferred_language, translation_enabled, phone")
+    .select("role, preferred_language, translation_enabled, phone, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -74,8 +74,8 @@ export default async function MessagesPage() {
   // reste du projet, voir CLAUDE.md section 8).
   const otherUserIds = [...new Set(messages.map((m) => (m.sender_id === user.id ? m.receiver_id : m.sender_id)))];
   const { data: otherProfiles } = otherUserIds.length > 0
-    ? await supabase.from("public_profiles").select("id, name, avatar_url").in("id", otherUserIds)
-    : { data: [] as { id: string; name: string | null; avatar_url: string | null }[] };
+    ? await supabase.from("public_profiles").select("id, name, avatar_url, bio, created_at").in("id", otherUserIds)
+    : { data: [] as { id: string; name: string | null; avatar_url: string | null; bio: string | null; created_at: string | null }[] };
   const profileById = new Map((otherProfiles ?? []).map((p) => [p.id, p]));
 
   const convMap = new Map<
@@ -84,6 +84,8 @@ export default async function MessagesPage() {
       other_user_id: string;
       other_user_name: string;
       other_user_avatar: string | null;
+      other_user_bio: string | null;
+      other_user_created_at: string | null;
       listing_id: string;
       listing_title: string;
       listing_host_id: string | null;
@@ -110,6 +112,8 @@ export default async function MessagesPage() {
         other_user_id: otherId,
         other_user_name: other?.name ?? "Inconnu",
         other_user_avatar: other?.avatar_url ?? null,
+        other_user_bio: other?.bio ?? null,
+        other_user_created_at: other?.created_at ?? null,
         listing_id: msg.listing_id,
         listing_title: msg.listing?.title ?? "",
         listing_host_id: msg.listing?.host_id ?? null,
@@ -142,6 +146,7 @@ export default async function MessagesPage() {
         initialTranslationEnabled={translationEnabled}
         initialConversations={conversations}
         hasPhone={!!profile?.phone}
+        hasAvatar={!!profile?.avatar_url}
       />
       {isHost && <DashboardBottomNav />}
     </>

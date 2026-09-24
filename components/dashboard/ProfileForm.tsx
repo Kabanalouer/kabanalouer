@@ -633,6 +633,26 @@ export default function ProfileForm({
         </Section>
       )}
 
+      {/* ── À propos de vous (voyageurs) — lue par les proprios dans la messagerie ── */}
+      {role !== "host" && role !== "admin" && (
+        <Section title={t("travelerAboutTitle")} description={t("travelerAboutDesc")}>
+          <div>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value.slice(0, 200))}
+              rows={3}
+              placeholder={t("travelerAboutPlaceholder")}
+              className={`${inputCls} resize-none`}
+            />
+            <p className="text-xs text-charcoal-400 mt-1 text-right">{bio.length} / 200</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
+            <ErrorMsg msg={bioError} />
+          </div>
+        </Section>
+      )}
+
       {/* ── Coordonnées ───────────────────────────────────────────────────── */}
       <Section title={t("contact")} description={t("contactDesc")}>
         <div>

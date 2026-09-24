@@ -11,6 +11,7 @@ import NoAvailabilityWidget from "./NoAvailabilityWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 import { buildListingPath } from "@/lib/listingUrl";
+import PhotoReminderBanner from "@/components/PhotoReminderBanner";
 
 export type Message = {
   id: string;
@@ -39,6 +40,8 @@ type Conversation = {
   other_user_id: string;
   other_user_name: string;
   other_user_avatar: string | null;
+  other_user_bio: string | null;
+  other_user_created_at: string | null;
   listing_id: string;
   listing_title: string;
   listing_host_id: string | null;
@@ -72,12 +75,14 @@ export default function MessagesClient({
   initialTranslationEnabled,
   initialConversations,
   hasPhone,
+  hasAvatar,
 }: {
   currentUserId: string;
   currentUserLanguage: string;
   initialTranslationEnabled: boolean;
   initialConversations: Conversation[];
   hasPhone: boolean;
+  hasAvatar: boolean;
 }) {
   const t = useTranslations("messages");
   const tq = useTranslations("quote");
@@ -283,11 +288,16 @@ export default function MessagesClient({
     // flex-1, pour que la hauteur totale reste calée sur le viewport que le
     // bandeau soit affiché ou non.
     <div className="flex flex-col h-[calc(100vh-144px)] md:h-[calc(100vh-80px)]">
-      {!hasPhone && (
+      {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord, puis la photo */}
+      {!hasPhone ? (
         <div className="px-4 pt-4 shrink-0">
           <PhoneReminderBanner show />
         </div>
-      )}
+      ) : !hasAvatar ? (
+        <div className="px-4 pt-4 shrink-0">
+          <PhotoReminderBanner userId={currentUserId} />
+        </div>
+      ) : null}
 
       <div className="flex flex-1 min-h-0">
 
@@ -459,6 +469,8 @@ export default function MessagesClient({
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-3">
+              {/* Fiche du voyageur, visible seulement par le proprio de l'annonce */}
+              {isHostOfListing && activeConv && <TravelerCard conv={activeConv} />}
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-charcoal-400 text-sm">Chargement…</div>
@@ -623,6 +635,37 @@ export default function MessagesClient({
           </>
         )}
       </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Fiche du voyageur (côté proprio) ──────────────────────────────────────────
+function TravelerCard({ conv }: { conv: Conversation }) {
+  const t = useTranslations("messages");
+  const locale = useLocale();
+  const firstName = conv.other_user_name.split(" ")[0];
+  const memberSince = conv.other_user_created_at
+    ? new Date(conv.other_user_created_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { month: "long", year: "numeric" })
+    : null;
+
+  return (
+    <div className="border border-[#ebebeb] rounded-2xl p-4 flex gap-4 items-start bg-white shrink-0">
+      <div className="w-14 h-14 rounded-full bg-charcoal-100 overflow-hidden flex-shrink-0">
+        {conv.other_user_avatar ? (
+          <Image src={conv.other_user_avatar} alt={firstName} width={56} height={56} className="object-cover w-full h-full" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-charcoal-600 font-bold text-lg">
+            {firstName[0]?.toUpperCase()}
+          </div>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-base font-semibold text-charcoal-800">{t("travelerCardTitle", { name: firstName })}</p>
+        {memberSince && <p className="text-sm text-charcoal-400">{t("travelerMemberSince", { date: memberSince })}</p>}
+        <p className={`text-sm mt-2 leading-relaxed ${conv.other_user_bio ? "text-charcoal-600" : "text-charcoal-400 italic"}`}>
+          {conv.other_user_bio ?? t("travelerNoBio", { name: firstName })}
+        </p>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale";
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
+import { PhotoTip } from "@/components/PhotoReminderBanner";
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ interface Props {
   petsAllowed: boolean;
   blockedDates?: string[];
   hideMessage?: boolean;
+  senderHasAvatar?: boolean;
 }
 
 function hostSinceDuration(
@@ -135,7 +137,7 @@ export default function ContactForm({
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
-  capacity, petsAllowed, blockedDates, hideMessage,
+  capacity, petsAllowed, blockedDates, hideMessage, senderHasAvatar = true,
 }: Props) {
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
@@ -310,6 +312,7 @@ export default function ContactForm({
         <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
           {t("viewMessagesArrow")}
         </Link>
+        {currentUserId && !senderHasAvatar && <PhotoTip userId={currentUserId} />}
       </div>
     );
   }

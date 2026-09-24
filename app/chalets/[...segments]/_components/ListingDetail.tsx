@@ -96,10 +96,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
   // User profile for pre-filling the contact form
   const { data: userProfile } = user
-    ? await supabase.from("users").select("name, phone").eq("id", user.id).single()
+    ? await supabase.from("users").select("name, phone, avatar_url").eq("id", user.id).single()
     : { data: null };
   const profileName = (userProfile as { name?: string; phone?: string } | null)?.name ?? "";
   const profilePhone = (userProfile as { name?: string; phone?: string } | null)?.phone ?? "";
+  // true par défaut (visiteur non connecté) : le rappel photo ne concerne que les comptes existants
+  const senderHasAvatar = user ? !!(userProfile as { avatar_url?: string | null } | null)?.avatar_url : true;
   const [profileFirstName, ...rest] = profileName.split(" ");
   const profileLastName = rest.join(" ");
 
@@ -582,6 +584,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   listingId={listing.id}
                   listingTitle={listing.title}
                   currentUserId={user?.id ?? null}
+                  currentUserHasAvatar={senderHasAvatar}
                   isOwner={isOwner}
                 />
               </>
@@ -630,6 +633,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     currentUserId={user?.id ?? null}
                     senderFirstName={profileFirstName}
                     senderLastName={profileLastName}
+                    senderHasAvatar={senderHasAvatar}
                     initialCheckin={urlCheckin}
                     initialCheckout={urlCheckout}
                     initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}
@@ -675,6 +679,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
               currentUserId={user?.id ?? null}
               senderFirstName={profileFirstName}
               senderLastName={profileLastName}
+              senderHasAvatar={senderHasAvatar}
               initialCheckin={urlCheckin}
               initialCheckout={urlCheckout}
               initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}

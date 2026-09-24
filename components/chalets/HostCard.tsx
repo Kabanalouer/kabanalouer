@@ -14,12 +14,13 @@ interface Props {
   listingId: string;
   listingTitle: string;
   currentUserId: string | null;
+  currentUserHasAvatar?: boolean;
   isOwner?: boolean;
 }
 
 export default async function HostCard({
   host, reviewCount, avgRating, responseRate, avgResponseMs,
-  listingId, listingTitle, currentUserId, isOwner,
+  listingId, listingTitle, currentUserId, currentUserHasAvatar, isOwner,
 }: Props) {
   const [t, tListing, locale] = await Promise.all([
     getTranslations("hostCard"),
@@ -137,6 +138,7 @@ export default async function HostCard({
               hostName={host.name ?? tListing("fallbackOwnerName")}
               listingTitle={listingTitle}
               currentUserId={currentUserId}
+              currentUserHasAvatar={currentUserHasAvatar}
             />
           )}
         </div>
