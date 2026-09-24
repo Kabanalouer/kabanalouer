@@ -205,7 +205,7 @@ export default async function HomePage() {
             <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
               {t("badge")}
             </div>
-            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.04] tracking-[-0.035em] mb-4 sm:mb-5 max-w-3xl">
+            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.1] tracking-[-0.02em] mb-4 sm:mb-5 max-w-3xl">
               {t("heroTitle")}
             </h1>
             <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
