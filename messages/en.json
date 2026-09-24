@@ -1339,7 +1339,7 @@
     "heading": "Meet your owner",
     "ownerLabel": "Owner",
     "noReviews": "No reviews",
-    "reviews": "reviews",
+    "reviewsCount": "{count, plural, one {# review} other {# reviews}}",
     "seniorityNew": "New",
     "seniorityMonths": "{months}-month owner",
     "seniorityYear": "1-year owner",

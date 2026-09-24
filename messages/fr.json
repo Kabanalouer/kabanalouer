@@ -1339,7 +1339,7 @@
     "heading": "Faites connaissance avec votre propriétaire",
     "ownerLabel": "Proprio",
     "noReviews": "Aucun avis",
-    "reviews": "avis",
+    "reviewsCount": "{count, plural, one {# avis} other {# avis}}",
     "seniorityNew": "Nouveau",
     "seniorityMonths": "{months} mois en tant que proprio",
     "seniorityYear": "1 an en tant que proprio",
