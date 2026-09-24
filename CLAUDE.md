@@ -780,11 +780,66 @@ Icône de lien externe + nom du chalet lui-même cliquable (souligné en rollove
 
 **Aussi fait, hors code** : question de Simon sur le fonctionnement du système d'avis — exploré en lecture seule (`reviews`/`review_requests`, cron quotidien, formulaires à jeton sans connexion, réponse proprio non modifiable, affichage public sans modération) et expliqué, rien modifié.
 
+### Session du 2026-09-24 — Refonte de l'identité visuelle (typo, couleurs, logo), courriels, notifications, photos de profil, messagerie en direct
+
+Très longue session, 30 commits (`d057358` → `6f33cf6`), tout en ligne et vérifié en production. Les **règles durables** qui en découlent sont dans les sections 3 (Design system), 4 (Vocabulaire / règles typographiques) et 9 — cette entrée ne fait que retracer le parcours.
+
+**1. Petits correctifs de parcours**
+- Envoi d'un message depuis une fiche : on reste sur la fiche avec une confirmation (« Fermer » / « Voir la conversation ») au lieu d'être redirigé (`d057358`).
+- Avis « échange » : question « Comment s'est passée votre discussion avec {prénom} ? » au-dessus des étoiles, FR/EN (`a1e48e0`).
+- Fiche vue par son propre proprio : encadré lisible « C'est votre chalet » + bouton « Modifier mon annonce » au lieu d'un bouton désactivé illisible (`28e77fa`).
+- Carte du proprio : « N avis » sans gras, note en gras sans « / 5 », pluriel EN corrigé (« 1 review ») (`4cf4150`).
+
+**2. Typographie**
+- Espaces insécables françaises partout (U+202F avant ? ! ; — U+00A0 avant : et dans « ») : script AST sur tout le code + `fr.json` (`77ec978`), puis rattrapage des gabarits qui finissent par un accent grave (`bcad9a2`) et des prix `299 $` (`f2fec29`). SMS exclus (UCS-2).
+- Échelle de tailles façon Airbnb : jetons `text-heading-2` (22px) / `text-heading-3` (18px), texte de lecture et champs de saisie à 16px (évite le zoom iOS), jamais sous 12px — fiche chalet d'abord (`061f155`), puis tout le site via 4 agents en parallèle (`becc165`, 76 fichiers, diff vérifié : seules les classes de taille ont changé).
+- H1 : lettres non resserrées, gras 700, +0,08em entre les mots via règle globale `h1` (`3c065cb`, `8ef95ef`).
+- Nombres décimaux selon la langue : `lib/formatNumber.ts` (`57d0e72`).
+
+**3. Couleurs**
+- Nouvel accent orange brûlé `#C2410C` (jeton `accent`), réservé aux signaux ; olive reste la couleur de marque et des actions. Choisi par Simon parmi 3 nuances sur une page de comparaison locale (`a76d282`).
+- Ménage : jetons d'état `error`/`warning`/`success`/`star`, 381 classes migrées, `gray-*` → `charcoal-*`, palettes mortes (corail, sarcelle, sauge, alias CSS) retirées (`1492727`).
+- Étoiles d'avis en gris foncé partout (`da0c7f0`) ; cercles sans photo en gris pâle neutre partout, 8 endroits (`2bb5820`).
+- ⚠️ Remplace ce qui est dit plus haut dans la session du 2026-09-23 (point 6) sur la « pastille coral `#f04e45` » : le corail n'existe plus.
+
+**4. Logo v2** (`a4c6369`, `abc1d47`) — le texte du SVG n'était pas vectorisé et s'affichait en San Francisco/Segoe/Roboto selon l'appareil. Converti en tracés (Plus Jakarta Sans 600, +0,01em, traits 3,3), choisi par Simon parmi 4 variantes ; favicon simplifié ; générateur `scripts/logo/` (voir section 3 § Logo) ; `logo-email.png` avec fond blanc pour le mode sombre.
+
+**5. Courriels** (`8a9b73e`, `bcad9a2`, `abc1d47`) — gabarit commun et hook d'auth Supabase (déployé, `send-email-hook` v5) : vrai logo, gris du site, tailles de l'échelle, texte de secours stylisé si images bloquées. Courriel « le proprio a répondu à votre avis » reconstruit (`lib/emails/reviewReplied.ts`) : bilingue et **contenu utilisateur désormais échappé** (l'ancien HTML codé en dur insérait réponse/commentaire sans `escapeHtml`).
+
+**6. Notifications et photos de profil**
+- Pastilles `CountBadge` / `AvatarDot` unifiées, point sur la photo du voyageur, « (n) » dans le titre de l'onglet (`c40aba1`).
+- Incitation à la photo **sans toucher à la demande de prix** (décision de Simon, peur de faire baisser la conversion) : astuce après envoi, bandeau messagerie, ligne du menu, pastille appareil photo dans le profil, section voyageur « À propos de vous » (`users.bio`, pas de migration) affichée au proprio dans une fiche en tête de conversation (`08e5edd`, `24104cb`, `ebb4c1e`, `aae21a3`).
+
+**7. Messagerie**
+- Accueil de la zone centrale (titre « Messagerie », icône, consigne), variante mobile, textes codés en dur traduits (`0ab69a8`).
+- Liste des conversations en direct (Realtime sur `receiver_id`/`sender_id`) ; notifications courriel/SMS : cron chaque minute + délai de grâce 2 min → 2 à 3 min au lieu de 5 à 10, confirmé dans les journaux Vercel (`6f33cf6`).
+
+**8. Divers** — vrai 404 pour les fichiers inexistants (le segment `[locale]` rendait l'accueil en 200) (`fa343f5`).
+
+**Leçons de la session**
+- **Les préversions Vercel échouent toutes** (variables d'environnement en production seulement) : 3 liens de préversion ont été donnés à Simon sans vérifier leur état, il a approuvé sans voir. Désormais : aperçu via `npx next dev -p 3123` (Simon est sur la même machine) et toujours vérifier `READY` avant de donner un lien Vercel. Voir section 14.
+- Les écritures Supabase en production par Claude (UPDATE sur `messages`) sont bloquées par le classifieur de sécurité même avec l'accord de Simon → lui fournir la requête SQL à exécuter lui-même.
+- Un script qui réécrit `fr.json` avec `JSON.stringify` change la mise en page du fichier : modifier le texte brut, pas re-sérialiser.
+- Aperçu d'éléments visibles seulement connecté : page de test temporaire sous `app/[locale]/test-…/` (le middleware réécrit tout sous `[locale]`), supprimée avant commit, puis `rm .next/dev/types/validator.ts` si `tsc` se plaint d'une page disparue.
+
 ---
 
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### Préversions Vercel inutilisables (2026-09-24)
+
+Toutes les variables d'environnement du projet Vercel sont ciblées **production seulement** : chaque déploiement de branche échoue au build (`new Resend(process.env.RESEND_API_KEY!)` → « Missing API key »). Pour les réactiver, il faudrait donner des clés à l'environnement Preview — mais elles pointeraient sur la vraie base Supabase et le vrai Stripe (base partagée dev/prod, section 2). Décision à prendre avec Simon ; en attendant, aperçus en local sur `localhost:3123`.
+
+### Dossier « Design System » pas à jour (2026-09-24)
+
+Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site — à mettre à jour si Simon s'en sert pour du matériel externe.
+
+### Pistes proposées, non faites (2026-09-24)
+
+- **BIMI** (logo à côté du nom de l'expéditeur dans Gmail/Apple Mail) : exige DMARC en mode strict + certificat de marque payant (~1 000–1 500 $ US/an). Plus tard, quand le volume de courriels augmentera.
+- **Mesurer l'effet de la photo de profil** : comparer le taux de réponse des proprios aux voyageurs avec et sans photo, pour afficher un vrai chiffre dans l'incitation (ne jamais inventer de statistique).
 
 ### Code mort à nettoyer un jour — `components/dashboard/Sidebar.tsx` (2026-09-21)
 
