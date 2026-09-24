@@ -11,23 +11,26 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 // que le masquer pour l'onglet en cours.
 const DISMISS_KEY = "phoneReminderDismissed";
 
-export default function PhoneReminderBanner({ show }: { show: boolean }) {
+// onHidden : prévient le parent quand le bandeau est fermé (maintenant ou lors
+// d'une visite précédente dans cet onglet), pour laisser la place au rappel photo.
+export default function PhoneReminderBanner({ show, onHidden }: { show: boolean; onHidden?: () => void }) {
   const t = useTranslations("phoneReminder");
   const locale = useLocale();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     try {
-      if (sessionStorage.getItem(DISMISS_KEY) === "1") setDismissed(true);
+      if (sessionStorage.getItem(DISMISS_KEY) === "1") { setDismissed(true); onHidden?.(); }
     } catch {
       // Navigation privée / stockage bloqué — le bandeau reste affiché, sans plus.
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- lecture unique au montage
 
   if (!show || dismissed) return null;
 
   const handleDismiss = () => {
     setDismissed(true);
+    onHidden?.();
     try {
       sessionStorage.setItem(DISMISS_KEY, "1");
     } catch {

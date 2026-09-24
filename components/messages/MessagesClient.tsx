@@ -86,6 +86,7 @@ export default function MessagesClient({
 }) {
   const t = useTranslations("messages");
   const tq = useTranslations("quote");
+  const [phoneBannerHidden, setPhoneBannerHidden] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -288,10 +289,11 @@ export default function MessagesClient({
     // flex-1, pour que la hauteur totale reste calée sur le viewport que le
     // bandeau soit affiché ou non.
     <div className="flex flex-col h-[calc(100vh-144px)] md:h-[calc(100vh-80px)]">
-      {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord, puis la photo */}
-      {!hasPhone ? (
+      {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord ; dès
+          qu'il est rempli ou que son bandeau est fermé, la photo prend la place. */}
+      {!hasPhone && !phoneBannerHidden ? (
         <div className="px-4 pt-4 shrink-0">
-          <PhoneReminderBanner show />
+          <PhoneReminderBanner show onHidden={() => setPhoneBannerHidden(true)} />
         </div>
       ) : !hasAvatar ? (
         <div className="px-4 pt-4 shrink-0">
