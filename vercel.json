@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/new-message-notifications",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * * *"
     },
     {
       "path": "/api/cron/translate-listings",

@@ -116,6 +116,11 @@ export default function MessagesClient({
   // toggle global "Message libre / Devis structuré" au bas de la conversation.
   const [activeQuickReply, setActiveQuickReply] = useState<{ messageId: string; type: "quote" | "no_availability" } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Lus par l'abonnement de la liste (créé une seule fois) pour savoir si un
+  // nouveau message arrive dans la conversation déjà ouverte.
+  const selectedListingIdRef = useRef<string | null>(selectedListingId);
+  const selectedWithIdRef = useRef<string | null>(selectedWithId);
+  const conversationsRef = useRef<Conversation[]>(initialConversations);
 
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
@@ -241,6 +246,87 @@ export default function MessagesClient({
       supabase.removeChannel(channel);
     };
   }, [selectedListingId, selectedWithId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Liste des conversations en direct : tout message reçu ou envoyé (depuis un
+  // autre onglet, ou une réponse par courriel) remonte sa conversation en tête
+  // de liste ; une conversation inconnue (premier message) y est ajoutée.
+  useEffect(() => {
+    const handleInsert = async (msg: Message) => {
+      const otherId = msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id;
+      const isOpen = msg.listing_id === selectedListingIdRef.current && otherId === selectedWithIdRef.current;
+      const addUnread = msg.receiver_id === currentUserId && !isOpen ? 1 : 0;
+
+      const known = conversationsRef.current.some((c) => c.listing_id === msg.listing_id && c.other_user_id === otherId);
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.listing_id === msg.listing_id && c.other_user_id === otherId);
+        if (idx === -1) return prev;
+        const updated = {
+          ...prev[idx],
+          last_message: msg.content,
+          last_message_at: msg.created_at,
+          unread_count: prev[idx].unread_count + addUnread,
+        };
+        return [updated, ...prev.filter((_, i) => i !== idx)];
+      });
+      if (known) return;
+
+      const [{ data: other }, { data: listing }] = await Promise.all([
+        supabase.from("public_profiles").select("name, avatar_url, bio, created_at").eq("id", otherId).single(),
+        supabase.from("listings").select("title, host_id, region, city, listing_number, custom_slug").eq("id", msg.listing_id).single(),
+      ]);
+      const conv: Conversation = {
+        other_user_id: otherId,
+        other_user_name: (other?.name as string | null) ?? "—",
+        other_user_avatar: (other?.avatar_url as string | null) ?? null,
+        other_user_bio: (other?.bio as string | null) ?? null,
+        other_user_created_at: (other?.created_at as string | null) ?? null,
+        listing_id: msg.listing_id,
+        listing_title: (listing?.title as string | null) ?? "",
+        listing_host_id: (listing?.host_id as string | null) ?? null,
+        listing_region: (listing?.region as string | null) ?? null,
+        listing_city: (listing?.city as string | null) ?? null,
+        listing_number: (listing?.listing_number as number | null) ?? null,
+        listing_custom_slug: (listing?.custom_slug as string | null) ?? null,
+        last_message: msg.content,
+        last_message_at: msg.created_at,
+        unread_count: addUnread,
+      };
+      setConversations((prev) =>
+        prev.some((c) => c.listing_id === conv.listing_id && c.other_user_id === conv.other_user_id) ? prev : [conv, ...prev]
+      );
+    };
+
+    const channel = supabase
+      .channel(`conversation-list:${currentUserId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${currentUserId}` },
+        (payload) => handleInsert(payload.new as Message))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `sender_id=eq.${currentUserId}` },
+        (payload) => handleInsert(payload.new as Message))
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+  // Conversation ouverte → son point « non lu » disparaît aussitôt (les
+  // messages sont marqués lus à l'ouverture, voir le chargement du fil).
+  useEffect(() => {
+    selectedListingIdRef.current = selectedListingId;
+    selectedWithIdRef.current = selectedWithId;
+    if (!selectedListingId || !selectedWithId) return;
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.listing_id === selectedListingId && c.other_user_id === selectedWithId && c.unread_count > 0
+          ? { ...c, unread_count: 0 }
+          : c
+      )
+    );
+  }, [selectedListingId, selectedWithId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

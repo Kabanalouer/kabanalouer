@@ -3,7 +3,9 @@ import { adminSupabase } from "@/lib/sendMessage";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendNewMessageSms } from "@/lib/sms";
 
-const FIVE_MIN_MS = 5 * 60 * 1000;
+// Délai de grâce : pas de courriel/SMS si le destinataire lit le message
+// dans les 2 minutes (il est sur le site). Cron chaque minute → 2 à 3 min.
+const GRACE_MS = 2 * 60 * 1000;
 
 type Group = {
   listingId: string;
@@ -13,8 +15,8 @@ type Group = {
   latestContent: string;
 };
 
-// Cron aux 5 minutes — Phase 2a (voir CLAUDE.md) : notifie par courriel les
-// messages non lus depuis au moins 5 minutes, un seul courriel par
+// Cron chaque minute — Phase 2a (voir CLAUDE.md) : notifie par courriel les
+// messages non lus depuis au moins 2 minutes, un seul courriel par
 // conversation (regroupée listing_id+sender_id+receiver_id, même triplet que
 // app/messages/page.tsx et le cron review-requests).
 export async function GET(request: NextRequest) {
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = adminSupabase();
-  const cutoff = new Date(Date.now() - FIVE_MIN_MS).toISOString();
+  const cutoff = new Date(Date.now() - GRACE_MS).toISOString();
 
   const { data: candidates, error } = await supabase
     .from("messages")
