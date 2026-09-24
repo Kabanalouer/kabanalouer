@@ -63,13 +63,13 @@ function MonthGrid({
 
   return (
     <div className="flex-1 min-w-0">
-      <h3 className="text-sm font-semibold text-charcoal-700 text-center mb-3 capitalize">
+      <h3 className="text-base font-semibold text-charcoal-700 text-center mb-3 capitalize">
         {monthNames[month]} {year}
       </h3>
 
       <div className="grid grid-cols-7 mb-1">
         {dayNames.map((d) => (
-          <div key={d} className="text-center text-[10px] font-semibold text-charcoal-200 py-0.5">{d}</div>
+          <div key={d} className="text-center text-xs font-semibold text-charcoal-400 py-0.5">{d}</div>
         ))}
       </div>
 
@@ -174,7 +174,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-xs text-charcoal-400">
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-sm text-charcoal-400">
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded border border-[#ebebeb] overflow-hidden bg-white shrink-0" />
           {t("available")}
@@ -200,7 +200,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       </div>
 
       {blocked.length === 0 && (
-        <p className="text-xs text-primary mt-3 font-medium">
+        <p className="text-sm text-primary mt-3 font-medium">
           {t("allAvailable")}
         </p>
       )}

@@ -220,21 +220,21 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
 
       {/* Info */}
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <p className="font-semibold text-charcoal-800 text-sm">{displayRoomName(room, locale)}</p>
-        <p className="text-xs text-charcoal-400">
+        <p className="font-semibold text-charcoal-800 text-base">{displayRoomName(room, locale)}</p>
+        <p className="text-sm text-charcoal-400">
           {isBedroom ? t("roomCapacity", { count: room.capacity }) : t("roomCapacityLabel", { count: room.capacity })}
         </p>
         {isBedroom && beds.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-0.5">
             {beds.map((b, i) => (
-              <span key={i} className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600">
+              <span key={i} className="text-sm bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600">
                 {b.quantity}× {bedLabel(b.type, locale)}
               </span>
             ))}
           </div>
         )}
         {!isBedroom && sofaBeds && (
-          <span className="text-xs bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600 self-start mt-0.5">
+          <span className="text-sm bg-charcoal-50 border border-[#ebebeb] rounded-full px-2.5 py-1 text-charcoal-600 self-start mt-0.5">
             {t("sofaBedCount", { count: sofaBeds.quantity })}
           </span>
         )}

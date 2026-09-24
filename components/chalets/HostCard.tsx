@@ -44,7 +44,7 @@ export default async function HostCard({
 
   return (
     <div>
-      <h2 className="font-semibold text-charcoal-800 mb-5">{t("heading")}</h2>
+      <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-5">{t("heading")}</h2>
 
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Left: host card ── */}
@@ -95,14 +95,14 @@ export default async function HostCard({
 
         {/* ── Right: info + contact ── */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-charcoal-800 mb-4">{t("presentation")}</h3>
+          <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{t("presentation")}</h3>
           {displayBio && (
-            <p className="text-sm text-charcoal-600 leading-relaxed mb-4">{displayBio}</p>
+            <p className="text-base text-charcoal-600 leading-relaxed mb-4">{displayBio}</p>
           )}
-          <div className="space-y-3 mb-6 text-sm text-charcoal-700">
+          <div className="space-y-3 mb-6 text-base text-charcoal-700">
             {responseRate !== null && (
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <span>
@@ -113,7 +113,7 @@ export default async function HostCard({
             )}
             {avgResponseMs !== null && (
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
                 </svg>
                 <span>{responseSpeedLabel(avgResponseMs)}</span>

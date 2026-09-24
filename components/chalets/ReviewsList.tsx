@@ -40,7 +40,7 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-charcoal-400 text-sm">{t("reviewsFilterEmpty")}</p>
+        <p className="text-charcoal-400 text-base">{t("reviewsFilterEmpty")}</p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-6">
           {filtered.map((review) => {
@@ -62,15 +62,15 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-charcoal-800 leading-tight">{authorFirst}</p>
-                      <span className="text-[10px] font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                      <p className="text-base font-semibold text-charcoal-800 leading-tight">{authorFirst}</p>
+                      <span className="text-xs font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
                         {review.review_type === "echange" ? t("reviewsTypeExchange") : t("reviewsTypeStay")}
                       </span>
                     </div>
-                    <p className="text-xs text-charcoal-400 mb-1">{reviewDate}</p>
+                    <p className="text-sm text-charcoal-400 mb-1">{reviewDate}</p>
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <svg key={i} className={`w-3 h-3 fill-current ${i <= review.rating ? "text-primary" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
+                        <svg key={i} className={`w-3.5 h-3.5 fill-current ${i <= review.rating ? "text-primary" : "text-[#ebebeb]"}`} viewBox="0 0 20 20">
                           <path d={STAR_PATH} />
                         </svg>
                       ))}
@@ -78,12 +78,12 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
                   </div>
                 </div>
                 {review.comment && (
-                  <p className="text-sm text-charcoal-500 leading-relaxed">{review.comment}</p>
+                  <p className="text-base text-charcoal-600 leading-relaxed">{review.comment}</p>
                 )}
                 {review.host_reply && (
                   <div className="pl-4 border-l-2 border-[#ebebeb] mt-2">
-                    <p className="text-xs font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
-                    <p className="text-sm text-charcoal-500 leading-relaxed">{review.host_reply}</p>
+                    <p className="text-sm font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
+                    <p className="text-base text-charcoal-600 leading-relaxed">{review.host_reply}</p>
                   </div>
                 )}
               </div>

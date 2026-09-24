@@ -8,6 +8,12 @@
 
 /* ── Tailwind theme → utility classes (bg-*, text-*, border-*, font-*) ── */
 @theme {
+  /* Échelle typographique (voir CLAUDE.md § Typographie) — text-heading-2 / text-heading-3 */
+  --text-heading-2: 1.375rem;              /* 22px — titres de section (H2) */
+  --text-heading-2--line-height: 1.75rem;
+  --text-heading-3: 1.125rem;              /* 18px — sous-titres (H3) */
+  --text-heading-3--line-height: 1.625rem;
+
   /* Primary brand — olive */
   --color-primary:        #636e40;
   --color-primary-dark:   #4d5631;

@@ -16,7 +16,7 @@ export default function AmenityRow({ value, locale }: { value: AmenityValue; loc
         <AmenityIcon name={entry.icon} className="w-[22px] h-[22px]" />
       </div>
       <div className="min-w-0">
-        <p className="font-semibold text-charcoal-800 text-sm">{label}</p>
+        <p className="font-semibold text-charcoal-800 text-base">{label}</p>
         {summary && <p className="text-sm text-charcoal-400 mt-0.5 truncate">{summary}</p>}
       </div>
     </div>

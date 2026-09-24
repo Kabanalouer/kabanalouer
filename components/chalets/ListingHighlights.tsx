@@ -22,7 +22,7 @@ export default function ListingHighlights({ amenities }: { amenities: AmenityVal
 
   return (
     <div>
-      <h2 className="font-semibold text-charcoal-800 mb-1">{t("heading")}</h2>
+      <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-1">{t("heading")}</h2>
       <div className="divide-y divide-[#ebebeb]">
         {top3.map((value, index) => (
           <AmenityRow key={`${value.id}-${index}`} value={value} locale={locale} />
