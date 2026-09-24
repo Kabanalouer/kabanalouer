@@ -9,8 +9,8 @@ const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 export type BlockedEntry = { date: string; source: "manual" | "ical" };
 type RangePos = "start" | "end" | "middle" | "single";
 
-const MANUAL_COLOR = "#FECACA"; // red-200
-const ICAL_COLOR   = "#FDE68A"; // amber-200
+const MANUAL_COLOR = "#FECACA"; // error-200
+const ICAL_COLOR   = "#FDE68A"; // warning-200
 
 function offsetDate(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T12:00:00Z");
@@ -60,12 +60,12 @@ function LegendItem({ type, color, label }: { type: "available" | "middle" | "st
   const c = color ?? MANUAL_COLOR;
   return (
     <div className="flex items-center gap-1.5">
-      <div className="relative w-5 h-5 rounded-md border border-gray-200 overflow-hidden shrink-0 bg-white">
+      <div className="relative w-5 h-5 rounded-md border border-charcoal-100 overflow-hidden shrink-0 bg-white">
         {type === "middle" && <div className="absolute inset-0" style={{ background: c }} />}
         {type === "start"  && <div className="absolute inset-y-0 right-0 w-1/2" style={{ background: c }} />}
         {type === "end"    && <div className="absolute inset-y-0 left-0 w-1/2" style={{ background: c }} />}
       </div>
-      <span className="text-gray-500">{label}</span>
+      <span className="text-charcoal-500">{label}</span>
     </div>
   );
 }
@@ -169,12 +169,12 @@ export default function AvailabilityCalendar({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="bg-white rounded-2xl border border-charcoal-100 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-heading-2 font-bold text-gray-900">{t("heading")}</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h2 className="text-heading-2 font-bold text-charcoal-900">{t("heading")}</h2>
+          <p className="text-sm text-charcoal-400 mt-0.5">
             {readOnly
               ? t("readOnlyHint")
               : rangeStart
@@ -185,12 +185,12 @@ export default function AvailabilityCalendar({
         {!readOnly && (
           <div className="flex items-center gap-3">
             {savedAt && !isDirty && (
-              <span className="text-xs text-gray-400">{t("savedAt", { time: savedAt })}</span>
+              <span className="text-xs text-charcoal-400">{t("savedAt", { time: savedAt })}</span>
             )}
             {rangeStart && (
               <button
                 onClick={() => { setRangeStart(null); setHoverDate(null); }}
-                className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5"
+                className="text-xs text-charcoal-400 hover:text-charcoal-600 border border-charcoal-100 rounded-lg px-3 py-1.5"
               >
                 {t("cancelSelection")}
               </button>
@@ -212,14 +212,14 @@ export default function AvailabilityCalendar({
 
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
-        <button onClick={prevMonth} disabled={!canGoPrev} className="p-2 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-30">
-          <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button onClick={prevMonth} disabled={!canGoPrev} className="p-2 rounded-xl hover:bg-charcoal-50 transition-colors disabled:opacity-30">
+          <svg className="w-5 h-5 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span className="font-semibold text-gray-900">{t(MONTH_KEYS[viewMonth])} {viewYear}</span>
-        <button onClick={nextMonth} disabled={!canGoNext} className="p-2 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-30">
-          <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span className="font-semibold text-charcoal-900">{t(MONTH_KEYS[viewMonth])} {viewYear}</span>
+        <button onClick={nextMonth} disabled={!canGoNext} className="p-2 rounded-xl hover:bg-charcoal-50 transition-colors disabled:opacity-30">
+          <svg className="w-5 h-5 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -231,7 +231,7 @@ export default function AvailabilityCalendar({
           fixes) ni le nombre de mois affichés. */}
       <div className="-mx-6 sm:mx-0 grid grid-cols-7 gap-0.5 sm:gap-1 mb-1">
         {DAY_KEYS.map((d) => (
-          <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{t(d)}</div>
+          <div key={d} className="text-center text-xs font-semibold text-charcoal-400 py-1">{t(d)}</div>
         ))}
       </div>
 
@@ -269,18 +269,18 @@ export default function AvailabilityCalendar({
 
               <span className={[
                 "relative z-10",
-                isPast        ? "text-gray-300" :
+                isPast        ? "text-charcoal-300" :
                 isRangeStart  ? "text-white font-bold" :
-                isManual      ? "text-red-700 font-semibold" :
-                isIcal        ? "text-amber-700 font-semibold" :
+                isManual      ? "text-error-700 font-semibold" :
+                isIcal        ? "text-warning-700 font-semibold" :
                 inPreview     ? "text-primary font-semibold" :
-                                "text-gray-700",
+                                "text-charcoal-700",
               ].join(" ")}>
                 {day}
               </span>
 
               {isIcal && (
-                <span className="absolute bottom-0.5 right-0.5 text-[8px] leading-none text-amber-600 z-20">⟳</span>
+                <span className="absolute bottom-0.5 right-0.5 text-[8px] leading-none text-warning-600 z-20">⟳</span>
               )}
             </button>
           );
@@ -288,7 +288,7 @@ export default function AvailabilityCalendar({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-gray-100 text-xs">
+      <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-charcoal-100 text-xs">
         <LegendItem type="available" label={t("available")} />
         {readOnly ? (
           <LegendItem type="middle" color={ICAL_COLOR} label={t("unavailableIcal")} />

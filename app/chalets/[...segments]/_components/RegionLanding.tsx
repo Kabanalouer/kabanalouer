@@ -207,7 +207,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {/* ── Chalets en vedette dans cette région ── */}
       {vedetteListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 w-full">
-          <h2 className="text-heading-2 font-bold text-gray-900 mb-6">
+          <h2 className="text-heading-2 font-bold text-charcoal-900 mb-6">
             {isEn ? "Featured cabins in this region" : "Chalets en vedette dans cette région"}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
@@ -222,7 +222,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-heading-2 font-bold text-gray-900">
+            <h2 className="text-heading-2 font-bold text-charcoal-900">
               {isEn
                 ? (listingCount > 0
                     ? `${listingCount} cabin${listingCount > 1 ? "s" : ""} available ${content?.locative_en ?? "in Quebec"}`
@@ -231,7 +231,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
                     ? `${listingCount} chalet${listingCount > 1 ? "s" : ""} disponible${listingCount > 1 ? "s" : ""} ${regionConfig.locative}`
                     : `Chalets ${regionConfig.locative}`)}
             </h2>
-            <p className="text-gray-500 mt-1 text-sm">
+            <p className="text-charcoal-500 mt-1 text-sm">
               {isEn
                 ? "Direct contact with owners · No service fees"
                 : "Contact direct avec les propriétaires · Aucun frais de service"}
@@ -256,15 +256,15 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-gray-50 rounded-2xl">
-            <p className="text-gray-500 text-lg mb-2">
+          <div className="text-center py-20 bg-charcoal-50 rounded-2xl">
+            <p className="text-charcoal-500 text-lg mb-2">
               {isEn ? (
                 `No cabins available ${content?.locative_en ?? "in Quebec"} yet.`
               ) : (
                 <>Aucun chalet disponible {regionConfig.locative}{" "}pour l&apos;instant.</>
               )}
             </p>
-            <p className="text-gray-400 text-base mb-6">
+            <p className="text-charcoal-400 text-base mb-6">
               {isEn
                 ? "Be the first to discover the cabins in this region."
                 : "Soyez les premiers à découvrir les chalets de cette région."}
@@ -350,13 +350,13 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
       {/* ── Other regions ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        <h2 className="text-heading-2 font-bold text-gray-900 mb-6">{isEn ? "Explore other regions" : "Explorer d'autres régions"}</h2>
+        <h2 className="text-heading-2 font-bold text-charcoal-900 mb-6">{isEn ? "Explore other regions" : "Explorer d'autres régions"}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {otherRegions.map((r) => (
             <Link
               key={r.slug}
               href={isEn ? `/en/cabins/${r.slugEn}` : `/chalets/${r.slug}`}
-              className="flex items-center px-4 py-3 rounded-xl border border-gray-200 hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-gray-700 hover:text-primary"
+              className="flex items-center px-4 py-3 rounded-xl border border-charcoal-100 hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-charcoal-700 hover:text-primary"
             >
               {isEn ? r.nameEn : r.name}
             </Link>

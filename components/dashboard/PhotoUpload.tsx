@@ -398,10 +398,10 @@ export default function PhotoUpload({
       <button
         type="button"
         onClick={() => void removePhoto(item.url)}
-        className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+        className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
         aria-label="Supprimer"
       >
-        <svg className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-3.5 h-3.5 text-error-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -431,7 +431,7 @@ export default function PhotoUpload({
     <div
       key={proc.id}
       className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-2 px-3 ${
-        proc.phase === "error" ? "bg-red-50 border border-red-100" : "bg-charcoal-100"
+        proc.phase === "error" ? "bg-error-50 border border-error-100" : "bg-charcoal-100"
       }`}
     >
       {proc.phase === "compressing" && (
@@ -456,10 +456,10 @@ export default function PhotoUpload({
       )}
       {proc.phase === "error" && (
         <>
-          <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="w-7 h-7 text-error-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
-          <span className="text-xs text-red-500 text-center leading-tight">{proc.error}</span>
+          <span className="text-xs text-error-500 text-center leading-tight">{proc.error}</span>
         </>
       )}
     </div>
@@ -627,7 +627,7 @@ export default function PhotoUpload({
 
       {/* Footer */}
       <div className="space-y-1 text-sm text-charcoal-400">
-        <p className={photos.length >= MIN_PHOTOS ? "text-green-600" : "text-amber-600"}>
+        <p className={photos.length >= MIN_PHOTOS ? "text-success-600" : "text-warning-600"}>
           {totalCount}/{MAX_PHOTOS} photos
         </p>
         <p><span className="font-semibold text-charcoal-500">Minimum de photos :</span> {MIN_PHOTOS}</p>

@@ -38,8 +38,8 @@ export default function NewListingStepZero() {
     const isDuplicate = state.status === "duplicate";
     return (
       <div className="max-w-lg mx-auto text-center py-16">
-        <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-          <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="w-14 h-14 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-6">
+          <svg className="w-7 h-7 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -161,7 +161,7 @@ export default function NewListingStepZero() {
               <span>{t("consentLabel")}</span>
             </label>
             {state.status === "error" && (
-              <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+              <p className="text-sm text-error-500 bg-error-50 border border-error-100 rounded-xl px-4 py-3">
                 {state.message}
               </p>
             )}

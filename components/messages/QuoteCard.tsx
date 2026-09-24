@@ -36,7 +36,7 @@ export default function QuoteCard({
           isMine
             ? "bg-white/15 text-white"
             : isNoAvailability
-              ? "bg-[#f04e45]/10 text-[#f04e45]"
+              ? "bg-error-50 text-error-600"
               : "bg-primary/10 text-primary"
         }`}
       >

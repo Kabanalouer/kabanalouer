@@ -163,7 +163,7 @@ export default function NoAvailabilityWidget({
         {t("saveTemplateCheckbox")}
       </label>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-error-500">{error}</p>}
 
       <div className="flex gap-2">
         <button

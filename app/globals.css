@@ -2,12 +2,47 @@
 
 /* ============================================================
    KABANALOUER — Design Tokens v3
-   Coral primary · Charcoal text · Clean white surfaces
+   Olive primary · Accent orange brûlé · Charcoal text · Clean white surfaces
    Plus Jakarta Sans · Geist Mono
    ============================================================ */
 
 /* ── Tailwind theme → utility classes (bg-*, text-*, border-*, font-*) ── */
 @theme {
+  /* Couleurs d'état (voir CLAUDE.md § Couleurs) — mêmes teintes que les rouge/ambre/vert
+     Tailwind qu'elles remplacent ; à ajuster ici, jamais dans les composants. */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+
+  /* Étoiles des avis */
+  --color-star: #facc15;
+
   /* Accent — orange brûlé, réservé aux signaux (promo, favoris, notifications).
      Jamais sur le bouton d'action principal, qui reste olive (voir CLAUDE.md § Couleurs). */
   --color-accent:      #C2410C;
@@ -32,31 +67,6 @@
   --color-primary-700:    #3a4124;
   --color-primary-800:    #262b16;
 
-  /* Full olive palette (bg-coral-*, text-coral-* — kept for back-compat) */
-  --color-coral-50:  #f5f6ec;
-  --color-coral-100: #e8ebdc;
-  --color-coral-200: #c7ccb5;
-  --color-coral-300: #a6ad8e;
-  --color-coral-400: #858e67;
-  --color-coral-500: #636e40;
-  --color-coral-600: #4d5631;
-  --color-coral-700: #3a4124;
-  --color-coral-800: #262b16;
-  --color-coral-900: #121508;
-
-  /* Secondary — teal (bg-teal-*, text-teal-*) */
-  --color-secondary:      #008489;
-  --color-teal-50:  #e0f2f3;
-  --color-teal-100: #b8dee0;
-  --color-teal-200: #80c4c8;
-  --color-teal-300: #4baeb4;
-  --color-teal-400: #1d969d;
-  --color-teal-500: #008489;
-  --color-teal-600: #006a6e;
-  --color-teal-700: #00525a;
-  --color-teal-800: #003c44;
-  --color-teal-900: #00282d;
-
   /* Charcoal neutrals (bg-charcoal-*, text-charcoal-*) */
   --color-charcoal-50:  #f7f7f7;
   --color-charcoal-100: #ebebeb;
@@ -68,12 +78,6 @@
   --color-charcoal-700: #333333;
   --color-charcoal-800: #222222;
   --color-charcoal-900: #111111;
-
-  /* Sage — nature/Quebec accent (bg-sage-*) */
-  --color-sage-100: #e9eee4;
-  --color-sage-400: #809570;
-  --color-sage-600: #4d6240;
-  --color-sage-800: #2a3a23;
 
   /* AI components (keep existing) */
   --color-ai:       #534AB7;
@@ -87,90 +91,7 @@
 
 /* ── Raw CSS custom properties (design tokens, not Tailwind utilities) ── */
 :root {
-  /* --- Color palette (for CSS var() usage in components) --- */
-  --coral-50:  #f5f6ec;
-  --coral-100: #e8ebdc;
-  --coral-200: #c7ccb5;
-  --coral-300: #a6ad8e;
-  --coral-400: #858e67;
-  --coral-500: #636e40;
-  --coral-600: #4d5631;
-  --coral-700: #3a4124;
-  --coral-800: #262b16;
-  --coral-900: #121508;
-
-  --teal-50:  #e0f2f3;
-  --teal-100: #b8dee0;
-  --teal-200: #80c4c8;
-  --teal-300: #4baeb4;
-  --teal-400: #1d969d;
-  --teal-500: #008489;
-  --teal-600: #006a6e;
-  --teal-700: #00525a;
-  --teal-800: #003c44;
-  --teal-900: #00282d;
-
-  --sage-100: #e9eee4;
-  --sage-400: #809570;
-  --sage-600: #4d6240;
-  --sage-800: #2a3a23;
-
-  --char-50:  #f7f7f7;
-  --char-100: #ebebeb;
-  --char-200: #dddddd;
-  --char-300: #c4c4c4;
-  --char-400: #717171;
-  --char-500: #5e5e5e;
-  --char-600: #484848;
-  --char-700: #333333;
-  --char-800: #222222;
-  --char-900: #111111;
-
-  --snow:      #ffffff;
-  --snow-warm: #fafafa;
-
-  /* --- Semantic feedback --- */
-  --success: #008489;
-  --warning: #ce9c00;
-  --danger:  #c43d3d;
-  --info:    #5e6a78;
-
-  /* --- Semantic color roles --- */
-  --bg-page:        var(--snow);
-  --bg-surface:     var(--snow);
-  --bg-surface-alt: var(--char-50);
-  --bg-inset:       var(--char-50);
-  --bg-inverse:     var(--char-800);
-
-  --fg-1:          var(--char-800);
-  --fg-2:          var(--char-600);
-  --fg-3:          var(--char-400);
-  --fg-4:          var(--char-300);
-  --fg-on-brand:   var(--snow);
-  --fg-on-inverse: var(--snow);
-  --fg-link:       var(--coral-600);
-
-  --border-1:      var(--char-100);
-  --border-2:      var(--char-200);
-  --border-strong: var(--char-300);
-  --border-focus:  var(--coral-500);
-
-  --brand-primary:        var(--coral-500);
-  --brand-primary-hover:  var(--coral-600);
-  --brand-primary-press:  var(--coral-700);
-  --brand-secondary:      var(--teal-500);
-
-  /* --- Legacy v1/v2 aliases (back-compat) --- */
-  --forest-500: var(--coral-500);
-  --forest-600: var(--coral-600);
-  --forest-700: var(--coral-700);
-  --ember-500:  var(--coral-500);
-  --ember-600:  var(--coral-600);
-  --lake-500:   var(--teal-500);
-  --lake-600:   var(--teal-600);
-  --birch-100:  var(--char-50);
-  --birch-500:  var(--char-400);
-  --birch-800:  var(--char-700);
+  --snow: #ffffff; /* utilisé par --shadow-focus */
 
   /* --- Typography --- */
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;

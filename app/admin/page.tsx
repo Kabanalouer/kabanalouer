@@ -101,7 +101,7 @@ export default async function AdminOverviewPage() {
                     <td className="px-5 py-3 text-charcoal-500 whitespace-nowrap">{l.region ?? "—"}</td>
                     <td className="px-5 py-3 text-right">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        l.is_published ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
+                        l.is_published ? "bg-success-50 text-success-700" : "bg-charcoal-100 text-charcoal-500"
                       }`}>
                         {l.is_published ? "Publié" : "Brouillon"}
                       </span>

@@ -100,7 +100,7 @@ export default function SubscriptionClient() {
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-block w-2.5 h-2.5 rounded-full ${
-                          isActive ? "bg-green-500" : isPastDue ? "bg-amber-500" : "bg-charcoal-300"
+                          isActive ? "bg-success-500" : isPastDue ? "bg-warning-500" : "bg-charcoal-300"
                         }`}
                       />
                       <span className="font-semibold text-charcoal-800">
@@ -161,7 +161,7 @@ export default function SubscriptionClient() {
                     </button>
                   ) : isPastDue ? (
                     <>
-                      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm">
+                      <div className="mb-4 bg-warning-50 border border-warning-200 rounded-xl p-4 text-warning-800 text-sm">
                         {t("paymentFailedWarning")}
                       </div>
                       <button

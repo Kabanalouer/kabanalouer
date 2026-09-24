@@ -240,7 +240,7 @@ function LocationForm({
         >
           {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>
-        {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+        {saveError && <p className="text-sm text-error-500">{saveError}</p>}
       </div>
     </div>
   );
@@ -303,11 +303,11 @@ export default function LocationSection({
 
   if (!apiKey) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
+      <div className="bg-warning-50 border border-warning-200 rounded-xl p-4 text-sm text-warning-700">
         <p className="font-medium mb-1">{t("apiMissingTitle")}</p>
         <p>
           Ajoutez{" "}
-          <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
+          <code className="bg-warning-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
           dans vos variables d&apos;environnement Vercel.
         </p>
       </div>

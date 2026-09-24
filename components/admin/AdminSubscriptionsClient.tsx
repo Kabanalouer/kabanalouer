@@ -36,13 +36,13 @@ const FILTER_LABELS: { key: FilterKey; label: string }[] = [
 
 const TYPE_BADGE: Record<SubType, { bg: string; text: string; label: string }> = {
   free_launch: { bg: "bg-[#f5f6ec]", text: "text-primary", label: "Gratuit lancement" },
-  annual:      { bg: "bg-green-50",  text: "text-green-700", label: "Annuel 299 $/an" },
-  degressive:  { bg: "bg-blue-50",   text: "text-blue-700",  label: "Dégressif" },
+  annual:      { bg: "bg-success-50",  text: "text-success-700", label: "Annuel 299 $/an" },
+  degressive:  { bg: "bg-charcoal-100", text: "text-charcoal-700", label: "Dégressif" },
 };
 
 const STATUS_BADGE: Record<SubStatus, { bg: string; text: string; label: string }> = {
-  active:   { bg: "bg-green-50", text: "text-green-700", label: "Actif" },
-  expired:  { bg: "bg-red-50",   text: "text-red-700",   label: "Expiré" },
+  active:   { bg: "bg-success-50", text: "text-success-700", label: "Actif" },
+  expired:  { bg: "bg-error-50",   text: "text-error-700",   label: "Expiré" },
   canceled: { bg: "bg-charcoal-100", text: "text-charcoal-500", label: "Annulé" },
 };
 
@@ -429,7 +429,7 @@ export default function AdminSubscriptionsClient({
               </div>
             </div>
 
-            {actionError && <p className="text-sm text-red-600 mb-3">{actionError}</p>}
+            {actionError && <p className="text-sm text-error-600 mb-3">{actionError}</p>}
 
             <div className="space-y-2">
               <button
@@ -449,7 +449,7 @@ export default function AdminSubscriptionsClient({
               <button
                 onClick={() => handleAction(modalRow, "deactivate")}
                 disabled={!!actionLoading || modalRow.status === "canceled"}
-                className="w-full text-sm font-semibold px-4 py-2.5 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-full text-sm font-semibold px-4 py-2.5 rounded-xl bg-error-50 text-error-700 hover:bg-error-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {actionLoading === "deactivate" ? "En cours…" : "Désactiver"}
               </button>

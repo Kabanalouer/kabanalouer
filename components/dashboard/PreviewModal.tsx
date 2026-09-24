@@ -23,24 +23,24 @@ export default function PreviewModal({ listingId, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col" role="dialog" aria-modal="true">
       {/* Header */}
-      <div className="relative flex items-center justify-between px-4 h-14 bg-white border-b border-gray-200 shrink-0">
+      <div className="relative flex items-center justify-between px-4 h-14 bg-white border-b border-charcoal-100 shrink-0">
         {/* Left: close */}
         <button
           onClick={onClose}
           aria-label={t("previewCloseAria")}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:bg-charcoal-100 transition-colors"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         {/* Center: toggle */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-charcoal-100 rounded-lg p-1">
           <button
             onClick={() => setViewMode("desktop")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              viewMode === "desktop" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+              viewMode === "desktop" ? "bg-white shadow-sm text-charcoal-900" : "text-charcoal-500 hover:text-charcoal-700"
             }`}
           >
             <DesktopIcon />
@@ -49,7 +49,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
           <button
             onClick={() => setViewMode("mobile")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              viewMode === "mobile" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+              viewMode === "mobile" ? "bg-white shadow-sm text-charcoal-900" : "text-charcoal-500 hover:text-charcoal-700"
             }`}
           >
             <MobileIcon />

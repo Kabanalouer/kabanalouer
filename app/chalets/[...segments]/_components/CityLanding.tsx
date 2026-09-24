@@ -127,9 +127,9 @@ export default async function CityLanding({
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] border-b border-gray-100 py-16">
+      <section className="bg-[#F8FAF9] border-b border-charcoal-100 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-gray-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
+          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
             <Link href={localePath("/chalets", locale)} className="hover:text-primary hover:underline transition-colors">
               {isEn ? "Cabins" : "Chalets"}
             </Link>
@@ -138,12 +138,12 @@ export default async function CityLanding({
               {displayRegionName}
             </Link>
             <span>›</span>
-            <span className="text-gray-600">{cityName}</span>
+            <span className="text-charcoal-600">{cityName}</span>
           </nav>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-charcoal-900 mb-3">
             {isEn ? `Cabins in ${cityName}` : `Chalets à ${cityName}`}
           </h1>
-          <p className="text-gray-500 mb-8">
+          <p className="text-charcoal-500 mb-8">
             {isEn
               ? `${count} cabin${count > 1 ? "s" : ""} available in ${cityName}, ${displayRegionName}`
               : `${count} chalet${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""} à ${cityName}, ${displayRegionName}`}
@@ -158,12 +158,12 @@ export default async function CityLanding({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-heading-2 font-bold text-gray-900">
+            <h2 className="text-heading-2 font-bold text-charcoal-900">
               {isEn
                 ? `${count} cabin${count > 1 ? "s" : ""} in ${cityName}`
                 : `${count} chalet${count > 1 ? "s" : ""} à ${cityName}`}
             </h2>
-            <p className="text-gray-500 mt-1 text-sm">
+            <p className="text-charcoal-500 mt-1 text-sm">
               {isEn ? "Direct contact · No service fees" : "Contact direct · Aucun frais de service"}
             </p>
           </div>
@@ -189,7 +189,7 @@ export default async function CityLanding({
       {/* ── Other cities in region ── */}
       {otherCities.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
-          <h2 className="text-heading-2 font-bold text-gray-900 mb-4">
+          <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
             {isEn ? `Other cities in ${displayRegionName}` : `Autres villes ${regionConfig.locative}`}
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -197,7 +197,7 @@ export default async function CityLanding({
               <Link
                 key={city}
                 href={`${regionBasePath}/${slugify(city)}`}
-                className="px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                className="px-4 py-2 rounded-full border border-charcoal-100 text-sm text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
               >
                 {city}
               </Link>

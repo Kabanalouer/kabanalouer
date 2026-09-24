@@ -162,11 +162,11 @@ function MapContent({
                 style={{ display: "block" }}
               />
             )}
-            <p className="font-semibold text-gray-900 text-sm leading-snug mb-0.5 line-clamp-2">{selected.title}</p>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="font-semibold text-charcoal-900 text-sm leading-snug mb-0.5 line-clamp-2">{selected.title}</p>
+            <p className="text-xs text-charcoal-500 mb-2">
               {selected.city ? `${selected.city}, ${selected.region}` : selected.region}
             </p>
-            <p className="text-sm font-bold text-gray-900 mb-3">
+            <p className="text-sm font-bold text-charcoal-900 mb-3">
               {selected.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: selected.price })}
             </p>
             <a

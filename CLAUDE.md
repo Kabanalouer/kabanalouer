@@ -64,9 +64,14 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Primary/50 | `bg-[#f5f6ec]` | `#f5f6ec` |
 | Accent (orange brûlé, adopté le 2026-09-24) | `bg-accent`, `text-accent`, `bg-accent/5 border-accent/20` · hover `accent-dark` | `#C2410C` / `#9A3412` — **signaux seulement** : badges et bandeaux promo, cœur des favoris, pastilles/compteurs non lus. **Jamais** sur le bouton d'action principal (reste olive). Remplace l'ancien corail `#f04e45` (contraste insuffisant, effet rouge-vert avec l'olive) |
 | Charcoal scale | `text-charcoal-{400,500,600,700,800}` | texte et bordures sombres |
-| Bordures légères | `border-[#ebebeb]` | inputs, cartes |
+| Bordures légères | `border-[#ebebeb]` ou `border-charcoal-100` | inputs, cartes |
+| Erreur | `error-{50…800}` (ex. `bg-error-50 text-error-600`) | messages d'erreur, états négatifs (« complet », « aucune disponibilité »), suppression |
+| Avertissement | `warning-{50…800}` | avis importants, en attente, à compléter |
+| Succès | `success-{50…800}` | confirmations, « publiée », « actif » |
+| Étoiles des avis | `text-star` | notes en étoiles uniquement |
+| IA | `text-ai`, `bg-ai-light` | badges et résumés générés par IA |
 
-> Ne jamais coder le hex directement pour les couleurs qui ont un token. Ne jamais utiliser `border-gray-*`.
+> Ne jamais coder le hex directement pour les couleurs qui ont un token. **Jamais les palettes Tailwind par défaut** (`gray-*`, `red-*`, `amber-*`, `green-*`, `yellow-*`, `blue-*`…) — toujours `charcoal-*` pour les gris et les jetons d'état ci-dessus (ménage fait le 2026-09-24 : palettes corail/sarcelle/sauge et anciens alias CSS retirés de `globals.css`).
 
 ### Typographie
 

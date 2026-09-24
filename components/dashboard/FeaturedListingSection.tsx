@@ -77,7 +77,7 @@ function MonthRow({
       <span>{label}</span>
       {state === "own" && <span className="text-xs shrink-0">{t("alreadyBooked")}</span>}
       {state === "full" && (
-        <span className="bg-[#f04e45] text-white text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
+        <span className="bg-error-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
           {t("full", { count, max })}
         </span>
       )}

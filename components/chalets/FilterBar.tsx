@@ -63,17 +63,17 @@ export default function FilterBar() {
   const hasFilters = region || capacity || amenity || checkin || checkout;
 
   return (
-    <div className="bg-white border-b border-gray-100 sticky top-16 z-40">
+    <div className="bg-white border-b border-charcoal-100 sticky top-16 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Main filters row */}
         <div className="flex flex-wrap gap-3 items-end">
           {/* Region */}
           <div className="flex-1 min-w-[160px]">
-            <label className="block text-sm font-medium text-gray-500 mb-1">Région</label>
+            <label className="block text-sm font-medium text-charcoal-500 mb-1">Région</label>
             <select
               value={region}
               onChange={(e) => { setRegion(e.target.value); apply({ region: e.target.value }); }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full border border-charcoal-100 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Toutes les régions</option>
               {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -82,11 +82,11 @@ export default function FilterBar() {
 
           {/* Capacity */}
           <div className="min-w-[140px]">
-            <label className="block text-sm font-medium text-gray-500 mb-1">Voyageurs</label>
+            <label className="block text-sm font-medium text-charcoal-500 mb-1">Voyageurs</label>
             <select
               value={capacity}
               onChange={(e) => { setCapacity(e.target.value); apply({ capacity: e.target.value }); }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full border border-charcoal-100 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Peu importe</option>
               <option value="2">2+ personnes</option>
@@ -99,7 +99,7 @@ export default function FilterBar() {
 
           {/* Check-in */}
           <div className="min-w-[140px]">
-            <label className="block text-sm font-medium text-gray-500 mb-1">Arrivée</label>
+            <label className="block text-sm font-medium text-charcoal-500 mb-1">Arrivée</label>
             <input
               type="date"
               value={checkin}
@@ -110,29 +110,29 @@ export default function FilterBar() {
                 if (checkout && val >= checkout) { setCheckout(""); apply({ checkin: val, checkout: "" }); }
                 else apply({ checkin: val });
               }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full border border-charcoal-100 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
           {/* Check-out */}
           <div className="min-w-[140px]">
-            <label className="block text-sm font-medium text-gray-500 mb-1">Départ</label>
+            <label className="block text-sm font-medium text-charcoal-500 mb-1">Départ</label>
             <input
               type="date"
               value={checkout}
               min={checkin || today}
               onChange={(e) => { setCheckout(e.target.value); apply({ checkout: e.target.value }); }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full border border-charcoal-100 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
           {hasFilters && (
-            <button onClick={reset} className="text-sm text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap">
+            <button onClick={reset} className="text-sm text-charcoal-400 hover:text-charcoal-600 transition-colors whitespace-nowrap">
               Effacer ×
             </button>
           )}
 
-          {isPending && <span className="text-xs text-gray-400 animate-pulse">Recherche…</span>}
+          {isPending && <span className="text-xs text-charcoal-400 animate-pulse">Recherche…</span>}
         </div>
 
         {/* Quick amenity tags */}
@@ -144,7 +144,7 @@ export default function FilterBar() {
               className={`text-sm px-3 py-1.5 rounded-full border transition-all ${
                 amenity === a
                   ? "bg-primary text-white border-primary"
-                  : "border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
+                  : "border-charcoal-100 text-charcoal-600 hover:border-primary hover:text-primary"
               }`}
             >
               {a}

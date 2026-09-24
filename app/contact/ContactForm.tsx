@@ -24,9 +24,9 @@ export default function ContactForm() {
 
   if (state.status === "success") {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="bg-success-50 border border-success-200 rounded-2xl p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-6 h-6 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -45,7 +45,7 @@ export default function ContactForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="first-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-            {t("formFirstName")} <span className="text-red-400">*</span>
+            {t("formFirstName")} <span className="text-error-400">*</span>
           </label>
           <input
             id="first-name"
@@ -59,7 +59,7 @@ export default function ContactForm() {
         </div>
         <div>
           <label htmlFor="last-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-            {t("formLastName")} <span className="text-red-400">*</span>
+            {t("formLastName")} <span className="text-error-400">*</span>
           </label>
           <input
             id="last-name"
@@ -76,7 +76,7 @@ export default function ContactForm() {
       {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("formEmail")} <span className="text-red-400">*</span>
+          {t("formEmail")} <span className="text-error-400">*</span>
         </label>
         <input
           id="email"
@@ -92,7 +92,7 @@ export default function ContactForm() {
       {/* Subject */}
       <div>
         <label htmlFor="subject" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("formSubject")} <span className="text-red-400">*</span>
+          {t("formSubject")} <span className="text-error-400">*</span>
         </label>
         <select
           id="subject"
@@ -111,7 +111,7 @@ export default function ContactForm() {
       {/* Message */}
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("formMessage")} <span className="text-red-400">*</span>
+          {t("formMessage")} <span className="text-error-400">*</span>
         </label>
         <textarea
           id="message"
@@ -125,7 +125,7 @@ export default function ContactForm() {
 
       {/* Error */}
       {state.status === "error" && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+        <p className="text-sm text-error-500 bg-error-50 border border-error-100 rounded-xl px-4 py-3">
           {state.message}
         </p>
       )}

@@ -38,9 +38,9 @@ const SUB_LABELS: { key: SubLabel | "all"; label: string }[] = [
 ];
 
 const SUB_BADGE: Record<SubLabel, { bg: string; text: string; label: string }> = {
-  active:      { bg: "bg-green-50",      text: "text-green-700", label: "Actif" },
+  active:      { bg: "bg-success-50",      text: "text-success-700", label: "Actif" },
   free_launch: { bg: "bg-[#f5f6ec]",     text: "text-primary",   label: "Gratuit lancement" },
-  expired:     { bg: "bg-red-50",        text: "text-red-700",   label: "Expiré" },
+  expired:     { bg: "bg-error-50",        text: "text-error-700",   label: "Expiré" },
   none:        { bg: "bg-charcoal-100",  text: "text-charcoal-500", label: "Aucun" },
 };
 

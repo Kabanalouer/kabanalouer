@@ -48,10 +48,10 @@ export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="h-64 rounded-2xl overflow-hidden border border-gray-100">
+      <div className="h-64 rounded-2xl overflow-hidden border border-charcoal-100">
         <MapInner lat={lat} lng={lng} />
       </div>
-      <p className="text-sm text-gray-400 mt-2">
+      <p className="text-sm text-charcoal-400 mt-2">
         {t("exactLocationNote")}
       </p>
     </APIProvider>

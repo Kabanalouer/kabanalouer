@@ -158,7 +158,7 @@ export default async function TarifsPage() {
                 </div>
                 <div className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   {row.airbnb === false ? (
-                    <span className="text-red-400 text-base sm:text-lg font-bold">✗</span>
+                    <span className="text-error-400 text-base sm:text-lg font-bold">✗</span>
                   ) : (
                     <span className="text-xs sm:text-sm text-charcoal-500">{row.airbnb}</span>
                   )}

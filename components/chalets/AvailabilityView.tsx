@@ -6,7 +6,7 @@ import { getMonthNames, getDayNames } from "@/lib/dateLocale";
 
 const MAX_OFFSET = 17;
 
-const BLOCKED_COLOR = "#FECACA"; // red-200
+const BLOCKED_COLOR = "#FECACA"; // error-200
 
 type BlockedEntry = { date: string; source: "manual" | "ical" };
 type RangePos = "start" | "end" | "middle" | "single";
@@ -91,7 +91,7 @@ function MonthGrid({
               <span className={[
                 "relative z-10 text-xs",
                 isPast    ? "text-charcoal-100" :
-                isBlocked ? "text-red-500 font-medium" :
+                isBlocked ? "text-error-500 font-medium" :
                             "text-charcoal-600",
               ].join(" ")}>
                 {day}

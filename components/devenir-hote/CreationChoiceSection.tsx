@@ -64,13 +64,13 @@ export default function CreationChoiceSection() {
             </p>
 
             {state.status === "success" ? (
-              <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="bg-success-50 border border-success-200 rounded-xl px-5 py-4 flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center shrink-0 mt-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-sm text-green-800 font-medium leading-snug">
+                <p className="text-sm text-success-800 font-medium leading-snug">
                   {t("successMsg")}
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function CreationChoiceSection() {
                 </div>
 
                 {state.status === "error" && (
-                  <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  <p className="text-sm text-error-500 bg-error-50 border border-error-100 rounded-xl px-4 py-3">
                     {state.message}
                   </p>
                 )}

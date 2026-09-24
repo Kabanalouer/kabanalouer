@@ -48,26 +48,26 @@ export default async function AvailabilityPage({ params }: Props) {
   return (
     <div className="max-w-3xl">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-        <Link href={localePath("/dashboard/listings", locale)} className="hover:text-gray-600 transition-colors">
+      <div className="flex items-center gap-2 text-sm text-charcoal-400 mb-6">
+        <Link href={localePath("/dashboard/listings", locale)} className="hover:text-charcoal-600 transition-colors">
           Mes chalets
         </Link>
         <span>›</span>
-        <span className="text-gray-600 truncate max-w-xs">{listing.title}</span>
+        <span className="text-charcoal-600 truncate max-w-xs">{listing.title}</span>
         <span>›</span>
-        <span className="text-gray-900">Disponibilités</span>
+        <span className="text-charcoal-900">Disponibilités</span>
       </div>
 
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Disponibilités</h1>
-          <p className="text-gray-500 text-base mt-1">
+          <h1 className="text-2xl font-bold text-charcoal-900">Disponibilités</h1>
+          <p className="text-charcoal-500 text-base mt-1">
             Les dates non bloquées sont automatiquement disponibles pour les voyageurs.
           </p>
         </div>
         <Link
           href={`/dashboard/listings/${id}/edit`}
-          className="shrink-0 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 px-3 py-2 rounded-xl transition-colors"
+          className="shrink-0 text-sm text-charcoal-500 hover:text-charcoal-700 border border-charcoal-100 px-3 py-2 rounded-xl transition-colors"
         >
           ← Retour au chalet
         </Link>

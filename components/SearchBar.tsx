@@ -89,17 +89,17 @@ function CalendarMonth({
   return (
     <div className="select-none w-[252px]">
       <div className="flex items-center mb-4">
-        <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
+        <button onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-100 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-gray-900 capitalize">{monthHeader}</p>
-        <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-gray-100 text-gray-600" : "invisible"}`}>
+        <p className="flex-1 text-center text-sm font-semibold text-charcoal-900 capitalize">{monthHeader}</p>
+        <button onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-100 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
         {dayNames.map((d) => (
-          <div key={d} className="h-8 flex items-center justify-center text-xs font-medium text-gray-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="h-8 flex items-center justify-center text-xs font-medium text-charcoal-400 uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -123,10 +123,10 @@ function CalendarMonth({
                 onMouseEnter={() => !isPast && onDayEnter(ds)}
                 onMouseLeave={onDayLeave}
                 className={["relative z-10 w-9 h-9 flex items-center justify-center text-sm rounded-full transition-all",
-                  isPast ? "text-gray-300 cursor-not-allowed" :
+                  isPast ? "text-charcoal-300 cursor-not-allowed" :
                   isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
-                  "hover:bg-gray-100 text-gray-800 cursor-pointer"].join(" ")}
+                  "hover:bg-charcoal-100 text-charcoal-800 cursor-pointer"].join(" ")}
               >{day}</button>
             </div>
           );
@@ -373,10 +373,10 @@ export default function SearchBar({
     <div className="bg-white rounded-2xl shadow-xl p-1.5 sm:p-2 flex flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
-      <div ref={destRef} className="relative flex-1 min-w-[180px] flex border-b border-gray-100 sm:border-b-0">
+      <div ref={destRef} className="relative flex-1 min-w-[180px] flex border-b border-charcoal-100 sm:border-b-0">
         <div className="flex-1 flex items-center gap-3 px-4 py-1.5 sm:py-2">
           {/* Pin icon */}
-          <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -391,10 +391,10 @@ export default function SearchBar({
               setDestSelected(null);
               setDestOpen(true);
             }}
-            className="flex-1 bg-transparent text-base outline-none text-gray-700 placeholder-gray-400 min-w-0"
+            className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-300 min-w-0"
           />
           {destQuery && (
-            <button onClick={clearDest} className="text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+            <button onClick={clearDest} className="text-charcoal-400 hover:text-charcoal-600 transition-colors shrink-0">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -404,26 +404,26 @@ export default function SearchBar({
 
         {/* Dropdown */}
         {showDropdown && (
-          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-[9999] w-full min-w-[280px] max-h-[220px] overflow-y-auto">
+          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-charcoal-100 z-[9999] w-full min-w-[280px] max-h-[220px] overflow-y-auto">
             {!destQuery.trim() ? (
               /* No query: show recent searches or popular regions */
               recentSearches.length > 0 ? (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("recentSearches")}</p>
+                    <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("recentSearches")}</p>
                   </div>
                   {recentSearches.map((item, i) => (
                     <button
                       key={i}
                       onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
                     >
-                      <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="min-w-0">
-                        <p className="text-sm text-gray-800 truncate">{item.label}</p>
-                        <p className="text-xs text-gray-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
+                        <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
+                        <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                       </div>
                     </button>
                   ))}
@@ -431,19 +431,19 @@ export default function SearchBar({
               ) : (
                 <>
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("popularRegions")}</p>
+                    <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("popularRegions")}</p>
                   </div>
                   {popularRegions.map((item) => (
                     <button
                       key={item.value}
                       onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
                     >
-                      <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span className="text-sm text-gray-800">{item.label}</span>
+                      <span className="text-sm text-charcoal-800">{item.label}</span>
                     </button>
                   ))}
                 </>
@@ -456,18 +456,18 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "region").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("regionsGroup")}</p>
+                        <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("regionsGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "region").map((item) => (
                         <button
                           key={item.value}
                           onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
                         >
-                          <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                           </svg>
-                          <span className="text-sm text-gray-800">{item.label}</span>
+                          <span className="text-sm text-charcoal-800">{item.label}</span>
                         </button>
                       ))}
                     </>
@@ -476,45 +476,45 @@ export default function SearchBar({
                   {suggestions.filter((s) => s.type === "city").length > 0 && (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("citiesGroup")}</p>
+                        <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("citiesGroup")}</p>
                       </div>
                       {suggestions.filter((s) => s.type === "city").map((item) => (
                         <button
                           key={item.value}
                           onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
                         >
-                          <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span className="text-sm text-gray-800">{item.label}</span>
+                          <span className="text-sm text-charcoal-800">{item.label}</span>
                         </button>
                       ))}
                     </>
                   )}
                 </>
               ) : (
-                <div className="px-4 py-5 text-center text-sm text-gray-400">{t("noDestination")}</div>
+                <div className="px-4 py-5 text-center text-sm text-charcoal-400">{t("noDestination")}</div>
               )
             )}
           </div>
         )}
       </div>
 
-      <div className="hidden sm:block w-px bg-gray-100 self-stretch" />
+      <div className="hidden sm:block w-px bg-charcoal-100 self-stretch" />
 
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
-      <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex border-b border-gray-100 sm:border-b-0">
+      <div ref={calendarRef} className="relative flex-1 min-w-[180px] flex border-b border-charcoal-100 sm:border-b-0">
         <button
           onClick={handleCalendarToggle}
           className="flex-1 flex items-center gap-3 px-4 py-1.5 sm:py-2 text-left"
         >
-          <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span className={`text-sm ${datesLabel ? "text-gray-700" : "text-gray-400"}`}>
+          <span className={`text-sm ${datesLabel ? "text-charcoal-700" : "text-charcoal-400"}`}>
             {datesLabel ?? t("datesLabel")}
           </span>
         </button>
@@ -528,7 +528,7 @@ export default function SearchBar({
             />
 
             {/* Calendrier — absolute ancré sous le champ Dates */}
-            <div className="absolute top-full left-0 mt-2 rounded-2xl bg-white shadow-2xl border border-gray-100 p-5 z-[9999] overflow-y-auto max-h-[80vh]">
+            <div className="absolute top-full left-0 mt-2 rounded-2xl bg-white shadow-2xl border border-charcoal-100 p-5 z-[9999] overflow-y-auto max-h-[80vh]">
 
                 {/* Mobile : 1 mois */}
                 <div className="sm:hidden">
@@ -549,7 +549,7 @@ export default function SearchBar({
                     showPrev={canGoPrev} showNext={false} onPrev={goPrev} onNext={goNext}
                     locale={locale}
                   />
-                  <div className="w-px bg-gray-100" />
+                  <div className="w-px bg-charcoal-100" />
                   <CalendarMonth
                     year={rightYear} month={rightMonth}
                     today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
@@ -559,13 +559,13 @@ export default function SearchBar({
                   />
                 </div>
                 {(checkin || checkout) && (
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
+                  <div className="mt-4 pt-3 border-t border-charcoal-100 flex items-center justify-between">
+                    <span className="text-sm text-charcoal-500">
                       {checkin && checkout
                         ? `${formatShort(checkin, intlLocale)} → ${formatShort(checkout, intlLocale)}`
                         : checkin ? t("arrivalInfo", { date: formatShort(checkin, intlLocale) }) : ""}
                     </span>
-                    <button onClick={clearDates} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors">
+                    <button onClick={clearDates} className="text-sm text-charcoal-500 hover:text-charcoal-800 underline underline-offset-2 transition-colors">
                       {t("clearDates")}
                     </button>
                   </div>
@@ -575,23 +575,23 @@ export default function SearchBar({
         )}
       </div>
 
-      <div className="hidden sm:block w-px bg-gray-100 self-stretch" />
+      <div className="hidden sm:block w-px bg-charcoal-100 self-stretch" />
 
       {/* ── Field 3: Voyageurs ───────────────────────────────────────────── */}
       <div ref={guestsRef} className="relative flex items-center gap-3 px-4 py-1.5 sm:py-2 min-w-[150px]">
-        <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
         <button
           onClick={() => { setGuestsOpen((o) => !o); setDestOpen(false); setCalendarOpen(false); }}
-          className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer truncate ${guestsLabel ? "text-gray-700" : "text-gray-400"}`}
+          className={`bg-transparent outline-none text-sm text-left flex-1 cursor-pointer truncate ${guestsLabel ? "text-charcoal-700" : "text-charcoal-400"}`}
         >
           {guestsLabel ?? t("guestsPlaceholder")}
         </button>
 
         {guestsOpen && (
-          <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-[9999] w-[300px]">
+          <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-charcoal-100 z-[9999] w-[300px]">
             {([
               { label: t("adults"), sub: t("adultsSub"), val: adults,
                 onDecr: () => setAdults((v) => Math.max(0, v - 1)),
@@ -616,24 +616,24 @@ export default function SearchBar({
               <div key={label}>
                 <div className="flex items-center justify-between px-5 py-4">
                   <div className="self-start text-left">
-                    <p className="text-sm font-medium text-gray-800">{label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+                    <p className="text-sm font-medium text-charcoal-800">{label}</p>
+                    <p className="text-xs text-charcoal-400 mt-0.5">{sub}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={onDecr}
                       disabled={decrDis}
-                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-gray-600 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
                     </button>
-                    <span className="w-5 text-center text-sm font-medium text-gray-800">{val}</span>
+                    <span className="w-5 text-center text-sm font-medium text-charcoal-800">{val}</span>
                     <button
                       type="button"
                       onClick={onIncr}
                       disabled={incrDis}
-                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-gray-600 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="w-8 h-8 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     </button>

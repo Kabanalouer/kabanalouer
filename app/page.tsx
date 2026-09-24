@@ -333,7 +333,7 @@ export default async function HomePage() {
           </p>
           <Link
             href={localePath("/devenir-hote", locale)}
-            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-gray-50 transition-colors text-base"
+            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-charcoal-50 transition-colors text-base"
           >
             {t("ctaButton")}
           </Link>
@@ -377,7 +377,7 @@ function WhyCard({
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-7 border border-gray-100">
+    <div className="bg-white rounded-2xl p-7 border border-charcoal-100">
       <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
         {icon}
       </div>

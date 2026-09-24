@@ -64,7 +64,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
         placeholder={t("replyPlaceholder")}
         className="w-full border border-[#ebebeb] rounded-xl p-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
       />
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && <p className="text-xs text-error-500 mt-1">{error}</p>}
       <div className="flex items-center gap-3 mt-2">
         <button
           onClick={handleSave}

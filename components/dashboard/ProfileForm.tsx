@@ -78,7 +78,7 @@ function Section({ title, description, children }: { title: string; description?
 }
 
 function ErrorMsg({ msg }: { msg: string }) {
-  return msg ? <p className="text-sm text-red-500">{msg}</p> : null;
+  return msg ? <p className="text-sm text-error-500">{msg}</p> : null;
 }
 
 function LangButton({ selected, onClick, disabled, label }: {
@@ -563,7 +563,7 @@ export default function ProfileForm({
               <button
                 type="button"
                 onClick={deleteAvatar}
-                className="text-sm text-charcoal-400 hover:text-red-500 transition-colors"
+                className="text-sm text-charcoal-400 hover:text-error-500 transition-colors"
               >
                 {t("deletePhoto")}
               </button>
@@ -739,28 +739,28 @@ export default function ProfileForm({
       </Section>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-red-100 p-6">
+      <div className="bg-white rounded-2xl border border-error-100 p-6">
         <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-1">{t("dangerZone")}</h2>
         <p className="text-base text-charcoal-500 mb-5">
           {t("dangerZoneDesc")}
         </p>
 
         {deactivated ? (
-          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700 font-medium">
+          <div className="bg-error-50 border border-error-100 rounded-xl px-4 py-3 text-sm text-error-700 font-medium">
             {t("deactivated")}
           </div>
         ) : !showDeactivateConfirm ? (
           <button
             type="button"
             onClick={() => setShowDeactivateConfirm(true)}
-            className="border border-red-300 text-red-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-50 transition-colors"
+            className="border border-error-300 text-error-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-error-50 transition-colors"
           >
             {t("deactivate")}
           </button>
         ) : (
-          <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-semibold text-red-700">{t("deactivateConfirm")}</p>
-            <p className="text-sm text-red-600">
+          <div className="bg-error-50 border border-error-100 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-semibold text-error-700">{t("deactivateConfirm")}</p>
+            <p className="text-sm text-error-600">
               {t("deactivateWarning")}
             </p>
             <div className="flex gap-3">
@@ -768,7 +768,7 @@ export default function ProfileForm({
                 type="button"
                 onClick={deactivateAccount}
                 disabled={deactivating}
-                className="bg-red-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="bg-error-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-error-700 transition-colors disabled:opacity-50"
               >
                 {deactivating ? t("deactivating") : t("deactivateYes")}
               </button>

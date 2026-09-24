@@ -122,7 +122,7 @@ export default function CustomSlugField({
         {savedValue ? tEdit("customSlugActive", { slug: savedValue }) : listingNumber != null ? tEdit("customSlugUsingNumber", { number: listingNumber }) : null}
       </p>
 
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-sm text-error-600 mt-2">{error}</p>}
       {justSaved && !error && <p className="text-sm text-primary mt-2">{tEdit("customSlugSaved")}</p>}
 
       {/* Un seul bouton pour définir, changer ou vider le lien : un champ

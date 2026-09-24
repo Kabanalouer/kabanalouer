@@ -277,7 +277,7 @@ export default function RoomsSection({
         >
           {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-error-500">{error}</p>}
       </div>
     </div>
   );
@@ -330,7 +330,7 @@ function BedsEditor({
             />
             <button
               onClick={() => onRemoveBed(i)}
-              className="text-charcoal-300 hover:text-red-400 transition-colors p-1"
+              className="text-charcoal-300 hover:text-error-400 transition-colors p-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -371,13 +371,13 @@ function RoomHeader({
         className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-base"
       />
       {room.photos.length === 0 && (
-        <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+        <span className="text-xs font-medium text-warning-600 bg-warning-50 border border-warning-200 rounded-full px-2 py-0.5 shrink-0">
           {t("noPhotos")}
         </span>
       )}
       <button
         onClick={onRemove}
-        className="text-charcoal-300 hover:text-red-400 transition-colors"
+        className="text-charcoal-300 hover:text-error-400 transition-colors"
         aria-label="Supprimer"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

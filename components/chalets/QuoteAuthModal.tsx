@@ -119,7 +119,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
-      {error && <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">{error}</div>}
+      {error && <div className="bg-error-50 text-error-600 rounded-xl p-3 text-sm">{error}</div>}
 
       <div>
         <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("emailLabel")}</label>
@@ -263,7 +263,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   return (
     <form onSubmit={handleSignup} className="space-y-4">
       {(error || accountExists) && (
-        <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm">
+        <div className="bg-error-50 text-error-600 rounded-xl p-3 text-sm">
           {accountExists ? (
             <>
               {t("accountExists")}{" "}

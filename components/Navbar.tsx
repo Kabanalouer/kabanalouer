@@ -83,7 +83,7 @@ function IconMenu({ open }: { open: boolean }) {
 
 // ── Unread dot ────────────────────────────────────────────────────────────────
 function UnreadDot() {
-  return <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />;
+  return <span className="w-2 h-2 rounded-full bg-error-500 shrink-0" />;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

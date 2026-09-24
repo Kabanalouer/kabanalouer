@@ -57,17 +57,17 @@ export default function ICalSync({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6">
+    <div className="bg-white rounded-2xl border border-charcoal-100 p-6 space-y-6">
       <div>
-        <h2 className="text-heading-2 font-bold text-gray-900 mb-1">{t("title")}</h2>
-        <p className="text-base text-gray-500">
+        <h2 className="text-heading-2 font-bold text-charcoal-900 mb-1">{t("title")}</h2>
+        <p className="text-base text-charcoal-500">
           {t("description")}
         </p>
       </div>
 
       {/* Import URL */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-charcoal-700 mb-2">
           {t("urlLabel")}
         </label>
         <div className="flex gap-2">
@@ -76,12 +76,12 @@ export default function ICalSync({
             value={icalUrl}
             onChange={(e) => { setIcalUrl(e.target.value); setUrlSaved(false); }}
             placeholder={t("placeholder")}
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="flex-1 border border-charcoal-100 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           <button
             onClick={handleSaveUrl}
             disabled={saving}
-            className="border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="border border-charcoal-100 text-charcoal-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-charcoal-50 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {saving ? t("saving") : urlSaved ? t("saved") : t("save")}
           </button>
@@ -89,10 +89,10 @@ export default function ICalSync({
       </div>
 
       {/* Sync controls */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+      <div className="flex items-center justify-between p-4 bg-charcoal-50 rounded-xl">
         <div>
-          <p className="text-sm font-medium text-gray-700">{t("lastSync")}</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-sm font-medium text-charcoal-700">{t("lastSync")}</p>
+          <p className="text-xs text-charcoal-400 mt-0.5">
             {lastSync
               ? new Date(lastSync).toLocaleString(locale === "en" ? "en-CA" : "fr-CA", {
                   day: "numeric", month: "long", year: "numeric",
@@ -117,7 +117,7 @@ export default function ICalSync({
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-error-500">{error}</p>}
     </div>
   );
 }

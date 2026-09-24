@@ -825,8 +825,8 @@ export default function EditListingForm({
             } else if (INDICATOR_SECTION_IDS.has(s.id)) {
               const valid = indicatorValid[s.id];
               indicator = valid
-                ? <span className="text-green-500 text-xs shrink-0">✓</span>
-                : <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />;
+                ? <span className="text-success-500 text-xs shrink-0">✓</span>
+                : <span className="w-2 h-2 rounded-full bg-error-500 shrink-0 inline-block" />;
             }
             return (
               <button
@@ -852,7 +852,7 @@ export default function EditListingForm({
                 onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
                 className="w-full py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
               >
-                {tEdit("publishedButton")} <span className="text-green-600">✓</span>
+                {tEdit("publishedButton")} <span className="text-success-600">✓</span>
               </button>
             ) : (
               <button
@@ -906,7 +906,7 @@ export default function EditListingForm({
               onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
               className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
             >
-              {tEdit("publishedButton")} <span className="text-green-600">✓</span>
+              {tEdit("publishedButton")} <span className="text-success-600">✓</span>
             </button>
           ) : (
             <button
@@ -1041,25 +1041,25 @@ export default function EditListingForm({
                       spellCheck
                       lang="fr-CA"
                     />
-                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-red-500" : "text-charcoal-400"}`}>
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${titleAtLimit ? "text-error-500" : "text-charcoal-400"}`}>
                       {form.title.length}/{TITLE_MAX}
                     </p>
 
                     {showTitleContextWarning && !titleGenerating && (
-                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                        <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
+                      <div className="mt-3 bg-warning-50 border border-warning-200 rounded-xl px-4 py-3">
+                        <p className="text-sm text-warning-800 mb-3">{tEdit("aiContextWarning")}</p>
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={() => void handleGenerateTitles(true)}
-                            className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                            className="text-xs font-medium text-warning-700 border border-warning-300 bg-white rounded-full px-3 py-1.5 hover:bg-warning-50 transition-colors"
                           >
                             {tEdit("aiGenerateAnyway")}
                           </button>
                           <button
                             type="button"
                             onClick={() => { setShowTitleContextWarning(false); goToNextIncompleteSection(); }}
-                            className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                            className="text-xs font-medium text-white bg-warning-600 rounded-full px-3 py-1.5 hover:bg-warning-700 transition-colors"
                           >
                             {tEdit("continueForm")}
                           </button>
@@ -1067,7 +1067,7 @@ export default function EditListingForm({
                       </div>
                     )}
 
-                    {titleGenError && <p className="mt-2 text-xs text-red-500">{titleGenError}</p>}
+                    {titleGenError && <p className="mt-2 text-xs text-error-500">{titleGenError}</p>}
                   </>
                 );
 
@@ -1165,25 +1165,25 @@ export default function EditListingForm({
                       spellCheck
                       lang="fr-CA"
                     />
-                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit || form.description.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${descAtLimit || form.description.trim().length < DESC_MIN ? "text-error-500" : "text-charcoal-400"}`}>
                       {tEdit("descCounter", { count: form.description.length, max: DESC_MAX, min: DESC_MIN })}
                     </p>
 
                     {showDescContextWarning && !descGenerating && (
-                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                        <p className="text-sm text-amber-800 mb-3">{tEdit("aiContextWarning")}</p>
+                      <div className="mt-3 bg-warning-50 border border-warning-200 rounded-xl px-4 py-3">
+                        <p className="text-sm text-warning-800 mb-3">{tEdit("aiContextWarning")}</p>
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={() => void handleGenerateDescription(true)}
-                            className="text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded-full px-3 py-1.5 hover:bg-amber-50 transition-colors"
+                            className="text-xs font-medium text-warning-700 border border-warning-300 bg-white rounded-full px-3 py-1.5 hover:bg-warning-50 transition-colors"
                           >
                             {tEdit("aiGenerateAnyway")}
                           </button>
                           <button
                             type="button"
                             onClick={() => { setShowDescContextWarning(false); goToNextIncompleteSection(); }}
-                            className="text-xs font-medium text-white bg-amber-600 rounded-full px-3 py-1.5 hover:bg-amber-700 transition-colors"
+                            className="text-xs font-medium text-white bg-warning-600 rounded-full px-3 py-1.5 hover:bg-warning-700 transition-colors"
                           >
                             {tEdit("continueForm")}
                           </button>
@@ -1191,7 +1191,7 @@ export default function EditListingForm({
                       </div>
                     )}
 
-                    {descGenError && <p className="mt-2 text-xs text-red-500">{descGenError}</p>}
+                    {descGenError && <p className="mt-2 text-xs text-error-500">{descGenError}</p>}
 
                     {savedDescription !== null && (
                       <div className="mt-3">
@@ -1233,7 +1233,7 @@ export default function EditListingForm({
                       spellCheck
                       lang="en-CA"
                     />
-                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${form.description_en.trim().length > 0 && form.description_en.trim().length < DESC_MIN ? "text-red-500" : "text-charcoal-400"}`}>
+                    <p className={`text-xs tabular-nums mt-1 text-right transition-colors duration-200 ${form.description_en.trim().length > 0 && form.description_en.trim().length < DESC_MIN ? "text-error-500" : "text-charcoal-400"}`}>
                       {tEdit("descCounter", { count: form.description_en.length, max: DESC_MAX, min: DESC_MIN })}
                     </p>
                   </div>
@@ -1433,11 +1433,11 @@ export default function EditListingForm({
               </div>
 
               {showCalendarWarning && (
-                <div className="mb-5 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                  <svg className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <div className="mb-5 flex items-start gap-2.5 bg-warning-50 border border-warning-200 rounded-xl px-4 py-3">
+                  <svg className="w-4 h-4 text-warning-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
-                  <p className="text-sm text-amber-800">
+                  <p className="text-sm text-warning-800">
                     {tEdit("calendarSwitchWarning")}
                   </p>
                 </div>
@@ -1689,13 +1689,13 @@ export default function EditListingForm({
                       />
                     )}
 
-                    <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
+                    <div className="inline-flex items-center gap-1.5 bg-warning-50 text-warning-700 border border-warning-200 rounded-full px-3 py-1 text-xs font-semibold">
                       {t("publish.adminReviewBadge")}
                     </div>
                     <p className="text-base text-charcoal-500">{t("publish.adminReviewNote")}</p>
 
                     {publishError && (
-                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{publishError}</p>
+                      <p className="text-sm text-error-600 bg-error-50 rounded-xl px-4 py-3">{publishError}</p>
                     )}
 
                     <button
@@ -1718,12 +1718,12 @@ export default function EditListingForm({
               return (
                 <SectionShell title={t("publish.headingActive")}>
                   <div className="space-y-5 max-w-md">
-                    <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
+                    <div className="bg-success-50 border border-success-200 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-5 h-5 text-success-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p className="text-heading-3 font-bold text-green-700">{tEdit("publishedLabel")}</p>
+                        <p className="text-heading-3 font-bold text-success-700">{tEdit("publishedLabel")}</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
@@ -1764,13 +1764,13 @@ export default function EditListingForm({
                     </div>
 
                     {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                        <p className="text-sm text-amber-800 font-medium mb-2">
+                      <div className="bg-warning-50 border border-warning-200 rounded-xl p-4">
+                        <p className="text-sm text-warning-800 font-medium mb-2">
                           {tEdit(daysUntilExpiry === 1 ? "expiringWarningDay" : "expiringWarningDays", { days: daysUntilExpiry })}
                         </p>
                         <Link
                           href={localePath("/dashboard/subscription", locale)}
-                          className="text-sm text-amber-700 font-semibold hover:underline"
+                          className="text-sm text-warning-700 font-semibold hover:underline"
                         >
                           {tEdit("renewNow")}
                         </Link>
@@ -1795,7 +1795,7 @@ export default function EditListingForm({
                   )}
 
                   {isFree ? (
-                    <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
+                    <div className="inline-flex items-center gap-1.5 bg-warning-50 text-warning-700 border border-warning-200 rounded-full px-3 py-1 text-xs font-semibold">
                       {t("publish.launchOffer")}
                     </div>
                   ) : null}
@@ -1832,7 +1832,7 @@ export default function EditListingForm({
                   </div>
 
                   {publishError && (
-                    <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{publishError}</p>
+                    <p className="text-sm text-error-600 bg-error-50 rounded-xl px-4 py-3">{publishError}</p>
                   )}
 
                   {isFree ? (
@@ -1931,10 +1931,10 @@ export default function EditListingForm({
                     tCommon("save")
                   )}
                 </button>
-                {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+                {saveError && <p className="text-sm text-error-500">{saveError}</p>}
               </div>
               {descBelowMin && (
-                <p className="text-sm text-red-500">
+                <p className="text-sm text-error-500">
                   {tEdit("descMinReason", { count: DESC_MIN - form.description.trim().length, min: DESC_MIN })}
                 </p>
               )}
@@ -1968,8 +1968,8 @@ function PublishErrorBox({
   tEdit: ReturnType<typeof useTranslations>;
 }) {
   return (
-    <div className="border border-red-200 bg-red-50 rounded-xl p-4 space-y-2">
-      <p className="text-sm font-semibold text-red-700">
+    <div className="border border-error-200 bg-error-50 rounded-xl p-4 space-y-2">
+      <p className="text-sm font-semibold text-error-700">
         {tEdit("completeBeforePublish")}
       </p>
       <ul className="space-y-1">
@@ -1978,7 +1978,7 @@ function PublishErrorBox({
             <button
               type="button"
               onClick={() => onNavigate(id)}
-              className="text-sm text-red-600 hover:text-red-800 hover:underline text-left"
+              className="text-sm text-error-600 hover:text-error-800 hover:underline text-left"
             >
               → {getSectionLabel(id)}
             </button>

@@ -167,10 +167,10 @@ export default function RoomPhotoManager({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); void removePhoto(url); }}
-                className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
                 aria-label="Supprimer cette photo"
               >
-                <svg className="w-2.5 h-2.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-2.5 h-2.5 text-error-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -253,7 +253,7 @@ export default function RoomPhotoManager({
         onChange={(e) => e.target.files && void uploadFiles(e.target.files)}
       />
 
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && <p className="text-xs text-error-500 mt-1">{error}</p>}
     </div>
   );
 }

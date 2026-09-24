@@ -71,8 +71,8 @@ export default async function EditListingPage({ params }: Props) {
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{listing.title ? "Modifier mon annonce" : "Créer mon annonce"}</h1>
-        <p className="text-gray-500 text-sm mt-1 flex items-center gap-1.5">
+        <h1 className="text-2xl font-bold text-charcoal-900">{listing.title ? "Modifier mon annonce" : "Créer mon annonce"}</h1>
+        <p className="text-charcoal-500 text-sm mt-1 flex items-center gap-1.5">
           <span className="line-clamp-1">{listing.title}</span>
           {listing.title && (
             <a

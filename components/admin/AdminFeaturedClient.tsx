@@ -78,7 +78,7 @@ function SlotCard({
       <button
         onClick={() => onRemove(row.id)}
         disabled={removing}
-        className="shrink-0 text-xs px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+        className="shrink-0 text-xs px-3 py-1.5 rounded-full border border-error-200 text-error-600 hover:bg-error-50 disabled:opacity-50 transition-colors"
       >
         Retirer
       </button>
@@ -360,7 +360,7 @@ export default function AdminFeaturedClient({
             </div>
 
             {modalError && (
-              <p className="text-sm text-red-600 mt-3">{modalError}</p>
+              <p className="text-sm text-error-600 mt-3">{modalError}</p>
             )}
 
             <div className="flex flex-col sm:flex-row gap-2 mt-5">

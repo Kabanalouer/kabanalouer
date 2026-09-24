@@ -175,7 +175,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
               {deactivating ? t("deactivating") : t("deactivate")}
             </button>
           </div>
-          {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+          {error && <p className="text-xs text-error-500 mt-2">{error}</p>}
         </div>
       ) : (
         <div>
@@ -252,7 +252,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
                     t={t}
                   />
-                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  {error && <p className="text-sm text-error-500">{error}</p>}
                   <button
                     type="button"
                     onClick={handleSave}
@@ -299,7 +299,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
                     t={t}
                   />
-                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  {error && <p className="text-sm text-error-500">{error}</p>}
                   <button
                     type="button"
                     onClick={handleSave}
@@ -378,7 +378,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                   <p className="text-sm text-charcoal-400">
                     {t("lastMinuteNote")}
                   </p>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  {error && <p className="text-sm text-error-500">{error}</p>}
                   <button
                     type="button"
                     onClick={handleSave}

@@ -209,7 +209,7 @@ export default function AdminListingsClient({
                     {/* Statut */}
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        l.isPublished ? "bg-green-50 text-green-700" : "bg-charcoal-100 text-charcoal-500"
+                        l.isPublished ? "bg-success-50 text-success-700" : "bg-charcoal-100 text-charcoal-500"
                       }`}>
                         {l.isPublished ? "Publié" : "Non publié"}
                       </span>

@@ -226,7 +226,7 @@ export default function AdminContactMessagesClient({
                         Lu
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-[#f04e45]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-error-50 text-error-600">
                         Non lu
                       </span>
                     )}

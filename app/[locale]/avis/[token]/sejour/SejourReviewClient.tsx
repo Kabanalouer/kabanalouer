@@ -87,7 +87,7 @@ export default function SejourReviewClient({ token }: { token: string }) {
         className="w-full border border-[#ebebeb] rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
       />
 
-      {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+      {error && <p className="text-sm text-error-500 mb-3">{error}</p>}
 
       <button
         onClick={handleSubmit}

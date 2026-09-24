@@ -132,7 +132,7 @@ export default function TranslateButton({
         {loading ? <Spinner className={iconClass} /> : <TranslateIcon className={iconClass} />}
         {variant !== "icon" && displayLabel}
       </button>
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && <p className="text-xs text-error-500 mt-1">{error}</p>}
     </div>
   );
 }

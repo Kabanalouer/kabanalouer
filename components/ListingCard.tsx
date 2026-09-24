@@ -79,7 +79,7 @@ export default function ListingCard({
   return (
     <Link href={listingHref} className="group block">
       {/* ── Photo ── */}
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
+      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-charcoal-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
         {listing.photos.length > 0 ? (
           <Image
             src={photos[idx]}
@@ -90,9 +90,9 @@ export default function ListingCard({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="w-full h-full flex items-center justify-center bg-charcoal-100">
             <svg
-              className="w-12 h-12 text-gray-300"
+              className="w-12 h-12 text-charcoal-300"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -112,7 +112,7 @@ export default function ListingCard({
           <button
             onClick={prev}
             aria-label={t("prevPhoto")}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-gray-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -125,7 +125,7 @@ export default function ListingCard({
           <button
             onClick={next}
             aria-label={t("nextPhoto")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-gray-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
