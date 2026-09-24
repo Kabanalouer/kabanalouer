@@ -324,11 +324,11 @@ export default function ContactForm({
     <div className="space-y-3">
       {/* Host mini-profile */}
       <div className="flex items-center gap-3 pb-1">
-        <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-charcoal-100 flex items-center justify-center">
           {hostAvatarUrl ? (
             <img src={hostAvatarUrl} alt={hostFirstName ?? t("ownerLabel")} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-white font-bold text-lg">{hostInitials}</span>
+            <span className="text-charcoal-600 font-bold text-lg">{hostInitials}</span>
           )}
         </div>
         <div>

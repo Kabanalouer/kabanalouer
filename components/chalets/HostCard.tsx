@@ -50,7 +50,7 @@ export default async function HostCard({
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Left: host card ── */}
         <div className="bg-charcoal-50 rounded-2xl p-6 flex flex-col items-center text-center sm:w-56 shrink-0">
-          <div className="w-24 h-24 rounded-full bg-primary overflow-hidden flex items-center justify-center mb-3">
+          <div className="w-24 h-24 rounded-full bg-charcoal-100 overflow-hidden flex items-center justify-center mb-3">
             {host.avatar_url ? (
               <Image
                 src={host.avatar_url}
@@ -60,7 +60,7 @@ export default async function HostCard({
                 className="object-cover w-full h-full"
               />
             ) : (
-              <span className="text-white font-bold text-3xl">
+              <span className="text-charcoal-600 font-bold text-3xl">
                 {(host.name?.[0] ?? "?").toUpperCase()}
               </span>
             )}

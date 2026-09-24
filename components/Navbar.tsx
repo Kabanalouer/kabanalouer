@@ -49,7 +49,7 @@ function Avatar({ profile, size = 32 }: { profile: Profile; size?: number }) {
   }
   return (
     <div
-      className="rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0"
+      className="rounded-full bg-charcoal-100 flex items-center justify-center text-charcoal-600 font-bold flex-shrink-0"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
       {initial}

@@ -537,8 +537,8 @@ export default function ProfileForm({
                 sizes="80px"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">{initial}</span>
+              <div className="w-20 h-20 rounded-full bg-charcoal-100 flex items-center justify-center">
+                <span className="text-charcoal-600 font-bold text-2xl">{initial}</span>
               </div>
             )}
             {avatarUploading && (

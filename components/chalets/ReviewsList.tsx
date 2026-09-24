@@ -53,11 +53,11 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
             return (
               <div key={review.id} className="space-y-2">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full shrink-0 bg-primary overflow-hidden flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full shrink-0 bg-charcoal-100 overflow-hidden flex items-center justify-center">
                     {review.author?.avatar_url ? (
                       <img src={review.author.avatar_url} alt={authorFirst} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-white font-bold text-sm">{initial}</span>
+                      <span className="text-charcoal-600 font-bold text-sm">{initial}</span>
                     )}
                   </div>
                   <div>

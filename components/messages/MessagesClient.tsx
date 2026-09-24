@@ -315,7 +315,7 @@ export default function MessagesClient({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-charcoal-200 flex-shrink-0 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-charcoal-100 flex-shrink-0 overflow-hidden">
                       {conv.other_user_avatar ? (
                         <Image
                           src={conv.other_user_avatar}
@@ -325,7 +325,7 @@ export default function MessagesClient({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-charcoal-500 font-bold text-sm">
+                        <div className="w-full h-full flex items-center justify-center text-charcoal-600 font-bold text-sm">
                           {conv.other_user_name[0]?.toUpperCase()}
                         </div>
                       )}
@@ -386,7 +386,7 @@ export default function MessagesClient({
 
               {activeConv && (
                 <>
-                  <div className="w-9 h-9 rounded-full bg-charcoal-200 overflow-hidden flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-charcoal-100 overflow-hidden flex-shrink-0">
                     {activeConv.other_user_avatar ? (
                       <Image
                         src={activeConv.other_user_avatar}
@@ -396,7 +396,7 @@ export default function MessagesClient({
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-charcoal-500 font-bold text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-charcoal-600 font-bold text-sm">
                         {activeConv.other_user_name[0]?.toUpperCase()}
                       </div>
                     )}

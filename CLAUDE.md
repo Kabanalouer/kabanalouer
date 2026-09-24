@@ -99,6 +99,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 - **Boutons CTA** → `rounded-full` (pill)
 - **Prix québécois** → `120 $/nuit`, `299 $/an` — l'espace avant `$` est **insécable** (U+00A0), pour que le `$` ne tombe jamais seul en début de ligne (appliqué à tout le site le 2026-09-24). En anglais : `$120/night`.
 - **Notifications** → toujours `CountBadge` / `AvatarDot` (`components/CountBadge.tsx`) : pastille orange brûlé (`bg-accent`), chiffre blanc, plafonné à « 9+ », `aria-label` en mots. Chiffre quand l'utilisateur doit agir (messages, avis à répondre) ; simple point avec contour blanc sur la photo de profil quand l'espace manque (voyageur : messages non lus ; proprio sur mobile : messages ou avis). Le titre de l'onglet est préfixé « (n) » tant qu'il y a des messages non lus (`Navbar.tsx`).
+- **Photo de profil absente** → cercle neutre `bg-charcoal-100` + initiale `text-charcoal-600 font-bold`, **partout** (en-tête, avis, carte proprio, mini-profil du formulaire, messagerie, profil, « Mes avis ») — jamais olive, réservé à la marque et aux actions.
 - **Nombres décimaux** → toujours `formatDecimal()` / `formatPercent()` de `lib/formatNumber.ts` (« 4,8 » et « 12,5 % » en FR, « 4.8 » et « 12.5% » en EN) — jamais `toFixed()` pour un nombre affiché. Seule exception : coordonnées GPS.
 - Fonds de section → `bg-charcoal-50`
 - Titres principaux → `text-charcoal-800`

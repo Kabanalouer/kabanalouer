@@ -155,7 +155,7 @@ export default async function MesAvisPage() {
 
                 {/* Author + date + stars */}
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full shrink-0 overflow-hidden bg-primary/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full shrink-0 overflow-hidden bg-charcoal-100 flex items-center justify-center">
                     {author?.avatar_url ? (
                       <Image
                         src={author.avatar_url}
@@ -165,7 +165,7 @@ export default async function MesAvisPage() {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <span className="text-primary font-bold text-sm">{initial}</span>
+                      <span className="text-charcoal-600 font-bold text-sm">{initial}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
