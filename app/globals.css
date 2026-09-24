@@ -8,6 +8,11 @@
 
 /* ── Tailwind theme → utility classes (bg-*, text-*, border-*, font-*) ── */
 @theme {
+  /* Accent — orange brûlé, réservé aux signaux (promo, favoris, notifications).
+     Jamais sur le bouton d'action principal, qui reste olive (voir CLAUDE.md § Couleurs). */
+  --color-accent:      #C2410C;
+  --color-accent-dark: #9A3412;
+
   /* Échelle typographique (voir CLAUDE.md § Typographie) — text-heading-2 / text-heading-3 */
   --text-heading-2: 1.375rem;              /* 22px — titres de section (H2) */
   --text-heading-2--line-height: 1.75rem;

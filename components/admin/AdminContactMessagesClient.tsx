@@ -111,7 +111,7 @@ export default function AdminContactMessagesClient({
         </div>
         <div className="bg-white rounded-xl border border-[#ebebeb] px-5 py-4">
           <p className="text-xs text-charcoal-400 mb-1">Non lus</p>
-          <p className="text-2xl font-bold text-[#f04e45]">{unreadCount}</p>
+          <p className="text-2xl font-bold text-accent">{unreadCount}</p>
         </div>
       </div>
 

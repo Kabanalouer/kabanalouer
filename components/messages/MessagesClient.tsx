@@ -340,7 +340,7 @@ export default function MessagesClient({
                             {formatConversationDate(conv.last_message_at, locale)}
                           </span>
                           {conv.unread_count > 0 && (
-                            <span className="w-2 h-2 rounded-full bg-[#f04e45]" aria-label={t("unread")} />
+                            <span className="w-2 h-2 rounded-full bg-accent" aria-label={t("unread")} />
                           )}
                         </div>
                       </div>

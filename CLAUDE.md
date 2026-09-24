@@ -62,7 +62,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Primary/600 | — | `#4d5631` |
 | Primary/100 | `bg-primary/10` | `#e8ebdc` |
 | Primary/50 | `bg-[#f5f6ec]` | `#f5f6ec` |
-| Accent coral | `text-primary` via var CSS | `#f04e45` — badges Promo, boutons CTA principaux |
+| Accent (orange brûlé, adopté le 2026-09-24) | `bg-accent`, `text-accent`, `bg-accent/5 border-accent/20` · hover `accent-dark` | `#C2410C` / `#9A3412` — **signaux seulement** : badges et bandeaux promo, cœur des favoris, pastilles/compteurs non lus. **Jamais** sur le bouton d'action principal (reste olive). Remplace l'ancien corail `#f04e45` (contraste insuffisant, effet rouge-vert avec l'olive) |
 | Charcoal scale | `text-charcoal-{400,500,600,700,800}` | texte et bordures sombres |
 | Bordures légères | `border-[#ebebeb]` | inputs, cartes |
 

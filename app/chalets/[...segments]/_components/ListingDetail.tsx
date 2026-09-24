@@ -594,13 +594,13 @@ export default async function ListingDetail({ listing, user, searchParams, local
               {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (() => {
                 const lines = formatPromoLines(activePromo);
                 return (
-                  <div className="mb-4 flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
-                    <svg className="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <div className="mb-4 flex items-start gap-2 bg-accent/5 border border-accent/20 rounded-xl px-3 py-2.5">
+                    <svg className="w-4 h-4 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold text-primary leading-snug">{lines.line1}</p>
-                      {lines.line2 && <p className="text-xs font-normal text-primary/80 leading-snug mt-0.5">{lines.line2}</p>}
+                      <p className="text-sm font-semibold text-accent leading-snug">{lines.line1}</p>
+                      {lines.line2 && <p className="text-xs font-normal text-accent/80 leading-snug mt-0.5">{lines.line2}</p>}
                     </div>
                   </div>
                 );
@@ -648,7 +648,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
             ) : (
               <div>
                 {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (
-                  <p className="text-xs font-medium text-primary leading-none mb-1 truncate max-w-[160px]">
+                  <p className="text-xs font-medium text-accent leading-none mb-1 truncate max-w-[160px]">
                     {formatPromoLines(activePromo).line1}
                   </p>
                 )}
