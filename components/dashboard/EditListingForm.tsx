@@ -2214,8 +2214,8 @@ function DogPolicyFields({ max, sizeLimit, feeType, feeAmount, onChange, tEdit, 
           </button>
         </div>
         {hasFee && (
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            <div className="relative w-32">
+          <div className="flex items-center gap-2 mt-3">
+            <div className="relative w-32 shrink-0">
               <input
                 type="number"
                 inputMode="numeric"
@@ -2235,7 +2235,8 @@ function DogPolicyFields({ max, sizeLimit, feeType, feeAmount, onChange, tEdit, 
               value={feeType}
               onChange={(e) => onChange({ dogs_fee_type: e.target.value as DogFeeType })}
               aria-label={tEdit("dogsFeeUnitLabel")}
-              className={`${inputCls} bg-white w-auto`}
+              // inputCls force w-full, qui renvoyait ce menu sous le montant
+              className={`${inputCls.replace("w-full", "")} bg-white min-w-0`}
             >
               <option value="per_night">{tEdit("dogsFeePerNight")}</option>
               <option value="per_stay">{tEdit("dogsFeePerStay")}</option>
