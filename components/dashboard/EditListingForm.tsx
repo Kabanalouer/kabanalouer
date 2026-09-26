@@ -1643,19 +1643,13 @@ export default function EditListingForm({
                   <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinTypeLabel")} <Req /></label>
                   <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} tEdit={tEdit} />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsLabel")}</label>
-                    <ToggleField
-                      value={form.dogs_allowed}
-                      onChange={(v) => setForm((prev) => ({ ...prev, dogs_allowed: v, dogs_max: v ? (prev.dogs_max ?? 1) : prev.dogs_max }))}
-                      tEdit={tEdit}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
-                    <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsLabel")}</label>
+                  <ToggleField
+                    value={form.dogs_allowed}
+                    onChange={(v) => setForm((prev) => ({ ...prev, dogs_allowed: v, dogs_max: v ? (prev.dogs_max ?? 1) : prev.dogs_max }))}
+                    tEdit={tEdit}
+                  />
                 </div>
                 {form.dogs_allowed && (
                   <DogPolicyFields
@@ -1668,6 +1662,10 @@ export default function EditListingForm({
                     locale={locale}
                   />
                 )}
+                <div>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
+                  <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("minAgeLabel")}</label>
                   <div className="flex items-center gap-3 mt-2">
