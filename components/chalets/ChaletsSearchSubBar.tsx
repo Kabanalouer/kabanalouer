@@ -22,13 +22,14 @@ interface Props {
   minBathrooms?: string;
   amenities?: string;
   dogs?: string;
+  accessible?: string;
 }
 
 function Inner(props: Props) {
   const t = useTranslations("searchSubBar");
   const locale = useLocale();
   const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
-  const { region, city, checkin, checkout, capacity, minBedrooms, minBeds, minBathrooms, amenities, dogs } = props;
+  const { region, city, checkin, checkout, capacity, minBedrooms, minBeds, minBathrooms, amenities, dogs, accessible } = props;
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -70,6 +71,7 @@ function Inner(props: Props) {
             checkout: checkout || undefined,
             capacity: capacity || undefined,
             dogs: dogs || undefined,
+            accessible: accessible || undefined,
           }}
           initialMinBedrooms={minBedrooms}
           initialMinBeds={minBeds}

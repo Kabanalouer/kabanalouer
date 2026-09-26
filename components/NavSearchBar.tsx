@@ -280,6 +280,7 @@ function NavSearchBarInner() {
     checkout: initCheckout || undefined,
     capacity: initCapacity || undefined,
     dogs: initDogsParam || undefined,
+    accessible: searchParams.get("accessible") || undefined,
   };
 
   return (

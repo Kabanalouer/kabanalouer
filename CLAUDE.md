@@ -512,6 +512,17 @@ Remplace l'ancien booléen « Animaux acceptés » (`pets_allowed`, colonne reno
 - **Recherche** : paramètre unique `?dogs=N` (compteur « Chiens » des barres de recherche, ancien `?pets=`) → `dogs_allowed = true AND dogs_max >= N` (`app/chalets/page.tsx` + `/api/listings/geo`). Interrupteur dans `FiltersModal`, pastille « Chiens acceptés » au-dessus des résultats (`ChaletsMapLayout`). `ChaletsMapLayout` a maintenant un `key` basé sur les filtres dans `app/chalets/page.tsx` — sans lui, un changement de filtre gardait l'ancienne liste.
 - **Page SEO/GEO** `/chalets/chiens-acceptes` · `/en/cabins/dog-friendly` (`DogFriendlyLanding.tsx`, résolue avant les régions dans le catch-all) : H1 « Location de chalet avec chien au Québec », grille avec résumé chiens par carte, liens par région vers `/chalets?region=…&dogs=1`, conseils, FAQ calculée sur les vraies fiches (jamais de chiffre inventé), JSON-LD Breadcrumb + ItemList + FAQPage. Noindex et hors sitemap sous `MIN_CHALETS_FOR_INDEX`. Lien dans le pied de page et `public/llms.txt`.
 
+### « Accessible aux personnes à mobilité réduite » — détails, filtre et page SEO (2026-09-26)
+
+Même patron que « Chiens acceptés » ci-dessus.
+
+- **Colonnes `listings`** : `reduced_mobility` (bool, défaut `false`), `accessibility_features` (`text[]`, sous-ensemble des 9 ids — contrainte CHECK). Liste vidée à la sauvegarde si Non. Migration `supabase/add-reduced-mobility.sql`.
+- **`lib/accessibility.ts`** : catalogue unique (`ACCESSIBILITY_GROUPS` : entrée, salle de bain, chambre et circulation — 3 éléments chacun, libellés FR/EN avec mesures), `parseAccessibility()`, `groupAccessibilityFeatures()`, chemins de la page SEO. Ajouter un élément = l'ajouter ici **et** dans la contrainte CHECK.
+- **Dashboard** : Oui/Non sous « Chiens acceptés », puis cases à cocher par catégorie (`AccessibilityFields`), aucune obligatoire. « Fumeur accepté » vient ensuite.
+- **Fiche publique / JSON-LD** : affiché seulement si Oui (jamais de « non accessible » supposé). JSON-LD : un `LocationFeatureSpecification` par élément coché dans `amenityFeature` + question FAQ.
+- **Recherche** : `?accessible=1` → `reduced_mobility = true`. Interrupteur dans `FiltersModal` (composant `SwitchRow`, partagé avec les chiens), pastille « Mobilité réduite » à côté de « Chiens acceptés ».
+- **Page SEO/GEO** `/chalets/accessible-mobilite-reduite` · `/en/cabins/wheelchair-accessible` (`AccessibleLanding.tsx`) : grille, liens par région, les 9 critères, conseils, FAQ calculée sur les vraies fiches. Noindex et hors sitemap tant qu'aucun chalet publié n'est accessible. Lien dans le pied de page et `llms.txt`.
+
 ### "Aperçu de mon annonce" pour un brouillon — CSP et accès RLS corrigés (2026-09-16)
 
 Le bouton "Aperçu de mon annonce" affichait une icône de fichier cassé pour toute annonce non publiée. Deux causes distinctes, trouvées et corrigées l'une après l'autre :
@@ -617,6 +628,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-listing-number-custom-slug.sql` | Ajoute `listings.listing_number`/`custom_slug`/`previous_custom_slug` + 2 index UNIQUE partiels, et assigne `listing_number = 48347` à la fiche déjà publiée (776cbb0b-f45f-4b0b-bea9-ebaf0ced7a72) — voir section 9, "URL de fiche chalet" | Exécutée et confirmée en prod le 2026-09-17 |
 | `add-no-availability-template-closing-column.sql` | Ajoute `users.no_availability_template_closing` (modèle réutilisable pour la réponse rapide "Indisponible", même principe que `quote_template_closing`) — voir section 13, session du 2026-09-23 | Exécutée et confirmée en prod le 2026-09-23 |
 | `add-dog-policy.sql` | Renomme `listings.pets_allowed` → `dogs_allowed`, ajoute `dogs_max`/`dogs_size_limit`/`dogs_fee_type`/`dogs_fee_amount` (+ contraintes CHECK, index partiel) et donne des valeurs par défaut à la fiche test (2 chiens, tous, gratuit) | Exécutée et confirmée en prod le 2026-09-26 |
+| `add-reduced-mobility.sql` | Ajoute `listings.reduced_mobility`/`accessibility_features` (+ contrainte CHECK des 9 ids, index partiel) | Exécutée et confirmée en prod le 2026-09-26 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |

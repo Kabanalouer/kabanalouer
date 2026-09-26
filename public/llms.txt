@@ -7,6 +7,7 @@
 - [Accueil](https://kabanalouer.ca) : recherche de chalets par région
 - [Chalets](https://kabanalouer.ca/chalets) : liste complète des chalets disponibles
 - [Location de chalet avec chien](https://kabanalouer.ca/chalets/chiens-acceptes) : chalets où les chiens sont acceptés, avec le nombre maximum de chiens, les restrictions de poids et les frais de chaque chalet
+- [Location de chalet accessible aux personnes à mobilité réduite](https://kabanalouer.ca/chalets/accessible-mobilite-reduite) : chalets adaptés, avec le détail de l'entrée, de la salle de bain, de la chambre et de la circulation (mesures en cm et en pouces)
 - [Devenir proprio](https://kabanalouer.ca/devenir-hote) : inscrire son chalet sur la plateforme
 - [Comment ça marche](https://kabanalouer.ca/comment-ca-marche) : fonctionnement pour voyageurs et propriétaires
 - [Tarifs et abonnement](https://kabanalouer.ca/tarifs) : détails de l'abonnement proprio
@@ -16,4 +17,4 @@
 
 ## À propos
 
-Kabanalouer connecte directement les voyageurs et les propriétaires de chalets au Québec, sans frais de plateforme sur les réservations. Chaque fiche de chalet inclut les équipements, la capacité, les conditions (chiens acceptés avec nombre maximum, poids et frais, tabac, arrivée/départ) et les coordonnées pour contacter le proprio directement.
+Kabanalouer connecte directement les voyageurs et les propriétaires de chalets au Québec, sans frais de plateforme sur les réservations. Chaque fiche de chalet inclut les équipements, la capacité, les conditions (chiens acceptés avec nombre maximum, poids et frais, tabac, accessibilité aux personnes à mobilité réduite, arrivée/départ) et les coordonnées pour contacter le proprio directement.

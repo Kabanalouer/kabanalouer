@@ -5,6 +5,7 @@ import { slugify } from "@/lib/slugify";
 import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
+import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR } from "@/lib/accessibility";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE = SITE_URL;
@@ -54,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   let listingPages: MetadataRoute.Sitemap = [];
-  let dogFriendlyPages: MetadataRoute.Sitemap = [];
+  let themePages: MetadataRoute.Sitemap = [];
   let cityPages: MetadataRoute.Sitemap = [];
 
   try {
@@ -125,7 +126,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     });
 
-    // Page « chiens acceptés » : même seuil que les régions (noindex sinon,
+    // Pages thématiques (chiens acceptés, mobilité réduite) : même seuil que
+    // les régions (noindex sinon,
     // voir generateMetadata dans app/chalets/[...segments]/page.tsx).
     const { count: dogListingCount } = await supabase
       .from("listings")
@@ -133,10 +135,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq("is_published", true)
       .eq("dogs_allowed", true);
     if ((dogListingCount ?? 0) >= MIN_CHALETS_FOR_INDEX) {
-      dogFriendlyPages = [
+      themePages = [
         { url: `${BASE}${DOG_FRIENDLY_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
         { url: `${BASE}${DOG_FRIENDLY_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
       ];
+    }
+
+    const { count: accessibleCount } = await supabase
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("reduced_mobility", true);
+    if ((accessibleCount ?? 0) >= MIN_CHALETS_FOR_INDEX) {
+      themePages.push(
+        { url: `${BASE}${ACCESSIBLE_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${ACCESSIBLE_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+      );
     }
 
     // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
@@ -163,5 +177,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("sitemap: exception Supabase, repli sur les valeurs par défaut", err);
   }
 
-  return [...staticPages, ...dogFriendlyPages, ...regionPages, ...cityPages, ...listingPages];
+  return [...staticPages, ...themePages, ...regionPages, ...cityPages, ...listingPages];
 }

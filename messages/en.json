@@ -202,6 +202,8 @@
       "dogsFeeUnitLabel": "Fee frequency",
       "dogsFeePerNight": "per night",
       "dogsFeePerStay": "per stay",
+      "reducedMobilityLabel": "Accessible to people with reduced mobility",
+      "reducedMobilityHint": "Check everything that applies to your cabin. Only checked items are shown on your listing.",
       "smokingLabel": "Smoking allowed",
       "minAgeLabel": "Minimum age to rent the cabin",
       "minAgeUnit": "years old",
@@ -964,6 +966,7 @@
     "titleAll": "Cabins in Quebec",
     "titleDestination": "Cabins · {destination}",
     "dogsFilter": "Dogs allowed",
+    "accessibleFilter": "Reduced mobility",
     "resultCount": "{count, plural, one {{count} result} other {{count} results}}",
     "noResults": "No cabins found",
     "noResultsHint": "Try different filters or move the map.",
@@ -996,9 +999,10 @@
     "beds": "Beds",
     "bathrooms": "Bathrooms",
     "amenities": "Amenities",
-    "dogs": "Dogs",
     "dogsToggle": "Dogs allowed",
     "dogsToggleSub": "Only cabins that welcome dogs",
+    "accessibleToggle": "Accessible to people with reduced mobility",
+    "accessibleToggleSub": "Only adapted cabins, with details on each listing",
     "any": "Any",
     "clearAll": "Clear all",
     "showResults": "Show results"
@@ -1096,6 +1100,7 @@
       "browse": "Browse cabins",
       "regions": "All regions",
       "dogFriendly": "Dog-friendly cabins",
+      "accessible": "Accessible cabins",
       "howItWorks": "How it works"
     },
     "owners": {

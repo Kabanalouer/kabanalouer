@@ -81,14 +81,16 @@ interface PageProps {
     minBathrooms?: string;
     amenities?: string;
     dogs?: string;
+    accessible?: string;
   }>;
 }
 
 export default async function ChaletsPage({ searchParams }: PageProps) {
   const {
     region, city, capacity, checkin, checkout,
-    minBedrooms, minBeds, minBathrooms, amenities, dogs,
+    minBedrooms, minBeds, minBathrooms, amenities, dogs, accessible,
   } = await searchParams;
+  const accessibleOnly = accessible === "1";
   const dogsCount = parseDogsParam(dogs);
 
   const supabase = await createClient();
@@ -123,6 +125,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
   }
   if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
+  if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
@@ -221,10 +224,10 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
           remonter à chaque changement de filtre (pastille « Chiens acceptés »,
           fenêtre Filtres) évite d'afficher l'ancienne liste. */}
       <ChaletsMapLayout
-        key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount])}
+        key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount, accessibleOnly])}
         initialListings={listings}
         currentUserId={user?.id ?? null}
-        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined }}
+        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
       />
       <Footer />
     </div>

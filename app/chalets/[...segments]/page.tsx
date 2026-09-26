@@ -14,6 +14,8 @@ import RegionLanding from "./_components/RegionLanding";
 import CityLanding from "./_components/CityLanding";
 import DogFriendlyLanding, { buildDogFriendlyMeta } from "./_components/DogFriendlyLanding";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR, DOG_FRIENDLY_SLUG_EN, DOG_FRIENDLY_SLUG_FR } from "@/lib/dogPolicy";
+import AccessibleLanding, { buildAccessibleMeta } from "./_components/AccessibleLanding";
+import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR, ACCESSIBLE_SLUG_EN, ACCESSIBLE_SLUG_FR } from "@/lib/accessibility";
 import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
@@ -129,6 +131,29 @@ export async function generateMetadata({ params }: Props) {
         alternates: {
           canonical,
           languages: { fr: DOG_FRIENDLY_PATH_FR, en: DOG_FRIENDLY_PATH_EN, "x-default": DOG_FRIENDLY_PATH_FR },
+        },
+        openGraph: { title, description, url: canonical },
+        twitter: { title, description },
+      };
+    }
+
+    if (slug === (isEn ? ACCESSIBLE_SLUG_EN : ACCESSIBLE_SLUG_FR)) {
+      const { title, description } = buildAccessibleMeta(isEn);
+      const { count: accessibleCount } = await supabase
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .eq("reduced_mobility", true);
+      const canonical = isEn ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR;
+      return {
+        title,
+        description,
+        ...((accessibleCount ?? 0) < MIN_CHALETS_FOR_INDEX
+          ? { robots: { index: false, follow: true } }
+          : {}),
+        alternates: {
+          canonical,
+          languages: { fr: ACCESSIBLE_PATH_FR, en: ACCESSIBLE_PATH_EN, "x-default": ACCESSIBLE_PATH_FR },
         },
         openGraph: { title, description, url: canonical },
         twitter: { title, description },
@@ -297,6 +322,7 @@ export default async function ChaletPage({ params, searchParams }: Props) {
 
 async function renderSingleSegment(slug: string, locale: string, isEn: boolean, sp: SearchParams) {
   if (slug === (isEn ? DOG_FRIENDLY_SLUG_EN : DOG_FRIENDLY_SLUG_FR)) return <DogFriendlyLanding />;
+  if (slug === (isEn ? ACCESSIBLE_SLUG_EN : ACCESSIBLE_SLUG_FR)) return <AccessibleLanding />;
 
   // Region landing page — check before any DB query
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);

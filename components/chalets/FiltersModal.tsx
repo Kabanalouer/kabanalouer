@@ -55,6 +55,35 @@ function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
   );
 }
 
+function SwitchRow({ label, sub, checked, onChange }: {
+  label: string;
+  sub: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-4 cursor-pointer">
+      <span>
+        <span className="block text-sm text-charcoal-800">{label}</span>
+        <span className="block text-xs text-charcoal-400 mt-0.5">{sub}</span>
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="sr-only peer"
+      />
+      <span
+        aria-hidden="true"
+        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 ${checked ? "bg-primary" : "bg-charcoal-200"}`}
+      >
+        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : ""}`} />
+      </span>
+    </label>
+  );
+}
+
 interface FiltersModalProps {
   currentParams: {
     region?: string;
@@ -63,6 +92,7 @@ interface FiltersModalProps {
     checkout?: string;
     capacity?: string;
     dogs?: string;
+    accessible?: string;
   };
   initialMinBedrooms?: string;
   initialMinBeds?: string;
@@ -88,12 +118,14 @@ export default function FiltersModal({
     initialAmenities ? initialAmenities.split(",").filter(Boolean) : []
   );
   const [dogsAllowed, setDogsAllowed] = useState(!!currentParams.dogs);
+  const [accessibleOnly, setAccessibleOnly] = useState(!!currentParams.accessible);
 
   const activeCount =
     (minBedrooms ? 1 : 0) +
     (minBeds ? 1 : 0) +
     (minBathrooms ? 1 : 0) +
     ((isOpen ? dogsAllowed : !!currentParams.dogs) ? 1 : 0) +
+    ((isOpen ? accessibleOnly : !!currentParams.accessible) ? 1 : 0) +
     selectedAmenities.length;
 
   const clearAll = () => {
@@ -102,6 +134,7 @@ export default function FiltersModal({
     setMinBathrooms("");
     setSelectedAmenities([]);
     setDogsAllowed(false);
+    setAccessibleOnly(false);
   };
 
   const apply = () => {
@@ -118,6 +151,7 @@ export default function FiltersModal({
     // Garde le nombre de chiens choisi dans la barre de recherche (?dogs=2)
     // plutôt que de le ramener à 1 quand le filtre reste coché.
     if (dogsAllowed) params.set("dogs", currentParams.dogs || "1");
+    if (accessibleOnly) params.set("accessible", "1");
     router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
     setIsOpen(false);
   };
@@ -135,6 +169,7 @@ export default function FiltersModal({
           // La pastille « Chiens acceptés » au-dessus des résultats change
           // l'URL sans passer par cette fenêtre — resynchronise à l'ouverture.
           setDogsAllowed(!!currentParams.dogs);
+          setAccessibleOnly(!!currentParams.accessible);
           setIsOpen(true);
         }}
         className={`relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border text-sm font-medium transition-colors shrink-0 ${
@@ -189,28 +224,10 @@ export default function FiltersModal({
 
               <div className="h-px bg-[#ebebeb]" />
 
-              {/* Chiens */}
-              <div>
-                <h3 className="text-base font-bold text-charcoal-800 mb-3">{t("dogs")}</h3>
-                <label className="flex items-center justify-between gap-4 cursor-pointer">
-                  <span>
-                    <span className="block text-sm text-charcoal-800">{t("dogsToggle")}</span>
-                    <span className="block text-xs text-charcoal-400 mt-0.5">{t("dogsToggleSub")}</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    role="switch"
-                    checked={dogsAllowed}
-                    onChange={(e) => setDogsAllowed(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className={`relative w-11 h-6 rounded-full shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 ${dogsAllowed ? "bg-primary" : "bg-charcoal-200"}`}
-                  >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${dogsAllowed ? "translate-x-5" : ""}`} />
-                  </span>
-                </label>
+              {/* Chiens et accessibilité */}
+              <div className="space-y-4">
+                <SwitchRow label={t("dogsToggle")} sub={t("dogsToggleSub")} checked={dogsAllowed} onChange={setDogsAllowed} />
+                <SwitchRow label={t("accessibleToggle")} sub={t("accessibleToggleSub")} checked={accessibleOnly} onChange={setAccessibleOnly} />
               </div>
 
               <div className="h-px bg-[#ebebeb]" />

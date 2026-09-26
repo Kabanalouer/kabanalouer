@@ -202,6 +202,8 @@
       "dogsFeeUnitLabel": "Fréquence des frais",
       "dogsFeePerNight": "par nuit",
       "dogsFeePerStay": "par séjour",
+      "reducedMobilityLabel": "Accessible aux personnes à mobilité réduite",
+      "reducedMobilityHint": "Cochez tout ce qui s'applique à votre chalet. Seuls les éléments cochés s'affichent sur votre fiche.",
       "smokingLabel": "Fumeur accepté",
       "minAgeLabel": "Âge minimum requis pour louer le chalet",
       "minAgeUnit": "ans",
@@ -964,6 +966,7 @@
     "titleAll": "Chalets au Québec",
     "titleDestination": "Chalets · {destination}",
     "dogsFilter": "Chiens acceptés",
+    "accessibleFilter": "Mobilité réduite",
     "resultCount": "{count, plural, one {{count} résultat} other {{count} résultats}}",
     "noResults": "Aucun chalet trouvé",
     "noResultsHint": "Essayez d'autres filtres ou déplacez la carte.",
@@ -996,9 +999,10 @@
     "beds": "Lits",
     "bathrooms": "Salles de bain",
     "amenities": "Caractéristiques",
-    "dogs": "Chiens",
     "dogsToggle": "Chiens acceptés",
     "dogsToggleSub": "Seulement les chalets qui accueillent les chiens",
+    "accessibleToggle": "Accessible aux personnes à mobilité réduite",
+    "accessibleToggleSub": "Seulement les chalets adaptés, avec le détail sur chaque fiche",
     "any": "Tout",
     "clearAll": "Tout effacer",
     "showResults": "Afficher les résultats"
@@ -1096,6 +1100,7 @@
       "browse": "Parcourir les chalets",
       "regions": "Toutes les régions",
       "dogFriendly": "Chalets avec chien",
+      "accessible": "Chalets accessibles",
       "howItWorks": "Comment ça marche"
     },
     "owners": {

@@ -31,6 +31,7 @@ import {
   DOGS_MAX_LIMIT, DOG_SIZE_LIMITS, dogSizeLabel, isDogPolicyComplete,
   type DogPolicy, type DogSizeLimit, type DogFeeType,
 } from "@/lib/dogPolicy";
+import { ACCESSIBILITY_GROUPS, type AccessibilityFeatureId } from "@/lib/accessibility";
 
 
 type FormState = {
@@ -56,6 +57,8 @@ type FormState = {
   dogs_size_limit: DogSizeLimit | null;
   dogs_fee_type: DogFeeType | null;
   dogs_fee_amount: number | null;
+  reduced_mobility: boolean;
+  accessibility_features: AccessibilityFeatureId[];
   smoking_allowed: boolean;
   min_age: number;
   checkin_type: "autonomous" | "in_person";
@@ -136,7 +139,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
-  infos:        ["citq_number", "checkin_time", "checkout_time", "dogs_allowed", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "smoking_allowed", "min_age", "checkin_type"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "dogs_allowed", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "reduced_mobility", "accessibility_features", "smoking_allowed", "min_age", "checkin_type"],
   lienPersonnalise: [],
   promotions:   [],
   analyse:      [],
@@ -243,6 +246,8 @@ export default function EditListingForm({
     dogs_size_limit: null,
     dogs_fee_type: null,
     dogs_fee_amount: null,
+    reduced_mobility: false,
+    accessibility_features: [],
     smoking_allowed: false,
     min_age: 21,
     checkin_type: "autonomous" as const,
@@ -520,6 +525,7 @@ export default function EditListingForm({
       } else if (form.dogs_fee_type === "free") {
         payload.dogs_fee_amount = null;
       }
+      if (!form.reduced_mobility) payload.accessibility_features = [];
     }
 
     const { error } = await supabase
@@ -1663,6 +1669,18 @@ export default function EditListingForm({
                   />
                 )}
                 <div>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("reducedMobilityLabel")}</label>
+                  <ToggleField value={form.reduced_mobility} onChange={(v) => set("reduced_mobility", v)} tEdit={tEdit} />
+                </div>
+                {form.reduced_mobility && (
+                  <AccessibilityFields
+                    value={form.accessibility_features}
+                    onChange={(v) => set("accessibility_features", v)}
+                    tEdit={tEdit}
+                    locale={locale}
+                  />
+                )}
+                <div>
                   <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
                   <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
                 </div>
@@ -2191,6 +2209,52 @@ function DogPolicyFields({ max, sizeLimit, feeType, feeAmount, onChange, tEdit, 
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AccessibilityFields({ value, onChange, tEdit, locale }: {
+  value: AccessibilityFeatureId[];
+  onChange: (v: AccessibilityFeatureId[]) => void;
+  tEdit: TEditFn;
+  locale: string;
+}) {
+  const isEn = locale === "en";
+  const toggle = (id: AccessibilityFeatureId) =>
+    onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
+
+  return (
+    <div className="rounded-xl bg-charcoal-50 p-4 sm:p-5 space-y-5">
+      <p className="text-sm text-charcoal-500">{tEdit("reducedMobilityHint")}</p>
+      {ACCESSIBILITY_GROUPS.map((group) => (
+        <fieldset key={group.id}>
+          <legend className="block text-sm font-medium text-charcoal-700 mb-2">{isEn ? group.labelEn : group.label}</legend>
+          <div className="space-y-2">
+            {group.features.map((f) => {
+              const active = value.includes(f.id);
+              return (
+                <label
+                  key={f.id}
+                  className={`flex items-start gap-3 px-4 py-3 rounded-xl border-2 bg-white cursor-pointer transition-colors ${active ? "border-primary bg-primary/5" : "border-[#ebebeb] hover:border-charcoal-300"}`}
+                >
+                  <input type="checkbox" checked={active} onChange={() => toggle(f.id)} className="sr-only peer" />
+                  <span
+                    aria-hidden="true"
+                    className={`mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 ${active ? "bg-primary border-primary" : "border-charcoal-200"}`}
+                  >
+                    {active && (
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 6l3 3 5-5" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className={`text-sm ${active ? "font-medium text-charcoal-800" : "text-charcoal-600"}`}>{isEn ? f.labelEn : f.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ))}
     </div>
   );
 }

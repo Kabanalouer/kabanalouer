@@ -23,6 +23,7 @@ export async function GET(req: Request) {
   const amenitiesParam = searchParams.get("amenities") || undefined;
   const amenityList = amenitiesParam ? amenitiesParam.split(",").filter(Boolean) : [];
   const dogsCount = parseDogsParam(searchParams.get("dogs"));
+  const accessibleOnly = searchParams.get("accessible") === "1";
   const locale = searchParams.get("locale") === "en" ? "en" : "fr";
 
   const supabase = await createClient();
@@ -61,6 +62,7 @@ export async function GET(req: Request) {
   if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
   if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
   if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
+  if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;

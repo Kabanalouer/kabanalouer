@@ -7,6 +7,7 @@ import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogPolicy } from "@/lib/dogPolicy";
+import { parseAccessibility } from "@/lib/accessibility";
 
 function adminSupabase() {
   return createAdminClient(
@@ -69,6 +70,7 @@ export default async function EditListingPage({ params }: Props) {
 
   const { cents: nextPaidPriceCents } = priceForRank(nextPaidRank);
   const dogPolicy = parseDogPolicy(listing);
+  const accessibility = parseAccessibility(listing);
 
   return (
     <div className="max-w-5xl">
@@ -137,6 +139,8 @@ export default async function EditListingPage({ params }: Props) {
           dogs_size_limit: dogPolicy.sizeLimit,
           dogs_fee_type: dogPolicy.feeType,
           dogs_fee_amount: dogPolicy.feeAmount,
+          reduced_mobility: accessibility.accessible,
+          accessibility_features: accessibility.features,
           smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
           checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
