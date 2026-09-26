@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
+import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 
 // Circle overlay using native Maps API (no built-in Circle in @vis.gl)
 function ApproximateCircle({ lat, lng }: { lat: number; lng: number }) {
@@ -33,7 +34,8 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
       defaultZoom={13}
       gestureHandling="none"
       disableDefaultUI
-      mapId="kabanalouer-public"
+      mapId={PUBLIC_MAP_ID}
+      clickableIcons={false}
       style={{ width: "100%", height: "100%" }}
     >
       <ApproximateCircle lat={lat} lng={lng} />

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 import type { ListingForMap } from "./ChaletsMapLayout";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
@@ -10,24 +11,6 @@ import { buildListingPath } from "@/lib/listingUrl";
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
 
 export type MapBounds = { minLat: number; maxLat: number; minLng: number; maxLng: number };
-
-const MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "road.highway", elementType: "geometry.fill", stylers: [{ color: "#e8e8e4" }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#d8d8d4" }] },
-  { featureType: "road.highway", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "road.arterial", elementType: "geometry.fill", stylers: [{ color: "#f0eeeb" }] },
-  { featureType: "road.arterial", elementType: "geometry.stroke", stylers: [{ color: "#e6e4e0" }] },
-  { featureType: "road.local", elementType: "geometry.fill", stylers: [{ color: "#f5f4f0" }] },
-  { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#c4d9ef" }] },
-  { featureType: "landscape", elementType: "geometry.fill", stylers: [{ color: "#f5f5f0" }] },
-  { featureType: "poi.park", elementType: "geometry.fill", stylers: [{ color: "#ddefd4" }, { visibility: "on" }] },
-  { featureType: "poi.park", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#c8c8c4" }, { weight: 0.8 }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#888888" }] },
-];
 
 // ── Scale bar ─────────────────────────────────────────────────────────────────
 
@@ -247,11 +230,11 @@ export default function ChaletsMap({
         <Map
           defaultCenter={center}
           defaultZoom={withCoords.length > 0 ? 9 : 7}
-          mapId="kabanalouer-public"
+          mapId={PUBLIC_MAP_ID}
+          clickableIcons={false}
           disableDefaultUI
           gestureHandling="greedy"
           style={{ width: "100%", height: "100%" }}
-          styles={MAP_STYLES}
         >
           <MapContent
             listings={listings}
