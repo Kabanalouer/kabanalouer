@@ -19,7 +19,9 @@ const securityHeaders = [
       // img: allow HTTPS broadly (Unsplash, Supabase storage, Google Maps tiles)
       "img-src 'self' data: blob: https:",
       // *.google-analytics.com/*.googletagmanager.com : envoi des événements GA4
-      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com",
+      // *.gstatic.com / *.google.com / data: / blob: : requis par les cartes
+      // Google vectorielles (Map ID) — sans eux, le fond de carte reste vide.
+      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com *.gstatic.com *.google.com data: blob: api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com",
       "frame-src 'self' js.stripe.com hooks.stripe.com challenges.cloudflare.com",
       "worker-src blob:",
       "child-src blob:",
