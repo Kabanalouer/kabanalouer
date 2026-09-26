@@ -1607,105 +1607,118 @@ export default function EditListingForm({
           {/* Section: Infos générales */}
           {activeSection === "infos" && (
             <SectionShell title={t("sections.general")}>
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("citqLabel")} <Req /></label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.citq_number}
-                    onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className={inputCls}
-                    placeholder="ex. 123456"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <InfoBlock title={tEdit("infoBlockRegistration")}>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinLabel")} <Req /></label>
-                    <select
-                      value={form.checkin_time}
-                      onChange={(e) => set("checkin_time", e.target.value)}
-                      className={inputCls}
-                    >
-                      {CHECKIN_SLOTS.map((slot) => (
-                        <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("citqLabel")} <Req /></label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.citq_number}
+                      onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className={`${inputCls} sm:max-w-xs`}
+                      placeholder="ex. 123456"
+                    />
+                  </div>
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockArrival")}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinLabel")} <Req /></label>
+                      <select
+                        value={form.checkin_time}
+                        onChange={(e) => set("checkin_time", e.target.value)}
+                        className={inputCls}
+                      >
+                        {CHECKIN_SLOTS.map((slot) => (
+                          <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkoutLabel")} <Req /></label>
+                      <select
+                        value={form.checkout_time}
+                        onChange={(e) => set("checkout_time", e.target.value)}
+                        className={inputCls}
+                      >
+                        {CHECKOUT_SLOTS.map((slot) => (
+                          <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkoutLabel")} <Req /></label>
-                    <select
-                      value={form.checkout_time}
-                      onChange={(e) => set("checkout_time", e.target.value)}
-                      className={inputCls}
-                    >
-                      {CHECKOUT_SLOTS.map((slot) => (
-                        <option key={slot} value={slot}>{slot.replace(":", "h")}</option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinTypeLabel")} <Req /></label>
+                    <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} tEdit={tEdit} />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinTypeLabel")} <Req /></label>
-                  <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} tEdit={tEdit} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsLabel")}</label>
-                  <ToggleField
-                    value={form.dogs_allowed}
-                    onChange={(v) => setForm((prev) => ({ ...prev, dogs_allowed: v, dogs_max: v ? (prev.dogs_max ?? 1) : prev.dogs_max }))}
-                    tEdit={tEdit}
-                  />
-                </div>
-                {form.dogs_allowed && (
-                  <DogPolicyFields
-                    max={form.dogs_max}
-                    sizeLimit={form.dogs_size_limit}
-                    feeType={form.dogs_fee_type}
-                    feeAmount={form.dogs_fee_amount}
-                    onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-                    tEdit={tEdit}
-                    locale={locale}
-                  />
-                )}
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("reducedMobilityLabel")}</label>
-                  <ToggleField value={form.reduced_mobility} onChange={(v) => set("reduced_mobility", v)} tEdit={tEdit} />
-                </div>
-                {form.reduced_mobility && (
-                  <AccessibilityFields
-                    value={form.accessibility_features}
-                    onChange={(v) => set("accessibility_features", v)}
-                    tEdit={tEdit}
-                    locale={locale}
-                  />
-                )}
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
-                  <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("minAgeLabel")}</label>
-                  <div className="flex items-center gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => set("min_age", Math.max(18, form.min_age - 1))}
-                      disabled={form.min_age <= 18}
-                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
-                    </button>
-                    <span className="w-20 text-center text-sm font-semibold text-charcoal-800">{form.min_age} {tEdit("minAgeUnit")}</span>
-                    <button
-                      type="button"
-                      onClick={() => set("min_age", Math.min(30, form.min_age + 1))}
-                      disabled={form.min_age >= 30}
-                      className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    </button>
-                  </div>
-                </div>
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockRules")}>
+                  <SettingRow label={tEdit("minAgeLabel")}>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => set("min_age", Math.max(18, form.min_age - 1))}
+                        disabled={form.min_age <= 18}
+                        aria-label={tEdit("minAgeDecrease")}
+                        className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                      </button>
+                      <span className="w-16 text-center text-sm font-semibold text-charcoal-800">{form.min_age} {tEdit("minAgeUnit")}</span>
+                      <button
+                        type="button"
+                        onClick={() => set("min_age", Math.min(30, form.min_age + 1))}
+                        disabled={form.min_age >= 30}
+                        aria-label={tEdit("minAgeIncrease")}
+                        className="w-9 h-9 rounded-full border border-[#ebebeb] flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                    </div>
+                  </SettingRow>
+                  <div className="border-t border-[#ebebeb]" />
+                  <SettingRow label={tEdit("smokingLabel")}>
+                    <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
+                  </SettingRow>
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockDogs")}>
+                  <SettingRow label={tEdit("dogsLabel")}>
+                    <ToggleField
+                      value={form.dogs_allowed}
+                      onChange={(v) => setForm((prev) => ({ ...prev, dogs_allowed: v, dogs_max: v ? (prev.dogs_max ?? 1) : prev.dogs_max }))}
+                      tEdit={tEdit}
+                    />
+                  </SettingRow>
+                  {form.dogs_allowed && (
+                    <DogPolicyFields
+                      max={form.dogs_max}
+                      sizeLimit={form.dogs_size_limit}
+                      feeType={form.dogs_fee_type}
+                      feeAmount={form.dogs_fee_amount}
+                      onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+                      tEdit={tEdit}
+                      locale={locale}
+                    />
+                  )}
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockAccessibility")}>
+                  <SettingRow label={tEdit("reducedMobilityLabel")}>
+                    <ToggleField value={form.reduced_mobility} onChange={(v) => set("reduced_mobility", v)} tEdit={tEdit} />
+                  </SettingRow>
+                  {form.reduced_mobility && (
+                    <AccessibilityFields
+                      value={form.accessibility_features}
+                      onChange={(v) => set("accessibility_features", v)}
+                      tEdit={tEdit}
+                      locale={locale}
+                    />
+                  )}
+                </InfoBlock>
               </div>
               <RequiredNote tEdit={tEdit} />
             </SectionShell>
@@ -2055,6 +2068,27 @@ function PublishErrorBox({
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// Bloc thématique d'une section longue (ex. Infos générales) — cadre léger
+// + titre H3, pour découper visuellement sans ajouter d'entrée au menu.
+function InfoBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-[#ebebeb] p-5 sm:p-6">
+      <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{title}</h3>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+// Question courte + contrôle compact sur une seule ligne (Oui/Non, compteur).
+function SettingRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm font-medium text-charcoal-700">{label}</span>
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }
