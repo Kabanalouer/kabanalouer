@@ -30,6 +30,8 @@ import { getTranslations } from "next-intl/server";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { buildListingJsonLd, buildListingFaqJsonLd } from "@/lib/listing-schema";
 import { formatDecimal } from "@/lib/formatNumber";
+import { DOGS_MAX_LIMIT, dogPolicyDetails, parseDogPolicy, parseDogsParam } from "@/lib/dogPolicy";
+import PawIcon from "@/components/PawIcon";
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -38,7 +40,7 @@ interface ListingDetailProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listing: any;
   user: { id: string } | null;
-  searchParams: { checkin?: string; checkout?: string; capacity?: string; preview?: string };
+  searchParams: { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string };
   locale: string;
   isPreviewFrame: boolean;
 }
@@ -48,6 +50,11 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const isEn = locale === "en";
 
   const { checkin: urlCheckin, checkout: urlCheckout, capacity: urlCapacity } = searchParams;
+  const dogPolicy = parseDogPolicy(listing);
+  const dogDetails = dogPolicyDetails(dogPolicy, locale);
+  const urlDogs = dogPolicy.allowed
+    ? (() => { const n = parseDogsParam(searchParams.dogs); return n ? Math.min(n, dogPolicy.max ?? DOGS_MAX_LIMIT) : null; })()
+    : null;
   const supabase = await createClient();
 
   // Si la ligne a pu être lue alors qu'elle n'est pas publiée, c'est
@@ -289,7 +296,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
     bedroomCount: bedroomCount as number,
     bathrooms: listing.bathrooms as number,
     capacity: listing.capacity as number,
-    petsAllowed: !!listing.pets_allowed,
+    dogPolicy,
     smokingAllowed: !!listing.smoking_allowed,
     citqNumber: (listing.citq_number as string | null) ?? null,
     reviewCount: reviews ? reviews.length : 0,
@@ -526,9 +533,16 @@ export default async function ListingDetail({ listing, user, searchParams, local
                         : t("checkinAutonomous")}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    <span>{listing.pets_allowed ? t("petsAllowed") : t("petsNotAllowed")}</span>
+                  <div className="flex items-start gap-3">
+                    <PawIcon className="w-5 h-5 text-charcoal-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <span>{dogPolicy.allowed ? t("dogsAllowed") : t("dogsNotAllowed")}</span>
+                      {dogDetails.length > 0 && (
+                        <ul className="mt-1 space-y-0.5 text-sm text-charcoal-500">
+                          {dogDetails.map((line) => <li key={line}>{line}</li>)}
+                        </ul>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -640,7 +654,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     price={listing.price_low as number | null}
                     priceOnRequest={!!(listing.price_on_request)}
                     capacity={listing.capacity as number}
-                    petsAllowed={!!listing.pets_allowed}
+                    dogsMax={dogPolicy.allowed ? (dogPolicy.max ?? DOGS_MAX_LIMIT) : 0}
+                    initialPets={urlDogs ?? undefined}
                     blockedDates={blockedDateStrings}
                   />
                   <p className="text-xs text-charcoal-400 text-center mt-3">
@@ -686,7 +701,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
               price={listing.price_low as number | null}
               priceOnRequest={!!(listing.price_on_request)}
               capacity={listing.capacity as number}
-              petsAllowed={!!listing.pets_allowed}
+              dogsMax={dogPolicy.allowed ? (dogPolicy.max ?? DOGS_MAX_LIMIT) : 0}
+                    initialPets={urlDogs ?? undefined}
               blockedDates={blockedDateStrings}
             />
           </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
 import municipalitiesData from "@/lib/municipalities.json";
 
@@ -145,7 +146,7 @@ function NavSearchBarInner() {
   const initCheckin = searchParams.get("checkin") ?? "";
   const initCheckout = searchParams.get("checkout") ?? "";
   const initCapacity = searchParams.get("capacity") ?? "";
-  const initPetsParam = searchParams.get("pets") ?? "";
+  const initDogsParam = searchParams.get("dogs") ?? "";
   const initMinBedrooms = searchParams.get("minBedrooms") ?? undefined;
   const initMinBeds = searchParams.get("minBeds") ?? undefined;
   const initMinBathrooms = searchParams.get("minBathrooms") ?? undefined;
@@ -162,7 +163,7 @@ function NavSearchBarInner() {
   const [adults, setAdults] = useState(parseInt(initCapacity) || 0);
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
-  const [pets, setPets] = useState(parseInt(initPetsParam) || 0);
+  const [pets, setPets] = useState(Math.min(parseInt(initDogsParam) || 0, DOGS_MAX_LIMIT));
   const [activeField, setActiveField] = useState<"dest" | "dates" | "guests" | null>(null);
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
@@ -250,7 +251,7 @@ function NavSearchBarInner() {
     if (checkout) params.set("checkout", checkout);
     const totalCapacity = adults + children + babies;
     if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
-    if (pets > 0) params.set("pets", String(pets));
+    if (pets > 0) params.set("dogs", String(pets));
     router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
   };
 
@@ -278,6 +279,7 @@ function NavSearchBarInner() {
     checkin: initCheckin || undefined,
     checkout: initCheckout || undefined,
     capacity: initCapacity || undefined,
+    dogs: initDogsParam || undefined,
   };
 
   return (
@@ -445,7 +447,7 @@ function NavSearchBarInner() {
                 { label: t("pets"), sub: t("petsSub"), val: pets,
                   onDecr: () => setPets((v) => Math.max(0, v - 1)),
                   onIncr: () => setPets((v) => v + 1),
-                  decrDis: pets === 0, incrDis: pets >= 5 },
+                  decrDis: pets === 0, incrDis: pets >= DOGS_MAX_LIMIT },
               ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx, arr) => (
                 <div key={label}>
                   <div className="flex items-center justify-between px-5 py-4">

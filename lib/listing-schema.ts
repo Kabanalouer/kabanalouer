@@ -4,6 +4,7 @@
 // limité aux faits connus avec certitude, jamais des questions inventées.
 
 import { getAmenityCatalogEntry, summarizeAmenityDetails, type AmenityValue } from "@/lib/amenities-catalog";
+import { dogFeeLabel, dogPolicyDetails, dogSizeLabel, type DogPolicy } from "@/lib/dogPolicy";
 
 export interface ListingSchemaInput {
   title: string;
@@ -24,7 +25,7 @@ export interface ListingSchemaInput {
   bedroomCount: number;
   bathrooms: number;
   capacity: number;
-  petsAllowed: boolean;
+  dogPolicy: DogPolicy;
   smokingAllowed: boolean;
   citqNumber: string | null;
   reviewCount: number;
@@ -84,7 +85,10 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     numberOfBedrooms: input.bedroomCount,
     numberOfBathroomsTotal: input.bathrooms,
     occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" },
-    petsAllowed: input.petsAllowed,
+    // petsAllowed reste booléen (format attendu par Google) ; seuls les
+    // chiens sont acceptés sur Kabanalouer, précisé avec les détails dans
+    // additionalProperty pour les agents IA qui ne lisent que le JSON-LD.
+    petsAllowed: input.dogPolicy.allowed,
     // "smokingAllowed" n'existe pas dans le vocabulaire schema.org — passé en
     // additionalProperty (mécanisme d'extension générique) plutôt qu'inventé
     // comme propriété directe.
@@ -94,6 +98,7 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
         name: isEn ? "Smoking allowed" : "Fumeurs acceptés",
         value: input.smokingAllowed,
       },
+      ...buildDogProperties(input.dogPolicy, input.locale),
     ],
     ...(input.citqNumber
       ? { identifier: { "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber } }
@@ -113,19 +118,44 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
   };
 }
 
+function buildDogProperties(p: DogPolicy, locale: string): Record<string, unknown>[] {
+  const isEn = locale === "en";
+  const props: Record<string, unknown>[] = [
+    { "@type": "PropertyValue", name: isEn ? "Dogs allowed" : "Chiens acceptés", value: p.allowed },
+  ];
+  if (!p.allowed) return props;
+  if (p.max) {
+    props.push({ "@type": "PropertyValue", name: isEn ? "Maximum number of dogs" : "Nombre maximum de chiens", value: p.max });
+  }
+  if (p.sizeLimit) {
+    props.push({ "@type": "PropertyValue", name: isEn ? "Dog weight restrictions" : "Restrictions de poids des chiens", value: dogSizeLabel(p.sizeLimit, locale) });
+  }
+  const fee = dogFeeLabel(p, locale);
+  if (fee) {
+    props.push({
+      "@type": "PropertyValue",
+      name: isEn ? "Dog fee" : "Frais pour les chiens",
+      value: fee,
+      ...(p.feeType !== "free" && p.feeAmount ? { unitText: "CAD" } : {}),
+    });
+  }
+  return props;
+}
+
 export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string, unknown> | null {
   const isEn = input.locale === "en";
   const questions: { question: string; answer: string }[] = [];
 
+  const dogDetails = dogPolicyDetails(input.dogPolicy, input.locale).map((d) => d.charAt(0).toLowerCase() + d.slice(1));
   questions.push({
-    question: isEn ? `Are pets allowed at ${input.title}?` : `Les animaux sont-ils acceptés à ${input.title} ?`,
-    answer: input.petsAllowed
+    question: isEn ? `Are dogs allowed at ${input.title}?` : `Les chiens sont-ils acceptés à ${input.title} ?`,
+    answer: input.dogPolicy.allowed
       ? isEn
-        ? `Yes, pets are allowed at ${input.title}.`
-        : `Oui, les animaux de compagnie sont acceptés à ${input.title}.`
+        ? `Yes, dogs are allowed at ${input.title}${dogDetails.length ? `: ${dogDetails.join(", ")}` : ""}.`
+        : `Oui, les chiens sont acceptés à ${input.title}${dogDetails.length ? ` : ${dogDetails.join(", ")}` : ""}.`
       : isEn
-      ? `No, pets are not allowed at ${input.title}.`
-      : `Non, les animaux de compagnie ne sont pas acceptés à ${input.title}.`,
+      ? `No, dogs are not allowed at ${input.title}.`
+      : `Non, les chiens ne sont pas acceptés à ${input.title}.`,
   });
 
   questions.push({

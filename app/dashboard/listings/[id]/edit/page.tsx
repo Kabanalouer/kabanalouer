@@ -6,6 +6,7 @@ import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 import type { AmenityValue } from "@/lib/amenities-catalog";
+import { parseDogPolicy } from "@/lib/dogPolicy";
 
 function adminSupabase() {
   return createAdminClient(
@@ -67,6 +68,7 @@ export default async function EditListingPage({ params }: Props) {
   ]);
 
   const { cents: nextPaidPriceCents } = priceForRank(nextPaidRank);
+  const dogPolicy = parseDogPolicy(listing);
 
   return (
     <div className="max-w-5xl">
@@ -130,7 +132,11 @@ export default async function EditListingPage({ params }: Props) {
           citq_number: (listing.citq_number as string | null) ?? "",
           checkin_time: (listing.checkin_time as string | null) ?? "16:00",
           checkout_time: (listing.checkout_time as string | null) ?? "11:00",
-          pets_allowed: (listing.pets_allowed as boolean | null) ?? false,
+          dogs_allowed: dogPolicy.allowed,
+          dogs_max: dogPolicy.max,
+          dogs_size_limit: dogPolicy.sizeLimit,
+          dogs_fee_type: dogPolicy.feeType,
+          dogs_fee_amount: dogPolicy.feeAmount,
           smoking_allowed: (listing.smoking_allowed as boolean | null) ?? false,
           checkin_type: ((listing.checkin_type as string | null) === "in_person" ? "in_person" : "autonomous"),
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],

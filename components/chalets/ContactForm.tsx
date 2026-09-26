@@ -112,7 +112,8 @@ interface Props {
   price?: number | null;
   priceOnRequest?: boolean;
   capacity: number;
-  petsAllowed: boolean;
+  // 0 = chiens non acceptés (compteur masqué), sinon plafond du compteur.
+  dogsMax: number;
   blockedDates?: string[];
   hideMessage?: boolean;
   senderHasAvatar?: boolean;
@@ -137,7 +138,7 @@ export default function ContactForm({
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
-  capacity, petsAllowed, blockedDates, hideMessage, senderHasAvatar = true,
+  capacity, dogsMax, blockedDates, hideMessage, senderHasAvatar = true,
 }: Props) {
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
@@ -163,7 +164,7 @@ export default function ContactForm({
   const [adults, setAdults] = useState(initialAdults ?? 1);
   const [children, setChildren] = useState(initialChildren ?? 0);
   const [babies, setBabies] = useState(initialBabies ?? 0);
-  const [pets, setPets] = useState(initialPets ?? 0);
+  const [pets, setPets] = useState(Math.min(initialPets ?? 0, dogsMax));
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -204,7 +205,9 @@ export default function ContactForm({
   };
 
   const guestTotal = adults + children + babies + pets;
-  const atCapacity = guestTotal >= capacity;
+  // Les chiens ne comptent pas dans la capacité en personnes du chalet —
+  // ils ont leur propre plafond (dogsMax).
+  const atCapacity = adults + children + babies >= capacity;
   const canSubmit = !!(checkin || guestTotal > 0 || pets > 0 || message.trim());
 
   // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
@@ -442,11 +445,11 @@ export default function ContactForm({
                 onIncr: () => setBabies((v) => v + 1),
                 decrDis: babies === 0,
                 incrDis: atCapacity },
-              ...(petsAllowed ? [{
+              ...(dogsMax > 0 ? [{
                 label: ts("pets"), sub: ts("petsSub"), val: pets,
                 onDecr: () => setPets((v) => Math.max(0, v - 1)),
                 onIncr: () => setPets((v) => v + 1),
-                decrDis: pets === 0, incrDis: pets >= 5 || atCapacity,
+                decrDis: pets === 0, incrDis: pets >= dogsMax,
               }] : []),
             ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx) => (
               <div key={label} className={idx > 0 ? "border-t border-[#ebebeb]" : ""}>

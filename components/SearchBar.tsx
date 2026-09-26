@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
 import municipalitiesData from "@/lib/municipalities.json";
 
@@ -355,7 +356,7 @@ export default function SearchBar({
     if (checkout) params.set("checkout", checkout);
     const totalCapacity = adults + children + babies;
     if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
-    if (pets > 0) params.set("pets", String(pets));
+    if (pets > 0) params.set("dogs", String(pets));
     if (preserveParams) {
       for (const [k, v] of Object.entries(preserveParams)) {
         if (v) params.set(k, v);
@@ -611,7 +612,7 @@ export default function SearchBar({
               { label: t("pets"), sub: t("petsSub"), val: pets,
                 onDecr: () => setPets((v) => Math.max(0, v - 1)),
                 onIncr: () => setPets((v) => v + 1),
-                decrDis: pets === 0, incrDis: pets >= 5 },
+                decrDis: pets === 0, incrDis: pets >= DOGS_MAX_LIMIT },
             ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx: number, arr) => (
               <div key={label}>
                 <div className="flex items-center justify-between px-5 py-4">

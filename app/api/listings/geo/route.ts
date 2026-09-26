@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { parseDogsParam } from "@/lib/dogPolicy";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -21,6 +22,7 @@ export async function GET(req: Request) {
   const minBathrooms = searchParams.get("minBathrooms") || undefined;
   const amenitiesParam = searchParams.get("amenities") || undefined;
   const amenityList = amenitiesParam ? amenitiesParam.split(",").filter(Boolean) : [];
+  const dogsCount = parseDogsParam(searchParams.get("dogs"));
   const locale = searchParams.get("locale") === "en" ? "en" : "fr";
 
   const supabase = await createClient();
@@ -58,6 +60,7 @@ export async function GET(req: Request) {
   if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
   if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
   if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
+  if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;

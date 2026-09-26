@@ -500,6 +500,18 @@ Chaque `amenityFeature` (`LocationFeatureSpecification`) inclut maintenant un ch
 
 **Audit GEO complet effectué le 2026-09-19** (nom, région/ville, capacité, chambres, salles de bain, politique fumeur, politique animaux) : tous déjà correctement exposés dans le JSON-LD `LodgingBusiness` — `name`, `address.addressLocality`/`addressRegion`, `occupancy`, `numberOfBedrooms`, `numberOfBathroomsTotal`, `petsAllowed` (propriété native), `additionalProperty` (« Fumeurs acceptés » — `smokingAllowed` n'existe pas nativement dans schema.org). Nuance notée mais non corrigée (pas demandé) : `numberOfBedrooms`/`numberOfBathroomsTotal`/`occupancy` appartiennent au vocabulaire `Accommodation` de schema.org, pas `LodgingBusiness` (le `@type` déclaré) — convention courante chez les plateformes de location (Google, la plupart des LLM la tolèrent), mais un validateur strict pourrait la signaler.
 
+### « Chiens acceptés » — politique détaillée, filtre et page SEO (2026-09-26)
+
+Remplace l'ancien booléen « Animaux acceptés » (`pets_allowed`, colonne renommée — cutover propre).
+
+- **Colonnes `listings`** : `dogs_allowed` (bool), `dogs_max` (1-5), `dogs_size_limit` (`small` ≤ 25 lbs / `medium` ≤ 50 lbs / `all`), `dogs_fee_type` (`free` / `per_night` / `per_stay`), `dogs_fee_amount` (entier, $). Détails remis à `NULL` à la sauvegarde si les chiens ne sont pas acceptés (et le montant si gratuit). Migration `supabase/add-dog-policy.sql`.
+- **`lib/dogPolicy.ts`** : source unique (types, `parseDogPolicy()`, libellés FR/EN, résumé court, `parseDogsParam()`, chemins de la page SEO). Toute nouvelle requête qui affiche la politique ajoute `DOG_POLICY_COLUMNS` à son `.select()`.
+- **Dashboard** (« Infos générales ») : Oui/Non puis `DogPolicyFields` (compteur, poids, frais gratuit ou montant + par nuit/par séjour). Section bloquée tant que les détails sont incomplets (`dogsIncompleteError`, même principe que le CITQ).
+- **Fiche publique** : ligne « Chiens acceptés » + détails dans « Informations pratiques ». Compteur « Chiens » du formulaire « Contacter » plafonné à `dogs_max`, ne compte plus dans la capacité en personnes. `?dogs=N` dans l'URL préremplit le compteur.
+- **JSON-LD** : `petsAllowed` (booléen) + `additionalProperty` (chiens acceptés, maximum, poids, frais) ; question FAQ « Les chiens sont-ils acceptés… » avec les détails.
+- **Recherche** : paramètre unique `?dogs=N` (compteur « Chiens » des barres de recherche, ancien `?pets=`) → `dogs_allowed = true AND dogs_max >= N` (`app/chalets/page.tsx` + `/api/listings/geo`). Interrupteur dans `FiltersModal`, pastille « Chiens acceptés » au-dessus des résultats (`ChaletsMapLayout`). `ChaletsMapLayout` a maintenant un `key` basé sur les filtres dans `app/chalets/page.tsx` — sans lui, un changement de filtre gardait l'ancienne liste.
+- **Page SEO/GEO** `/chalets/chiens-acceptes` · `/en/cabins/dog-friendly` (`DogFriendlyLanding.tsx`, résolue avant les régions dans le catch-all) : H1 « Location de chalet avec chien au Québec », grille avec résumé chiens par carte, liens par région vers `/chalets?region=…&dogs=1`, conseils, FAQ calculée sur les vraies fiches (jamais de chiffre inventé), JSON-LD Breadcrumb + ItemList + FAQPage. Noindex et hors sitemap sous `MIN_CHALETS_FOR_INDEX`. Lien dans le pied de page et `public/llms.txt`.
+
 ### "Aperçu de mon annonce" pour un brouillon — CSP et accès RLS corrigés (2026-09-16)
 
 Le bouton "Aperçu de mon annonce" affichait une icône de fichier cassé pour toute annonce non publiée. Deux causes distinctes, trouvées et corrigées l'une après l'autre :
@@ -604,6 +616,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `slugs-migration.sql` | Ajoute un index UNIQUE partiel sur `listings.slug_fr`/`slug_en` — **plus prioritaire** depuis le 2026-09-17 (voir section 9, "URL de fiche chalet") : ces colonnes ne servent plus qu'au repli historique 1 segment pour d'anciens liens déjà indexés, `ensureListingSlugs()` qui l'appuyait a été retiré. Reste sans danger à exécuter si désiré, juste plus urgent. | Optionnel, à exécuter par Simon dans Supabase SQL Editor si désiré |
 | `add-listing-number-custom-slug.sql` | Ajoute `listings.listing_number`/`custom_slug`/`previous_custom_slug` + 2 index UNIQUE partiels, et assigne `listing_number = 48347` à la fiche déjà publiée (776cbb0b-f45f-4b0b-bea9-ebaf0ced7a72) — voir section 9, "URL de fiche chalet" | Exécutée et confirmée en prod le 2026-09-17 |
 | `add-no-availability-template-closing-column.sql` | Ajoute `users.no_availability_template_closing` (modèle réutilisable pour la réponse rapide "Indisponible", même principe que `quote_template_closing`) — voir section 13, session du 2026-09-23 | Exécutée et confirmée en prod le 2026-09-23 |
+| `add-dog-policy.sql` | Renomme `listings.pets_allowed` → `dogs_allowed`, ajoute `dogs_max`/`dogs_size_limit`/`dogs_fee_type`/`dogs_fee_amount` (+ contraintes CHECK, index partiel) et donne des valeurs par défaut à la fiche test (2 chiens, tous, gratuit) | Exécutée et confirmée en prod le 2026-09-26 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |

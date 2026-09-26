@@ -34,7 +34,7 @@ export async function createBlankListing() {
       photos: [],
       checkin_time: "16:00",
       checkout_time: "11:00",
-      pets_allowed: false,
+      dogs_allowed: false,
       smoking_allowed: false,
       checkin_type: "autonomous",
       nearby_activities: [],

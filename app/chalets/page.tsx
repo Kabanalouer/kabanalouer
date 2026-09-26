@@ -7,6 +7,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { parseDogsParam } from "@/lib/dogPolicy";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
@@ -79,14 +80,16 @@ interface PageProps {
     minBeds?: string;
     minBathrooms?: string;
     amenities?: string;
+    dogs?: string;
   }>;
 }
 
 export default async function ChaletsPage({ searchParams }: PageProps) {
   const {
     region, city, capacity, checkin, checkout,
-    minBedrooms, minBeds, minBathrooms, amenities,
+    minBedrooms, minBeds, minBathrooms, amenities, dogs,
   } = await searchParams;
+  const dogsCount = parseDogsParam(dogs);
 
   const supabase = await createClient();
   const [{ data: { user } }, locale] = await Promise.all([supabase.auth.getUser(), getLocale()]);
@@ -119,6 +122,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     const amenityList = amenities.split(",").filter(Boolean);
     if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
   }
+  if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
   const { data: rows } = await query;
@@ -213,10 +217,14 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      {/* key : les résultats vivent dans l'état du composant client — le
+          remonter à chaque changement de filtre (pastille « Chiens acceptés »,
+          fenêtre Filtres) évite d'afficher l'ancienne liste. */}
       <ChaletsMapLayout
+        key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount])}
         initialListings={listings}
         currentUserId={user?.id ?? null}
-        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities }}
+        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined }}
       />
       <Footer />
     </div>

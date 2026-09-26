@@ -4,6 +4,7 @@ import { isKnownMunicipality } from "@/lib/municipalities";
 import { slugify } from "@/lib/slugify";
 import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
+import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE = SITE_URL;
@@ -53,6 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   let listingPages: MetadataRoute.Sitemap = [];
+  let dogFriendlyPages: MetadataRoute.Sitemap = [];
   let cityPages: MetadataRoute.Sitemap = [];
 
   try {
@@ -123,6 +125,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     });
 
+    // Page « chiens acceptés » : même seuil que les régions (noindex sinon,
+    // voir generateMetadata dans app/chalets/[...segments]/page.tsx).
+    const { count: dogListingCount } = await supabase
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("dogs_allowed", true);
+    if ((dogListingCount ?? 0) >= MIN_CHALETS_FOR_INDEX) {
+      dogFriendlyPages = [
+        { url: `${BASE}${DOG_FRIENDLY_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${DOG_FRIENDLY_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+      ];
+    }
+
     // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
     // (voir MIN_CHALETS_FOR_INDEX ci-dessus et dans app/chalets/[slug]/page.tsx).
     const activeCountByRegion = new Map<string, number>();
@@ -147,5 +163,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("sitemap: exception Supabase, repli sur les valeurs par défaut", err);
   }
 
-  return [...staticPages, ...regionPages, ...cityPages, ...listingPages];
+  return [...staticPages, ...dogFriendlyPages, ...regionPages, ...cityPages, ...listingPages];
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import FooterLangToggle from "./FooterLangToggle";
 import { localePath } from "@/lib/localePath";
+import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 
 function FooterLogo() {
   return (
@@ -45,6 +46,7 @@ export default async function Footer() {
             <ul className="space-y-3 text-sm">
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
               <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />
+              <FooterLink href={locale === "en" ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR} label={t("travelers.dogFriendly")} />
               <FooterLink href={localePath("/comment-ca-marche", locale)} label={t("travelers.howItWorks")} />
             </ul>
           </div>

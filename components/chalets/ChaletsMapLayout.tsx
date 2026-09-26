@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import PawIcon from "@/components/PawIcon";
+import { localePath } from "@/lib/localePath";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
@@ -27,6 +30,7 @@ interface Props {
     minBeds?: string;
     minBathrooms?: string;
     amenities?: string;
+    dogs?: string;
   };
 }
 
@@ -72,6 +76,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ...(filters.minBeds && { minBeds: filters.minBeds }),
         ...(filters.minBathrooms && { minBathrooms: filters.minBathrooms }),
         ...(filters.amenities && { amenities: filters.amenities }),
+        ...(filters.dogs && { dogs: filters.dogs }),
         locale,
       });
       const res = await fetch(`/api/listings/geo?${params}`);
@@ -80,6 +85,32 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       setIsLoading(false);
     }
   }, [filters]);
+
+  const router = useRouter();
+  const dogsActive = !!filters.dogs;
+  const toggleDogs = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (dogsActive) params.delete("dogs");
+    else params.set("dogs", "1");
+    const qs = params.toString();
+    router.push(localePath(`/chalets${qs ? `?${qs}` : ""}`, locale));
+  };
+
+  const dogsPill = (
+    <button
+      type="button"
+      onClick={toggleDogs}
+      aria-pressed={dogsActive}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+        dogsActive
+          ? "border-charcoal-800 bg-charcoal-800 text-white"
+          : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
+      }`}
+    >
+      <PawIcon className="w-4 h-4" />
+      {t("dogsFilter")}
+    </button>
+  );
 
   const EmptyState = () => (
     <div className="col-span-2 py-24 text-center">
@@ -152,6 +183,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         minBeds={filters.minBeds}
         minBathrooms={filters.minBathrooms}
         amenities={filters.amenities}
+        dogs={filters.dogs}
       />
 
       {/* ── DESKTOP: split layout ── */}
@@ -166,6 +198,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 {t("resultCount", { count: listings.length })}
               </span>
             )}
+            <div className="mt-3">{dogsPill}</div>
           </div>
           {listGrid("grid-cols-2")}
         </div>
@@ -189,6 +222,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 {t("resultCount", { count: listings.length })}
               </span>
             )}
+            <div className="mt-3">{dogsPill}</div>
           </div>
           {listGrid("grid-cols-1 sm:grid-cols-2")}
         </div>

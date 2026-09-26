@@ -12,6 +12,8 @@ import { slugify } from "@/lib/slugify";
 import { isKnownMunicipality } from "@/lib/municipalities";
 import RegionLanding from "./_components/RegionLanding";
 import CityLanding from "./_components/CityLanding";
+import DogFriendlyLanding, { buildDogFriendlyMeta } from "./_components/DogFriendlyLanding";
+import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR, DOG_FRIENDLY_SLUG_EN, DOG_FRIENDLY_SLUG_FR } from "@/lib/dogPolicy";
 import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
@@ -40,10 +42,10 @@ const DEFAULT_PHOTO =
 // - 3 segments : région/ville/nom-du-chalet (fiche canonique).
 interface Props {
   params: Promise<{ segments: string[] }>;
-  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; preview?: string }>;
+  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string }>;
 }
 
-type SearchParams = { checkin?: string; checkout?: string; capacity?: string; preview?: string };
+type SearchParams = { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string };
 
 type ListingRow = Record<string, unknown> & {
   title: string | null;
@@ -109,6 +111,29 @@ export async function generateMetadata({ params }: Props) {
 
   if (segments.length === 1) {
     const [slug] = segments;
+
+    if (slug === (isEn ? DOG_FRIENDLY_SLUG_EN : DOG_FRIENDLY_SLUG_FR)) {
+      const { title, description } = buildDogFriendlyMeta(isEn);
+      const { count: dogListingCount } = await supabase
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .eq("dogs_allowed", true);
+      const canonical = isEn ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR;
+      return {
+        title,
+        description,
+        ...((dogListingCount ?? 0) < MIN_CHALETS_FOR_INDEX
+          ? { robots: { index: false, follow: true } }
+          : {}),
+        alternates: {
+          canonical,
+          languages: { fr: DOG_FRIENDLY_PATH_FR, en: DOG_FRIENDLY_PATH_EN, "x-default": DOG_FRIENDLY_PATH_FR },
+        },
+        openGraph: { title, description, url: canonical },
+        twitter: { title, description },
+      };
+    }
 
     // Region landing page — slug résolu dans la langue de la route (FR sur
     // /chalets/[slug], EN sur /en/cabins/[slug]) puisque les slugs de région
@@ -271,6 +296,8 @@ export default async function ChaletPage({ params, searchParams }: Props) {
 }
 
 async function renderSingleSegment(slug: string, locale: string, isEn: boolean, sp: SearchParams) {
+  if (slug === (isEn ? DOG_FRIENDLY_SLUG_EN : DOG_FRIENDLY_SLUG_FR)) return <DogFriendlyLanding />;
+
   // Region landing page — check before any DB query
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
   if (regionConfig) return <RegionLanding regionConfig={regionConfig} />;
@@ -327,6 +354,7 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
       if (sp.checkin) qs.set("checkin", sp.checkin);
       if (sp.checkout) qs.set("checkout", sp.checkout);
       if (sp.capacity) qs.set("capacity", sp.capacity);
+      if (sp.dogs) qs.set("dogs", sp.dogs);
       if (sp.preview) qs.set("preview", sp.preview);
       const query = qs.toString();
       permanentRedirect(query ? `${targetPath}?${query}` : targetPath);

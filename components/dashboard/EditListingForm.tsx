@@ -27,6 +27,10 @@ import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
 import { formatPercent } from "@/lib/formatNumber";
+import {
+  DOGS_MAX_LIMIT, DOG_SIZE_LIMITS, dogSizeLabel, isDogPolicyComplete,
+  type DogPolicy, type DogSizeLimit, type DogFeeType,
+} from "@/lib/dogPolicy";
 
 
 type FormState = {
@@ -47,13 +51,27 @@ type FormState = {
   citq_number: string;
   checkin_time: string;
   checkout_time: string;
-  pets_allowed: boolean;
+  dogs_allowed: boolean;
+  dogs_max: number | null;
+  dogs_size_limit: DogSizeLimit | null;
+  dogs_fee_type: DogFeeType | null;
+  dogs_fee_amount: number | null;
   smoking_allowed: boolean;
   min_age: number;
   checkin_type: "autonomous" | "in_person";
   nearby_activities: string[];
   price_on_request: boolean;
 };
+
+function formDogPolicy(f: FormState): DogPolicy {
+  return {
+    allowed: f.dogs_allowed,
+    max: f.dogs_max,
+    sizeLimit: f.dogs_size_limit,
+    feeType: f.dogs_fee_type,
+    feeAmount: f.dogs_fee_amount,
+  };
+}
 
 function timeSlots(startH: number, endH: number): string[] {
   const slots: string[] = [];
@@ -98,7 +116,7 @@ const SECTIONS: Array<{
   { id: "equipements",  sectionKey: "amenities", isComplete: (f) => f.amenities.length >= 3 },
   { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
-  { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 },
+  { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 && isDogPolicyComplete(formDogPolicy(f)) },
   { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
   { id: "lienPersonnalise", sectionKey: "customSlug", isComplete: () => true },
@@ -118,7 +136,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
-  infos:        ["citq_number", "checkin_time", "checkout_time", "pets_allowed", "smoking_allowed", "min_age", "checkin_type"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "dogs_allowed", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "smoking_allowed", "min_age", "checkin_type"],
   lienPersonnalise: [],
   promotions:   [],
   analyse:      [],
@@ -220,7 +238,11 @@ export default function EditListingForm({
     citq_number: "",
     checkin_time: "16:00",
     checkout_time: "11:00",
-    pets_allowed: false,
+    dogs_allowed: false,
+    dogs_max: null,
+    dogs_size_limit: null,
+    dogs_fee_type: null,
+    dogs_fee_amount: null,
     smoking_allowed: false,
     min_age: 21,
     checkin_type: "autonomous" as const,
@@ -475,6 +497,10 @@ export default function EditListingForm({
       setSaveError(tEdit("citqError"));
       return false;
     }
+    if (sectionId === "infos" && !isDogPolicyComplete(formDogPolicy(form))) {
+      setSaveError(tEdit("dogsIncompleteError"));
+      return false;
+    }
 
     setSaving(true);
     setSaveError("");
@@ -482,6 +508,18 @@ export default function EditListingForm({
     const payload: Record<string, unknown> = {};
     for (const field of fields) {
       payload[field] = form[field];
+    }
+    // Détails des chiens jamais conservés quand les chiens ne sont pas
+    // acceptés, et montant jamais gardé quand c'est gratuit.
+    if (sectionId === "infos") {
+      if (!form.dogs_allowed) {
+        payload.dogs_max = null;
+        payload.dogs_size_limit = null;
+        payload.dogs_fee_type = null;
+        payload.dogs_fee_amount = null;
+      } else if (form.dogs_fee_type === "free") {
+        payload.dogs_fee_amount = null;
+      }
     }
 
     const { error } = await supabase
@@ -1607,14 +1645,29 @@ export default function EditListingForm({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("petsLabel")}</label>
-                    <ToggleField value={form.pets_allowed} onChange={(v) => set("pets_allowed", v)} tEdit={tEdit} />
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsLabel")}</label>
+                    <ToggleField
+                      value={form.dogs_allowed}
+                      onChange={(v) => setForm((prev) => ({ ...prev, dogs_allowed: v, dogs_max: v ? (prev.dogs_max ?? 1) : prev.dogs_max }))}
+                      tEdit={tEdit}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("smokingLabel")}</label>
                     <ToggleField value={form.smoking_allowed} onChange={(v) => set("smoking_allowed", v)} tEdit={tEdit} />
                   </div>
                 </div>
+                {form.dogs_allowed && (
+                  <DogPolicyFields
+                    max={form.dogs_max}
+                    sizeLimit={form.dogs_size_limit}
+                    feeType={form.dogs_fee_type}
+                    feeAmount={form.dogs_fee_amount}
+                    onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+                    tEdit={tEdit}
+                    locale={locale}
+                  />
+                )}
                 <div>
                   <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("minAgeLabel")}</label>
                   <div className="flex items-center gap-3 mt-2">
@@ -2037,6 +2090,109 @@ function CheckinTypeField({ value, onChange, tEdit }: { value: "autonomous" | "i
         <p className="font-semibold text-base text-charcoal-800">{tEdit("checkinInPersonTitle")}</p>
         <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{tEdit("checkinInPersonDesc")}</p>
       </button>
+    </div>
+  );
+}
+
+function DogPolicyFields({ max, sizeLimit, feeType, feeAmount, onChange, tEdit, locale }: {
+  max: number | null;
+  sizeLimit: DogSizeLimit | null;
+  feeType: DogFeeType | null;
+  feeAmount: number | null;
+  onChange: (patch: Partial<Pick<FormState, "dogs_max" | "dogs_size_limit" | "dogs_fee_type" | "dogs_fee_amount">>) => void;
+  tEdit: TEditFn;
+  locale: string;
+}) {
+  const count = max ?? 1;
+  const hasFee = feeType === "per_night" || feeType === "per_stay";
+  const choiceCls = (active: boolean) =>
+    `text-left px-4 py-3 rounded-xl border-2 text-sm transition-colors ${active ? "border-primary bg-primary/5 font-medium text-charcoal-800" : "border-[#ebebeb] bg-white text-charcoal-600 hover:border-charcoal-300"}`;
+
+  return (
+    <div className="rounded-xl bg-charcoal-50 p-4 sm:p-5 space-y-5">
+      <div>
+        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsMaxLabel")} <Req /></label>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onChange({ dogs_max: Math.max(1, count - 1) })}
+            disabled={count <= 1}
+            aria-label={tEdit("dogsMaxDecrease")}
+            className="w-9 h-9 rounded-full border border-[#ebebeb] bg-white flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+          </button>
+          <span className="w-20 text-center text-sm font-semibold text-charcoal-800">{tEdit("dogsMaxValue", { count })}</span>
+          <button
+            type="button"
+            onClick={() => onChange({ dogs_max: Math.min(DOGS_MAX_LIMIT, count + 1) })}
+            disabled={count >= DOGS_MAX_LIMIT}
+            aria-label={tEdit("dogsMaxIncrease")}
+            className="w-9 h-9 rounded-full border border-[#ebebeb] bg-white flex items-center justify-center text-charcoal-600 hover:border-charcoal-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsSizeLabel")} <Req /></p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup" aria-label={tEdit("dogsSizeLabel")}>
+          {DOG_SIZE_LIMITS.map((size) => (
+            <button
+              key={size}
+              type="button"
+              role="radio"
+              aria-checked={sizeLimit === size}
+              onClick={() => onChange({ dogs_size_limit: size })}
+              className={choiceCls(sizeLimit === size)}
+            >
+              {dogSizeLabel(size, locale)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("dogsFeeLabel")} <Req /></p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-label={tEdit("dogsFeeLabel")}>
+          <button type="button" role="radio" aria-checked={feeType === "free"} onClick={() => onChange({ dogs_fee_type: "free" })} className={choiceCls(feeType === "free")}>
+            {tEdit("dogsFeeFree")}
+          </button>
+          <button type="button" role="radio" aria-checked={hasFee} onClick={() => { if (!hasFee) onChange({ dogs_fee_type: "per_night" }); }} className={choiceCls(hasFee)}>
+            {tEdit("dogsFeePaid")}
+          </button>
+        </div>
+        {hasFee && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <div className="relative w-32">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={10000}
+                value={feeAmount ?? ""}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value, 10);
+                  onChange({ dogs_fee_amount: Number.isFinite(n) && n > 0 ? Math.min(n, 10000) : null });
+                }}
+                aria-label={tEdit("dogsFeeAmountLabel")}
+                className={`${inputCls} bg-white pr-8`}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-charcoal-400 pointer-events-none">$</span>
+            </div>
+            <select
+              value={feeType}
+              onChange={(e) => onChange({ dogs_fee_type: e.target.value as DogFeeType })}
+              aria-label={tEdit("dogsFeeUnitLabel")}
+              className={`${inputCls} bg-white w-auto`}
+            >
+              <option value="per_night">{tEdit("dogsFeePerNight")}</option>
+              <option value="per_stay">{tEdit("dogsFeePerStay")}</option>
+            </select>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
