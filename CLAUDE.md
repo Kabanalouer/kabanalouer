@@ -38,7 +38,7 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Tailwind CSS | 4.x | config via `@theme` dans `globals.css`, pas de `tailwind.config.js` |
 | Supabase | 2.x | Auth + Postgres. Project ID : `fgdwhbemzmccchemtzog` |
 | Anthropic SDK | 0.96+ | Modèle : `claude-sonnet-4-6` |
-| Google Maps | `@vis.gl/react-google-maps` | Split-view sur /chalets |
+| Google Maps | `@vis.gl/react-google-maps` | Split-view sur /chalets. Cartes publiques = Map ID `4f2683853b30fc50ebbacf05` (`lib/googleMaps.ts`), style réglé dans la console Google (voir section 9) |
 | Resend | 6.x | Emails transactionnels |
 | Stripe | 22.x | Abonnements propriétaires + module vedettes — mode Production activé le 2026-09-04 |
 | Cloudflare Turnstile | — | Anti-bot sur signup et login |
@@ -506,7 +506,7 @@ Remplace l'ancien booléen « Animaux acceptés » (`pets_allowed`, colonne reno
 
 - **Colonnes `listings`** : `dogs_allowed` (bool), `dogs_max` (1-5), `dogs_size_limit` (`small` ≤ 25 lbs / `medium` ≤ 50 lbs / `all`), `dogs_fee_type` (`free` / `per_night` / `per_stay`), `dogs_fee_amount` (entier, $). Détails remis à `NULL` à la sauvegarde si les chiens ne sont pas acceptés (et le montant si gratuit). Migration `supabase/add-dog-policy.sql`.
 - **`lib/dogPolicy.ts`** : source unique (types, `parseDogPolicy()`, libellés FR/EN, résumé court, `parseDogsParam()`, chemins de la page SEO). Toute nouvelle requête qui affiche la politique ajoute `DOG_POLICY_COLUMNS` à son `.select()`.
-- **Dashboard** (« Infos générales ») : Oui/Non puis `DogPolicyFields` (compteur, poids, frais gratuit ou montant + par nuit/par séjour). Section bloquée tant que les détails sont incomplets (`dogsIncompleteError`, même principe que le CITQ).
+- **Dashboard** (« Infos générales », bloc « Chiens ») : Oui/Non puis `DogPolicyFields` (compteur, poids, frais gratuit ou montant + par nuit/par séjour sur la même ligne). Section bloquée tant que les détails sont incomplets (`dogsIncompleteError`, même principe que le CITQ).
 - **Fiche publique** : ligne « Chiens acceptés » + détails dans « Informations pratiques ». Compteur « Chiens » du formulaire « Contacter » plafonné à `dogs_max`, ne compte plus dans la capacité en personnes. `?dogs=N` dans l'URL préremplit le compteur.
 - **JSON-LD** : `petsAllowed` (booléen) + `additionalProperty` (chiens acceptés, maximum, poids, frais) ; question FAQ « Les chiens sont-ils acceptés… » avec les détails.
 - **Recherche** : paramètre unique `?dogs=N` (compteur « Chiens » des barres de recherche, ancien `?pets=`) → `dogs_allowed = true AND dogs_max >= N` (`app/chalets/page.tsx` + `/api/listings/geo`). Interrupteur dans `FiltersModal`, pastille « Chiens acceptés » au-dessus des résultats (`ChaletsMapLayout`). `ChaletsMapLayout` a maintenant un `key` basé sur les filtres dans `app/chalets/page.tsx` — sans lui, un changement de filtre gardait l'ancienne liste.
@@ -518,10 +518,22 @@ Même patron que « Chiens acceptés » ci-dessus.
 
 - **Colonnes `listings`** : `reduced_mobility` (bool, défaut `false`), `accessibility_features` (`text[]`, sous-ensemble des 9 ids — contrainte CHECK). Liste vidée à la sauvegarde si Non. Migration `supabase/add-reduced-mobility.sql`.
 - **`lib/accessibility.ts`** : catalogue unique (`ACCESSIBILITY_GROUPS` : entrée, salle de bain, chambre et circulation — 3 éléments chacun, libellés FR/EN avec mesures), `parseAccessibility()`, `groupAccessibilityFeatures()`, chemins de la page SEO. Ajouter un élément = l'ajouter ici **et** dans la contrainte CHECK.
-- **Dashboard** : Oui/Non sous « Chiens acceptés », puis cases à cocher par catégorie (`AccessibilityFields`), aucune obligatoire. « Fumeur accepté » vient ensuite.
+- **Dashboard** (bloc « Accessibilité » d'« Infos générales ») : Oui/Non, puis cases à cocher par catégorie (`AccessibilityFields`), aucune obligatoire.
 - **Fiche publique / JSON-LD** : affiché seulement si Oui (jamais de « non accessible » supposé). JSON-LD : un `LocationFeatureSpecification` par élément coché dans `amenityFeature` + question FAQ.
 - **Recherche** : `?accessible=1` → `reduced_mobility = true`. Interrupteur dans `FiltersModal` (composant `SwitchRow`, partagé avec les chiens), pastille « Mobilité réduite » à côté de « Chiens acceptés ».
 - **Page SEO/GEO** `/chalets/accessible-mobilite-reduite` · `/en/cabins/wheelchair-accessible` (`AccessibleLanding.tsx`) : grille, liens par région, les 9 critères, conseils, FAQ calculée sur les vraies fiches. Noindex et hors sitemap tant qu'aucun chalet publié n'est accessible. Lien dans le pied de page et `llms.txt`.
+
+### Dashboard « Infos générales » — découpée en 5 blocs (2026-09-26)
+
+Une seule entrée de menu (choix de Simon, plutôt que de nouvelles entrées), divisée en blocs `InfoBlock` (cadre léger + titre H3) : **Permis** (CITQ), **Arrivée et départ** (heures + type d'arrivée), **Règlements du chalet** (âge minimum, fumeur accepté), **Chiens**, **Accessibilité**. Les Oui/Non et le compteur d'âge sont sur une ligne (`SettingRow` : question à gauche, contrôle à droite). Mêmes champs dans `SECTION_FIELDS.infos`, même autosave.
+
+### Cartes Google publiques — Map ID et points d'intérêt masqués (2026-09-26)
+
+- **Map ID** `4f2683853b30fc50ebbacf05` (`lib/googleMaps.ts`, `PUBLIC_MAP_ID`) sur `ChaletsMap.tsx` (recherche) et `ListingMap.tsx` (mini-carte de la fiche). L'ancien `mapId="kabanalouer-public"` n'existait pas dans la console : Google affichait sa carte par défaut avec toutes les fiches d'entreprises (GMB).
+- **Avec un Map ID, la prop `styles` est ignorée** : le style (points d'intérêt et transports masqués) se règle uniquement dans la console Google Cloud → Styles de carte → style associé à l'ID, **puis « Publier »**. Une sous-catégorie de points d'intérêt réactivée l'emporte sur la catégorie principale. `MAP_STYLES` retiré du code. `clickableIcons={false}` : les icônes Google restantes n'ouvrent pas de fiche.
+- **CSP** (`next.config.ts`, `connect-src`) : `*.gstatic.com *.google.com data: blob:` ajoutés — les cartes vectorielles téléchargent leur style depuis `www.gstatic.com` ; sans ça, fond de carte vide (régression causée puis corrigée le même jour).
+- La carte du dashboard (`LocationSection.tsx`, `mapId="kabanalouer-edit"`) n'a pas été touchée : elle garde les commerces, utiles au proprio pour placer son chalet.
+- En local, pas de clé `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` dans `.env.local` → « Carte non disponible » : une modification de carte se vérifie en production.
 
 ### "Aperçu de mon annonce" pour un brouillon — CSP et accès RLS corrigés (2026-09-16)
 
@@ -846,6 +858,26 @@ Très longue session, 30 commits (`d057358` → `6f33cf6`), tout en ligne et vé
 - Les écritures Supabase en production par Claude (UPDATE sur `messages`) sont bloquées par le classifieur de sécurité même avec l'accord de Simon → lui fournir la requête SQL à exécuter lui-même.
 - Un script qui réécrit `fr.json` avec `JSON.stringify` change la mise en page du fichier : modifier le texte brut, pas re-sérialiser.
 - Aperçu d'éléments visibles seulement connecté : page de test temporaire sous `app/[locale]/test-…/` (le middleware réécrit tout sous `[locale]`), supprimée avant commit, puis `rm .next/dev/types/validator.ts` si `tsc` se plaint d'une page disparue.
+
+### Session du 2026-09-26 — Chiens acceptés, mobilité réduite, cartes, Infos générales
+
+**1. « Chiens acceptés »** — remplace « Animaux acceptés » (`pets_allowed` renommée `dogs_allowed`) : nombre maximum, poids, frais ; fiche, JSON-LD/FAQ, filtre `?dogs=N` + pastille, page SEO `/chalets/chiens-acceptes` (`4980732`). Voir section 9.
+
+**2. « Accessible aux personnes à mobilité réduite »** — 9 éléments en 3 zones ; fiche, JSON-LD/FAQ, filtre `?accessible=1` + pastille, page SEO `/chalets/accessible-mobilite-reduite` (noindex tant qu'aucun chalet accessible n'est publié) (`21e34d0`). Voir section 9.
+
+**3. Recherche** — `ChaletsMapLayout` reçoit un `key` basé sur les filtres : sans lui, changer un filtre gardait l'ancienne liste (bogue préexistant). Les chiens ne comptent plus dans la capacité en personnes du formulaire « Contacter ».
+
+**4. Cartes** — vrai Map ID, points d'intérêt masqués via la console Google, CSP corrigée (`27beb02`, `c6456d2`). Voir section 9.
+
+**5. Infos générales** — « Fumeur accepté » sous les chiens (`d847495`), puis section découpée en 5 blocs (`9f71090`), fréquence des frais à côté du montant et bloc « Permis » (`8b29263`).
+
+**Migrations exécutées en prod** : `add-dog-policy.sql`, `add-reduced-mobility.sql` (section 12).
+
+**Leçons de la session**
+- **Serveur local qui renvoie 404 partout sauf l'accueil** : cache Turbopack corrompu → arrêter le serveur, `rm -rf .next/dev`, relancer `npx next dev -p 3123`.
+- **Fond de carte vide** : ne pas conclure trop vite à un problème du navigateur de test — lire la console : une erreur CSP (`connect-src`) en était la vraie cause.
+- **Formulaire du dashboard jamais vu à l'écran** pendant cette session (connexion requise, aucun mot de passe de test) : utiliser la page de test temporaire décrite dans la session du 2026-09-24 pour l'aperçu des écrans connectés, plutôt que de livrer sans l'avoir vu.
+- Pour une nouvelle politique d'annonce (chiens, accessibilité…), le patron complet est : colonnes + contrainte CHECK, `lib/<politique>.ts` (source unique des libellés FR/EN), dashboard, fiche, `listing-schema.ts`, filtre (`app/chalets/page.tsx` **et** `/api/listings/geo`), `FiltersModal` + pastille, page SEO dans le catch-all + sitemap + pied de page + `llms.txt`.
 
 ---
 
