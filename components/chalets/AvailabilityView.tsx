@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { getMonthNames, getDayNames } from "@/lib/dateLocale";
 
@@ -23,11 +23,14 @@ function offsetDate(dateStr: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// Diagonale : arrivée = triangle bas-droite, départ = triangle haut-gauche
+const CHECKIN_BG  = `linear-gradient(to bottom right, transparent 50%, ${BLOCKED_COLOR} 50%)`;
+const CHECKOUT_BG = `linear-gradient(to bottom right, ${BLOCKED_COLOR} 50%, transparent 50%)`;
+
 function BlockBg({ fill }: { fill: HalfFill }) {
-  const c = BLOCKED_COLOR;
-  if (fill.left && fill.right) return <div className="absolute inset-0 rounded" style={{ background: c }} />;
-  if (fill.right) return <div className="absolute inset-y-0 right-0 w-1/2 rounded-r" style={{ background: c }} />;
-  if (fill.left)  return <div className="absolute inset-y-0 left-0 w-1/2 rounded-l" style={{ background: c }} />;
+  if (fill.left && fill.right) return <div className="absolute inset-0 rounded" style={{ background: BLOCKED_COLOR }} />;
+  if (fill.right) return <div className="absolute inset-0 rounded" style={{ background: CHECKIN_BG }} />;
+  if (fill.left)  return <div className="absolute inset-0 rounded" style={{ background: CHECKOUT_BG }} />;
   return null;
 }
 
@@ -78,9 +81,7 @@ function MonthGrid({
               <BlockBg fill={fill} />
               <span className={[
                 "relative z-10 text-xs",
-                isPast    ? "text-charcoal-100" :
-                isBlocked ? "text-error-500 font-medium" :
-                            "text-charcoal-600",
+                isPast ? "text-charcoal-100" : "text-charcoal-600",
               ].join(" ")}>
                 {day}
               </span>
@@ -147,17 +148,19 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       </div>
 
       {/* Calendar grid */}
-      <div className="flex gap-8">
-        {months.map(({ year, month }) => (
-          <MonthGrid
-            key={`${year}-${month}`}
-            year={year}
-            month={month}
-            allBlocked={allBlocked}
-            today={today}
-            monthNames={monthNames}
-            dayNames={dayNames}
-          />
+      <div className="flex gap-6">
+        {months.map(({ year, month }, i) => (
+          <Fragment key={`${year}-${month}`}>
+            {i > 0 && <div className="w-px self-stretch bg-[#ebebeb]" aria-hidden />}
+            <MonthGrid
+              year={year}
+              month={month}
+              allBlocked={allBlocked}
+              today={today}
+              monthNames={monthNames}
+              dayNames={dayNames}
+            />
+          </Fragment>
         ))}
       </div>
 
@@ -175,13 +178,13 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
         </div>
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
-            <div className="absolute inset-y-0 right-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
+            <div className="absolute inset-0" style={{ background: CHECKIN_BG }} />
           </div>
           {t("checkin")}
         </div>
         <div className="flex items-center gap-1.5">
           <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
-            <div className="absolute inset-y-0 left-0 w-1/2" style={{ background: BLOCKED_COLOR }} />
+            <div className="absolute inset-0" style={{ background: CHECKOUT_BG }} />
           </div>
           {t("checkout")}
         </div>
