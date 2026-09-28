@@ -779,9 +779,11 @@ export default function ProfileForm({
       </Section>
 
       {/* ── Notifications Web Push (cet appareil) ─────────────────────────── */}
-      <Section title={tPush("sectionTitle")} description={tPush("sectionDesc")}>
-        <PushOptIn />
-      </Section>
+      <div id="notifications-appareil" className="scroll-mt-28">
+        <Section title={tPush("sectionTitle")} description={tPush("sectionDesc")}>
+          <PushOptIn />
+        </Section>
+      </div>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-error-100 p-6">
