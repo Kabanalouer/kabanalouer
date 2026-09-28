@@ -350,7 +350,7 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 - Intercepte et personnalise uniquement les emails **signup** (confirmation d'inscription) et **recovery** (réinitialisation de mot de passe), dans la langue de l'utilisateur (`preferred_language`), avec le design Kabanalouer (olive/coral, Plus Jakarta Sans, boutons `rounded-full`)
 - **Configuré dans** Supabase Dashboard → Authentication → Hooks → Send Email Hook (type HTTPS), pointant vers la fonction déployée
 - **Secrets requis** dans l'environnement de la fonction (via `supabase secrets set`) : `RESEND_API_KEY` et `SEND_EMAIL_HOOK_SECRET`
-- ⚠️ **Point important** : une fois ce hook actif, Supabase n'envoie **plus aucun email par défaut, pour aucun type d'événement** — le SMTP interne est désactivé globalement pendant que le hook est actif, pas seulement pour signup/recovery. Si on ajoute un jour magic link, invitation, ou changement d'email, il faudra revenir modifier cette fonction pour les gérer aussi, sinon **aucun email ne partira** pour ces cas.
+- ⚠️ **Point important** : une fois ce hook actif, Supabase n'envoie **plus aucun email par défaut, pour aucun type d'événement** — le SMTP interne est désactivé globalement pendant que le hook est actif, pas seulement pour signup/recovery. Si on ajoute un jour invitation ou changement d'email, il faudra revenir modifier cette fonction pour les gérer aussi, sinon **aucun email ne partira** pour ces cas. **Magic link géré depuis le 2026-09-28** (`send-email-hook` v6) : lien vers `/login?token_hash=…&type=magiclink`, vérifié par `verifyOtp` dans `LoginForm.tsx`.
 - **Testé et validé en production le 2026-07-07** : inscription et mot de passe oublié, en français, avec succès
 - **Re-confirmé fonctionnel le 2026-09-03** : après un doute soulevé par des notes contradictoires, mot de passe oublié re-testé en conditions réelles (`slemay@authentik.com`, vrai clic sur `/login` → "Mot de passe oublié ?" → `/auth/v1/recover`) — courriel brandé reçu correctement, en français. Le hook n'a jamais cessé de fonctionner.
 - ⚠️ **Piège à connaître pour un futur diagnostic** : `admin.generateLink()` (utilisé par la technique de sessions injectées via jetons Supabase — voir plus bas, "sessions injectées... pour contourner Cloudflare Turnstile") **ne déclenche jamais ce hook** — le lien est retourné directement à l'appelant côté serveur, aucun courriel n'est envoyé par aucun canal. Cette méthode pose quand même `recovery_sent_at` sur `auth.users`, ce qui peut *ressembler* à une vraie demande de réinitialisation dans les données mais n'en est pas une (cas vécu le 2026-09-01, source d'une fausse alerte "le hook semble cassé" résolue le 2026-09-03). Seul un vrai clic "Mot de passe oublié" sur `/login` (route `/auth/v1/recover`, pas `/auth/v1/admin/generate_link`) exerce réellement le hook.
@@ -360,6 +360,21 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 - **À faire éventuellement** :
   - Tester la confirmation d'inscription (signup) en anglais — seul flux encore jamais vérifié en conditions réelles.
   - Envisager la rotation de `RESEND_API_KEY` et `SEND_EMAIL_HOOK_SECRET` — exposés en clair dans une session de travail, jamais tournés depuis
+
+### Notifications — profil, texto, Web Push (2026-09-28)
+
+- **Section « Notifications » du profil** (`ProfileForm.tsx`, ancre `#notifications`) : interrupteurs « Par courriel » (`notify_email`) et « Par texto » (`notify_sms`), champ « Numéro de cellulaire » sous le texto (ancre `#phone` ; y arriver par ce lien active le texto d'emblée). Section « Coordonnées » (courriel en lecture seule) placée juste dessous.
+- **Au moins un canal toujours actif** : impossible de couper le dernier ; le texto ne compte que s'il y a un numéro valide.
+- **Numéro** : `lib/phone.ts` (`normalizePhone()`, 10 chiffres nord-américains → `+1XXXXXXXXXX`), utilisé à la sauvegarde du profil et par `lib/sms.ts` avant Twilio.
+- **Cron `new-message-notifications`** : courriel sauté si `notify_email = false` (texto et push partent quand même). Le texto dit « Nouvelle demande de prix de {prénom} » quand le groupe contient un message avec dates + voyageurs adressé au proprio (même règle que `isQuoteRequest` dans `MessagesClient.tsx`), sinon « Nouveau message ».
+- **Web Push (PWA)** : `public/sw.js`, `app/manifest.ts`, `lib/push.ts` (`sendPushToUser`), `app/api/push/*`, table `push_subscriptions`, clés VAPID (section 10). Toujours envoyé par le cron, mais **plus proposé dans le profil** (installation sur iPhone jugée trop difficile) — `components/PushOptIn.tsx` n'est plus importé nulle part.
+
+### Courriels d'accueil des proprios et Admin → Séquences courriel (2026-09-28)
+
+- **Cron quotidien `host-onboarding-emails`** (`0 15 * * *`, 11 h Montréal), `lib/emails/hostOnboarding.ts` : première publication = plus ancien `subscriptions.created_at` du proprio, fenêtre 48 h → 14 jours, annonce publiée requise.
+  - 48 h : invitation à booster (`users.boost_invite_email_sent_at`).
+  - 96 h : « Reçois tes demandes par texto » (`sendSmsInviteEmail`, bouton vers `/dashboard/profile#phone`), sauté si le proprio a déjà un numéro et les textos actifs. Suivi dans `users.install_app_email_sent_at` (nom hérité de l'ancien guide d'installation de l'app).
+- **Admin → Séquences courriel** (`/admin/emails`) : catalogue `lib/adminEmailCatalog.ts` (26 courriels : proprios dans l'ordre de réception, voyageurs, connexion/compte Supabase en info seulement, notifications internes), bouton « Envoyer un test » FR/EN et « Envoyer toute la séquence » par catégorie. Route `POST /api/admin/test-email` (rôle admin), données d'exemple de la fiche Chalet Authentik 50. **Tout nouveau courriel doit être ajouté au catalogue et à la route.**
 
 ### Côté voyageur
 - **Recherche** : filtres, Google Maps split-view sur `/chalets`
@@ -423,7 +438,7 @@ En plus du courriel existant (Phase 2a ci-dessus), un SMS est envoyé au destina
 
 - **`lib/sms.ts`** (nouveau) : `sendNewMessageSms()`, SDK Twilio (`TWILIO_ACCOUNT_SID`/`AUTH_TOKEN`/`PHONE_NUMBER`), message court bilingue FR/EN (« Nouveau message sur Kabanalouer de {prénom}. Réponds ici : {SITE_URL}/messages »). Retourne `{ error }`, ne lance jamais d'exception.
 - **Conditions d'envoi** (`app/api/cron/new-message-notifications/route.ts`) : uniquement si `receiver.phone` n'est pas `NULL` **et** `receiver.notify_sms` est `true`. Un échec Twilio est logué (`console.error`) mais ne bloque jamais le message ni le courriel déjà envoyé — le SMS est un bonus, jamais une dépendance critique.
-- **`notify_email`/`notify_sms`** (`public.users`, booléens, défaut `true` tous les deux) : deux préférences de CANAL indépendantes, distinctes de `notifications_prefs` (jsonb, préférences de CONTENU : messages, favoris, rapport mensuel). `notify_email` n'est lu par aucun code applicatif pour l'instant — le courriel de notification est toujours envoyé, indépendamment de ce flag ; seul `notify_sms` est actuellement branché.
+- **`notify_email`/`notify_sms`** (`public.users`, booléens, défaut `true` tous les deux) : deux préférences de CANAL indépendantes, distinctes de `notifications_prefs` (jsonb, préférences de CONTENU : messages, favoris, rapport mensuel). **Depuis le 2026-09-28, les deux sont branchés** et réglables dans le profil (voir « Notifications — profil » plus bas). `notifications_prefs` n'est plus lu ni écrit nulle part (ses 3 interrupteurs ne faisaient rien, retirés).
 - **Numéro de cellulaire** (`public.users.phone`, `TEXT` nullable — colonne déjà existante, réutilisée plutôt que d'en créer une nouvelle) : optionnel, demandé au signup (`app/(auth)/signup/SignupForm.tsx`, sous le champ courriel, validation format 10 chiffres nord-américain seulement si rempli, jamais obligatoire pour compléter l'inscription) et modifiable dans `/dashboard/profile` (`ProfileForm.tsx`, préexistant). Trigger `handle_new_user()` mis à jour pour le lire depuis les métadonnées d'inscription si fourni (`supabase/add-phone-notification-prefs-signup.sql`).
 - **Bannière de rappel** (`components/PhoneReminderBanner.tsx`, nouveau) : affichée sur `/messages` (proprio et voyageur — dans ce projet, c'est aussi la seule page où un proprio voit ses demandes de devis reçues, il n'existe pas de liste dédiée séparée) tant que `phone IS NULL`, fermable (X) pour la session en cours seulement (`sessionStorage`, pas de mémorisation permanente — réapparaît à la prochaine visite tant qu'aucun numéro n'est ajouté). Lien "Ajouter" vers `/dashboard/profile#phone`.
 - **Testé de bout en bout en conditions réelles** le 2026-09-14 : SMS reçu confirmé sur un vrai téléphone, courriel non affecté. Piège découvert pendant le test : le cron de production tourne sur la même base Supabase partagée (dev/prod, voir section 2) — un message de test inséré manuellement peut être traité par le vrai cron avant un test manuel local si on n'agit pas assez vite (fenêtre de 2 minutes depuis le 2026-09-24).
@@ -584,6 +599,9 @@ TWILIO_AUTH_TOKEN                  # server-side uniquement
 TWILIO_PHONE_NUMBER                # numéro Twilio expéditeur, format +1XXXXXXXXXX
 NEXT_PUBLIC_APP_URL                # https://kabanalouer.ca
 NEXT_PUBLIC_GA_MEASUREMENT_ID       # Google Analytics 4 — ex. G-SKLC68FPGV
+NEXT_PUBLIC_VAPID_PUBLIC_KEY        # Web Push (PWA) — clé publique
+VAPID_PRIVATE_KEY                   # Web Push — Vercel seulement (sensible), jamais commitée
+VAPID_SUBJECT                       # Web Push — mailto: de contact
 ```
 
 ---
@@ -641,6 +659,10 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-no-availability-template-closing-column.sql` | Ajoute `users.no_availability_template_closing` (modèle réutilisable pour la réponse rapide "Indisponible", même principe que `quote_template_closing`) — voir section 13, session du 2026-09-23 | Exécutée et confirmée en prod le 2026-09-23 |
 | `add-dog-policy.sql` | Renomme `listings.pets_allowed` → `dogs_allowed`, ajoute `dogs_max`/`dogs_size_limit`/`dogs_fee_type`/`dogs_fee_amount` (+ contraintes CHECK, index partiel) et donne des valeurs par défaut à la fiche test (2 chiens, tous, gratuit) | Exécutée et confirmée en prod le 2026-09-26 |
 | `add-reduced-mobility.sql` | Ajoute `listings.reduced_mobility`/`accessibility_features` (+ contrainte CHECK des 9 ids, index partiel) | Exécutée et confirmée en prod le 2026-09-26 |
+| `promotions-date-basis.sql` | Ajoute `promotions.date_basis` (`stay` = dates de séjour, `booking` = dates de réservation) | Exécutée et confirmée en prod le 2026-09-28 |
+| `reviews-translation-columns.sql` | Colonnes de traduction automatique FR⇆EN des avis et des réponses des proprios | Exécutée et confirmée en prod le 2026-09-28 |
+| `push-subscriptions.sql` | Crée la table `push_subscriptions` (Web Push, un abonnement par appareil, RLS) | Exécutée et confirmée en prod le 2026-09-28 |
+| *(migration MCP, pas de fichier)* | Ajoute `users.boost_invite_email_sent_at`/`install_app_email_sent_at` (courriels d'accueil proprio) | Exécutée et confirmée en prod le 2026-09-28 |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
@@ -881,9 +903,36 @@ Très longue session, 30 commits (`d057358` → `6f33cf6`), tout en ligne et vé
 
 ---
 
+### Session du 2026-09-28 — Calendrier, promotions, anglais complet, mobile, notifications
+
+Très longue session (~40 commits, `a86005b` → `bd6d5c4`), tout en ligne.
+
+1. **Fiche et création d'annonce** : capacité/chambres/salles de bain retirées des « Informations pratiques » ; bloc Permis sous Accessibilité ; « À partir de » : champ étroit (5 chiffres max, minimum 10 $), « par nuit » à droite.
+2. **Calendrier** : demi-journées en diagonale (arrivée = triangle bas-droit, départ = haut-gauche), séparateurs entre les mois, chiffres sans rouge, mêmes styles côté proprio et public (`availabilityStyle.tsx`). Une seule méthode à la fois (iCal ou manuel) : bouton « Retirer le lien iCal », la synchro retire les dates manuelles. Explication du jour de départ iCal : la date de fin iCal est exclusive.
+3. **Analyse** : bouton « Conseils personnalisés » et route IA `listing-advice` retirés ; note sans « /100 ».
+4. **Promotions** : dates de séjour **ou** de réservation (`date_basis`), calendrier partagé (`components/DateRangePicker.tsx`), « peu importe la date du séjour », retour à l'écran par défaut après désactivation. Page SEO `/chalets/pas-cher` · `/en/cabins/deals` (noindex sous 5 promos, lien pied de page).
+5. **Anglais complet** : plus aucun français sur le site EN (titres, prix, heures, métadonnées, erreurs API via `lib/requestLocale.ts`, liens, courriels), bascule de langue selon hreflang. Traduction auto des avis et réponses, bio IA bilingue, facture PDF FR/EN, FAQ tarifs (299/249/199, 1 an gratuit par annonce).
+6. **Messagerie** : test de bout en bout voyageur EN ↔ proprio FR ; le courriel de notification envoie la traduction ; langue détectée plutôt que celle du profil ; note « répondre en moins de 24 h » dans les courriels des proprios seulement (le classement ne l'utilise pas — choix de Simon).
+7. **Mobile** : messagerie (plus de défilement horizontal, zone de saisie moderne, en-tête compact + panneau Détails), « Accueil » dans la barre du bas, `AutoTextarea`, création d'annonce (actions en bas, Précédent/Suivant, barres fixes), cartes « Mes chalets » (`ListingsClient`), bouton « + » rond. Audit mobile : fiche 38 → 83 (LCP 10,1 s → 3,4 s), galerie au doigt, panneau de devis, recherche plein écran, filtres en panneau, partage natif, menu complet, `viewport-fit=cover`, GA en `lazyOnload`, PWA + Web Push, lien de connexion par courriel, squelettes de chargement.
+8. **Installer l'app → textos** : invitation d'installation au tableau de bord ajoutée puis retirée (« Sur l'écran d'accueil » introuvable pour Simon sur iPhone) ; remplacée par les courriels d'accueil (48 h boost, 96 h textos) et les réglages courriel/texto du profil — voir section 9.
+9. **« Membre depuis {durée} »** et « … sur Kabanalouer » au lieu de « Propriétaire depuis » (fiche et zone proprio).
+10. **Admin → Séquences courriel** — voir section 9. Remplace une route GET temporaire (`test-host-emails`, supprimée) : un premier appel avait répondu 401 (session non reconnue).
+
+**Leçons de la session**
+- Remplacements de texte par script : attention aux espaces insécables avant `$` et aux `${…}` dans les gabarits — utiliser une regex précise (`r' \$(?!\{)'`).
+- Nouvelle page à prévisualiser en local : page temporaire sous `app/[locale]/test-…/`, qui peut répondre 404 quelques secondes avant de compiler — réessayer, puis la supprimer et `rm .next/dev/types/validator.ts` avant commit.
+- Captures d'écran : `import pw from "/Users/simonlemay/kabanalouer/node_modules/playwright/index.js"` depuis le dossier scratchpad.
+- Diagnostic d'une route en production : `get_runtime_logs` (MCP Vercel) avec une fenêtre courte (≤ 3 h), sinon la requête expire.
+
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### À vérifier après la session du 2026-09-28
+
+- **Lien de connexion (magic link) et Web Push** jamais testés en conditions réelles. Supabase → Authentication → URL Configuration : les Redirect URLs doivent autoriser `/login` et `/en/login`.
+- **Nouveaux courriels et textos** (invitation textos 96 h, texto « Nouvelle demande de prix ») : à tester via Admin → Séquences courriel et une vraie demande de prix.
+- **Code/colonnes inertes à nettoyer un jour** : `components/PushOptIn.tsx` (plus importé), `users.notifications_prefs` (plus lue), clés i18n `push.*` restées dans `messages/*.json`.
 
 ### Préversions Vercel inutilisables (2026-09-24)
 
