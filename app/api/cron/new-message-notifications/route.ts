@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
       supabase.from("users").select("email, name, preferred_language, phone, notify_sms, translation_enabled").eq("id", group.receiverId).single(),
-      supabase.from("listings").select("title, title_en").eq("id", group.listingId).single(),
+      supabase.from("listings").select("title, title_en, host_id").eq("id", group.listingId).single(),
     ]);
 
     if (!receiver?.email) continue;
@@ -115,6 +115,7 @@ export async function GET(request: NextRequest) {
       senderFirstName,
       listingTitle,
       messageCount: stillUnread.length,
+      recipientIsHost: listing?.host_id === group.receiverId,
       // Même règle que la messagerie : la traduction dans la langue du
       // destinataire, si elle existe et qu'il n'a pas désactivé la traduction
       ...(receiver.translation_enabled !== false && group.latestTranslated && group.latestTranslatedLanguage === lang

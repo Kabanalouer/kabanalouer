@@ -22,6 +22,7 @@ const TEMPLATE: Record<"fr" | "en", {
   body: (listingTitle: string, content: string) => string;
   buttonLabel: string;
   footerNote: string;
+  hostResponseNote: string;
 }> = {
   fr: {
     subjectOne: (senderFirstName, listingTitle) => `Nouveau message de ${senderFirstName} à propos de ${listingTitle}`,
@@ -32,6 +33,7 @@ const TEMPLATE: Record<"fr" | "en", {
     body: (listingTitle, content) => `À propos de : ${listingTitle}<br/><br/><em>« ${content} »</em>`,
     buttonLabel: "Répondre",
     footerNote: "Vous pouvez répondre à ce message en répondant à cet email (reply) ou directement dans la messagerie de Kabanalouer en cliquant sur le bouton ci-dessus.",
+    hostResponseNote: "Répondre en moins de 24\u00a0h permet à votre annonce d\u2019être affichée plus haut dans les résultats de recherche.",
   },
   en: {
     subjectOne: (senderFirstName, listingTitle) => `New message from ${senderFirstName} about ${listingTitle}`,
@@ -42,6 +44,7 @@ const TEMPLATE: Record<"fr" | "en", {
     body: (listingTitle, content) => `About: ${listingTitle}<br/><br/><em>"${content}"</em>`,
     buttonLabel: "Reply",
     footerNote: "You can reply to this message by replying to this email, or directly in your Kabanalouer messaging by clicking the button above.",
+    hostResponseNote: "Replying within 24 hours helps your listing show up higher in search results.",
   },
 };
 
@@ -57,6 +60,7 @@ export async function sendNewMessageNotificationEmail(
     messageCount,
     previewText,
     previewTranslated = false,
+    recipientIsHost = false,
     listingId,
     otherUserId,
   }: {
@@ -69,6 +73,9 @@ export async function sendNewMessageNotificationEmail(
     messageCount: number;
     previewText: string;
     previewTranslated?: boolean;
+    // Destinataire = proprio de l'annonce (jamais pour un voyageur) :
+    // incitation à répondre rapidement dans le pied de courriel
+    recipientIsHost?: boolean;
     listingId: string;
     otherUserId: string;
   }
@@ -119,7 +126,9 @@ export async function sendNewMessageNotificationEmail(
     body: template.body(safeListingTitle, safePreview) + translatedNote,
     buttonLabel: template.buttonLabel,
     buttonUrl,
-    footerNote: template.footerNote,
+    footerNote: recipientIsHost
+      ? `${template.footerNote}<br/><br/><strong>${template.hostResponseNote}</strong>`
+      : template.footerNote,
   });
 
   const { error } = await resend.emails.send({
