@@ -75,8 +75,8 @@ export async function sendSmsInviteEmail({
       ]);
 
   const body = fr
-    ? `Un voyageur qui attend une réponse va souvent voir ailleurs. Répondre en moins de 24&nbsp;h aide aussi ton annonce à mieux se classer.<br/><br/>Reçois un texto 2 à 3 minutes après chaque nouvelle demande de prix ou nouveau message, avec un lien pour répondre tout de suite. Rien à installer.${howTo}`
-    : `A traveler waiting for an answer often looks elsewhere. Replying within 24 hours also helps your listing rank higher.<br/><br/>Get a text 2 to 3 minutes after every new price request or message, with a link to reply right away. Nothing to install.${howTo}`;
+    ? `Un voyageur qui attend une réponse va souvent voir ailleurs. Répondre en moins de 24&nbsp;h aide aussi ton annonce à mieux se classer.<br/><br/>Reçois un texto pour chaque nouvelle demande de prix ou nouveau message, avec un lien pour répondre tout de suite. Rien à installer.${howTo}`
+    : `A traveler waiting for an answer often looks elsewhere. Replying within 24 hours also helps your listing rank higher.<br/><br/>Get a text for every new price request or message, with a link to reply right away. Nothing to install.${howTo}`;
 
   const html = renderEmail({
     lang,

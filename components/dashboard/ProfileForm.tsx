@@ -9,7 +9,6 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
 import AutoTextarea from "@/components/AutoTextarea";
-import PushOptIn from "@/components/PushOptIn";
 import { normalizePhone } from "@/lib/phone";
 
 const inputCls =
@@ -181,7 +180,6 @@ export default function ProfileForm({
   const supabase = createClient();
   const t = useTranslations("profile");
   const tc = useTranslations("common");
-  const tPush = useTranslations("push");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -399,6 +397,21 @@ export default function ProfileForm({
     const id = requestAnimationFrame(() => setNotifySms(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // Au moins un canal doit rester actif. Le texto ne compte que s'il a un
+  // numéro valide : sans numéro, rien ne part.
+  const [notifHint, setNotifHint] = useState("");
+  const smsReady = notifySms && !!normalizePhone(phone);
+  const toggleEmail = (v: boolean) => {
+    if (!v && !smsReady) { setNotifHint(t("notifKeepOne")); return; }
+    setNotifHint("");
+    setNotifyEmail(v);
+  };
+  const toggleSms = (v: boolean) => {
+    if (!v && !notifyEmail) { setNotifHint(t("notifKeepOne")); return; }
+    setNotifHint("");
+    setNotifySms(v);
+  };
 
   const saveNotifs = async () => {
     setNotifSaving(true);
@@ -688,34 +701,20 @@ export default function ProfileForm({
         </Section>
       )}
 
-      {/* ── Coordonnées ───────────────────────────────────────────────────── */}
-      <Section title={t("contact")} description={t("contactDesc")}>
-        <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
-          <input
-            type="email"
-            value={email}
-            readOnly
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
-          />
-          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
-        </div>
-      </Section>
-
       {/* ── Notifications (nouveaux messages et demandes de prix) ─────────── */}
       <div id="notifications" className="scroll-mt-28">
         <Section title={t("notifications")} description={t("notificationsDesc")}>
           <div className="space-y-5">
             <Toggle
               checked={notifyEmail}
-              onChange={setNotifyEmail}
+              onChange={toggleEmail}
               label={t("notifEmail")}
               description={t((role === "host" || role === "admin") ? "notifEmailDescHost" : "notifEmailDesc", { email })}
             />
             <div id="phone" className="scroll-mt-28 space-y-3">
               <Toggle
                 checked={notifySms}
-                onChange={setNotifySms}
+                onChange={toggleSms}
                 label={t("notifSms")}
                 description={t((role === "host" || role === "admin") ? "notifSmsDescHost" : "notifSmsDesc")}
               />
@@ -736,7 +735,8 @@ export default function ProfileForm({
                 </div>
               )}
             </div>
-            {!notifyEmail && !notifySms && (
+            {notifHint && <p className="text-sm text-charcoal-600">{notifHint}</p>}
+            {!notifyEmail && !smsReady && (
               <p className="text-sm text-warning-700 bg-warning-50 rounded-xl px-4 py-3">{t("notifNoneWarning")}</p>
             )}
           </div>
@@ -746,6 +746,20 @@ export default function ProfileForm({
           </div>
         </Section>
       </div>
+
+      {/* ── Coordonnées ───────────────────────────────────────────────────── */}
+      <Section title={t("contact")} description={t("contactDesc")}>
+        <div>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
+          />
+          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
+        </div>
+      </Section>
 
       {/* ── Langue ────────────────────────────────────────────────────────── */}
       <Section title={t("language")} description={t("languageDesc")}>
@@ -793,13 +807,6 @@ export default function ProfileForm({
           <ErrorMsg msg={pwdError} />
         </div>
       </Section>
-
-      {/* ── Notifications Web Push (cet appareil) ─────────────────────────── */}
-      <div id="notifications-appareil" className="scroll-mt-28">
-        <Section title={tPush("sectionTitle")} description={tPush("sectionDesc")}>
-          <PushOptIn />
-        </Section>
-      </div>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-error-100 p-6">
