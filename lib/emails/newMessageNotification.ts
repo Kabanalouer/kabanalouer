@@ -56,6 +56,7 @@ export async function sendNewMessageNotificationEmail(
     listingTitle,
     messageCount,
     previewText,
+    previewTranslated = false,
     listingId,
     otherUserId,
   }: {
@@ -67,6 +68,7 @@ export async function sendNewMessageNotificationEmail(
     listingTitle: string;
     messageCount: number;
     previewText: string;
+    previewTranslated?: boolean;
     listingId: string;
     otherUserId: string;
   }
@@ -90,6 +92,9 @@ export async function sendNewMessageNotificationEmail(
   // Message complet (plus de troncature à 150 caractères) — sauts de ligne
   // préservés en <br/>, même pattern que lib/emails/contactMessageNotification.ts.
   const safePreview = escapeHtml(trimmedQuotes).replace(/\n/g, "<br/>");
+  const translatedNote = previewTranslated
+    ? `<p style="margin:8px 0 0;font-size:12px;color:#9a9a9a;">${preferredLanguage === "en" ? "Automatically translated from French" : "Traduit automatiquement de l’anglais"}</p>`
+    : "";
 
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
   const buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
@@ -111,7 +116,7 @@ export async function sendNewMessageNotificationEmail(
     lang: preferredLanguage,
     greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
     heading: messageCount > 1 ? template.headingMany(messageCount, safeSender) : template.headingOne(safeSender),
-    body: template.body(safeListingTitle, safePreview),
+    body: template.body(safeListingTitle, safePreview) + translatedNote,
     buttonLabel: template.buttonLabel,
     buttonUrl,
     footerNote: template.footerNote,

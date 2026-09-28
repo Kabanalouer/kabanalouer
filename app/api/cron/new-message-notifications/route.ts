@@ -13,6 +13,9 @@ type Group = {
   receiverId: string;
   messageIds: string[];
   latestContent: string;
+  // Traduction automatique du dernier message (lib/sendMessage.ts), si elle existe
+  latestTranslated: string | null;
+  latestTranslatedLanguage: string | null;
 };
 
 // Cron chaque minute — Phase 2a (voir CLAUDE.md) : notifie par courriel les
@@ -31,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   const { data: candidates, error } = await supabase
     .from("messages")
-    .select("id, listing_id, sender_id, receiver_id, content, created_at")
+    .select("id, listing_id, sender_id, receiver_id, content, content_translated, translated_language, created_at")
     .eq("is_read", false)
     .is("notification_sent_at", null)
     .lte("created_at", cutoff)
@@ -53,11 +56,15 @@ export async function GET(request: NextRequest) {
         receiverId: msg.receiver_id as string,
         messageIds: [msg.id as string],
         latestContent: msg.content as string,
+        latestTranslated: (msg.content_translated as string | null) ?? null,
+        latestTranslatedLanguage: (msg.translated_language as string | null) ?? null,
       });
     } else {
       existing.messageIds.push(msg.id as string);
       // candidates triés asc par created_at — le dernier passage est le plus récent
       existing.latestContent = msg.content as string;
+      existing.latestTranslated = (msg.content_translated as string | null) ?? null;
+      existing.latestTranslatedLanguage = (msg.translated_language as string | null) ?? null;
     }
   }
 
@@ -90,7 +97,7 @@ export async function GET(request: NextRequest) {
 
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
-      supabase.from("users").select("email, name, preferred_language, phone, notify_sms").eq("id", group.receiverId).single(),
+      supabase.from("users").select("email, name, preferred_language, phone, notify_sms, translation_enabled").eq("id", group.receiverId).single(),
       supabase.from("listings").select("title, title_en").eq("id", group.listingId).single(),
     ]);
 
@@ -108,7 +115,11 @@ export async function GET(request: NextRequest) {
       senderFirstName,
       listingTitle,
       messageCount: stillUnread.length,
-      previewText: group.latestContent,
+      // Même règle que la messagerie : la traduction dans la langue du
+      // destinataire, si elle existe et qu'il n'a pas désactivé la traduction
+      ...(receiver.translation_enabled !== false && group.latestTranslated && group.latestTranslatedLanguage === lang
+        ? { previewText: group.latestTranslated, previewTranslated: true }
+        : { previewText: group.latestContent, previewTranslated: false }),
       listingId: group.listingId,
       otherUserId: group.senderId,
     });
