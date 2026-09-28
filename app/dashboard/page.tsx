@@ -115,16 +115,17 @@ export default async function DashboardPage() {
       )}
 
       {/* ── Listings ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("myListings")}</h2>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-heading-2 font-semibold text-charcoal-800 min-w-0">{t("myListings")}</h2>
         <Link
           href={localePath("/dashboard/listings/new", locale)}
-          className="flex items-center gap-1.5 bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
+          aria-label={t("createListing")}
+          className="shrink-0 flex items-center justify-center gap-1.5 bg-primary text-white text-sm w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          {t("createListing")}
+          <span className="hidden sm:inline">{t("createListing")}</span>
         </Link>
       </div>
 
