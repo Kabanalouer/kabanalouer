@@ -1,5 +1,5 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { translateText, type SupportedLanguage } from "@/lib/googleTranslate";
+import { detectAndTranslate, type SupportedLanguage } from "@/lib/googleTranslate";
 
 // Logique d'insertion + traduction automatique partagée entre les points
 // d'envoi de message (/api/messages, /api/messages/quote) — centralisée ici
@@ -88,14 +88,19 @@ export async function insertMessageAndTranslate(
   // Traduction automatique — en arrière-plan après l'insertion, via update
   // (propagé au destinataire par Realtime, déjà branché sur cette table).
   // Un échec ici ne doit jamais faire échouer l'envoi du message.
+  // La langue réellement écrite est détectée (pas celle du profil) : un
+  // anglophone qui écrit en français, ou deux utilisateurs de même langue de
+  // profil dont l'un écrit dans l'autre langue, sont couverts.
   try {
-    if (receiver?.translation_enabled !== false && senderLang !== receiverLang) {
-      const translated = await translateText(content.trim(), senderLang, receiverLang);
-      if (translated) {
+    if (receiver?.translation_enabled !== false) {
+      const detected = await detectAndTranslate(content.trim());
+      if (detected && detected.lang !== receiverLang) {
         await admin
           .from("messages")
-          .update({ content_translated: translated, translated_language: receiverLang })
+          .update({ language: detected.lang, content_translated: detected.translated, translated_language: receiverLang })
           .eq("id", message.id as string);
+      } else if (detected && detected.lang !== senderLang) {
+        await admin.from("messages").update({ language: detected.lang }).eq("id", message.id as string);
       }
     }
   } catch (translateErr) {
