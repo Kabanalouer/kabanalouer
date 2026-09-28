@@ -5,6 +5,7 @@ import { localePath } from "@/lib/localePath";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ReviewReplyForm from "@/components/dashboard/ReviewReplyForm";
+import TranslatedText from "@/components/TranslatedText";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { buildListingPath } from "@/lib/listingUrl";
 
@@ -87,6 +88,8 @@ export default async function MesAvisPage() {
     listing_id: string;
     rating: number;
     comment: string | null;
+    comment_lang: string | null;
+    comment_translated: string | null;
     host_reply: string | null;
     created_at: string;
     author: { name: string | null; avatar_url: string | null } | null;
@@ -98,10 +101,10 @@ export default async function MesAvisPage() {
   const { data: reviewsData } = listingIds.length > 0
     ? await supabase
         .from("reviews")
-        .select("id, listing_id, rating, comment, host_reply, created_at, author_id")
+        .select("id, listing_id, rating, comment, comment_lang, comment_translated, host_reply, created_at, author_id")
         .in("listing_id", listingIds)
         .order("created_at", { ascending: false })
-    : { data: [] as { id: string; listing_id: string; rating: number; comment: string | null; host_reply: string | null; created_at: string; author_id: string }[] };
+    : { data: [] as { id: string; listing_id: string; rating: number; comment: string | null; comment_lang: string | null; comment_translated: string | null; host_reply: string | null; created_at: string; author_id: string }[] };
 
   const authorIds = [...new Set((reviewsData ?? []).map((r) => r.author_id))];
   const { data: reviewAuthors } = authorIds.length > 0
@@ -116,6 +119,8 @@ export default async function MesAvisPage() {
     listing_id: r.listing_id,
     rating: r.rating,
     comment: r.comment,
+    comment_lang: r.comment_lang,
+    comment_translated: r.comment_translated,
     host_reply: r.host_reply,
     created_at: r.created_at,
     author: authorById.get(r.author_id) ?? null,
@@ -204,9 +209,14 @@ export default async function MesAvisPage() {
 
                 {/* Comment */}
                 {review.comment && (
-                  <p className="text-base text-charcoal-600 leading-relaxed mb-3">
-                    {review.comment}
-                  </p>
+                  <div className="mb-3">
+                    <TranslatedText
+                      original={review.comment}
+                      lang={review.comment_lang}
+                      translated={review.comment_translated}
+                      className="text-base text-charcoal-600 leading-relaxed"
+                    />
+                  </div>
                 )}
 
                 {/* Reply */}

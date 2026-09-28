@@ -3,6 +3,7 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { adminSupabase } from "@/lib/sendMessage";
 import { getReviewRequestByToken } from "@/lib/reviewToken";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
+import { detectAndTranslate } from "@/lib/googleTranslate";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -56,13 +57,19 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const trimmedComment = comment?.trim() || null;
+  // Traduction automatique FR⇆EN du commentaire (échec silencieux : le cron
+  // translate-listings réessaie plus tard)
+  const commentTranslation = trimmedComment ? await detectAndTranslate(trimmedComment) : null;
   const { data: review, error: insertError } = await admin
     .from("reviews")
     .insert({
       listing_id: reviewRequest.listing_id,
       author_id: reviewRequest.traveler_id,
       rating,
-      comment: comment?.trim() || null,
+      comment: trimmedComment,
+      comment_lang: commentTranslation?.lang ?? null,
+      comment_translated: commentTranslation?.translated ?? null,
       review_type: reviewType,
     })
     .select("id")

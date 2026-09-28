@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
+import { translateField } from "@/lib/translateField";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -41,5 +42,16 @@ export async function POST(request: Request) {
   });
 
   const bio = message.content[0].type === "text" ? message.content[0].text.trim() : "";
-  return NextResponse.json({ bio });
+  // Version anglaise générée en même temps, pour que la bio s'affiche aussi
+  // en anglais sur la fiche (champ bio_en du profil). Un échec laisse le
+  // champ anglais tel quel — le cron de traduction le remplira plus tard.
+  let bioEn: string | null = null;
+  if (bio) {
+    try {
+      bioEn = await translateField({ text: bio, sourceLang: "fr", targetLang: "en", fieldType: "bio" });
+    } catch (err) {
+      console.error("generate-bio: échec de la traduction anglaise", err);
+    }
+  }
+  return NextResponse.json({ bio, bioEn });
 }

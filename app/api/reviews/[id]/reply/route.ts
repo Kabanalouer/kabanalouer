@@ -3,6 +3,7 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendReviewRepliedEmail } from "@/lib/emails/reviewReplied";
+import { detectAndTranslate } from "@/lib/googleTranslate";
 
 function adminSupabase() {
   return createAdminClient(
@@ -48,9 +49,15 @@ export async function PATCH(
   }
 
   const admin = adminSupabase();
+  const trimmed = reply?.trim() || null;
+  const replyTranslation = trimmed ? await detectAndTranslate(trimmed) : null;
   const { error } = await admin
     .from("reviews")
-    .update({ host_reply: reply?.trim() || null })
+    .update({
+      host_reply: trimmed,
+      host_reply_lang: replyTranslation?.lang ?? null,
+      host_reply_translated: replyTranslation?.translated ?? null,
+    })
     .eq("id", id);
 
   if (error) {

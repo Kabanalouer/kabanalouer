@@ -80,8 +80,8 @@ export default async function MessagesPage() {
   // reste du projet, voir CLAUDE.md section 8).
   const otherUserIds = [...new Set(messages.map((m) => (m.sender_id === user.id ? m.receiver_id : m.sender_id)))];
   const { data: otherProfiles } = otherUserIds.length > 0
-    ? await supabase.from("public_profiles").select("id, name, avatar_url, bio, created_at").in("id", otherUserIds)
-    : { data: [] as { id: string; name: string | null; avatar_url: string | null; bio: string | null; created_at: string | null }[] };
+    ? await supabase.from("public_profiles").select("id, name, avatar_url, bio, bio_en, created_at").in("id", otherUserIds)
+    : { data: [] as { id: string; name: string | null; avatar_url: string | null; bio: string | null; bio_en: string | null; created_at: string | null }[] };
   const profileById = new Map((otherProfiles ?? []).map((p) => [p.id, p]));
 
   const convMap = new Map<
@@ -120,7 +120,7 @@ export default async function MessagesPage() {
         other_user_id: otherId,
         other_user_name: other?.name ?? (isEn ? "Unknown" : "Inconnu"),
         other_user_avatar: other?.avatar_url ?? null,
-        other_user_bio: other?.bio ?? null,
+        other_user_bio: (isEn && other?.bio_en) ? other.bio_en : (other?.bio ?? null),
         other_user_created_at: other?.created_at ?? null,
         listing_id: msg.listing_id,
         listing_title: msg.listing?.title ?? "",

@@ -140,7 +140,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   // publique — fetch séparé via la vue public_profiles, fusionné ici.
   const { data: rawReviews } = await supabase
     .from("reviews")
-    .select("id, rating, comment, host_reply, created_at, review_type, author_id")
+    .select("id, rating, comment, comment_lang, comment_translated, host_reply, host_reply_lang, host_reply_translated, created_at, review_type, author_id")
     .eq("listing_id", id)
     .order("created_at", { ascending: false });
 

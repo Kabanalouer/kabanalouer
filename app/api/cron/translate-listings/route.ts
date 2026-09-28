@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { translateField } from "@/lib/translateField";
 import { normalizePhotos } from "@/lib/photo";
+import { detectAndTranslate } from "@/lib/googleTranslate";
 
 export const maxDuration = 90;
 
@@ -115,5 +116,48 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ fieldsTranslated });
+  // Avis et réponses des proprios pas encore traduits (échec à l'écriture,
+  // ou avis antérieurs à la traduction automatique) — Google Translate,
+  // langue détectée automatiquement.
+  let reviewsTranslated = 0;
+  const { data: pendingReviews } = await supabase
+    .from("reviews")
+    .select("id, comment, comment_lang, host_reply, host_reply_lang")
+    .or("and(comment.not.is.null,comment_lang.is.null),and(host_reply.not.is.null,host_reply_lang.is.null)")
+    .limit(FIELD_CAP);
+  for (const review of pendingReviews ?? []) {
+    const updates: Record<string, unknown> = {};
+    if ((review.comment as string | null)?.trim() && !review.comment_lang) {
+      const t = await detectAndTranslate(review.comment as string);
+      if (t) { updates.comment_lang = t.lang; updates.comment_translated = t.translated; }
+    }
+    if ((review.host_reply as string | null)?.trim() && !review.host_reply_lang) {
+      const t = await detectAndTranslate(review.host_reply as string);
+      if (t) { updates.host_reply_lang = t.lang; updates.host_reply_translated = t.translated; }
+    }
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("reviews").update(updates).eq("id", review.id);
+      reviewsTranslated++;
+    }
+  }
+
+  // Présentations (bio) sans version anglaise — proprios et voyageurs
+  if (fieldsTranslated < FIELD_CAP) {
+    const { data: pendingBios } = await supabase
+      .from("users")
+      .select("id, bio")
+      .not("bio", "is", null)
+      .is("bio_en", null)
+      .limit(FIELD_CAP - fieldsTranslated);
+    for (const u of pendingBios ?? []) {
+      if (!(u.bio as string | null)?.trim()) continue;
+      const translated = await tryTranslate({ text: u.bio as string, sourceLang: "fr", targetLang: "en", fieldType: "bio" });
+      if (translated) {
+        await supabase.from("users").update({ bio_en: translated }).eq("id", u.id);
+        fieldsTranslated++;
+      }
+    }
+  }
+
+  return NextResponse.json({ fieldsTranslated, reviewsTranslated });
 }

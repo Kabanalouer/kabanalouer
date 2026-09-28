@@ -10,6 +10,14 @@ const TRANSACTION_LABELS: Record<string, string> = {
   boost_region: "Boost région",
 };
 
+// Facture bilingue (propriétaire anglophone) : le français reste en premier
+// (Charte de la langue française), l'anglais suit après « / ».
+const TRANSACTION_LABELS_BILINGUAL: Record<string, string> = {
+  publication: "Publication annuelle / Annual listing",
+  boost_accueil: "Boost page d'accueil / Homepage boost",
+  boost_region: "Boost page région / Region page boost",
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +34,7 @@ export async function GET(
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "invoice_number, transaction_date, transaction_type, amount_before_tax, tps_amount, tvq_amount, total_amount, client:user_id(name, company_name), listing:listing_id(title)"
+      "invoice_number, transaction_date, transaction_type, amount_before_tax, tps_amount, tvq_amount, total_amount, client:user_id(name, company_name, preferred_language), listing:listing_id(title)"
     )
     .eq("id", id)
     .single();
@@ -37,7 +45,12 @@ export async function GET(
   const listing = Array.isArray(invoice.listing) ? invoice.listing[0] : invoice.listing;
 
   const listingTitle = (listing as { title?: string } | null)?.title ?? "";
-  const label = TRANSACTION_LABELS[invoice.transaction_type as string] ?? "Achat";
+  // Langue du propriétaire de la facture (pas de l'appelant) : un admin qui
+  // consulte la facture obtient le même document que le propriétaire.
+  const bilingual = (client as { preferred_language?: string | null } | null)?.preferred_language === "en";
+  const label = bilingual
+    ? TRANSACTION_LABELS_BILINGUAL[invoice.transaction_type as string] ?? "Achat / Purchase"
+    : TRANSACTION_LABELS[invoice.transaction_type as string] ?? "Achat";
 
   const data: InvoiceData = {
     invoiceNumber: invoice.invoice_number as string,
@@ -56,6 +69,7 @@ export async function GET(
     tvqAmount: invoice.tvq_amount as number,
     totalAmount: invoice.total_amount as number,
     logoSrc: path.resolve(process.cwd(), "public/logo-wordmark.png"),
+    bilingual,
   };
 
   const buffer = await renderToBuffer(InvoiceDocument({ data }));
@@ -64,7 +78,7 @@ export async function GET(
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="facture-${data.invoiceNumber}.pdf"`,
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${bilingual ? "invoice" : "facture"}-${data.invoiceNumber}.pdf"`,
     },
   });
 }

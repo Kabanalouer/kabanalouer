@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import TranslatedText from "@/components/TranslatedText";
 
 type Review = {
   id: string;
   rating: number;
   comment: string | null;
+  comment_lang?: string | null;
+  comment_translated?: string | null;
   host_reply: string | null;
+  host_reply_lang?: string | null;
+  host_reply_translated?: string | null;
   created_at: string;
   review_type: "echange" | "sejour";
   author: { name: string | null; avatar_url: string | null } | null;
@@ -78,12 +83,22 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
                   </div>
                 </div>
                 {review.comment && (
-                  <p className="text-base text-charcoal-600 leading-relaxed">{review.comment}</p>
+                  <TranslatedText
+                    original={review.comment}
+                    lang={review.comment_lang}
+                    translated={review.comment_translated}
+                    className="text-base text-charcoal-600 leading-relaxed"
+                  />
                 )}
                 {review.host_reply && (
                   <div className="pl-4 border-l-2 border-[#ebebeb] mt-2">
                     <p className="text-sm font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
-                    <p className="text-base text-charcoal-600 leading-relaxed">{review.host_reply}</p>
+                    <TranslatedText
+                      original={review.host_reply}
+                      lang={review.host_reply_lang}
+                      translated={review.host_reply_translated}
+                      className="text-base text-charcoal-600 leading-relaxed"
+                    />
                   </div>
                 )}
               </div>

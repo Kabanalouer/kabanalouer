@@ -109,6 +109,9 @@ export interface InvoiceData {
   tvqAmount: number;
   totalAmount: number;
   logoSrc?: string; // chemin absolu local (fs) ou URL — voir generateInvoicePdf()
+  // true = facture bilingue « Français / English » (propriétaire anglophone).
+  // Le français reste premier (loi 96) ; dates et montants restent au format fr-CA.
+  bilingual?: boolean;
 }
 
 function formatCad(amount: number): string {
@@ -116,15 +119,17 @@ function formatCad(amount: number): string {
 }
 
 export default function InvoiceDocument({ data }: { data: InvoiceData }) {
+  // Libellé FR seul, ou « FR / EN » si facture bilingue.
+  const L = (fr: string, en: string) => (data.bilingual ? `${fr} / ${en}` : fr);
   return (
-    <Document title={`Facture ${data.invoiceNumber}`}>
+    <Document title={`${L("Facture", "Invoice")} ${data.invoiceNumber}`}>
       <Page size="LETTER" style={styles.page}>
         <View style={styles.headerRow}>
           <View>
             {data.logoSrc && <Image src={data.logoSrc} style={styles.logo} />}
           </View>
           <View>
-            <Text style={styles.invoiceTitle}>Facture</Text>
+            <Text style={styles.invoiceTitle}>{L("Facture", "Invoice")}</Text>
             <Text style={styles.invoiceMeta}>N° {data.invoiceNumber}</Text>
             <Text style={styles.invoiceMeta}>{data.transactionDate}</Text>
           </View>
@@ -132,13 +137,13 @@ export default function InvoiceDocument({ data }: { data: InvoiceData }) {
 
         <View style={styles.partiesRow}>
           <View style={styles.partyBlock}>
-            <Text style={styles.partyLabel}>Émise par</Text>
+            <Text style={styles.partyLabel}>{L("Émise par", "Issued by")}</Text>
             <Text style={styles.partyLine}>Kabanalouer</Text>
             <Text style={styles.partyLine}>15, rue de la Rigole</Text>
             <Text style={styles.partyLine}>Bromont, QC J2L 1T2</Text>
           </View>
           <View style={styles.partyBlock}>
-            <Text style={styles.partyLabel}>Facturée à</Text>
+            <Text style={styles.partyLabel}>{L("Facturée à", "Billed to")}</Text>
             <Text style={styles.partyLine}>{data.clientName}</Text>
             {data.companyName && <Text style={styles.partyLine}>{data.companyName}</Text>}
           </View>
@@ -147,7 +152,7 @@ export default function InvoiceDocument({ data }: { data: InvoiceData }) {
         <View style={styles.table}>
           <View style={styles.tableHeaderRow}>
             <Text style={[styles.tableHeaderCell, styles.descCol]}>Description</Text>
-            <Text style={[styles.tableHeaderCell, styles.amountCol]}>Montant</Text>
+            <Text style={[styles.tableHeaderCell, styles.amountCol]}>{L("Montant", "Amount")}</Text>
           </View>
           {data.lineItems.map((item, i) => (
             <View key={i} style={styles.tableRow}>
@@ -159,19 +164,19 @@ export default function InvoiceDocument({ data }: { data: InvoiceData }) {
 
         <View style={styles.totalsBlock}>
           <View style={styles.totalsRow}>
-            <Text style={styles.totalsLabel}>Sous-total</Text>
+            <Text style={styles.totalsLabel}>{L("Sous-total", "Subtotal")}</Text>
             <Text style={styles.totalsValue}>{formatCad(data.subtotal)}</Text>
           </View>
           <View style={styles.totalsRow}>
             <View>
-              <Text style={styles.totalsLabel}>TPS (5 %)</Text>
+              <Text style={styles.totalsLabel}>{`${L("TPS", "GST")} (5 %)`}</Text>
               <Text style={styles.totalsSub}>N° 721912681 RT0001</Text>
             </View>
             <Text style={styles.totalsValue}>{formatCad(data.tpsAmount)}</Text>
           </View>
           <View style={styles.totalsRow}>
             <View>
-              <Text style={styles.totalsLabel}>TVQ (9,975 %)</Text>
+              <Text style={styles.totalsLabel}>{`${L("TVQ", "QST")} (9,975 %)`}</Text>
               <Text style={styles.totalsSub}>N° 1038146251 TQ0001</Text>
             </View>
             <Text style={styles.totalsValue}>{formatCad(data.tvqAmount)}</Text>

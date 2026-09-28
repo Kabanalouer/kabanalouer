@@ -292,6 +292,7 @@ export default function ProfileForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t("errorBioGeneration"));
       setBio(data.bio.slice(0, 300));
+      if (data.bioEn) setBioEn((data.bioEn as string).slice(0, 300));
     } catch (e) {
       setBioError(e instanceof Error ? e.message : t("errorBioGeneration"));
     } finally {

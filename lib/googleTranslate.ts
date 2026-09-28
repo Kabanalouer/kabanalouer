@@ -35,3 +35,38 @@ export async function translateText(
     return null;
   }
 }
+
+// Détecte la langue du texte (FR ou EN) et le traduit dans l'autre langue.
+// Utilisé pour le contenu libre écrit par les utilisateurs (avis, réponses des
+// proprios), dont on ne connaît pas la langue d'avance. Retourne null en cas
+// d'échec — l'original reste affiché.
+export async function detectAndTranslate(
+  text: string
+): Promise<{ lang: SupportedLanguage; translated: string } | null> {
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  if (!apiKey || !text.trim()) return null;
+
+  try {
+    const res = await fetch(`${ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ q: text, target: "en", format: "text" }),
+    });
+    if (!res.ok) {
+      console.error(`[googleTranslate] détection ${res.status}`, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json();
+    const first = data?.data?.translations?.[0];
+    const detected = typeof first?.detectedSourceLanguage === "string" ? first.detectedSourceLanguage : "";
+    if (detected.startsWith("en")) {
+      const toFr = await translateText(text, "en", "fr");
+      return toFr ? { lang: "en", translated: toFr } : null;
+    }
+    const toEn = typeof first?.translatedText === "string" ? first.translatedText : "";
+    return toEn ? { lang: "fr", translated: toEn } : null;
+  } catch (err) {
+    console.error("[googleTranslate] échec de la détection", err);
+    return null;
+  }
+}
