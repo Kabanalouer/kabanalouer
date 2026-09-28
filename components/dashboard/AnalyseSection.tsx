@@ -166,11 +166,8 @@ export default function AnalyseSection({
             transform={`rotate(-90 ${CX} ${CY})`}
             style={{ transition: "stroke-dashoffset 0.6s ease" }}
           />
-          <text x={CX} y={CY - 5} textAnchor="middle" fontSize="30" fontWeight="700" fill="#1a1a1a">
+          <text x={CX} y={CY} textAnchor="middle" dominantBaseline="central" fontSize="36" fontWeight="700" fill="#1a1a1a">
             {score}
-          </text>
-          <text x={CX} y={CY + 16} textAnchor="middle" fontSize="13" fill="#9ca3af">
-            /100
           </text>
         </svg>
         <p className="text-sm font-semibold" style={{ color }}>{getScoreLabel(score)}</p>
