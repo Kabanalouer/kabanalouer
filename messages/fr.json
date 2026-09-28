@@ -565,12 +565,7 @@
       "savedAt": "Sauvegardé à {time}",
       "cancelSelection": "Annuler sélection ×",
       "save": "Sauvegarder",
-      "saving": "Sauvegarde…",
-      "available": "Disponible",
-      "unavailableManual": "Non disponible (manuel)",
-      "unavailableIcal": "Non disponible (iCal)",
-      "arrival": "Arrivée",
-      "departure": "Départ"
+      "saving": "Sauvegarde…"
     }
   },
   "messages": {

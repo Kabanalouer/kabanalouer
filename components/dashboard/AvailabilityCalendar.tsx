@@ -2,31 +2,12 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { AvailabilityLegend, blockedBackground, offsetDate } from "@/components/chalets/availabilityStyle";
 
 const MONTH_KEYS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const;
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 export type BlockedEntry = { date: string; source: "manual" | "ical" };
-type RangePos = "start" | "end" | "middle" | "single";
-
-const MANUAL_COLOR = "#FECACA"; // error-200
-const ICAL_COLOR   = "#FDE68A"; // warning-200
-
-function offsetDate(dateStr: string, days: number): string {
-  const d = new Date(dateStr + "T12:00:00Z");
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function getRangePos(dateStr: string, allBlocked: Set<string>): RangePos {
-  const hasPrev = allBlocked.has(offsetDate(dateStr, -1));
-  const hasNext = allBlocked.has(offsetDate(dateStr, +1));
-  if (!hasPrev && !hasNext) return "single";
-  if (!hasPrev) return "start";
-  if (!hasNext) return "end";
-  return "middle";
-}
-
 function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -41,33 +22,6 @@ function getDatesInRange(a: string, b: string): string[] {
     cur.setDate(cur.getDate() + 1);
   }
   return dates;
-}
-
-function BlockBg({ pos, color }: { pos: RangePos; color: string }) {
-  if (pos === "middle") return <div className="absolute inset-0 rounded-xl" style={{ background: color }} />;
-  if (pos === "start")  return <div className="absolute inset-y-0 right-0 w-1/2 rounded-r-xl" style={{ background: color }} />;
-  if (pos === "end")    return <div className="absolute inset-y-0 left-0 w-1/2 rounded-l-xl" style={{ background: color }} />;
-  // single: top-right + bottom-left triangles via two diagonal gradients
-  return (
-    <div className="absolute inset-0 rounded-xl overflow-hidden">
-      <div className="absolute inset-0" style={{ background: `linear-gradient(to top right, transparent 50%, ${color} 50%)` }} />
-      <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom left, transparent 50%, ${color} 50%)` }} />
-    </div>
-  );
-}
-
-function LegendItem({ type, color, label }: { type: "available" | "middle" | "start" | "end"; color?: string; label: string }) {
-  const c = color ?? MANUAL_COLOR;
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="relative w-5 h-5 rounded-md border border-charcoal-100 overflow-hidden shrink-0 bg-white">
-        {type === "middle" && <div className="absolute inset-0" style={{ background: c }} />}
-        {type === "start"  && <div className="absolute inset-y-0 right-0 w-1/2" style={{ background: c }} />}
-        {type === "end"    && <div className="absolute inset-y-0 left-0 w-1/2" style={{ background: c }} />}
-      </div>
-      <span className="text-charcoal-500">{label}</span>
-    </div>
-  );
 }
 
 export default function AvailabilityCalendar({
@@ -242,13 +196,10 @@ export default function AvailabilityCalendar({
           const day      = i + 1;
           const dateStr  = toDateStr(viewYear, viewMonth, day);
           const isPast   = dateStr < today;
-          const isManual = manualBlocked.has(dateStr);
-          const isIcal   = icalBlocked.has(dateStr) && !isManual;
           const isBlocked   = allBlocked.has(dateStr);
           const isRangeStart = !readOnly && dateStr === rangeStart;
           const inPreview    = !readOnly && inPreviewRange(dateStr);
-          const rangePos     = isBlocked ? getRangePos(dateStr, allBlocked) : null;
-          const blockColor   = isManual ? MANUAL_COLOR : ICAL_COLOR;
+          const blockedBg    = blockedBackground(allBlocked.has(offsetDate(dateStr, -1)), isBlocked);
 
           return (
             <button
@@ -264,42 +215,26 @@ export default function AvailabilityCalendar({
               ].join(" ")}
             >
               {isRangeStart && <div className="absolute inset-0 rounded-xl bg-primary" />}
-              {!isRangeStart && rangePos && <BlockBg pos={rangePos} color={blockColor} />}
+              {!isRangeStart && blockedBg && <div className="absolute inset-0 rounded-xl" style={{ background: blockedBg }} />}
               {!isRangeStart && !isBlocked && inPreview && <div className="absolute inset-0 rounded-xl bg-primary-50" />}
 
               <span className={[
                 "relative z-10",
                 isPast        ? "text-charcoal-300" :
                 isRangeStart  ? "text-white font-bold" :
-                isManual      ? "text-error-700 font-semibold" :
-                isIcal        ? "text-warning-700 font-semibold" :
                 inPreview     ? "text-primary font-semibold" :
                                 "text-charcoal-700",
               ].join(" ")}>
                 {day}
               </span>
 
-              {isIcal && (
-                <span className="absolute bottom-0.5 right-0.5 text-[8px] leading-none text-warning-600 z-20">⟳</span>
-              )}
             </button>
           );
         })}
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-charcoal-100 text-xs">
-        <LegendItem type="available" label={t("available")} />
-        {readOnly ? (
-          <LegendItem type="middle" color={ICAL_COLOR} label={t("unavailableIcal")} />
-        ) : (
-          <>
-            <LegendItem type="middle" color={MANUAL_COLOR} label={t("unavailableManual")} />
-            <LegendItem type="start"  color={MANUAL_COLOR} label={t("arrival")} />
-            <LegendItem type="end"    color={MANUAL_COLOR} label={t("departure")} />
-          </>
-        )}
-      </div>
+      <AvailabilityLegend className="mt-5 pt-4 border-t border-charcoal-100" />
     </div>
   );
 }

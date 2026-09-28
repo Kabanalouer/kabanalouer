@@ -3,35 +3,14 @@
 import { Fragment, useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { getMonthNames, getDayNames } from "@/lib/dateLocale";
+import { AvailabilityLegend, blockedBackground, offsetDate } from "@/components/chalets/availabilityStyle";
 
 const MAX_OFFSET = 17;
 
-const BLOCKED_COLOR = "#FECACA"; // error-200
-
 type BlockedEntry = { date: string; source: "manual" | "ical" };
-// Chaque nuit bloquée D occupe la moitié droite de D (arrivée) et la moitié
-// gauche de D+1 (départ) — le jour de départ reste disponible pour une arrivée.
-type HalfFill = { left: boolean; right: boolean };
 
 function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function offsetDate(dateStr: string, days: number): string {
-  const d = new Date(dateStr + "T12:00:00Z");
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-// Diagonale : arrivée = triangle bas-droite, départ = triangle haut-gauche
-const CHECKIN_BG  = `linear-gradient(to bottom right, transparent 50%, ${BLOCKED_COLOR} 50%)`;
-const CHECKOUT_BG = `linear-gradient(to bottom right, ${BLOCKED_COLOR} 50%, transparent 50%)`;
-
-function BlockBg({ fill }: { fill: HalfFill }) {
-  if (fill.left && fill.right) return <div className="absolute inset-0 rounded" style={{ background: BLOCKED_COLOR }} />;
-  if (fill.right) return <div className="absolute inset-0 rounded" style={{ background: CHECKIN_BG }} />;
-  if (fill.left)  return <div className="absolute inset-0 rounded" style={{ background: CHECKOUT_BG }} />;
-  return null;
 }
 
 function MonthGrid({
@@ -71,14 +50,14 @@ function MonthGrid({
           const dateStr  = toDateStr(year, month, day);
           const isPast   = dateStr < today;
           const isBlocked = allBlocked.has(dateStr);
-          const fill: HalfFill = { left: allBlocked.has(offsetDate(dateStr, -1)), right: isBlocked };
+          const bg        = blockedBackground(allBlocked.has(offsetDate(dateStr, -1)), isBlocked);
 
           return (
             <div
               key={day}
               className="aspect-square relative flex items-center justify-center"
             >
-              <BlockBg fill={fill} />
+              {bg && <div className="absolute inset-0 rounded" style={{ background: bg }} />}
               <span className={[
                 "relative z-10 text-xs",
                 isPast ? "text-charcoal-100" : "text-charcoal-600",
@@ -165,30 +144,7 @@ export default function AvailabilityView({ blocked }: { blocked: BlockedEntry[] 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 text-sm text-charcoal-400">
-        <div className="flex items-center gap-1.5">
-          <div className="relative w-4 h-4 rounded border border-[#ebebeb] overflow-hidden bg-white shrink-0" />
-          {t("available")}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
-            <div className="absolute inset-0" style={{ background: BLOCKED_COLOR }} />
-          </div>
-          {t("unavailable")}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
-            <div className="absolute inset-0" style={{ background: CHECKIN_BG }} />
-          </div>
-          {t("checkin")}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="relative w-4 h-4 rounded overflow-hidden shrink-0 bg-white">
-            <div className="absolute inset-0" style={{ background: CHECKOUT_BG }} />
-          </div>
-          {t("checkout")}
-        </div>
-      </div>
+      <AvailabilityLegend className="mt-4" />
 
       {blocked.length === 0 && (
         <p className="text-sm text-primary mt-3 font-medium">
