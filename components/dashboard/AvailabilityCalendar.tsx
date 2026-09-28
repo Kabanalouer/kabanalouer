@@ -28,10 +28,12 @@ export default function AvailabilityCalendar({
   listingId,
   initialBlocked,
   readOnly = false,
+  onSaved,
 }: {
   listingId: string;
   initialBlocked: BlockedEntry[];
   readOnly?: boolean;
+  onSaved?: (dates: string[]) => void;
 }) {
   const t = useTranslations("listings.calendar");
   const today = new Date().toISOString().slice(0, 10);
@@ -98,12 +100,14 @@ export default function AvailabilityCalendar({
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetch(`/api/availability/${listingId}`, {
+      const res = await fetch(`/api/availability/${listingId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dates: Array.from(manualBlocked) }),
       });
+      if (!res.ok) return;
       setIsDirty(false);
+      onSaved?.(Array.from(manualBlocked));
       setSavedAt(new Date().toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" }));
       // ^ format fr-CA volontaire (24h), le libellé affiché ("Sauvegardé à HH:MM") est traduit, pas le format d'heure.
     } finally {

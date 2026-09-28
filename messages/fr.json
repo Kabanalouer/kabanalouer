@@ -163,7 +163,7 @@
       "nearbyWithin30": "À moins de 30 minutes du chalet",
       "calendarManual": "Bloquer des dates manuellement",
       "calendarIcal": "Synchroniser avec un calendrier externe (iCal)",
-      "calendarSwitchWarning": "Vos dates bloquées manuellement seront retirées si vous changez de méthode.",
+      "calendarSwitchWarning": "Vos dates bloquées manuellement seront retirées dès que votre calendrier iCal sera synchronisé.",
       "calendarNoIcal": "Votre calendrier apparaîtra ici une fois votre URL iCal synchronisée.",
       "pricingFromTitle": "À partir de",
       "pricingFromDesc": "Affichez un prix de base sur votre fiche et générez des demandes de devis de la part des voyageurs pour leur donner le vrai prix selon les dates de leur séjour.",
@@ -250,7 +250,8 @@
       "flushBeforePublishError": "Impossible d'enregistrer tes derniers changements — réessaie avant de publier.",
       "activateError": "Une erreur s'est produite.",
       "stripeError": "Impossible de démarrer le paiement. Réessayez.",
-      "stripeUrlMissing": "URL de paiement manquante."
+      "stripeUrlMissing": "URL de paiement manquante.",
+      "calendarIcalActive": "Votre calendrier est synchronisé avec iCal. Retirez le lien pour bloquer vos dates manuellement."
     },
     "sections": {
       "photos": "Photos",
@@ -384,7 +385,13 @@
       "errorNoUrl": "Entrez d'abord une URL iCal.",
       "saveError": "Erreur lors de la sauvegarde.",
       "syncError": "Erreur de synchronisation",
-      "unknownError": "Erreur inconnue"
+      "unknownError": "Erreur inconnue",
+      "unlink": "Retirer le lien iCal",
+      "unlinkConfirm": "Le lien iCal et les dates importées seront retirés de votre calendrier. Vous pourrez ensuite bloquer vos dates manuellement.",
+      "unlinkConfirmButton": "Retirer le lien",
+      "unlinkCancel": "Annuler",
+      "unlinking": "Retrait…",
+      "unlinkError": "Erreur lors du retrait du lien iCal."
     },
     "rooms": {
       "proTip": "Les chalets avec photos de chambres reçoivent 3× plus de demandes de la part des voyageurs.",

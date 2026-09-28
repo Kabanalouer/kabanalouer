@@ -163,7 +163,7 @@
       "nearbyWithin30": "Within 30 minutes of the cabin",
       "calendarManual": "Block dates manually",
       "calendarIcal": "Sync with an external calendar (iCal)",
-      "calendarSwitchWarning": "Your manually blocked dates will be removed if you switch methods.",
+      "calendarSwitchWarning": "Your manually blocked dates will be removed as soon as your iCal calendar is synced.",
       "calendarNoIcal": "Your calendar will appear here once your iCal URL is synced.",
       "pricingFromTitle": "Starting from",
       "pricingFromDesc": "Display a base price on your listing and generate quote requests from travelers so you can give them the real price based on their stay dates.",
@@ -250,7 +250,8 @@
       "flushBeforePublishError": "We couldn't save your latest changes — try again before publishing.",
       "activateError": "An error occurred.",
       "stripeError": "Unable to start payment. Please try again.",
-      "stripeUrlMissing": "Payment URL missing."
+      "stripeUrlMissing": "Payment URL missing.",
+      "calendarIcalActive": "Your calendar is synced with iCal. Remove the link to block your dates manually."
     },
     "sections": {
       "photos": "Photos",
@@ -384,7 +385,13 @@
       "errorNoUrl": "Please enter an iCal URL first.",
       "saveError": "Error while saving.",
       "syncError": "Sync error",
-      "unknownError": "Unknown error"
+      "unknownError": "Unknown error",
+      "unlink": "Remove iCal link",
+      "unlinkConfirm": "The iCal link and imported dates will be removed from your calendar. You can then block your dates manually.",
+      "unlinkConfirmButton": "Remove link",
+      "unlinkCancel": "Cancel",
+      "unlinking": "Removing…",
+      "unlinkError": "Error removing the iCal link."
     },
     "rooms": {
       "proTip": "Cabins with bedroom photos receive 3× more traveler inquiries.",

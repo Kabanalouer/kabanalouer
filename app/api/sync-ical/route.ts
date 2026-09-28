@@ -63,10 +63,11 @@ async function syncOneListing(
   const events = parseIcal(icalText);
   const allDates = [...new Set(events.flatMap((e) => expandDates(e.start, e.end)))];
 
-  // Delete all previous ical blocks for this listing
-  await supabase.from("availability").delete().eq("listing_id", listingId).eq("source", "ical");
+  // Un lien iCal remplace le blocage manuel : on retire les anciens blocages
+  // iCal ET les blocages manuels (une annonce n'utilise qu'une seule méthode)
+  await supabase.from("availability").delete().eq("listing_id", listingId).in("source", ["ical", "manual"]);
 
-  // Insert new ical dates — ON CONFLICT DO NOTHING (don't overwrite manual blocks)
+  // Insert new ical dates
   if (allDates.length > 0) {
     await supabase.from("availability").upsert(
       allDates.map((date) => ({
@@ -139,4 +140,43 @@ export async function POST(request: NextRequest) {
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 
   return NextResponse.json({ ok: true, count: result.count });
+}
+
+// DELETE — retire le lien iCal d'une annonce et les dates importées (retour au mode manuel)
+export async function DELETE(request: NextRequest) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  const { listingId } = (await request.json()) as { listingId: string };
+
+  // Verify ownership
+  const { data: listing } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("id", listingId)
+    .eq("host_id", user.id)
+    .maybeSingle();
+  if (!listing) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
+
+  const { error: updateError } = await supabase
+    .from("listings")
+    .update({ ical_url: null, ical_last_sync: null })
+    .eq("id", listingId);
+  if (updateError) {
+    console.error("sync-ical DELETE: échec retrait du lien", updateError);
+    return NextResponse.json({ error: "Erreur lors du retrait du lien iCal." }, { status: 500 });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("availability")
+    .delete()
+    .eq("listing_id", listingId)
+    .eq("source", "ical");
+  if (deleteError) {
+    console.error("sync-ical DELETE: échec suppression des dates iCal", deleteError);
+    return NextResponse.json({ error: "Erreur lors du retrait des dates iCal." }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
 }

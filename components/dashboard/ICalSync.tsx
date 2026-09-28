@@ -8,10 +8,16 @@ export default function ICalSync({
   listingId,
   initialUrl,
   initialLastSync,
+  onLinked,
+  onSynced,
+  onUnlink,
 }: {
   listingId: string;
   initialUrl: string | null;
   initialLastSync: string | null;
+  onLinked: (url: string) => void;
+  onSynced: () => void;
+  onUnlink: () => Promise<void>;
 }) {
   const t = useTranslations("listings.ical");
   const locale = useLocale();
@@ -24,16 +30,20 @@ export default function ICalSync({
   const [error, setError] = useState("");
 
   const handleSaveUrl = async () => {
+    const url = icalUrl.trim();
+    if (!url) { setError(t("errorNoUrl")); return; }
     setSaving(true);
     setError("");
     setUrlSaved(false);
     const { error } = await supabase
       .from("listings")
-      .update({ ical_url: icalUrl.trim() || null })
+      .update({ ical_url: url })
       .eq("id", listingId);
     setSaving(false);
     if (error) { setError(t("saveError")); return; }
     setUrlSaved(true);
+    onLinked(url);
+    await handleSync();
   };
 
   const handleSync = async () => {
@@ -49,6 +59,7 @@ export default function ICalSync({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t("syncError"));
       setLastSync(new Date().toISOString());
+      onSynced();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("unknownError"));
     } finally {
@@ -80,7 +91,7 @@ export default function ICalSync({
           />
           <button
             onClick={handleSaveUrl}
-            disabled={saving}
+            disabled={saving || syncing || !icalUrl.trim()}
             className="border border-charcoal-100 text-charcoal-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-charcoal-50 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             {saving ? t("saving") : urlSaved ? t("saved") : t("save")}
@@ -117,6 +128,64 @@ export default function ICalSync({
         </button>
       </div>
 
+      {error && <p className="text-sm text-error-500">{error}</p>}
+
+      {initialUrl && <UnlinkIcalButton onConfirm={onUnlink} />}
+    </div>
+  );
+}
+
+// Retire le lien iCal (et les dates importées) après confirmation — retour au mode manuel
+export function UnlinkIcalButton({ onConfirm }: { onConfirm: () => Promise<void> }) {
+  const t = useTranslations("listings.ical");
+  const [confirming, setConfirming] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleConfirm = async () => {
+    setRemoving(true);
+    setError("");
+    try {
+      await onConfirm();
+    } catch {
+      setError(t("unlinkError"));
+      setRemoving(false);
+    }
+  };
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-sm font-semibold text-error-600 hover:text-error-700 underline underline-offset-2"
+      >
+        {t("unlink")}
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-error-200 bg-error-50 px-4 py-3 space-y-3">
+      <p className="text-sm text-charcoal-700">{t("unlinkConfirm")}</p>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={removing}
+          className="bg-error-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-error-700 transition-colors disabled:opacity-50"
+        >
+          {removing ? t("unlinking") : t("unlinkConfirmButton")}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setConfirming(false); setError(""); }}
+          disabled={removing}
+          className="border border-charcoal-100 text-charcoal-700 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-white transition-colors disabled:opacity-50"
+        >
+          {t("unlinkCancel")}
+        </button>
+      </div>
       {error && <p className="text-sm text-error-500">{error}</p>}
     </div>
   );

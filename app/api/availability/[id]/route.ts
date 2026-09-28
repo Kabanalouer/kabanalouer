@@ -16,11 +16,15 @@ export async function POST(
   // Vérification explicite en plus de RLS (défense en profondeur — revue de sécurité 2026-07-10)
   const { data: listing } = await supabase
     .from("listings")
-    .select("id")
+    .select("id, ical_url")
     .eq("id", id)
     .eq("host_id", user.id)
     .maybeSingle();
   if (!listing) return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+  // Une annonce synchronisée par iCal ne peut pas avoir de blocages manuels
+  if (listing.ical_url) {
+    return NextResponse.json({ error: "Retirez le lien iCal pour bloquer des dates manuellement." }, { status: 409 });
+  }
 
   const { dates } = (await request.json()) as { dates: string[] };
 

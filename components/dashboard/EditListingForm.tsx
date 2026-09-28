@@ -13,7 +13,7 @@ import PhotoUpload, { MIN_PHOTOS } from "./PhotoUpload";
 import RoomsSection from "./RoomsSection";
 import LocationSection from "./LocationSection";
 import AvailabilityCalendar, { type BlockedEntry } from "./AvailabilityCalendar";
-import ICalSync from "./ICalSync";
+import ICalSync, { UnlinkIcalButton } from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
@@ -258,7 +258,9 @@ export default function EditListingForm({
 
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<SectionId>(
-    searchParams.get("section") === "vedette" ? "vedette" : "titre"
+    searchParams.get("section") === "vedette" ? "vedette"
+      : searchParams.get("section") === "calendrier" ? "calendrier"
+      : "titre"
   );
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -279,17 +281,37 @@ export default function EditListingForm({
   const [locationValid, setLocationValid] = useState(!!(initialLat && initialLng));
   const [showPublishErrors, setShowPublishErrors] = useState(false);
   const [calendarMode, setCalendarMode] = useState<"manual" | "ical">(() => icalUrl ? "ical" : "manual");
-  const [showCalendarWarning, setShowCalendarWarning] = useState(false);
+  // État vivant du calendrier (les props ne sont lues qu'au chargement de la page).
+  // Le lien iCal enregistré détermine la méthode : lien présent = iCal, sinon manuel.
+  const [linkedIcalUrl, setLinkedIcalUrl] = useState<string | null>(icalUrl);
+  const [blocked, setBlocked] = useState<BlockedEntry[]>(initialBlocked);
+  const [calendarVersion, setCalendarVersion] = useState(0);
   const [uniqueContacts, setUniqueContacts] = useState<number>(0);
 
-  const switchCalendarMode = (mode: "manual" | "ical") => {
-    if (mode === calendarMode) return;
-    const hasManualDates = initialBlocked.some((e) => e.source === "manual");
-    const hasIcalUrl = !!icalUrl;
-    setShowCalendarWarning(
-      (mode === "ical" && hasManualDates) || (mode === "manual" && hasIcalUrl)
-    );
-    setCalendarMode(mode);
+  const hasManualDates = blocked.some((e) => e.source === "manual");
+  // Avertissement seulement dans l'onglet iCal, tant qu'aucun lien n'est enregistré
+  const showCalendarWarning = calendarMode === "ical" && !linkedIcalUrl && hasManualDates;
+
+  const refreshBlocked = async () => {
+    const { data } = await supabase
+      .from("availability")
+      .select("date, source")
+      .eq("listing_id", listingId)
+      .eq("is_blocked", true);
+    setBlocked((data ?? []) as BlockedEntry[]);
+    setCalendarVersion((v) => v + 1);
+  };
+
+  const unlinkIcal = async () => {
+    const res = await fetch("/api/sync-ical", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId }),
+    });
+    if (!res.ok) throw new Error("unlink failed");
+    setLinkedIcalUrl(null);
+    setCalendarMode("manual");
+    await refreshBlocked();
   };
 
   useEffect(() => {
@@ -366,8 +388,8 @@ export default function EditListingForm({
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const hasFutureBlocked = initialBlocked.some((b) => new Date(b.date) >= today);
-  const hasAvailability = !!(icalUrl?.trim()) || hasFutureBlocked;
+  const hasFutureBlocked = blocked.some((b) => new Date(b.date) >= today);
+  const hasAvailability = !!(linkedIcalUrl?.trim()) || hasFutureBlocked;
 
   const indicatorValid: Partial<Record<SectionId, boolean>> = {
     ...sectionValid,
@@ -400,7 +422,7 @@ export default function EditListingForm({
         amenities: form.amenities,
         nearbyActivities: form.nearby_activities,
         citqNumber: form.citq_number,
-        icalUrl,
+        icalUrl: linkedIcalUrl,
         hasFutureBlocked,
         roomsAllHavePhotos,
         bioFilled: scoreDbData.bioFilled,
@@ -1455,7 +1477,7 @@ export default function EditListingForm({
               <div className="flex flex-col sm:flex-row gap-2 mb-6 -mt-1">
                 <button
                   type="button"
-                  onClick={() => switchCalendarMode("manual")}
+                  onClick={() => setCalendarMode("manual")}
                   className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "manual"
                       ? "bg-primary text-white"
@@ -1466,7 +1488,7 @@ export default function EditListingForm({
                 </button>
                 <button
                   type="button"
-                  onClick={() => switchCalendarMode("ical")}
+                  onClick={() => setCalendarMode("ical")}
                   className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "ical"
                       ? "bg-primary text-white"
@@ -1490,18 +1512,47 @@ export default function EditListingForm({
 
               <div className="space-y-8">
                 {calendarMode === "manual" ? (
-                  <AvailabilityCalendar listingId={listingId} initialBlocked={initialBlocked} />
+                  linkedIcalUrl ? (
+                    <>
+                      <div className="rounded-xl border border-[#ebebeb] bg-charcoal-50 px-4 py-3 space-y-3">
+                        <p className="text-sm text-charcoal-700">{tEdit("calendarIcalActive")}</p>
+                        <UnlinkIcalButton onConfirm={unlinkIcal} />
+                      </div>
+                      <AvailabilityCalendar
+                        key={`ical-ro-${calendarVersion}`}
+                        listingId={listingId}
+                        initialBlocked={blocked.filter((e) => e.source === "ical")}
+                        readOnly
+                      />
+                    </>
+                  ) : (
+                    <AvailabilityCalendar
+                      key={`manual-${calendarVersion}`}
+                      listingId={listingId}
+                      initialBlocked={blocked}
+                      onSaved={(dates) =>
+                        setBlocked((prev) => [
+                          ...prev.filter((e) => e.source !== "manual"),
+                          ...dates.map((date) => ({ date, source: "manual" as const })),
+                        ])
+                      }
+                    />
+                  )
                 ) : (
                   <>
                     <ICalSync
                       listingId={listingId}
-                      initialUrl={icalUrl}
+                      initialUrl={linkedIcalUrl}
                       initialLastSync={icalLastSync}
+                      onLinked={setLinkedIcalUrl}
+                      onSynced={refreshBlocked}
+                      onUnlink={unlinkIcal}
                     />
-                    {icalUrl ? (
+                    {linkedIcalUrl ? (
                       <AvailabilityCalendar
+                        key={`ical-${calendarVersion}`}
                         listingId={listingId}
-                        initialBlocked={initialBlocked.filter((e) => e.source === "ical")}
+                        initialBlocked={blocked.filter((e) => e.source === "ical")}
                         readOnly
                       />
                     ) : (
@@ -1986,8 +2037,8 @@ export default function EditListingForm({
                 amenities={form.amenities}
                 nearbyActivities={form.nearby_activities}
                 citqNumber={form.citq_number}
-                icalUrl={icalUrl}
-                initialBlocked={initialBlocked}
+                icalUrl={linkedIcalUrl}
+                initialBlocked={blocked}
                 region={form.region}
                 capacity={form.capacity}
                 onNavigate={(s) => { setActiveSection(s as SectionId); setSaveError(""); setJustSaved(false); }}
