@@ -9,6 +9,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
 import AutoTextarea from "@/components/AutoTextarea";
+import PushOptIn from "@/components/PushOptIn";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
@@ -177,6 +178,7 @@ export default function ProfileForm({
   const supabase = createClient();
   const t = useTranslations("profile");
   const tc = useTranslations("common");
+  const tPush = useTranslations("push");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -774,6 +776,11 @@ export default function ProfileForm({
           <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
           <ErrorMsg msg={notifError} />
         </div>
+      </Section>
+
+      {/* ── Notifications Web Push (cet appareil) ─────────────────────────── */}
+      <Section title={tPush("sectionTitle")} description={tPush("sectionDesc")}>
+        <PushOptIn />
       </Section>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}

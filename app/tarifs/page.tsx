@@ -68,6 +68,7 @@ export default async function TarifsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-12 md:py-20">
@@ -220,6 +221,8 @@ export default async function TarifsPage() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </div>

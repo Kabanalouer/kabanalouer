@@ -100,6 +100,11 @@ function ForgotPasswordForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              enterKeyHint="go"
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder={t("emailPlaceholder")}
               required

@@ -37,7 +37,7 @@ export default function ExpandableText({ text }: { text: string }) {
       {needsTruncation && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className={`mt-3 text-sm ${TEXT_LINK_CLASSNAME}`}
+          className={`mt-1 inline-flex items-center min-h-[44px] text-sm ${TEXT_LINK_CLASSNAME}`}
         >
           {expanded ? t("showLess") : t("showMore")}
         </button>

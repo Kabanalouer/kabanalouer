@@ -1637,5 +1637,19 @@
     "autoTranslated": "Automatically translated",
     "showOriginal": "Show original",
     "showTranslation": "Show translation"
+  },
+  "push": {
+    "sectionTitle": "Notifications on this device",
+    "sectionDesc": "Get an alert on this device as soon as a new message arrives, even when Kabanalouer is closed.",
+    "label": "New messages",
+    "statusOn": "On for this device",
+    "statusOff": "Off for this device",
+    "statusBlocked": "Blocked by the browser",
+    "deniedHelp": "Notifications are blocked for Kabanalouer. Allow them in your browser settings (icon to the left of the site address, or Settings → Notifications on a phone), then reload the page.",
+    "iosHint": "To get notifications on iPhone, add Kabanalouer to your Home Screen (Share → Add to Home Screen), then open it from the icon.",
+    "unsupported": "This browser doesn’t support notifications. Try an up-to-date Chrome, Edge, Firefox or Safari.",
+    "notConfigured": "Device notifications aren’t available yet.",
+    "error": "Could not enable notifications. Please try again.",
+    "disableError": "Could not disable notifications. Please try again."
   }
 }

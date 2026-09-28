@@ -35,7 +35,7 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
             key={f}
             type="button"
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center min-h-[44px] px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               filter === f ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
             }`}
           >

@@ -135,7 +135,7 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
 
       {/* Mobile pagination dots — rooms */}
       {rooms.length > 1 && (
-        <div className="md:hidden flex items-center justify-center gap-1 mt-3">
+        <div className="md:hidden flex items-center justify-center mt-1.5">
           {rooms.map((_, i) => (
             <button
               key={i}
@@ -146,8 +146,12 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
                 if (items[i]) el.scrollTo({ left: items[i].offsetLeft, behavior: "smooth" });
               }}
               aria-label={t("goToRoom", { number: i + 1 })}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeRoomIdx ? "bg-primary" : "bg-[#ebebeb]"}`}
-            />
+              aria-current={i === activeRoomIdx ? "true" : undefined}
+              className="w-6 h-6 flex items-center justify-center"
+            >
+              {/* Point visuel de 6 px, zone tactile de 24 px (WCAG 2.2, taille de cible) */}
+              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeRoomIdx ? "bg-primary" : "bg-[#ebebeb]"}`} />
+            </button>
           ))}
         </div>
       )}
@@ -224,16 +228,19 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
 
       {/* Mobile pagination dots */}
       {hasMultiple && (
-        <div className="md:hidden flex items-center justify-center gap-1 py-2">
+        <div className="md:hidden flex items-center justify-center py-0.5">
           {photos.map((_, i) => (
             <button
               key={i}
               onClick={() => setPhotoIdx(i)}
               aria-label={t("goToPhoto", { number: i + 1 })}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+              aria-current={i === photoIdx ? "true" : undefined}
+              className="w-6 h-6 flex items-center justify-center"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${
                 i === photoIdx ? "bg-primary" : "bg-[#ebebeb]"
-              }`}
-            />
+              }`} />
+            </button>
           ))}
         </div>
       )}

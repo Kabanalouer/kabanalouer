@@ -125,16 +125,17 @@ export default async function CityLanding({
         dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
       />
       <Navbar />
+      <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] border-b border-charcoal-100 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap">
-            <Link href={localePath("/chalets", locale)} className="hover:text-primary hover:underline transition-colors">
+          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
+            <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
               {isEn ? "Cabins" : "Chalets"}
             </Link>
             <span>›</span>
-            <Link href={regionBasePath} className="hover:text-primary hover:underline transition-colors">
+            <Link href={regionBasePath} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
               {displayRegionName}
             </Link>
             <span>›</span>
@@ -211,6 +212,8 @@ export default async function CityLanding({
           </div>
         </section>
       )}
+
+      </main>
 
       <Footer />
     </div>

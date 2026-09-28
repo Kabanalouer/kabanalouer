@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +10,10 @@ import TurnstileWidget, { type TurnstileWidgetHandle } from "@/components/Turnst
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAADun6nA4SV0GHTM6";
+
+// Délai minimal entre deux envois de lien de connexion (côté client — Supabase
+// applique aussi sa propre limite côté serveur).
+const MAGIC_LINK_COOLDOWN_SECONDS = 60;
 
 function LoginForm() {
   const t = useTranslations("auth.login");
@@ -28,8 +32,56 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const supabase = createClient();
+  const isEn = locale === "en";
+
+  // Lien de connexion par courriel (magic link)
+  const [magicSentTo, setMagicSentTo] = useState<string | null>(null);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [magicError, setMagicError] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
+  // Le lien du courriel revient sur CETTE page avec ?token_hash=…&type=magiclink
+  // (voir send-email-hook, buildActionLink) : le jeton est validé ici, côté
+  // navigateur, pour qu'un antivirus de courriel qui « prévisite » le lien ne
+  // l'use pas avant le vrai clic. Fonctionne aussi dans un autre navigateur.
+  const buildCallbackUrl = () => {
+    const params = new URLSearchParams();
+    if (next !== defaultHome) params.set("next", next);
+    const qs = params.toString();
+    return `${window.location.origin}${localePath("/login", locale)}${qs ? `?${qs}` : ""}`;
+  };
+
+  const magicTokenHash = searchParams.get("token_hash");
+  const magicType = searchParams.get("type");
+  const [magicVerifying, setMagicVerifying] = useState(magicType === "magiclink" && !!magicTokenHash);
+  const [magicVerifyError, setMagicVerifyError] = useState("");
+  useEffect(() => {
+    if (magicType !== "magiclink" || !magicTokenHash) return;
+    let cancelled = false;
+    void (async () => {
+      const { error } = await supabase.auth.verifyOtp({ token_hash: magicTokenHash, type: "magiclink" });
+      if (cancelled) return;
+      if (error) {
+        setMagicVerifying(false);
+        setMagicVerifyError(isEn
+          ? "This sign-in link has expired or was already used. Request a new one below."
+          : "Ce lien de connexion est expiré ou a déjà été utilisé. Demandez-en un nouveau ci-dessous.");
+        return;
+      }
+      router.replace(next);
+      router.refresh();
+    })();
+    return () => { cancelled = true; };
+  }, [magicType, magicTokenHash]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +120,100 @@ function LoginForm() {
     });
   };
 
+  const sendMagicLink = async (targetEmail: string) => {
+    if (!turnstileToken || magicLoading || cooldown > 0) return;
+    setMagicLoading(true);
+    setMagicError("");
+    setError("");
+    // Jeton Turnstile à usage unique (partagé avec la connexion par mot de passe)
+    const token = turnstileToken;
+    setTurnstileToken(null);
+
+    let errorCode: string | undefined;
+    let errorStatus: number | undefined;
+    let failed = false;
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: targetEmail,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: buildCallbackUrl(),
+          captchaToken: token,
+        },
+      });
+      if (error) {
+        const code = (error as { code?: string }).code;
+        // shouldCreateUser: false → Supabase refuse les courriels inconnus.
+        // On affiche quand même la confirmation pour ne jamais révéler si un
+        // compte existe.
+        const unknownUser =
+          code === "user_not_found" ||
+          code === "signup_disabled" ||
+          (code === "otp_disabled" && /signups? not allowed/i.test(error.message));
+        if (!unknownUser) {
+          failed = true;
+          errorCode = code;
+          errorStatus = error.status;
+        }
+      }
+    } catch {
+      failed = true;
+    }
+
+    // Le jeton vient d'être consommé : forcer un nouveau défi Turnstile
+    turnstileRef.current?.reset();
+    setMagicLoading(false);
+
+    if (failed) {
+      const rateLimited =
+        errorStatus === 429 ||
+        errorCode === "over_email_send_rate_limit" ||
+        errorCode === "over_request_rate_limit";
+      if (rateLimited) {
+        setMagicError(
+          isEn
+            ? "Too many requests. Please wait a few minutes and try again."
+            : "Trop de demandes. Patientez quelques minutes, puis réessayez."
+        );
+        setCooldown(MAGIC_LINK_COOLDOWN_SECONDS);
+      } else if (errorCode === "captcha_failed") {
+        setMagicError(
+          isEn
+            ? "The security check failed. Please try again."
+            : "La vérification de sécurité a échoué. Veuillez réessayer."
+        );
+      } else {
+        setMagicError(
+          isEn
+            ? "We couldn't send the sign-in link. Please try again."
+            : "Impossible d'envoyer le lien de connexion. Veuillez réessayer."
+        );
+      }
+      return;
+    }
+
+    setMagicSentTo(targetEmail);
+    setCooldown(MAGIC_LINK_COOLDOWN_SECONDS);
+  };
+
+  const handleMagicLinkClick = () => {
+    const input = emailInputRef.current;
+    if (!email.trim()) {
+      setMagicError(
+        isEn
+          ? "Enter your email address above to receive a sign-in link."
+          : "Entrez votre adresse courriel ci-dessus pour recevoir un lien de connexion."
+      );
+      input?.focus();
+      return;
+    }
+    if (input && !input.checkValidity()) {
+      input.reportValidity();
+      return;
+    }
+    void sendMagicLink(email.trim());
+  };
+
   const signupHref = `${localePath("/signup", locale)}${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
 
   return (
@@ -85,6 +231,82 @@ function LoginForm() {
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
         <p className="text-charcoal-500 mb-8 text-base">{t("subtitle")}</p>
 
+        {magicVerifying && (
+          <div className="mb-6 flex items-center gap-2.5 bg-[#f5f6ec] border border-[#e8ead8] rounded-xl px-4 py-3 text-base text-charcoal-700" role="status">
+            <svg className="w-5 h-5 animate-spin text-primary shrink-0" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {isEn ? "Signing you in…" : "Connexion en cours…"}
+          </div>
+        )}
+        {magicVerifyError && (
+          <div className="mb-6 bg-error-50 border border-error-200 rounded-xl px-4 py-3 text-base text-error-700" role="alert">
+            {magicVerifyError}
+          </div>
+        )}
+
+        {magicSentTo ? (
+          <div className="space-y-4">
+            <div role="status" aria-live="polite" className="bg-charcoal-50 rounded-xl p-4">
+              <p className="text-base font-semibold text-charcoal-800 mb-1">
+                {isEn
+                  ? "Check your email: we've sent you a sign-in link."
+                  : "Vérifiez vos courriels\u00A0: nous vous avons envoyé un lien de connexion."}
+              </p>
+              <p className="text-sm text-charcoal-600">
+                {isEn ? "Sent to " : "Envoyé à "}
+                <strong className="font-semibold text-charcoal-800 break-all">{magicSentTo}</strong>
+                {isEn
+                  ? ". The link expires shortly and can only be used once. Open it in this browser to sign in."
+                  : ". Le lien expire rapidement et ne peut être utilisé qu'une seule fois. Ouvrez-le dans ce navigateur pour vous connecter."}
+              </p>
+              <p className="text-sm text-charcoal-500 mt-2">
+                {isEn
+                  ? "Nothing yet? Check your spam folder, or make sure you used the address linked to your account."
+                  : "Rien reçu\u202F? Vérifiez vos courriels indésirables ou assurez-vous d'avoir utilisé l'adresse de votre compte."}
+              </p>
+            </div>
+
+            {magicError && (
+              <div role="alert" className="bg-error-50 text-error-600 rounded-xl p-3 text-sm">{magicError}</div>
+            )}
+
+            <TurnstileWidget
+              ref={turnstileRef}
+              sitekey={TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onReset={() => setTurnstileToken(null)}
+            />
+
+            <button
+              type="button"
+              onClick={() => void sendMagicLink(magicSentTo)}
+              disabled={magicLoading || cooldown > 0 || !turnstileToken}
+              className="w-full border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors font-medium text-charcoal-700 text-sm disabled:opacity-50 disabled:hover:bg-transparent"
+            >
+              {magicLoading
+                ? isEn ? "Sending…" : "Envoi…"
+                : cooldown > 0
+                  ? isEn ? `Resend link in ${cooldown}s` : `Renvoyer le lien dans ${cooldown}\u00A0s`
+                  : isEn ? "Resend link" : "Renvoyer le lien"}
+            </button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setMagicSentTo(null);
+                  setMagicError("");
+                }}
+                className={`inline-flex items-center min-h-[44px] text-sm ${TEXT_LINK_CLASSNAME}`}
+              >
+                {isEn ? "Sign in with my password instead" : "Me connecter avec mon mot de passe"}
+              </button>
+            </div>
+          </div>
+        ) : (
+        <>
         <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors mb-6 font-medium text-charcoal-700 text-sm"
@@ -101,13 +323,20 @@ function LoginForm() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+            <label htmlFor="login-email" className="block text-sm font-medium text-charcoal-700 mb-1.5">
               {t("emailLabel")}
             </label>
             <input
+              ref={emailInputRef}
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              enterKeyHint="next"
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder={t("emailPlaceholder")}
               required
@@ -115,14 +344,17 @@ function LoginForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
+            <label htmlFor="login-password" className="block text-sm font-medium text-charcoal-700 mb-1.5">
               {t("passwordLabel")}
             </label>
             <div className="relative">
               <input
+                id="login-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                enterKeyHint="go"
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="••••••••"
                 required
@@ -136,8 +368,13 @@ function LoginForm() {
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </button>
             </div>
-            <div className="flex justify-end mt-1.5">
-              <Link href={localePath("/forgot-password", locale)} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
+            {/* Zone cliquable de 44px de haut, à 8px du champ ; -mb-3 compense
+                la hauteur ajoutée pour garder l'espacement visuel d'avant */}
+            <div className="flex justify-end mt-2 -mb-3">
+              <Link
+                href={localePath("/forgot-password", locale)}
+                className={`inline-flex items-center min-h-[44px] text-sm ${TEXT_LINK_CLASSNAME}`}
+              >
                 {t("forgotPasswordLink")}
               </Link>
             </div>
@@ -158,6 +395,24 @@ function LoginForm() {
             {loading ? t("submitting") : t("submit")}
           </button>
         </form>
+
+        <div className="mt-4 space-y-3">
+          {magicError && (
+            <div role="alert" className="bg-error-50 text-error-600 rounded-xl p-3 text-sm">{magicError}</div>
+          )}
+          <button
+            type="button"
+            onClick={handleMagicLinkClick}
+            disabled={magicLoading || loading || !turnstileToken || cooldown > 0}
+            className="w-full border border-[#ebebeb] rounded-full py-3 px-4 hover:bg-charcoal-50 transition-colors font-medium text-charcoal-700 text-sm disabled:opacity-50 disabled:hover:bg-transparent"
+          >
+            {magicLoading
+              ? isEn ? "Sending…" : "Envoi…"
+              : isEn ? "Email me a sign-in link" : "Recevoir un lien de connexion par courriel"}
+          </button>
+        </div>
+        </>
+        )}
 
         <p className="mt-6 text-center text-sm text-charcoal-500">
           {t("noAccount")}{" "}

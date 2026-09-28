@@ -225,6 +225,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <main className="flex flex-1 flex-col">
       {/* key : les résultats vivent dans l'état du composant client — le
           remonter à chaque changement de filtre (pastille « Chiens acceptés »,
           fenêtre Filtres) évite d'afficher l'ancienne liste. */}
@@ -234,6 +235,8 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         currentUserId={user?.id ?? null}
         filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
       />
+      </main>
+
       <Footer />
     </div>
   );

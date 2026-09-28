@@ -164,6 +164,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         />
       )}
       <Navbar />
+      <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
       <section className="relative h-[460px] z-10">
@@ -175,12 +176,12 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/75" />
         </div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
-          <nav className="text-sm text-white/60 mb-4 flex items-center gap-1.5">
-            <Link href={localePath("/", locale)} className="hover:text-white transition-colors">
+          <nav className="text-sm text-white/80 mb-4 flex items-center gap-1.5" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
+            <Link href={localePath("/", locale)} className="inline-block py-2 -my-2 hover:text-white transition-colors">
               {isEn ? "Home" : "Accueil"}
             </Link>
             <span>›</span>
-            <Link href={localePath("/chalets", locale)} className="hover:text-white transition-colors">
+            <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-white transition-colors">
               {isEn ? "Cabins" : "Chalets"}
             </Link>
             <span>›</span>
@@ -366,6 +367,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           ))}
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </div>

@@ -347,12 +347,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
-        <nav className="hidden md:block text-sm text-charcoal-400 mb-4">
-          <Link href={localePath("/chalets", locale)} className="hover:text-primary hover:underline transition-colors">{t("breadcrumbCabins")}</Link>
+        <nav className="hidden md:block text-sm text-charcoal-400 mb-4" aria-label={locale === "en" ? "Breadcrumb" : "Fil d’Ariane"}>
+          <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">{t("breadcrumbCabins")}</Link>
           {regionBasePath && (
             <>
               <span className="mx-2">›</span>
-              <Link href={regionBasePath} className="hover:text-primary hover:underline transition-colors">
+              <Link href={regionBasePath} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
                 {regionDisplayName}
               </Link>
             </>
@@ -360,7 +360,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
           {cityBasePath && (
             <>
               <span className="mx-2">›</span>
-              <Link href={cityBasePath} className="hover:text-primary hover:underline transition-colors">
+              <Link href={cityBasePath} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
                 {listing.city}
               </Link>
             </>

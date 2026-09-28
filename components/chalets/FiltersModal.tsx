@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AMENITY_CATALOG } from "@/lib/amenities-catalog";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
-function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
+function CounterRow({ label, value, onChange, max = 8, anyLabel, decreaseLabel, increaseLabel }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   max?: number;
   anyLabel: string;
+  decreaseLabel: string;
+  increaseLabel: string;
 }) {
   const num = value ? parseInt(value) : 0;
   const atMin = num === 0;
@@ -24,9 +27,11 @@ function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
       <span className="text-sm text-charcoal-800">{label}</span>
       <div className="flex items-center gap-4">
         <button
+          type="button"
           onClick={() => onChange(num <= 1 ? "" : String(num - 1))}
           disabled={atMin}
-          className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
+          aria-label={decreaseLabel}
+          className={`w-11 h-11 md:w-9 md:h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
             atMin
               ? "border-[#ebebeb] text-charcoal-100 cursor-not-allowed"
               : "border-charcoal-200 text-charcoal-600 hover:border-charcoal-800 hover:text-charcoal-800"
@@ -36,11 +41,13 @@ function CounterRow({ label, value, onChange, max = 8, anyLabel }: {
             <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
           </svg>
         </button>
-        <span className="w-8 text-center text-sm font-medium text-charcoal-800 tabular-nums">{display}</span>
+        <span className="w-8 text-center text-sm font-medium text-charcoal-800 tabular-nums" aria-live="polite">{display}</span>
         <button
+          type="button"
           onClick={() => onChange(atMax ? String(max) : String(num + 1))}
           disabled={atMax}
-          className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
+          aria-label={increaseLabel}
+          className={`w-11 h-11 md:w-9 md:h-9 rounded-full border-2 flex items-center justify-center transition-colors ${
             atMax
               ? "border-[#ebebeb] text-charcoal-100 cursor-not-allowed"
               : "border-charcoal-200 text-charcoal-600 hover:border-charcoal-800 hover:text-charcoal-800"
@@ -156,6 +163,21 @@ export default function FiltersModal({
     setIsOpen(false);
   };
 
+  useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setIsOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
+  const isEn = locale === "en";
+  const counterLabels = (label: string) => ({
+    decreaseLabel: `${label}, ${isEn ? "decrease" : "diminuer"}`,
+    increaseLabel: `${label}, ${isEn ? "increase" : "augmenter"}`,
+  });
+
   const toggleAmenity = (a: string) =>
     setSelectedAmenities((prev) =>
       prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
@@ -192,34 +214,43 @@ export default function FiltersModal({
 
       {/* ── Modal (portal — renders outside any stacking context) ─────── */}
       {isOpen && typeof document !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        // Téléphones : feuille qui monte du bas sur presque toute la hauteur ;
+        // à partir de md : fenêtre centrée comme avant.
+        <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
-          <div className="relative bg-white rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filters-modal-title"
+            className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg h-[92dvh] md:h-auto md:max-h-[90vh] flex flex-col shadow-2xl"
+          >
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] shrink-0">
-              <h2 className="text-heading-3 font-bold text-charcoal-800">{t("title")}</h2>
+            <div className="flex items-center justify-between pl-6 pr-3 md:pr-4 py-2 md:py-3 border-b border-[#ebebeb] shrink-0">
+              <h2 id="filters-modal-title" className="text-heading-3 font-bold text-charcoal-800">{t("title")}</h2>
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-2 rounded-full hover:bg-charcoal-50 transition-colors"
+                aria-label={isEn ? "Close filters" : "Fermer les filtres"}
+                className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-charcoal-50 transition-colors"
               >
-                <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-5 h-5 text-charcoal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-6 space-y-6">
 
               {/* Chambres et lits */}
               <div>
                 <h3 className="text-base font-bold text-charcoal-800 mb-1">{t("bedroomsAndBeds")}</h3>
-                <CounterRow label={t("bedrooms")} value={minBedrooms} onChange={setMinBedrooms} anyLabel={t("any")} />
+                <CounterRow label={t("bedrooms")} value={minBedrooms} onChange={setMinBedrooms} anyLabel={t("any")} {...counterLabels(t("bedrooms"))} />
                 <div className="h-px bg-[#ebebeb]" />
-                <CounterRow label={t("beds")} value={minBeds} onChange={setMinBeds} anyLabel={t("any")} />
+                <CounterRow label={t("beds")} value={minBeds} onChange={setMinBeds} anyLabel={t("any")} {...counterLabels(t("beds"))} />
                 <div className="h-px bg-[#ebebeb]" />
-                <CounterRow label={t("bathrooms")} value={minBathrooms} onChange={setMinBathrooms} anyLabel={t("any")} />
+                <CounterRow label={t("bathrooms")} value={minBathrooms} onChange={setMinBathrooms} anyLabel={t("any")} {...counterLabels(t("bathrooms"))} />
               </div>
 
               <div className="h-px bg-[#ebebeb]" />
@@ -275,16 +306,20 @@ export default function FiltersModal({
             </div>
 
             {/* Footer */}
-            <div className="shrink-0 border-t border-[#ebebeb] px-6 py-4 flex items-center justify-between">
+            <div
+              className="shrink-0 border-t border-[#ebebeb] px-4 md:px-6 pt-3 md:pt-4 pb-[calc(12px+env(safe-area-inset-bottom))] md:pb-4 flex items-center justify-between gap-3"
+            >
               <button
+                type="button"
                 onClick={clearAll}
-                className="text-sm text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2 transition-colors"
+                className="min-h-12 md:min-h-11 -ml-2 px-2 whitespace-nowrap text-sm font-semibold md:font-normal text-charcoal-800 md:text-charcoal-400 hover:text-charcoal-800 underline underline-offset-2 transition-colors"
               >
                 {t("clearAll")}
               </button>
               <button
+                type="button"
                 onClick={apply}
-                className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="bg-primary text-white px-5 md:px-6 h-12 rounded-full whitespace-nowrap text-base md:text-sm font-semibold hover:bg-primary/90 transition-colors"
               >
                 {t("showResults")}
               </button>

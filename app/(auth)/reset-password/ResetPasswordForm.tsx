@@ -149,6 +149,8 @@ function ResetPasswordForm() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                enterKeyHint="go"
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="••••••••"
                 minLength={8}

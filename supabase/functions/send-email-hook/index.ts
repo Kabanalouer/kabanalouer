@@ -37,7 +37,9 @@ function buildActionLink(tokenHash: string, actionType: string, redirectTo: stri
   // prefetching). ResetPasswordForm.tsx consomme le token lui-même, côté
   // client (JS), via supabase.auth.verifyOtp() — un simple GET/HEAD de la
   // page HTML par un scanneur ne déclenche pas cet appel.
-  if (actionType === "recovery") {
+  // 'magiclink' : même raison — le lien mène à la page de connexion, qui
+  // appelle verifyOtp() côté client (LoginForm.tsx) puis redirige.
+  if (actionType === "recovery" || actionType === "magiclink") {
     const url = new URL(redirectTo);
     url.searchParams.set("token_hash", tokenHash);
     url.searchParams.set("type", actionType);
@@ -106,7 +108,13 @@ function renderEmail({
 }
 
 // ── Contenu par type d'action et langue ────────────────────────────────────
-const TEMPLATES: Record<"signup" | "recovery", Record<"fr" | "en", {
+type HandledActionType = "signup" | "recovery" | "magiclink";
+
+function isHandledActionType(type: string): type is HandledActionType {
+  return type === "signup" || type === "recovery" || type === "magiclink";
+}
+
+const TEMPLATES: Record<HandledActionType, Record<"fr" | "en", {
   subject: string;
   heading: string;
   body: string;
@@ -145,6 +153,24 @@ const TEMPLATES: Record<"signup" | "recovery", Record<"fr" | "en", {
       footerNote: "If you didn't request this, you can safely ignore this email — your current password will remain unchanged.",
     },
   },
+  // 'magiclink' : lien vers la page de connexion (voir buildActionLink), même
+  // ton que les autres courriels d'authentification (tutoiement).
+  magiclink: {
+    fr: {
+      subject: "Ton lien de connexion Kabanalouer",
+      heading: "Ton lien de connexion",
+      body: "Clique sur le bouton ci-dessous pour te connecter à ton compte Kabanalouer. Ce lien expire rapidement et ne peut être utilisé qu'une seule fois.",
+      buttonLabel: "Me connecter",
+      footerNote: "Si tu n'es pas à l'origine de cette demande, tu peux ignorer ce courriel — personne ne pourra se connecter sans ce lien.",
+    },
+    en: {
+      subject: "Your Kabanalouer sign-in link",
+      heading: "Your sign-in link",
+      body: "Click the button below to sign in to your Kabanalouer account. This link expires shortly and can only be used once.",
+      buttonLabel: "Sign in",
+      footerNote: "If you didn't request this, you can safely ignore this email — no one can sign in without this link.",
+    },
+  },
 };
 
 Deno.serve(async (req) => {
@@ -166,13 +192,13 @@ Deno.serve(async (req) => {
   const { user, email_data } = verified;
   const { token_hash, email_action_type, redirect_to } = email_data;
 
-  // On ne gère que signup et recovery — les autres types (magiclink, invite,
+  // On ne gère que signup, recovery et magiclink — les autres types (invite,
   // email_change) ne sont pas utilisés dans l'app aujourd'hui. Note : une fois
   // ce hook actif, Supabase n'envoie plus AUCUN email par défaut pour ces
   // autres types (le SMTP interne est désactivé globalement, pas seulement
-  // pour signup/recovery) — retourner un succès ici évite juste une erreur
+  // pour signup/recovery/magiclink) — retourner un succès ici évite juste une erreur
   // côté Supabase, ça ne déclenche pas d'envoi de secours.
-  if (email_action_type !== "signup" && email_action_type !== "recovery") {
+  if (!isHandledActionType(email_action_type)) {
     return jsonResponse({}, 200);
   }
 
@@ -188,7 +214,7 @@ Deno.serve(async (req) => {
     console.error("[send-email-hook] lecture preferred_language échouée, fallback fr", error);
   }
 
-  const template = TEMPLATES[email_action_type as "signup" | "recovery"][preferredLanguage];
+  const template = TEMPLATES[email_action_type][preferredLanguage];
   const actionLink = buildActionLink(token_hash, email_action_type, redirect_to);
   const html = renderEmail({
     lang: preferredLanguage,

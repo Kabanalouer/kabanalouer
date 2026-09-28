@@ -1,65 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
-import { localePath } from "@/lib/localePath";
-import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
-import { REGIONS } from "@/lib/regions";
-import municipalitiesData from "@/lib/municipalities.json";
-
-// ── Static data ──────────────────────────────────────────────────────────────
-// Avant : liste de 14 régions codée en dur ici, divergente à la fois de
-// lib/regions.ts (15, source de vérité) et de l'ancienne liste de
-// LocationSection.tsx (déjà corrigée) — il manquait Bas-Saint-Laurent.
-// Maintenant dérivée de REGIONS (lib/regions.ts) : toujours synchro avec les
-// pages région/sitemap/meta tags.
-
-// Même forme que Municipality dans components/dashboard/MunicipalityCombobox.tsx
-// (généré par scripts/generate-municipalities.js à partir du répertoire MAMH).
-interface Municipality {
-  name: string;
-  slug: string;
-  region: string;
-  officialCode: string;
-  mrc: string;
-}
-const MUNICIPALITIES = municipalitiesData as Municipality[];
-
-const REGION_NAMES = REGIONS.map((r) => r.dbValue);
-// dbValue -> slug URL, pour le raccourci vers la page région SEO existante.
-const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
-const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
-const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
-// nom de municipalité -> fiche complète (région, slug), pour choisir entre
-// /chalets/ville/[slug] et la page région parente au moment de la recherche.
-const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
-
-type DestItem = { label: string; type: "region" | "city"; value: string };
-
-const RECENT_KEY = "kbl_recent_dest";
-
-function loadRecent(): DestItem[] {
-  if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]"); }
-  catch { return []; }
-}
-
-function saveRecent(item: DestItem) {
-  try {
-    const prev = loadRecent().filter((r) => !(r.type === item.type && r.value === item.value));
-    localStorage.setItem(RECENT_KEY, JSON.stringify([item, ...prev].slice(0, 5)));
-  } catch { /* noop */ }
-}
+import React, { useState, useRef, useEffect } from "react";
+import { useSearchForm, formatShortDate, type DestItem, type SearchFormInit } from "@/components/search/useSearchForm";
+import DestinationList from "@/components/search/DestinationList";
+import MobileSearchSheet, { type SearchStep } from "@/components/search/MobileSearchSheet";
 
 // ── Calendar helpers ─────────────────────────────────────────────────────────
 
 function toISO(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-function formatShort(iso: string, intlLocale: string): string {
-  const [year, m, d] = iso.split("-").map(Number);
-  return new Date(year, m - 1, d).toLocaleDateString(intlLocale, { day: "numeric", month: "short" });
 }
 function getMonthGrid(year: number, month: number): (number | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
@@ -138,88 +87,48 @@ function CalendarMonth({
   );
 }
 
+const PIN_ICON = <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+const CAL_ICON = <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
+const USERS_ICON = <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+
 // ── SearchBar ────────────────────────────────────────────────────────────────
 
-interface SearchBarProps {
-  initialRegion?: string;
-  initialCity?: string;
-  initialCheckin?: string;
-  initialCheckout?: string;
-  initialAdults?: number;
-  initialChildren?: number;
-  initialBabies?: number;
-  initialPets?: number;
+interface SearchBarProps extends SearchFormInit {
   iconOnly?: boolean;
-  preserveParams?: Record<string, string>;
+  // Téléphones seulement : ouvre directement la feuille plein écran, sans
+  // afficher la barre (utilisé par la barre compacte de /chalets).
+  autoOpenSheet?: boolean;
+  onSheetClose?: () => void;
 }
 
 export default function SearchBar({
-  initialRegion,
-  initialCity,
-  initialCheckin,
-  initialCheckout,
-  initialAdults,
-  initialChildren,
-  initialBabies,
-  initialPets,
   iconOnly = false,
-  preserveParams,
+  autoOpenSheet = false,
+  onSheetClose,
+  ...init
 }: SearchBarProps = {}) {
-  const t = useTranslations("searchBar");
-  const locale = useLocale();
-  const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
-  // Nom affiché de la région (nameEn en anglais) — la valeur envoyée dans
-  // la requête reste toujours le dbValue français.
-  const regionLabel = (dbValue: string) => locale === "en" ? REGION_EN_NAME_BY_NAME.get(dbValue) ?? dbValue : dbValue;
-  const displayLabel = (item: DestItem) => item.type === "region" ? regionLabel(item.value) : item.label;
-  const router = useRouter();
+  const form = useSearchForm(init);
+  const { t, locale, intlLocale, destQuery, checkin, checkout, datesLabel, guestsLabel, guestRows } = form;
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
-  const initDest: DestItem | null = initialRegion
-    ? { label: regionLabel(initialRegion), type: "region", value: initialRegion }
-    : initialCity
-    ? { label: initialCity, type: "city", value: initialCity }
-    : null;
-
-  // ── Destination state ──
-  const [destQuery, setDestQuery] = useState(initDest?.label ?? "");
-  const [destSelected, setDestSelected] = useState<DestItem | null>(initDest);
+  // ── Popovers (tablette et ordinateur) ──
   const [destOpen, setDestOpen] = useState(false);
-  const [cities, setCities] = useState<string[]>([]);
-  const [recentSearches, setRecentSearches] = useState<DestItem[]>([]);
   const destRef = useRef<HTMLDivElement>(null);
-
-  // ── Calendar state ──
-  const [checkin, setCheckin] = useState(initialCheckin ?? "");
-  const [checkout, setCheckout] = useState(initialCheckout ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [hoverDate, setHoverDate] = useState("");
   const [leftYear, setLeftYear] = useState(now.getFullYear());
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
   const calendarRef = useRef<HTMLDivElement>(null);
-
-  // ── Guests state ──
-  const [adults, setAdults] = useState(initialAdults ?? 0);
-  const [children, setChildren] = useState(initialChildren ?? 0);
-  const [babies, setBabies] = useState(initialBabies ?? 0);
-  const [pets, setPets] = useState(initialPets ?? 0);
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
 
-  // Villes avec au moins une annonce publiée (pas la source des suggestions
-  // de recherche — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
-  // /chalets/[région]/[ville] existe pour une municipalité donnée au moment
-  // de rechercher, voir handleSearch()).
-  useEffect(() => {
-    fetch("/api/listings/locations")
-      .then((r) => r.json())
-      .then((d) => setCities(d.cities ?? []))
-      .catch(() => {});
-  }, []);
-
-  // Load recent searches from localStorage
-  useEffect(() => { setRecentSearches(loadRecent()); }, []);
+  // ── Feuille plein écran (téléphones) ──
+  const [sheetStep, setSheetStep] = useState<SearchStep | null>(autoOpenSheet ? "dest" : null);
+  const closeSheet = () => {
+    setSheetStep(null);
+    onSheetClose?.();
+  };
 
   // Close destination dropdown on outside click
   useEffect(() => {
@@ -254,34 +163,14 @@ export default function SearchBar({
     return () => document.removeEventListener("mousedown", h);
   }, [guestsOpen]);
 
-  // Autocomplete suggestions based on current query
-  const suggestions = useMemo<DestItem[]>(() => {
-    const q = destQuery.trim().toLowerCase();
-    if (!q) return [];
-    const regionHits = REGION_NAMES
-      .filter((r) => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q))
-      .slice(0, 4)
-      .map((r) => ({ label: regionLabel(r), type: "region" as const, value: r }));
-    const cityHits = MUNICIPALITIES
-      .filter((m) => m.name.toLowerCase().includes(q))
-      .slice(0, 6)
-      .map((m) => ({ label: m.name, type: "city" as const, value: m.name }));
-    return [...regionHits, ...cityHits];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destQuery, locale]);
-
   const handleDestSelect = (item: DestItem) => {
-    setDestSelected(item);
-    setDestQuery(displayLabel(item));
+    form.selectDest(item);
     setDestOpen(false);
-    saveRecent(item);
-    setRecentSearches(loadRecent());
   };
 
   const clearDest = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setDestSelected(null);
-    setDestQuery("");
+    form.clearDest();
     setDestOpen(false);
   };
 
@@ -293,91 +182,66 @@ export default function SearchBar({
   const goNext = () => { if (leftMonth === 11) { setLeftYear((y) => y + 1); setLeftMonth(0); } else setLeftMonth((m) => m + 1); };
 
   const handleDayClick = (ds: string) => {
-    if (!checkin || (checkin && checkout)) { setCheckin(ds); setCheckout(""); }
-    else if (ds > checkin) { setCheckout(ds); setCalendarOpen(false); setHoverDate(""); }
-    else { setCheckin(ds); setCheckout(""); }
+    if (form.pickDay(ds)) { setCalendarOpen(false); setHoverDate(""); }
   };
-  const clearDates = () => { setCheckin(""); setCheckout(""); setHoverDate(""); };
+  const clearDates = () => { form.clearDates(); setHoverDate(""); };
 
   const handleCalendarToggle = () => {
     setCalendarOpen((o) => !o);
     setDestOpen(false);
   };
 
-  const datesLabel = checkin
-    ? `${formatShort(checkin, intlLocale)} → ${checkout ? formatShort(checkout, intlLocale) : t("departurePlaceholder")}`
-    : null;
-
-  const guestTotal = adults + children + babies;
-  const guestsLabel = guestTotal > 0 ? t("guestsCount", { count: guestTotal }) : null;
-
-  const handleSearch = () => {
-    // Destination: if user typed but didn't click a suggestion, try to match
-    const active = destSelected ?? (() => {
-      const q = destQuery.trim();
-      if (!q) return null;
-      const regionMatch = REGION_NAMES.find((r) => r.toLowerCase() === q.toLowerCase() || regionLabel(r).toLowerCase() === q.toLowerCase());
-      if (regionMatch) return { label: regionLabel(regionMatch), type: "region" as const, value: regionMatch };
-      return { label: q, type: "city" as const, value: q };
-    })();
-
-    const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
-
-    const isEn = locale === "en";
-
-    // Region-only search (no dates, no guests) → SEO landing page
-    if (active?.type === "region" && noFilters) {
-      const slug = isEn ? REGION_EN_SLUG_BY_NAME.get(active.value) : REGION_SLUG_BY_NAME.get(active.value);
-      if (slug) {
-        router.push(isEn ? `/en/cabins/${slug}` : `/chalets/${slug}`);
-        return;
-      }
-    }
-
-    // Ville-only search reconnue dans la liste officielle (no dates, no
-    // guests) → sa page SEO dédiée (région-scopée, /chalets/[région]/[ville])
-    // si elle a des annonces publiées (sinon 404), sinon la page de sa
-    // région parente, qui existe toujours.
-    if (active?.type === "city" && noFilters) {
-      const municipality = MUNICIPALITY_BY_NAME.get(active.value);
-      if (municipality) {
-        const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
-        if (regionSlug) {
-          if (cities.includes(municipality.name)) {
-            router.push(isEn ? `/en/cabins/${regionSlug}/${municipality.slug}` : `/chalets/${regionSlug}/${municipality.slug}`);
-          } else {
-            router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`);
-          }
-          return;
-        }
-      }
-    }
-
-    const params = new URLSearchParams();
-    if (active) {
-      if (active.type === "region") params.set("region", active.value);
-      else params.set("city", active.value);
-    }
-    if (checkin) params.set("checkin", checkin);
-    if (checkout) params.set("checkout", checkout);
-    const totalCapacity = adults + children + babies;
-    if (totalCapacity > 0) params.set("capacity", String(totalCapacity));
-    if (pets > 0) params.set("dogs", String(pets));
-    if (preserveParams) {
-      for (const [k, v] of Object.entries(preserveParams)) {
-        if (v) params.set(k, v);
-      }
-    }
-    router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
-  };
-
-  // Popular regions for empty-query state (no recent searches)
-  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: regionLabel(r), type: "region", value: r }));
+  const handleSearch = form.search;
 
   const showDropdown = destOpen && !calendarOpen;
 
+  const sheet = sheetStep && (
+    <MobileSearchSheet form={form} initialStep={sheetStep} onClose={closeSheet} />
+  );
+
+  if (autoOpenSheet) return <>{sheet}</>;
+
+  const phoneRow = (step: SearchStep, icon: React.ReactNode, value: string | null, placeholder: string, last = false) => (
+    <button
+      type="button"
+      onClick={() => setSheetStep(step)}
+      className={`w-full flex items-center gap-3 px-4 min-h-[52px] text-left active:bg-charcoal-50 transition-colors ${last ? "" : "border-b border-charcoal-100"}`}
+    >
+      {icon}
+      <span className={`flex-1 min-w-0 truncate text-base ${value ? "text-charcoal-800" : "text-charcoal-400"}`}>
+        {value || placeholder}
+      </span>
+    </button>
+  );
+
+  const destValue = form.destSelected ? form.displayLabel(form.destSelected) : destQuery.trim();
+  const guestsValue = [
+    guestsLabel,
+    form.pets > 0 ? `${form.pets} ${form.pets > 1 ? (locale === "en" ? "dogs" : "chiens") : (locale === "en" ? "dog" : "chien")}` : null,
+  ].filter(Boolean).join(", ");
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-1.5 sm:p-2 flex flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
+    <>
+    {/* ── Téléphones : rangées entièrement cliquables → feuille plein écran ── */}
+    <div className="md:hidden bg-white rounded-2xl shadow-xl p-1.5 w-full">
+      {phoneRow("dest", PIN_ICON, destValue, t("destinationPlaceholder"))}
+      {phoneRow("dates", CAL_ICON, datesLabel, t("datesLabel"))}
+      {phoneRow("guests", USERS_ICON, guestsValue, t("guestsPlaceholder"), true)}
+      <button
+        type="button"
+        onClick={handleSearch}
+        className="mt-1.5 w-full h-12 bg-primary text-white rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        {t("searchButton")}
+      </button>
+    </div>
+    {sheet}
+
+    {/* ── Tablette et ordinateur : barre en ligne et menus déroulants ── */}
+    <div className="hidden md:flex bg-white rounded-2xl shadow-xl p-1.5 sm:p-2 flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-1 min-w-[180px] flex border-b border-charcoal-100 sm:border-b-0">
@@ -394,8 +258,7 @@ export default function SearchBar({
             value={destQuery}
             onFocus={() => setDestOpen(true)}
             onChange={(e) => {
-              setDestQuery(e.target.value);
-              setDestSelected(null);
+              form.typeDest(e.target.value);
               setDestOpen(true);
             }}
             className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-300 min-w-0"
@@ -412,99 +275,7 @@ export default function SearchBar({
         {/* Dropdown */}
         {showDropdown && (
           <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-charcoal-100 z-[9999] w-full min-w-[280px] max-h-[220px] overflow-y-auto">
-            {!destQuery.trim() ? (
-              /* No query: show recent searches or popular regions */
-              recentSearches.length > 0 ? (
-                <>
-                  <div className="px-4 pt-3 pb-1">
-                    <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("recentSearches")}</p>
-                  </div>
-                  {recentSearches.map((item, i) => (
-                    <button
-                      key={i}
-                      onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
-                    >
-                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div className="min-w-0">
-                        <p className="text-sm text-charcoal-800 truncate">{displayLabel(item)}</p>
-                        <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
-                      </div>
-                    </button>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <div className="px-4 pt-3 pb-1">
-                    <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("popularRegions")}</p>
-                  </div>
-                  {popularRegions.map((item) => (
-                    <button
-                      key={item.value}
-                      onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
-                    >
-                      <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-sm text-charcoal-800">{item.label}</span>
-                    </button>
-                  ))}
-                </>
-              )
-            ) : (
-              /* Query typed: show autocomplete */
-              suggestions.length > 0 ? (
-                <>
-                  {/* Regions group */}
-                  {suggestions.filter((s) => s.type === "region").length > 0 && (
-                    <>
-                      <div className="px-4 pt-3 pb-1">
-                        <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("regionsGroup")}</p>
-                      </div>
-                      {suggestions.filter((s) => s.type === "region").map((item) => (
-                        <button
-                          key={item.value}
-                          onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
-                        >
-                          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                          </svg>
-                          <span className="text-sm text-charcoal-800">{item.label}</span>
-                        </button>
-                      ))}
-                    </>
-                  )}
-                  {/* Cities group */}
-                  {suggestions.filter((s) => s.type === "city").length > 0 && (
-                    <>
-                      <div className="px-4 pt-3 pb-1">
-                        <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("citiesGroup")}</p>
-                      </div>
-                      {suggestions.filter((s) => s.type === "city").map((item) => (
-                        <button
-                          key={item.value}
-                          onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
-                        >
-                          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span className="text-sm text-charcoal-800">{item.label}</span>
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="px-4 py-5 text-center text-sm text-charcoal-400">{t("noDestination")}</div>
-              )
-            )}
+            <DestinationList form={form} variant="popover" onPick={handleDestSelect} />
           </div>
         )}
       </div>
@@ -537,18 +308,8 @@ export default function SearchBar({
             {/* Calendrier — absolute ancré sous le champ Dates */}
             <div className="absolute top-full left-0 mt-2 rounded-2xl bg-white shadow-2xl border border-charcoal-100 p-5 z-[9999] overflow-y-auto max-h-[80vh]">
 
-                {/* Mobile : 1 mois */}
-                <div className="sm:hidden">
-                  <CalendarMonth
-                    year={leftYear} month={leftMonth}
-                    today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
-                    onDayClick={handleDayClick} onDayEnter={setHoverDate} onDayLeave={() => setHoverDate("")}
-                    showPrev={canGoPrev} showNext onPrev={goPrev} onNext={goNext}
-                    locale={locale}
-                  />
-                </div>
                 {/* Desktop : 2 mois côte à côte */}
-                <div className="hidden sm:flex gap-5">
+                <div className="flex gap-5">
                   <CalendarMonth
                     year={leftYear} month={leftMonth}
                     today={today} checkin={checkin} checkout={checkout} hoverDate={hoverDate}
@@ -569,8 +330,8 @@ export default function SearchBar({
                   <div className="mt-4 pt-3 border-t border-charcoal-100 flex items-center justify-between">
                     <span className="text-sm text-charcoal-500">
                       {checkin && checkout
-                        ? `${formatShort(checkin, intlLocale)} → ${formatShort(checkout, intlLocale)}`
-                        : checkin ? t("arrivalInfo", { date: formatShort(checkin, intlLocale) }) : ""}
+                        ? `${formatShortDate(checkin, intlLocale)} → ${formatShortDate(checkout, intlLocale)}`
+                        : checkin ? t("arrivalInfo", { date: formatShortDate(checkin, intlLocale) }) : ""}
                     </span>
                     <button onClick={clearDates} className="text-sm text-charcoal-500 hover:text-charcoal-800 underline underline-offset-2 transition-colors">
                       {t("clearDates")}
@@ -599,28 +360,8 @@ export default function SearchBar({
 
         {guestsOpen && (
           <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-charcoal-100 z-[9999] w-[300px]">
-            {([
-              { label: t("adults"), sub: t("adultsSub"), val: adults,
-                onDecr: () => setAdults((v) => Math.max(0, v - 1)),
-                onIncr: () => setAdults((v) => v + 1),
-                decrDis: adults === 0 || (adults === 1 && children + babies > 0),
-                incrDis: guestTotal >= 40 },
-              { label: t("children"), sub: t("childrenSub"), val: children,
-                onDecr: () => setChildren((v) => Math.max(0, v - 1)),
-                onIncr: () => { setChildren((v) => v + 1); if (adults === 0) setAdults(1); },
-                decrDis: children === 0,
-                incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-              { label: t("babies"), sub: t("babiesSub"), val: babies,
-                onDecr: () => setBabies((v) => Math.max(0, v - 1)),
-                onIncr: () => { setBabies((v) => v + 1); if (adults === 0) setAdults(1); },
-                decrDis: babies === 0,
-                incrDis: adults === 0 ? guestTotal >= 39 : guestTotal >= 40 },
-              { label: t("pets"), sub: t("petsSub"), val: pets,
-                onDecr: () => setPets((v) => Math.max(0, v - 1)),
-                onIncr: () => setPets((v) => v + 1),
-                decrDis: pets === 0, incrDis: pets >= DOGS_MAX_LIMIT },
-            ] as Array<{ label: string; sub: string; val: number; onDecr: () => void; onIncr: () => void; decrDis: boolean; incrDis: boolean }>).map(({ label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx: number, arr) => (
-              <div key={label}>
+            {guestRows.map(({ key, label, sub, val, onDecr, onIncr, decrDis, incrDis }, idx, arr) => (
+              <div key={key}>
                 <div className="flex items-center justify-between px-5 py-4">
                   <div className="self-start text-left">
                     <p className="text-sm font-medium text-charcoal-800">{label}</p>
@@ -665,5 +406,6 @@ export default function SearchBar({
         {!iconOnly && <span>{t("searchButton")}</span>}
       </button>
     </div>
+    </>
   );
 }

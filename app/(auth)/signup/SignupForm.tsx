@@ -210,6 +210,8 @@ function SignupForm() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                autoComplete="given-name"
+                enterKeyHint="next"
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t("firstNamePlaceholder")}
                 required
@@ -221,6 +223,8 @@ function SignupForm() {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                autoComplete="family-name"
+                enterKeyHint="next"
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t("lastNamePlaceholder")}
                 required
@@ -234,6 +238,11 @@ function SignupForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              enterKeyHint="next"
               className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
               placeholder={t("emailPlaceholder")}
               required
@@ -247,6 +256,8 @@ function SignupForm() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                enterKeyHint="go"
                 className="w-full border border-[#ebebeb] rounded-xl px-4 py-3 pr-11 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t("passwordPlaceholder")}
                 minLength={8}

@@ -187,6 +187,7 @@ export default async function HomePage() {
       />
       <AuthCodeWelcomeTrigger />
       <Navbar />
+      <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
       {/* min-h sur mobile : le hero grandit pour contenir le contenu. sm+ : hauteur fixe viewport. */}
@@ -333,13 +334,13 @@ export default async function HomePage() {
       {/* ── CTA Hôtes ── */}
       <section className="bg-primary py-20">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
-          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/60 mb-4">
+          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/90 mb-4">
             {t("ctaLabel")}
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-5 tracking-[-0.03em] leading-tight">
             {t("ctaTitle")}
           </h2>
-          <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-white/90 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
             {t("ctaDescPre")}{" "}
             <strong className="text-white font-semibold">{t("ctaPrice")}</strong>{" "}
             {t("ctaDescPost")}
@@ -350,11 +351,13 @@ export default async function HomePage() {
           >
             {t("ctaButton")}
           </Link>
-          <p className="text-white/50 text-xs mt-5 tracking-wide">
+          <p className="text-white/90 text-xs mt-5 tracking-wide">
             {t("ctaNote")}
           </p>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </div>

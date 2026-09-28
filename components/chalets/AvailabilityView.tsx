@@ -60,7 +60,8 @@ function MonthGrid({
               {bg && <div className="absolute inset-0 rounded" style={{ background: bg }} />}
               <span className={[
                 "relative z-10 text-xs",
-                isPast ? "text-charcoal-100" : "text-charcoal-600",
+                // Jour passé : gris moyen barré (contraste ≥ 3:1, reste lisiblement « désactivé »)
+                isPast ? "text-charcoal-400 line-through decoration-charcoal-300" : "text-charcoal-600",
               ].join(" ")}>
                 {day}
               </span>

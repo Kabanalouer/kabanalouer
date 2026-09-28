@@ -42,10 +42,10 @@ export default async function Footer() {
 
           {/* Voyageurs / Travelers */}
           <div>
-            <h3 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
+            <h2 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
               {t("travelers.title")}
-            </h3>
-            <ul className="space-y-3 text-sm">
+            </h2>
+            <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
               <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />
               <FooterLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR} label={t("travelers.deals")} />
@@ -57,10 +57,10 @@ export default async function Footer() {
 
           {/* Proprios / Owners */}
           <div>
-            <h3 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
+            <h2 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
               {t("owners.title")}
-            </h3>
-            <ul className="space-y-3 text-sm">
+            </h2>
+            <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/devenir-hote", locale)} label={t("owners.listCabin")} />
               <FooterLink href={localePath("/tarifs", locale)} label={t("owners.pricing")} />
               <FooterLink href={localePath("/faq-hotes", locale)} label={t("owners.faq")} />
@@ -69,10 +69,10 @@ export default async function Footer() {
 
           {/* Légal / Legal */}
           <div>
-            <h3 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
+            <h2 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
               {t("legal.title")}
-            </h3>
-            <ul className="space-y-3 text-sm">
+            </h2>
+            <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/a-propos", locale)} label={t("legal.about")} />
               <FooterLink href={localePath("/conditions", locale)} label={t("legal.terms")} />
               <FooterLink href={localePath("/confidentialite", locale)} label={t("legal.privacy")} />
@@ -104,7 +104,7 @@ function FooterLink({ href, label }: { href: string; label: string }) {
     <li>
       <Link
         href={href}
-        className="text-charcoal-500 hover:text-charcoal-800 transition-colors"
+        className="inline-flex items-center min-h-[44px] md:min-h-0 text-charcoal-500 hover:text-charcoal-800 transition-colors"
       >
         {label}
       </Link>

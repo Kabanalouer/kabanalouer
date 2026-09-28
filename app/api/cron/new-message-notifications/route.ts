@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendNewMessageSms } from "@/lib/sms";
+import { sendPushToUser } from "@/lib/push";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Délai de grâce : pas de courriel/SMS si le destinataire lit le message
 // dans les 2 minutes (il est sur le site). Cron chaque minute → 2 à 3 min.
@@ -107,6 +109,13 @@ export async function GET(request: NextRequest) {
     const senderFirstName = (sender?.name?.trim() || "Un utilisateur").split(/\s+/)[0];
     const listingTitle = (lang === "en" ? listing?.title_en : null) || listing?.title || (lang === "en" ? "your listing" : "ce chalet");
 
+    // Même règle que la messagerie : la traduction dans la langue du
+    // destinataire, si elle existe et qu'il n'a pas désactivé la traduction
+    const preview =
+      receiver.translation_enabled !== false && group.latestTranslated && group.latestTranslatedLanguage === lang
+        ? { previewText: group.latestTranslated, previewTranslated: true }
+        : { previewText: group.latestContent, previewTranslated: false };
+
     const { error: emailError } = await sendNewMessageNotificationEmail(supabase, {
       email: receiver.email,
       preferredLanguage: lang,
@@ -116,11 +125,7 @@ export async function GET(request: NextRequest) {
       listingTitle,
       messageCount: stillUnread.length,
       recipientIsHost: listing?.host_id === group.receiverId,
-      // Même règle que la messagerie : la traduction dans la langue du
-      // destinataire, si elle existe et qu'il n'a pas désactivé la traduction
-      ...(receiver.translation_enabled !== false && group.latestTranslated && group.latestTranslatedLanguage === lang
-        ? { previewText: group.latestTranslated, previewTranslated: true }
-        : { previewText: group.latestContent, previewTranslated: false }),
+      ...preview,
       listingId: group.listingId,
       otherUserId: group.senderId,
     });
@@ -141,6 +146,20 @@ export async function GET(request: NextRequest) {
       if (smsError) {
         console.error(`[new-message-notifications] échec envoi SMS (listing ${group.listingId}, receiver ${group.receiverId})`, smsError);
       }
+    }
+
+    // Web Push (PWA) — bonus, jamais bloquant, comme le SMS. sendPushToUser
+    // ne lance jamais d'exception ; le try/catch est une ceinture de plus.
+    try {
+      const messagesPath = lang === "en" ? "/en/messages" : "/messages";
+      await sendPushToUser(supabase, group.receiverId, {
+        title: `${senderFirstName} — ${listingTitle}`,
+        body: preview.previewText,
+        url: `${SITE_URL}${messagesPath}?listing=${group.listingId}&with=${group.senderId}`,
+        tag: `conv-${group.listingId}-${group.senderId}`,
+      });
+    } catch (pushError) {
+      console.error(`[new-message-notifications] échec envoi push (listing ${group.listingId}, receiver ${group.receiverId})`, pushError);
     }
 
     await supabase.from("messages").update({ notification_sent_at: nowIso }).in("id", group.messageIds);

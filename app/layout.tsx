@@ -27,6 +27,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Couleur de la barre d'état/du navigateur (PWA installée, Android Chrome)
+  themeColor: "#636e40",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -58,6 +60,12 @@ export async function generateMetadata(): Promise<Metadata> {
         { url: "/favicon.png", type: "image/png", sizes: "32x32" },
       ],
       apple: "/apple-touch-icon.png",
+    },
+    // Ouverture en plein écran depuis l'écran d'accueil iPhone (requis pour Web Push sur iOS)
+    appleWebApp: {
+      capable: true,
+      title: "Kabanalouer",
+      statusBarStyle: "default",
     },
   };
 }

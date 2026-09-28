@@ -6,6 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import FiltersModal from "./FiltersModal";
 import { getRegionByDbValue } from "@/lib/regions";
 import { useTranslations, useLocale } from "next-intl";
+import { useMediaQuery, PHONE_QUERY } from "@/components/search/useMediaQuery";
 
 function formatShort(iso: string, intlLocale: string): string {
   const [year, m, d] = iso.split("-").map(Number);
@@ -34,6 +35,7 @@ function Inner(props: Props) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isPhone = useMediaQuery(PHONE_QUERY);
 
   // Ferme l'overlay après navigation
   useEffect(() => { setOpen(false); }, [pathname, searchParams]);
@@ -55,7 +57,7 @@ function Inner(props: Props) {
       <div className="lg:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] px-4 py-2.5 flex items-center gap-2">
         <button
           onClick={() => setOpen(true)}
-          className="flex-1 flex items-center gap-2.5 bg-charcoal-50 hover:bg-charcoal-100 transition-colors rounded-full px-4 py-2 text-left min-w-0"
+          className="flex-1 flex items-center gap-2.5 bg-charcoal-50 hover:bg-charcoal-100 transition-colors rounded-full px-4 py-2 min-h-11 text-left min-w-0"
         >
           <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -82,8 +84,23 @@ function Inner(props: Props) {
         />
       </div>
 
-      {/* Overlay plein écran de recherche */}
-      {open && (
+      {/* Téléphones : feuille de recherche plein écran (même composant que
+          la barre de l'accueil), ouverte directement */}
+      {open && isPhone && (
+        <SearchBar
+          autoOpenSheet
+          onSheetClose={() => setOpen(false)}
+          initialRegion={region || undefined}
+          initialCity={city || undefined}
+          initialCheckin={checkin}
+          initialCheckout={checkout}
+          initialAdults={capacity ? parseInt(capacity) : undefined}
+          initialPets={dogs ? parseInt(dogs) : undefined}
+        />
+      )}
+
+      {/* Tablette : overlay plein écran avec la barre en ligne */}
+      {open && !isPhone && (
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col lg:hidden">
           <div className="flex items-center px-4 py-3 border-b border-[#ebebeb] shrink-0">
             <button

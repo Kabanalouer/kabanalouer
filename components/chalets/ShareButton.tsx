@@ -9,6 +9,17 @@ export default function ShareButton() {
 
   const handleShare = async () => {
     if (copied) return;
+    // Feuille de partage native (mobile surtout) quand disponible ; sinon copie.
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: document.title, url: window.location.href });
+        return;
+      } catch (err) {
+        // L'utilisateur a fermé la feuille : rien à faire.
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        // Autre échec (permission, contexte non sécurisé…) : on copie le lien.
+      }
+    }
     try {
       await navigator.clipboard.writeText(window.location.href);
     } catch {

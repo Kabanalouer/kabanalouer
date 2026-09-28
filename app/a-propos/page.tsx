@@ -64,6 +64,7 @@ export default async function AProposPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(locale === "en")) }}
       />
       <Navbar />
+      <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] border-b border-[#ebebeb] py-20">
@@ -142,6 +143,8 @@ export default async function AProposPage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       <Footer />
     </div>

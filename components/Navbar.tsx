@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
 import { CountBadge, AvatarDot } from "@/components/CountBadge";
+import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
 
 type Profile = {
   name: string;
@@ -62,7 +63,7 @@ function DropdownLink({ href, children }: { href: string; children: React.ReactN
   return (
     <Link
       href={href}
-      className="block px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
+      className="block px-4 py-3 md:py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
     >
       {children}
     </Link>
@@ -85,6 +86,7 @@ function IconMenu({ open }: { open: boolean }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const t = useTranslations("nav");
+  const tf = useTranslations("footer");
   const locale = useLocale();
   const lp = (path: string) => localePath(path, locale);
   const supabase = createClient();
@@ -282,7 +284,7 @@ export default function Navbar() {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
+                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 min-h-[44px] md:min-h-0 hover:shadow-md transition-all"
                 aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
@@ -310,7 +312,7 @@ export default function Navbar() {
                     <DropdownLink href={lp("/dashboard/listings/new")}>{t("createListing")}</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
-                      className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
+                      className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                     >
                       {t("travelerMode")}
                     </button>
@@ -318,7 +320,7 @@ export default function Navbar() {
                   <div className="border-t border-[#ebebeb] py-1">
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
+                      className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
                     >
                       {t("signOut")}
                     </button>
@@ -362,7 +364,7 @@ export default function Navbar() {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 hover:shadow-md transition-all"
+                className="flex items-center gap-2.5 border border-[#dddddd] rounded-full py-1 pl-1 md:pl-3 pr-1 min-h-[44px] md:min-h-0 hover:shadow-md transition-all"
                 aria-label={t("userMenu")}
               >
                 <span className="hidden md:inline-flex"><IconMenu open={menuOpen} /></span>
@@ -386,7 +388,7 @@ export default function Navbar() {
                     {!profile.avatar_url && (
                       <Link
                         href={lp("/dashboard/profile")}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 md:py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
                       >
                         <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
@@ -398,7 +400,7 @@ export default function Navbar() {
                     <DropdownLink href={lp("/favoris")}>{t("myFavorites")}</DropdownLink>
                     <Link
                       href={lp("/messages")}
-                      className="flex items-center justify-between px-4 py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
+                      className="flex items-center justify-between px-4 py-3 md:py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
                     >
                       {t("messages")}
                       <CountBadge count={unreadCount} label={t("unreadMessages", { count: unreadCount })} />
@@ -407,7 +409,7 @@ export default function Navbar() {
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}
-                        className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
+                        className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
                       >
                         {t("ownerMode")}
                       </button>
@@ -416,7 +418,7 @@ export default function Navbar() {
                   <div className="border-t border-[#ebebeb] py-1">
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
+                      className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-charcoal-400 hover:bg-charcoal-50 transition-colors"
                     >
                       {t("signOut")}
                     </button>
@@ -463,27 +465,37 @@ export default function Navbar() {
           {/* Mobile right */}
           <div className="md:hidden flex items-center justify-end gap-1 flex-1">
             <button
-              className="p-2 text-charcoal-500 hover:text-charcoal-800 transition-colors"
+              type="button"
+              className="w-11 h-11 -mr-1 inline-flex items-center justify-center text-charcoal-500 hover:text-charcoal-800 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={t("menu")}
+              aria-expanded={mobileOpen}
             >
               <IconMenu open={mobileOpen} />
             </button>
           </div>
         </div>
 
-        {/* Mobile menu — 2 CTAs uniquement */}
+        {/* Mobile menu — liens de navigation (mêmes libellés que le pied de page) puis les 2 CTA */}
         {mobileOpen && (
           <div className="md:hidden border-t border-[#ebebeb] px-4 py-4 flex flex-col gap-3 pb-5">
+            <div className="flex flex-col border-b border-[#ebebeb] pb-3">
+              <MobileLink href={lp("/chalets")}>{tf("travelers.browse")}</MobileLink>
+              <MobileLink href={lp("/regions")}>{tf("travelers.regions")}</MobileLink>
+              <MobileLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR}>{tf("travelers.deals")}</MobileLink>
+              <MobileLink href={lp("/devenir-hote")}>{tf("owners.listCabin")}</MobileLink>
+              <MobileLink href={lp("/tarifs")}>{tf("owners.pricing")}</MobileLink>
+              <MobileLink href={lp("/comment-ca-marche")}>{tf("travelers.howItWorks")}</MobileLink>
+            </div>
             <Link
               href={lp("/login")}
-              className="text-sm font-medium text-charcoal-700 px-3 py-2 rounded-xl hover:bg-charcoal-50 transition-colors"
+              className="flex items-center min-h-[44px] text-sm font-medium text-charcoal-700 px-3 py-3 rounded-xl hover:bg-charcoal-50 transition-colors"
             >
               {t("login")}
             </Link>
             <Link
               href={lp("/signup")}
-              className="bg-primary text-white text-center py-3 rounded-full font-semibold text-sm"
+              className="flex items-center justify-center min-h-[44px] bg-primary text-white py-3 rounded-full font-semibold text-sm"
             >
               {t("createAccount")}
             </Link>
@@ -510,7 +522,7 @@ function MobileLink({ href, children }: { href: string; children: React.ReactNod
   return (
     <Link
       href={href}
-      className="px-3 py-2 text-sm font-medium text-charcoal-700 rounded-xl hover:bg-charcoal-50 transition-colors"
+      className="flex items-center min-h-[44px] px-3 py-3 text-sm font-medium text-charcoal-700 rounded-xl hover:bg-charcoal-50 transition-colors"
     >
       {children}
     </Link>

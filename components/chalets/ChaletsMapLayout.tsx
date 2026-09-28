@@ -11,6 +11,7 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
 import { useTranslations, useLocale } from "next-intl";
+import { useMediaQuery } from "@/components/search/useMediaQuery";
 
 export interface ListingForMap extends Listing {
   lat: number | null;
@@ -49,6 +50,11 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   const [isExpanded, setIsExpanded] = useState(false);
   const [showMobileMap, setShowMobileMap] = useState(false);
   const [footerVisible, setFooterVisible] = useState(false);
+  // La carte de droite (split view) n'est montée qu'à partir de lg : sur
+  // téléphone et tablette, elle restait montée dans un conteneur masqué et
+  // chargeait quand même Google Maps (~240 Ko) en vue liste. Faux au rendu
+  // serveur et à l'hydratation.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   useEffect(() => {
     const footer = document.querySelector("footer");
@@ -105,7 +111,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       type="button"
       onClick={() => toggleParam(key, active)}
       aria-pressed={active}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+      className={`inline-flex items-center gap-2 px-4 min-h-11 rounded-full border text-sm font-medium transition-colors ${
         active
           ? "border-charcoal-800 bg-charcoal-800 text-white"
           : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
@@ -145,6 +151,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   );
 
   const listGrid = (cols: string) => (
+    <>
+    {/* Titre invisible : garde l'ordre des titres (h1 → h2 → h3 des cartes) pour les lecteurs d'écran */}
+    <h2 className="sr-only">{locale === "en" ? "Results" : "Résultats"}</h2>
     <div className={`grid ${cols} gap-x-5 gap-y-8`}>
       {isLoading ? (
         [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
@@ -164,6 +173,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ))
       )}
     </div>
+    </>
   );
 
   const mapFrame = (height: string, expanded = false) => (
@@ -221,7 +231,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
           className={`${isExpanded ? "flex-1 p-[50px]" : "flex-[45] pt-[50px] pr-[50px] pb-[50px]"} shrink-0 sticky top-[80px] self-start`}
           style={{ height: "calc(100vh - 80px)" }}
         >
-          {mapFrame("100%", isExpanded)}
+          {isDesktop && mapFrame("100%", isExpanded)}
         </div>
       </div>
 
@@ -267,7 +277,11 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
               isExpanded={false}
               onToggleExpand={() => {}}
             />
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+            {/* Au-dessus des mentions Google et de l'échelle (bas de carte) */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-10"
+              style={{ bottom: "calc(40px + env(safe-area-inset-bottom))" }}
+            >
               <button
                 onClick={() => setShowMobileMap(false)}
                 className="flex items-center gap-2 bg-white text-charcoal-800 font-semibold text-sm px-5 py-3 rounded-full border border-[#ebebeb]"
