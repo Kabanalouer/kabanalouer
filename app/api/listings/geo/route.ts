@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
+import { visiblePromoFilter } from "@/lib/promoLabel";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -96,7 +97,7 @@ export async function GET(req: Request) {
     .select("listing_id")
     .in("listing_id", listingIds)
     .eq("is_active", true)
-    .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`);
+    .or(visiblePromoFilter(today));
   const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
 
   const listings = rows.map((row) => {

@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home");
@@ -120,11 +121,11 @@ export default async function HomePage() {
   const { data: activePromos } = featuredIds.length > 0
     ? await supabase
         .from("promotions")
-        .select("listing_id, type, value, min_nights, days_before, start_date, end_date")
+        .select(`listing_id, ${PROMO_DISPLAY_COLUMNS}`)
         .in("listing_id", featuredIds)
         .eq("is_active", true)
-        .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`)
-    : { data: [] as { listing_id: string; type: string; value: number; min_nights: number | null; days_before: number | null; start_date: string | null; end_date: string | null }[] };
+        .or(visiblePromoFilter(today))
+    : { data: [] as { listing_id: string; type: string; value: number; min_nights: number | null; days_before: number | null; start_date: string | null; end_date: string | null; date_basis: "stay" | "booking" }[] };
   const promoMap = new Map((activePromos ?? []).map((p) => [p.listing_id as string, p]));
 
   const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({

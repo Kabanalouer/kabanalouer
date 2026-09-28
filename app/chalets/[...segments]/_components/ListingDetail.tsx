@@ -23,7 +23,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { localePath } from "@/lib/localePath";
 import { getRegionByDbValue } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
-import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
+import { formatPromoLines, isLastminuteVisible, type PromoDisplay, PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
 import { getTranslations } from "next-intl/server";
@@ -242,10 +242,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
       : Promise.resolve({ data: null }),
     supabase
       .from("promotions")
-      .select("type, value, min_nights, days_before, start_date, end_date")
+      .select(PROMO_DISPLAY_COLUMNS)
       .eq("listing_id", id)
       .eq("is_active", true)
-      .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`)
+      .or(visiblePromoFilter(today))
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),

@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
+import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
@@ -173,10 +174,10 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     const today = new Date().toISOString().split("T")[0];
     const { data: activePromos } = await supabase
       .from("promotions")
-      .select("listing_id, type, value, min_nights, days_before, start_date, end_date")
+      .select(`listing_id, ${PROMO_DISPLAY_COLUMNS}`)
       .in("listing_id", listingIds)
       .eq("is_active", true)
-      .or(`type.eq.lastminute,and(start_date.lte.${today},end_date.gte.${today})`);
+      .or(visiblePromoFilter(today));
     const promoMap = new Map((activePromos ?? []).map((p) => [p.listing_id as string, p]));
 
     const minBedsNum = minBeds ? parseInt(minBeds) : null;

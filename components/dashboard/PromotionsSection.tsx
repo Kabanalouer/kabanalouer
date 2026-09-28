@@ -4,31 +4,76 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { formatPromoLines, type PromoRow } from "@/lib/promoLabel";
+import { DateRangeField } from "@/components/DateRangePicker";
 
 type PromoFormType = "rabais" | "duree" | "lastminute";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
 
-function DateRangeFields({
-  start, end, onStart, onEnd,
+type DateBasis = PromoRow["date_basis"];
+
+// Choix « dates de séjour » ou « dates de réservation », puis la plage de dates
+// et l'aperçu de la phrase affichée aux voyageurs.
+function PromoPeriodFields({
+  basis, onBasis, start, end, onDates, preview,
   t,
 }: {
+  basis: DateBasis; onBasis: (b: DateBasis) => void;
   start: string; end: string;
-  onStart: (v: string) => void; onEnd: (v: string) => void;
+  onDates: (start: string, end: string) => void;
+  preview: { line1: string; line2?: string } | null;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const today = new Date().toISOString().split("T")[0];
+  const options: { id: DateBasis; title: string; desc: string; example: string }[] = [
+    { id: "stay",    title: t("basisStayTitle"),    desc: t("basisStayDesc"),    example: t("basisStayExample") },
+    { id: "booking", title: t("basisBookingTitle"), desc: t("basisBookingDesc"), example: t("basisBookingExample") },
+  ];
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("dateStart")}</label>
-        <input type="date" value={start} min={today} onChange={(e) => onStart(e.target.value)} className={inputCls} />
+        <p className="block text-sm font-medium text-charcoal-700 mb-2">{t("basisQuestion")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup">
+          {options.map((o) => {
+            const selected = basis === o.id;
+            return (
+              <button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => onBasis(o.id)}
+                className={`text-left rounded-xl border-2 p-3 transition-colors bg-white ${selected ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${selected ? "border-primary" : "border-charcoal-300"}`}>
+                    {selected && <span className="w-2 h-2 rounded-full bg-primary" />}
+                  </span>
+                  <span className="text-sm font-semibold text-charcoal-800">{o.title}</span>
+                </span>
+                <span className="block text-sm text-charcoal-500 mt-1 leading-snug">{o.desc}</span>
+                <span className="block text-xs text-charcoal-400 mt-1">{o.example}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("dateEnd")}</label>
-        <input type="date" value={end} min={start || today} onChange={(e) => onEnd(e.target.value)} className={inputCls} />
-      </div>
+
+      <DateRangeField
+        start={start} end={end} onChange={onDates}
+        startLabel={basis === "booking" ? t("bookingStart") : t("stayStart")}
+        endLabel={t("periodEnd")}
+        placeholder={t("addDate")}
+        clearLabel={t("clearDates")}
+      />
+
+      {preview && (
+        <div className="bg-white rounded-xl px-4 py-3 border border-[#e8ead8]">
+          <p className="text-xs font-medium text-charcoal-400 mb-1">{t("previewLabel")}</p>
+          <p className="text-sm font-semibold text-charcoal-800">{preview.line1}</p>
+          {preview.line2 && <p className="text-sm text-charcoal-500 mt-0.5">{preview.line2}</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -49,6 +94,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [rabaisValue, setRabaisValue] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [dateBasis, setDateBasis] = useState<DateBasis>("stay");
   const [lmUnit, setLmUnit] = useState<"percent" | "amount">("percent");
   const [lmValue, setLmValue] = useState("");
   const [lmDays, setLmDays] = useState("7");
@@ -140,6 +186,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       days_before: daysBefore,
       start_date: startDateVal,
       end_date: endDateVal,
+      date_basis: dateBasis,
       is_active: true,
     });
 
@@ -147,6 +194,26 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     if (err) { setError(t("errors.saveError")); return; }
     await fetchPromo();
   };
+
+  const setDates = (start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setNoPromoChecked(false);
+  };
+  const setBasis = (b: DateBasis) => { setDateBasis(b); setNoPromoChecked(false); };
+  const hasPeriod = !!(startDate && endDate && startDate < endDate);
+  const rabaisPreview = hasPeriod && parseInt(rabaisValue) > 0
+    ? formatPromoLines({
+        type: rabaisUnit, value: parseInt(rabaisValue), min_nights: null, days_before: null,
+        start_date: startDate, end_date: endDate, date_basis: dateBasis,
+      })
+    : null;
+  const dureePreview = hasPeriod
+    ? formatPromoLines({
+        type: "duration", value: 1, min_nights: 2, days_before: null,
+        start_date: startDate, end_date: endDate, date_basis: dateBasis,
+      })
+    : null;
 
   if (loading) {
     return <div className="py-8 text-center text-charcoal-400 text-sm">{t("loading")}</div>;
@@ -245,11 +312,10 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
                   </div>
-                  <p className="text-sm text-charcoal-400">{t("discountApplicable")}</p>
-                  <DateRangeFields
-                    start={startDate} end={endDate}
-                    onStart={(v) => { setStartDate(v); setNoPromoChecked(false); }}
-                    onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
+                  <PromoPeriodFields
+                    basis={dateBasis} onBasis={setBasis}
+                    start={startDate} end={endDate} onDates={setDates}
+                    preview={rabaisPreview}
                     t={t}
                   />
                   {error && <p className="text-sm text-error-500">{error}</p>}
@@ -292,11 +358,10 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       {t("freeNightOffer")}
                     </p>
                   </div>
-                  <p className="text-sm text-charcoal-400">{t("freeNightApplicable")}</p>
-                  <DateRangeFields
-                    start={startDate} end={endDate}
-                    onStart={(v) => { setStartDate(v); setNoPromoChecked(false); }}
-                    onEnd={(v) => { setEndDate(v); setNoPromoChecked(false); }}
+                  <PromoPeriodFields
+                    basis={dateBasis} onBasis={setBasis}
+                    start={startDate} end={endDate} onDates={setDates}
+                    preview={dureePreview}
                     t={t}
                   />
                   {error && <p className="text-sm text-error-500">{error}</p>}
