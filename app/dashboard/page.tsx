@@ -7,7 +7,6 @@ import { computeScore } from "@/lib/listingScore";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
 import ListingsClient from "@/components/dashboard/ListingsClient";
-import InstallAppPrompt from "@/components/dashboard/InstallAppPrompt";
 
 export async function generateMetadata() {
   const locale = await getLocale();
@@ -30,7 +29,7 @@ export default async function DashboardPage() {
   ]);
 
   const [{ data: profile }, { data: listings }] = await Promise.all([
-    supabase.from("users").select("name, bio, avatar_url, role").eq("id", userId).single(),
+    supabase.from("users").select("name, bio, avatar_url").eq("id", userId).single(),
     supabase.from("listings").select("*").eq("host_id", userId).order("created_at", { ascending: false }),
   ]);
 
@@ -107,9 +106,6 @@ export default async function DashboardPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t("greeting", { firstName })}</h1>
         <p className="text-charcoal-400 mt-1 text-sm">{dateDisplay}</p>
       </div>
-
-      {/* Invitation à installer l'app (PWA) — proprios seulement */}
-      {(profile?.role === "host" || profile?.role === "admin") && <InstallAppPrompt />}
 
       {/* ── Stats (client component with period filter) ──────────────────── */}
       {/* Masquée tant qu'aucune annonce n'existe — évite un mur de "0"/tirets
