@@ -362,6 +362,7 @@ export default function PhotoUpload({
       {positionEditIdx === i ? (
         <input
           type="number"
+          inputMode="numeric"
           min={1}
           max={photos.length}
           defaultValue={i + 1}
@@ -374,7 +375,7 @@ export default function PhotoUpload({
           }}
           onBlur={(e) => movePhotoToPosition(i, e.currentTarget.value)}
           aria-label={tEdit("movePhotoAria")}
-          className="absolute bottom-1.5 left-1.5 w-11 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="absolute bottom-1.5 left-1.5 w-11 max-lg:w-14 max-lg:text-base max-lg:py-1.5 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
       ) : (
         <button
@@ -382,7 +383,7 @@ export default function PhotoUpload({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
           title={tEdit("movePhotoTitle")}
-          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full cursor-pointer hover:bg-black/75 transition-colors"
+          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 max-lg:text-sm max-lg:px-3 max-lg:py-1.5 max-lg:min-h-[32px] rounded-full cursor-pointer hover:bg-black/75 transition-colors"
         >
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
@@ -487,6 +488,19 @@ export default function PhotoUpload({
       />
 
       {saving && <span className="text-xs text-charcoal-400 animate-pulse">{isEn ? "Saving…" : "Sauvegarde…"}</span>}
+
+      {/* Sur mobile, le glisser-déposer est difficile au doigt : la saisie
+          d'une position via le numéro de la photo est mise en avant ici. */}
+      {photos.length > 1 && (
+        <div className="lg:hidden flex items-start gap-2.5 bg-[#f5f6ec] border border-[#e8ead8] rounded-xl px-3.5 py-3 mb-4 text-sm text-charcoal-700">
+          <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+          </svg>
+          <p>{isEn
+            ? "To change the order, tap a photo's number and type its new position."
+            : "Pour changer l’ordre, touchez le numéro d’une photo et entrez sa nouvelle position."}</p>
+        </div>
+      )}
 
       {/* ── Section 1: Photo de couverture ───────────────────────────────── */}
       <div>

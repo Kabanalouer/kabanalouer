@@ -785,6 +785,19 @@ export default function EditListingForm({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [autosavePending, saving, saveError]);
 
+  // Changement de section (menu, Précédent/Suivant) : la sauvegarde en
+  // attente de la section quittée est vidée par useAutosave ; on remonte en
+  // haut pour que la nouvelle section commence à son titre.
+  const goToSection = (id: SectionId) => {
+    setActiveSection(id);
+    setSaveError("");
+    setJustSaved(false);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const sectionIndex = SECTIONS.findIndex((s) => s.id === activeSection);
+  const prevSection = sectionIndex > 0 ? SECTIONS[sectionIndex - 1] : null;
+  const nextSection = sectionIndex >= 0 && sectionIndex < SECTIONS.length - 1 ? SECTIONS[sectionIndex + 1] : null;
+
   const getSectionLabel = (id: string): string => {
     const map: Partial<Record<string, string>> = {
       photos:       t("sections.photos"),
@@ -847,13 +860,18 @@ export default function EditListingForm({
     <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
 
       {/* ── Left nav ────────────────────────────────────────────────────── */}
-      <aside className="w-full lg:w-56 shrink-0">
+      <aside className="w-full lg:w-56 shrink-0 max-lg:sticky max-lg:top-[81px] max-lg:z-30 max-lg:-mx-4 max-lg:px-4 sm:max-lg:-mx-6 sm:max-lg:px-6 max-lg:py-2 max-lg:bg-charcoal-50/95 max-lg:backdrop-blur-md">
 
-        {/* Mobile: section select */}
-        <div className="lg:hidden relative mb-1">
+        {/* Mobile: section select (reste visible en haut pendant le défilement) */}
+        {sectionIndex >= 0 && (
+          <p className="lg:hidden text-xs font-medium text-charcoal-500 mb-1.5 px-1">
+            {tEdit("stepOf", { current: sectionIndex + 1, total: SECTIONS.length })}
+          </p>
+        )}
+        <div className="lg:hidden relative">
           <select
             value={activeSection}
-            onChange={(e) => { setActiveSection(e.target.value as SectionId); setSaveError(""); setJustSaved(false); }}
+            onChange={(e) => goToSection(e.target.value as SectionId)}
             className="w-full min-h-[44px] border border-primary rounded-full text-primary px-4 py-2.5 pr-8 text-base font-medium bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {SECTIONS.map((s) => {
@@ -966,60 +984,11 @@ export default function EditListingForm({
           </div>
         </div>
 
-        {/* Mobile bottom actions */}
-        <div className="flex lg:hidden flex-col gap-2 mt-3">
-          {isPublished && subStatus === "active" ? (
-            <button
-              onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
-              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
-            >
-              {tEdit("publishedButton")} <span className="text-success-600">✓</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
-              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
-            >
-              {tEdit("publishButton")}
-            </button>
-          )}
-          <div>
-            <button
-              type="button"
-              onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
-              disabled={!isPublished}
-              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-            >
-              {tEdit("boostButton")}
-            </button>
-            {!isPublished && (
-              <p className="text-xs text-charcoal-400 text-center mt-1.5">
-                {tEdit("boostDisabled")}
-              </p>
-            )}
-          </div>
-          <div className="mt-2 pt-4 border-t border-[#ebebeb] space-y-2">
-            <button
-              onClick={() => setPreviewOpen(true)}
-              disabled={!canPreview}
-              title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
-              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
-            >
-              {tEdit("previewButton")}
-            </button>
-            <button
-              onClick={() => setDeleteModalOpen(true)}
-              className="w-full min-h-[44px] text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center flex items-center justify-center"
-            >
-              {tEdit("deleteButton")}
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* ── Content area ────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0">
-        <div className="bg-white rounded-2xl border border-[#ebebeb] p-6 h-full">
+        <div className="bg-white rounded-2xl border border-[#ebebeb] p-4 sm:p-6 lg:h-full">
 
           {/* Miroir invisible (Description) — toujours monté, indépendamment de
               l'onglet actif, pour mesurer la largeur réelle dès le chargement
@@ -2047,7 +2016,7 @@ export default function EditListingForm({
 
           {/* Save bar */}
           {hasSaveButton && (
-            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex flex-col gap-2">
+            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex flex-col gap-2 max-lg:sticky max-lg:bottom-0 max-md:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-20 max-lg:bg-white max-lg:-mx-4 max-lg:px-4 sm:max-lg:-mx-6 sm:max-lg:px-6 max-lg:pb-3 max-lg:pt-3 max-lg:shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -2076,6 +2045,82 @@ export default function EditListingForm({
               )}
             </div>
           )}
+
+          {/* Précédent / Suivant — parcours section par section */}
+          {sectionIndex >= 0 && (
+            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex items-center justify-between gap-3">
+              {prevSection ? (
+                <button
+                  type="button"
+                  onClick={() => goToSection(prevSection.id)}
+                  className="min-h-[44px] px-4 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center gap-1.5"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                  {tEdit("previousStep")}
+                </button>
+              ) : <span />}
+              {nextSection && (
+                <button
+                  type="button"
+                  onClick={() => goToSection(nextSection.id)}
+                  className="min-h-[44px] px-4 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5 text-right"
+                >
+                  <span>{tEdit("nextStep", { section: getSectionLabel(nextSection.id) })}</span>
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile : actions de l’annonce, sous les champs */}
+        <div className="flex lg:hidden flex-col gap-2 mt-6">
+          {isPublished && subStatus === "active" ? (
+            <button
+              onClick={() => goToSection("publier")}
+              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
+            >
+              {tEdit("publishedButton")} <span className="text-success-600">✓</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => goToSection("publier")}
+              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
+            >
+              {tEdit("publishButton")}
+            </button>
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={() => goToSection("vedette")}
+              disabled={!isPublished}
+              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+            >
+              {tEdit("boostButton")}
+            </button>
+            {!isPublished && (
+              <p className="text-xs text-charcoal-400 text-center mt-1.5">
+                {tEdit("boostDisabled")}
+              </p>
+            )}
+          </div>
+          <div className="mt-2 pt-4 border-t border-[#ebebeb] space-y-2">
+            <button
+              onClick={() => setPreviewOpen(true)}
+              disabled={!canPreview}
+              title={!canPreview ? tEdit("previewDisabledTitle") : undefined}
+              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${canPreview ? "border-primary text-primary bg-white hover:bg-primary/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+            >
+              {tEdit("previewButton")}
+            </button>
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="w-full min-h-[44px] text-xs text-charcoal-400 hover:text-charcoal-600 transition-colors py-1 text-center flex items-center justify-center"
+            >
+              {tEdit("deleteButton")}
+            </button>
+          </div>
         </div>
 
       </div>

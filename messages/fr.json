@@ -121,6 +121,9 @@
     "viewListing": "Voir la fiche ↗",
     "editLink": "Modifier",
     "edit": {
+      "stepOf": "Étape {current} sur {total}",
+      "previousStep": "Précédent",
+      "nextStep": "Suivant : {section}",
       "aiGenerating": "Génération en cours…",
       "aiGenerate": "Générer avec l'IA",
       "aiContextWarning": "Pour un meilleur résultat, complétez d'abord les sections Équipements, Région et Capacité, puis revenez ici.",
