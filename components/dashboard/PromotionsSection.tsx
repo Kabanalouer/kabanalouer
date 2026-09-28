@@ -139,6 +139,22 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     setDeactivating(false);
     if (err) { setError(t("deactivateError")); return; }
     setActivePromo(null);
+    resetForm();
+  };
+
+  // Retour à l'écran par défaut : « Je n'ai pas de promotion » coché, aucune carte ouverte
+  const resetForm = () => {
+    setNoPromoChecked(true);
+    setFormType(null);
+    setRabaisUnit("percent");
+    setRabaisValue("");
+    setStartDate("");
+    setEndDate("");
+    setDateBasis("stay");
+    setLmUnit("percent");
+    setLmValue("");
+    setLmDays("7");
+    setError("");
   };
 
   const handleSave = async () => {
