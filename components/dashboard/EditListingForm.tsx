@@ -1608,20 +1608,6 @@ export default function EditListingForm({
           {activeSection === "infos" && (
             <SectionShell title={t("sections.general")}>
               <div className="space-y-4">
-                <InfoBlock title={tEdit("infoBlockRegistration")}>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("citqLabel")} <Req /></label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={form.citq_number}
-                      onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      className={`${inputCls} sm:max-w-xs`}
-                      placeholder="ex. 123456"
-                    />
-                  </div>
-                </InfoBlock>
-
                 <InfoBlock title={tEdit("infoBlockArrival")}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -1718,6 +1704,20 @@ export default function EditListingForm({
                       locale={locale}
                     />
                   )}
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockRegistration")}>
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("citqLabel")} <Req /></label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.citq_number}
+                      onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className={`${inputCls} sm:max-w-xs`}
+                      placeholder="ex. 123456"
+                    />
+                  </div>
                 </InfoBlock>
               </div>
               <RequiredNote tEdit={tEdit} />
