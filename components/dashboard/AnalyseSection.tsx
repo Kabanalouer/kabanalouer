@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { buildCriteria, getScoreLevel } from "@/lib/listingScore";
 import type { BlockedEntry } from "./AvailabilityCalendar";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
-import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { type AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
 
 type DbData = {
@@ -29,8 +29,6 @@ type Props = {
   citqNumber: string;
   icalUrl: string | null;
   initialBlocked: BlockedEntry[];
-  region: string;
-  capacity: number;
   onNavigate: (section: string) => void;
   locale: string;
 };
@@ -43,13 +41,10 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
 export default function AnalyseSection({
   userId, listingId, photoCount, title, description, amenities,
   nearbyActivities, citqNumber,
-  icalUrl, initialBlocked, region, capacity, onNavigate, locale,
+  icalUrl, initialBlocked, onNavigate, locale,
 }: Props) {
   const t = useTranslations("listings.analyse");
   const [dbData, setDbData] = useState<DbData | null>(null);
-  const [adviceLoading, setAdviceLoading] = useState(false);
-  const [advice, setAdvice] = useState<string[]>([]);
-  const [adviceError, setAdviceError] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -145,34 +140,6 @@ export default function AnalyseSection({
   const achieved = criteria.filter((c) => c.achieved);
 
   const dashOffset = CIRCUMFERENCE * (1 - score / 100);
-
-  const handleAdvice = async () => {
-    setAdviceLoading(true);
-    setAdviceError("");
-    setAdvice([]);
-    try {
-      const res = await fetch("/api/ai/listing-advice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title, description, region, capacity,
-          photo_count: photoCount,
-          amenities: getAmenityLabels(amenities, locale),
-          nearby_activities: nearbyActivities,
-          score,
-          bio_filled: dbData.bioFilled,
-          avatar_filled: dbData.avatarFilled,
-          locale,
-        }),
-      });
-      const json = await res.json() as { conseils?: string[]; error?: string };
-      if (!res.ok) setAdviceError(json.error ?? t("adviceError"));
-      else setAdvice(json.conseils ?? []);
-    } catch {
-      setAdviceError(t("adviceError"));
-    }
-    setAdviceLoading(false);
-  };
 
   return (
     <div className="space-y-8">
@@ -289,45 +256,6 @@ export default function AnalyseSection({
           </div>
         </div>
       )}
-
-      {/* AI advice */}
-      <div>
-        <button
-          type="button"
-          onClick={() => void handleAdvice()}
-          disabled={adviceLoading}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#636e40] border border-[#636e40] rounded-full px-5 py-2.5 hover:bg-[#f5f6ec] transition-colors disabled:opacity-50"
-        >
-          {adviceLoading ? (
-            <>
-              <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              {t("generating")}
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-              </svg>
-              {t("getAdvice")}
-            </>
-          )}
-        </button>
-
-        {adviceError && <p className="mt-2 text-xs text-error-500">{adviceError}</p>}
-
-        {advice.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {advice.map((conseil, i) => (
-              <div key={i} className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
-                <p className="text-base text-charcoal-700">{conseil}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
     </div>
   );

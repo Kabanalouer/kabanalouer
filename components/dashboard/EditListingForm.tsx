@@ -2039,8 +2039,6 @@ export default function EditListingForm({
                 citqNumber={form.citq_number}
                 icalUrl={linkedIcalUrl}
                 initialBlocked={blocked}
-                region={form.region}
-                capacity={form.capacity}
                 onNavigate={(s) => { setActiveSection(s as SectionId); setSaveError(""); setJustSaved(false); }}
                 locale={locale}
               />
