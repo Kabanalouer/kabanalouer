@@ -14,6 +14,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import PhotoReminderBanner from "@/components/PhotoReminderBanner";
 import Link from "next/link";
 import { localePath } from "@/lib/localePath";
+import AutoTextarea from "@/components/AutoTextarea";
 
 export type Message = {
   id: string;
@@ -360,8 +361,12 @@ export default function MessagesClient({
     setSending(false);
   };
 
+  // Ordinateur : Entrée envoie (Maj+Entrée = nouvelle ligne). Écran tactile :
+  // Entrée fait une nouvelle ligne, on envoie avec le bouton — comme dans
+  // les applications de messagerie.
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    const isTouch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+    if (e.key === "Enter" && !e.shiftKey && !isTouch) {
       e.preventDefault();
       handleSend();
     }
@@ -384,11 +389,11 @@ export default function MessagesClient({
   };
 
   return (
-    // Mobile: 100vh - navbar(80px) - bottom nav(64px). Desktop: 100vh - navbar(80px).
+    // Mobile: 100dvh (hauteur réellement visible, suit les barres du navigateur) - navbar(80px) - bottom nav(64px). Desktop: 100dvh - navbar(80px).
     // Colonne : le bandeau (hauteur naturelle) puis la ligne sidebar/thread en
     // flex-1, pour que la hauteur totale reste calée sur le viewport que le
     // bandeau soit affiché ou non.
-    <div className="flex flex-col h-[calc(100vh-144px)] md:h-[calc(100vh-80px)]">
+    <div className="flex flex-col h-[calc(100dvh-144px)] md:h-[calc(100dvh-80px)]">
       {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord ; dès
           qu'il est rempli ou que son bandeau est fermé, la photo prend la place. */}
       {!hasPhone && !phoneBannerHidden ? (
@@ -739,25 +744,31 @@ export default function MessagesClient({
             {/* Input — toujours le message libre : l'action "Devis structuré"
                 vit maintenant en ligne, sous chaque message de demande de
                 devis précis (voir la boucle des messages ci-dessus). */}
-            <div id="message-composer" className="bg-white border-t border-[#ebebeb] px-4 py-3">
-              <div className="flex gap-3 items-end">
-                <textarea
+            <div id="message-composer" className="bg-white border-t border-[#ebebeb] px-3 sm:px-4 py-3">
+              <div className="flex gap-2 sm:gap-3 items-end">
+                <AutoTextarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={t("messagePlaceholder")}
+                  aria-label={t("messagePlaceholder")}
                   rows={1}
-                  className="flex-1 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent max-h-32"
-                  style={{ minHeight: "42px" }}
+                  maxHeight={160}
+                  className="flex-1 min-w-0 border border-[#ebebeb] rounded-3xl px-4 py-2.5 text-base leading-6 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <button
                   onClick={handleSend}
                   disabled={sending || !newMessage.trim()}
-                  className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
+                  aria-label={isEn ? "Send" : "Envoyer"}
+                  className="bg-primary text-white w-11 h-11 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-40 flex-shrink-0 flex items-center justify-center"
                 >
-                  {sending ? "…" : isEn ? "Send" : "Envoyer"}
+                  <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                  <span className="hidden sm:inline">{sending ? "…" : isEn ? "Send" : "Envoyer"}</span>
                 </button>
               </div>
+              <p className="hidden [@media(pointer:fine)]:block mt-1.5 px-1 text-xs text-charcoal-400">{t("composerHint")}</p>
             </div>
           </>
         )}

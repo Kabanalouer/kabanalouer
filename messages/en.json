@@ -603,7 +603,8 @@
     "translationToggleLabel": "Automatic translation",
     "translatedBadge": "Automatically translated",
     "backToList": "Back to list",
-    "messagePlaceholder": "Write your message… (Enter to send)",
+    "messagePlaceholder": "Write a message",
+    "composerHint": "Enter to send · Shift+Enter for a new line",
     "unread": "Unread",
     "viewListing": "View listing page"
   },

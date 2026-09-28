@@ -603,7 +603,8 @@
     "translationToggleLabel": "Traduction automatique",
     "translatedBadge": "Traduit automatiquement",
     "backToList": "Retour à la liste",
-    "messagePlaceholder": "Écrivez votre message… (Entrée pour envoyer)",
+    "messagePlaceholder": "Écrivez un message",
+    "composerHint": "Entrée pour envoyer · Maj+Entrée pour aller à la ligne",
     "unread": "Non lu",
     "viewListing": "Voir la fiche du chalet"
   },
