@@ -110,6 +110,14 @@ export default function MessagesClient({
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  // Mobile : panneau « Détails » (fiche, traduction, fiche du voyageur)
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  useEffect(() => {
+    if (!detailsOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDetailsOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [detailsOpen]);
   const [mobileView, setMobileView] = useState<"list" | "thread">(
     selectedListingId && selectedWithId ? "thread" : "list"
   );
@@ -397,11 +405,11 @@ export default function MessagesClient({
       {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord ; dès
           qu'il est rempli ou que son bandeau est fermé, la photo prend la place. */}
       {!hasPhone && !phoneBannerHidden ? (
-        <div className="px-4 pt-4 shrink-0">
+        <div className={`px-4 pt-4 shrink-0 ${mobileView === "thread" ? "hidden md:block" : ""}`}>
           <PhoneReminderBanner show onHidden={() => setPhoneBannerHidden(true)} />
         </div>
       ) : !hasAvatar ? (
-        <div className="px-4 pt-4 shrink-0">
+        <div className={`px-4 pt-4 shrink-0 ${mobileView === "thread" ? "hidden md:block" : ""}`}>
           <PhotoReminderBanner userId={currentUserId} />
         </div>
       ) : null}
@@ -513,17 +521,16 @@ export default function MessagesClient({
         ) : (
           <>
             {/* Thread header */}
-            <div className="bg-white border-b border-[#ebebeb] px-4 md:px-6 py-4 flex items-center gap-3">
-              {/* Back button — mobile only */}
+            <div className="bg-white border-b border-[#ebebeb] px-2 md:px-6 py-2 md:py-4 flex items-center gap-2 md:gap-3">
+              {/* Retour — mobile seulement, icône seule */}
               <button
                 onClick={handleBack}
-                className="md:hidden flex items-center gap-1 text-sm font-medium text-charcoal-600 hover:text-charcoal-800 transition-colors shrink-0"
+                className="md:hidden w-10 h-10 -ml-1 flex items-center justify-center rounded-full text-charcoal-700 hover:bg-charcoal-50 transition-colors shrink-0"
                 aria-label={t("backToList")}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
-                {t("back")}
               </button>
 
               {activeConv && (
@@ -543,7 +550,17 @@ export default function MessagesClient({
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  {/* Mobile : nom + chalet sur une ligne chacun, touchable → Détails */}
+                  <button
+                    type="button"
+                    onClick={() => setDetailsOpen(true)}
+                    className="md:hidden flex-1 min-w-0 text-left"
+                    aria-label={t("detailsOpen")}
+                  >
+                    <p className="font-semibold text-charcoal-800 text-base leading-tight truncate">{activeConv.other_user_name}</p>
+                    <p className="text-sm text-charcoal-400 leading-tight truncate">{convTitle(activeConv)}</p>
+                  </button>
+                  <div className="hidden md:block flex-1 min-w-0">
                     <p className="font-semibold text-charcoal-800 text-base">{activeConv.other_user_name}</p>
                     <div className="flex items-center gap-1 min-w-0">
                       {activeListingPath ? (
@@ -578,8 +595,20 @@ export default function MessagesClient({
                 </>
               )}
 
-              <div className="ml-auto flex-shrink-0 flex items-center gap-2">
-                <span className="hidden sm:inline text-xs text-charcoal-400">{t("translationToggleLabel")}</span>
+              {/* Mobile : bouton Détails (remplace l'interrupteur et le lien) */}
+              <button
+                type="button"
+                onClick={() => setDetailsOpen(true)}
+                className="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-charcoal-600 hover:bg-charcoal-50 transition-colors shrink-0"
+                aria-label={t("detailsOpen")}
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+              </button>
+
+              <div className="hidden md:flex ml-auto flex-shrink-0 items-center gap-2">
+                <span className="text-xs text-charcoal-400">{t("translationToggleLabel")}</span>
                 <button
                   type="button"
                   role="switch"
@@ -602,7 +631,9 @@ export default function MessagesClient({
             {/* Messages */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
               {/* Fiche du voyageur, visible seulement par le proprio de l'annonce */}
-              {isHostOfListing && activeConv && <TravelerCard conv={activeConv} />}
+              {isHostOfListing && activeConv && (
+                <div className="hidden md:block"><TravelerCard conv={activeConv} /></div>
+              )}
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-charcoal-400 text-sm">{t("loading")}</div>
@@ -740,6 +771,66 @@ export default function MessagesClient({
               )}
               <div ref={bottomRef} />
             </div>
+
+            {/* Panneau « Détails » (mobile) — glisse depuis le bas */}
+            {detailsOpen && activeConv && (
+              <div className="md:hidden fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={t("detailsTitle")}>
+                <button type="button" aria-label={t("detailsClose")} className="absolute inset-0 bg-black/40" onClick={() => setDetailsOpen(false)} />
+                <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[85dvh] overflow-y-auto px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] space-y-5">
+                  <div className="mx-auto w-10 h-1 rounded-full bg-charcoal-200" aria-hidden="true" />
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-heading-3 font-semibold text-charcoal-800">{t("detailsTitle")}</h2>
+                    <button
+                      type="button"
+                      onClick={() => setDetailsOpen(false)}
+                      aria-label={t("detailsClose")}
+                      className="w-10 h-10 -mr-2 flex items-center justify-center rounded-full text-charcoal-500 hover:bg-charcoal-50"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-charcoal-400">{t("detailsCabin")}</p>
+                    <p className="text-base font-semibold text-charcoal-800">{convTitle(activeConv)}</p>
+                    {activeListingPath && (
+                      <a
+                        href={activeListingPath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                      >
+                        {t("viewListing")}
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H18m0 0v4.5m0-4.5L11 13.5M6 6H4.5a1.5 1.5 0 00-1.5 1.5v9a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V15" /></svg>
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="flex items-start justify-between gap-4 border-t border-[#ebebeb] pt-5">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-charcoal-800">{t("translationToggleLabel")}</p>
+                      <p className="text-sm text-charcoal-500 mt-0.5">{t("translationExplain")}</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={translationEnabled}
+                      aria-label={t("translationToggleLabel")}
+                      onClick={handleToggleTranslation}
+                      className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${translationEnabled ? "bg-primary" : "bg-charcoal-200"}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${translationEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                    </button>
+                  </div>
+
+                  {isHostOfListing && (
+                    <div className="border-t border-[#ebebeb] pt-5">
+                      <TravelerCard conv={activeConv} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Input — toujours le message libre : l'action "Devis structuré"
                 vit maintenant en ligne, sous chaque message de demande de
