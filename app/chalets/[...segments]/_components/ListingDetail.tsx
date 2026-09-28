@@ -581,18 +581,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
                       <span>{t("citqNumber", { number: listing.citq_number as string })}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-3a4 4 0 100-8 4 4 0 000 8zm5.13-3.87a4 4 0 010 7.75M6.87 5.13a4 4 0 000 7.75" /></svg>
-                    <span>{t("capacityInfo", { count: listing.capacity as number })}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
-                    <span>{t("bedroomsInfo", { count: bedroomCount as number })}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M4 12h16v2a6 6 0 01-6 6H10a6 6 0 01-6-6v-2zM4 12V6a2 2 0 012-2h1M8 20v2M16 20v2" /></svg>
-                    <span>{t("bathroomsInfo", { count: listing.bathrooms as number })}</span>
-                  </div>
                 </div>
               </div>
             </>
