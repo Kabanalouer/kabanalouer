@@ -271,11 +271,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
           <div className="flex flex-col gap-3">
 
             {/* Card: Rabais */}
-            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "rabais" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+            <div className={`rounded-xl border-2 transition-colors ${formType === "rabais" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
                 onClick={() => { setFormType("rabais"); setError(""); setNoPromoChecked(false); }}
-                className={`w-full text-left p-4 transition-colors ${formType === "rabais" ? "bg-primary/5" : "bg-white"}`}
+                className={`w-full text-left p-4 transition-colors ${formType === "rabais" ? "bg-primary/5 rounded-t-[10px]" : "bg-white rounded-[10px]"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />
@@ -284,7 +284,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("discountDesc")}</p>
               </button>
               {formType === "rabais" && (
-                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] rounded-b-[10px] space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("discountAmountLabel")}</label>
                     <div className="flex gap-2 mb-3">
@@ -338,11 +338,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </div>
 
             {/* Card: Nuit gratuite */}
-            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "duree" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+            <div className={`rounded-xl border-2 transition-colors ${formType === "duree" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
                 onClick={() => { setFormType("duree"); setError(""); setNoPromoChecked(false); }}
-                className={`w-full text-left p-4 transition-colors ${formType === "duree" ? "bg-primary/5" : "bg-white"}`}
+                className={`w-full text-left p-4 transition-colors ${formType === "duree" ? "bg-primary/5 rounded-t-[10px]" : "bg-white rounded-[10px]"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
@@ -351,7 +351,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("freeNightDesc")}</p>
               </button>
               {formType === "duree" && (
-                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] rounded-b-[10px] space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("freeNightOfferLabel")}</label>
                     <p className="text-sm text-charcoal-600">
@@ -384,11 +384,11 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
             </div>
 
             {/* Card: Dernière minute */}
-            <div className={`rounded-xl border-2 overflow-hidden transition-colors ${formType === "lastminute" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
+            <div className={`rounded-xl border-2 transition-colors ${formType === "lastminute" ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}>
               <button
                 type="button"
                 onClick={() => { setFormType("lastminute"); setError(""); setNoPromoChecked(false); }}
-                className={`w-full text-left p-4 transition-colors ${formType === "lastminute" ? "bg-primary/5" : "bg-white"}`}
+                className={`w-full text-left p-4 transition-colors ${formType === "lastminute" ? "bg-primary/5 rounded-t-[10px]" : "bg-white rounded-[10px]"}`}
               >
                 <svg className="w-5 h-5 text-charcoal-500 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -397,7 +397,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <p className="text-sm text-charcoal-500 mt-0.5 leading-snug">{t("lastMinuteDesc")}</p>
               </button>
               {formType === "lastminute" && (
-                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] space-y-4">
+                <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] rounded-b-[10px] space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("discountAmountLabel")}</label>
                     <div className="flex gap-2 mb-3">
