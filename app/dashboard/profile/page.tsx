@@ -1,14 +1,21 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { localePath } from "@/lib/localePath";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/dashboard/ProfileForm";
 
-export const metadata = { title: "Mon profil" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "My profile" : "Mon profil" };
+}
 
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const loginLocale = await getLocale();
+    redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard/profile", loginLocale))}`, loginLocale));
+  }
 
   const t = await getTranslations("profile");
 

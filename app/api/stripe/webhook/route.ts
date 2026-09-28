@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
         const { data: listingRow } = await supabase
           .from("listings")
-          .select("title, region")
+          .select("title, title_en, region")
           .eq("id", listingId)
           .single();
         const region = type === "region" ? (listingRow?.region ?? null) : null;
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
             preferredLanguage: lang,
             firstName: hostProfile.name?.trim().split(/\s+/)[0],
             listingId,
-            listingTitle: listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
+            listingTitle: (lang === "en" ? listingRow?.title_en : null) || listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
             type: type as FeaturedType,
             region,
             month,
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
       if (isFirstActivation && priceTier === "tier1") {
         const [{ data: profile }, { data: listingRow }] = await Promise.all([
           supabase.from("users").select("email, preferred_language, name").eq("id", userId).single(),
-          supabase.from("listings").select("title").eq("id", listingId).single(),
+          supabase.from("listings").select("title, title_en").eq("id", listingId).single(),
         ]);
         if (profile?.email) {
           const lang: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
             email: profile.email,
             preferredLanguage: lang,
             firstName: profile.name?.trim().split(/\s+/)[0],
-            listingTitle: listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
+            listingTitle: (lang === "en" ? listingRow?.title_en : null) || listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
           });
           if (emailError) {
             console.error("checkout.session.completed: échec envoi email de bienvenue", emailError);

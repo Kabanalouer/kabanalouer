@@ -24,7 +24,7 @@ export async function sendNewMessageSms({
   }
 
   const body = preferredLanguage === "en"
-    ? `New message on Kabanalouer from ${senderFirstName}. Reply here: ${SITE_URL}/messages`
+    ? `New message on Kabanalouer from ${senderFirstName}. Reply here: ${SITE_URL}/en/messages`
     : `Nouveau message sur Kabanalouer de ${senderFirstName}. Réponds ici : ${SITE_URL}/messages`;
 
   try {

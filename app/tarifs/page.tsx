@@ -11,7 +11,7 @@ const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
-  const canonical = isEn ? "/en/tarifs" : "/tarifs";
+  const canonical = isEn ? "/en/pricing" : "/tarifs";
   const title = isEn ? "Pricing" : "Tarifs et abonnement";
   const description = isEn
     ? "One simple, transparent annual subscription. $299/year per cabin. Free for your first year."
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical,
-      languages: { fr: "/tarifs", en: "/en/tarifs", "x-default": "/tarifs" },
+      languages: { fr: "/tarifs", en: "/en/pricing", "x-default": "/tarifs" },
     },
     openGraph: {
       title,
@@ -43,6 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TarifsPage() {
   const [t, locale] = await Promise.all([getTranslations("tarifs"), getLocale()]);
+  // Montants codés en dur : format québécois en FR (« 0 $ », « 0 % »), anglais
+  // en EN (« $0 », « 0% »).
 
   const INCLUDED = [
     t("f0"), t("f1"), t("f2"), t("f3"), t("f4"), t("f5"), t("f6"), t("f7"), t("f8"),
@@ -50,8 +52,8 @@ export default async function TarifsPage() {
 
   const COMPARISON = [
     { feature: t("compF0"), kbl: t("annualPrice"), airbnb: t("compAirbnb0") },
-    { feature: t("compF1"), kbl: "0 %", airbnb: t("compAirbnb1") },
-    { feature: t("compF2"), kbl: "0 %", airbnb: t("compAirbnb2") },
+    { feature: t("compF1"), kbl: locale === "en" ? "0%" : "0 %", airbnb: t("compAirbnb1") },
+    { feature: t("compF2"), kbl: locale === "en" ? "0%" : "0 %", airbnb: t("compAirbnb2") },
     { feature: t("compF3"), kbl: true as const, airbnb: t("compAirbnb3") },
     { feature: t("compF4"), kbl: true as const, airbnb: false as const },
   ];
@@ -92,7 +94,7 @@ export default async function TarifsPage() {
 
             <div className="mb-6">
               <div className="flex items-end gap-3">
-                <span className="text-6xl font-bold text-primary">0 $</span>
+                <span className="text-6xl font-bold text-primary">{locale === "en" ? "$0" : "0 $"}</span>
                 <div className="mb-2">
                   <p className="text-sm text-charcoal-400 line-through">{t("annualPrice")}</p>
                   <p className="text-sm text-charcoal-500">{t("firstYear")}</p>

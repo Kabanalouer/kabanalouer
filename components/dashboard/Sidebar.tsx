@@ -51,14 +51,14 @@ export default function DashboardSidebar({
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    router.push(localePath("/", locale));
   };
 
   return (
     <aside className="w-60 bg-white border-r border-[#ebebeb] flex flex-col min-h-screen shrink-0">
       {/* Logo */}
       <div className="p-5 border-b border-[#ebebeb]">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={localePath("/", locale)} className="flex items-center gap-2">
           <span className="text-lg font-bold text-primary">Kabanalouer</span>
         </Link>
       </div>
@@ -66,14 +66,15 @@ export default function DashboardSidebar({
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-1">
         {NAV.map((item) => {
+          const barePath = (pathname ?? "").replace(/^\/en(?=\/|$)/, "") || "/";
           const isActive =
             item.href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(item.href);
+              ? barePath === "/dashboard"
+              : barePath.startsWith(item.href);
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={localePath(item.href, locale)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"

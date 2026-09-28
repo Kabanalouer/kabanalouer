@@ -14,6 +14,7 @@ type Props = {
 
 export default function HostCTA({ label, className }: Props) {
   const locale = useLocale();
+  const isEn = locale === "en";
   const [isTraveler, setIsTraveler] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,11 +42,12 @@ export default function HostCTA({ label, className }: Props) {
     const res = await fetch("/api/auth/upgrade-to-host", { method: "POST" });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "Une erreur est survenue.");
+      // EN : message générique maison — l'erreur de l'API peut être en français.
+      setError(isEn ? "Something went wrong. Please try again." : body.error ?? "Une erreur est survenue.");
       setLoading(false);
       return;
     }
-    router.push("/dashboard");
+    router.push(localePath("/dashboard", locale));
   };
 
   if (!isTraveler) {
@@ -69,10 +71,12 @@ export default function HostCTA({ label, className }: Props) {
         >
           <div className="bg-white rounded-2xl shadow-xl border border-[#ebebeb] p-8 w-full max-w-md">
             <h2 className="text-heading-3 font-bold text-charcoal-800 mb-3">
-              Vous avez déjà un compte Kabanalouer
+              {isEn ? "You already have a Kabanalouer account" : "Vous avez déjà un compte Kabanalouer"}
             </h2>
             <p className="text-charcoal-500 text-base leading-relaxed mb-6">
-              Voulez-vous activer le mode propriétaire sur votre compte existant ?
+              {isEn
+                ? "Would you like to turn on owner mode for your existing account?"
+                : "Voulez-vous activer le mode propriétaire sur votre compte existant ?"}
             </p>
             {error && (
               <div className="bg-error-50 text-error-600 rounded-xl p-3 text-sm mb-4">{error}</div>
@@ -84,14 +88,16 @@ export default function HostCTA({ label, className }: Props) {
                 disabled={loading}
                 className="flex-1 bg-primary text-white font-bold py-3 rounded-full hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
               >
-                {loading ? "Activation…" : "Activer mon compte proprio"}
+                {loading
+                  ? isEn ? "Activating…" : "Activation…"
+                  : isEn ? "Activate my owner account" : "Activer mon compte proprio"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
                 className="flex-1 border border-[#ebebeb] text-charcoal-700 font-semibold py-3 rounded-full hover:border-primary hover:text-primary transition-colors text-sm"
               >
-                Annuler
+                {isEn ? "Cancel" : "Annuler"}
               </button>
             </div>
           </div>

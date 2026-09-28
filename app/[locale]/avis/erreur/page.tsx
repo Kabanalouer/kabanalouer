@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { localePath } from "@/lib/localePath";
 
-export const metadata = { title: "Lien invalide" };
+export async function generateMetadata(): Promise<Metadata> {
+  const isEn = (await getLocale()) === "en";
+  return { title: isEn ? "Invalid link" : "Lien invalide" };
+}
 
 export default async function ReviewErrorPage() {
   const locale = await getLocale();

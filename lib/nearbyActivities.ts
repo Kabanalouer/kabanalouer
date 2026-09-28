@@ -85,3 +85,14 @@ export function getNearbyLabel(activity: string, locale: string): string {
   if (locale !== "en") return activity;
   return NEARBY_EN[activity] ?? activity;
 }
+
+export const NEARBY_CATEGORY_EN: Record<string, string> = {
+  "Été": "Summer",
+  "Hiver": "Winter",
+  "4 saisons": "All seasons",
+};
+
+export function getNearbyCategoryLabel(category: string, locale: string): string {
+  if (locale !== "en") return category;
+  return NEARBY_CATEGORY_EN[category] ?? category;
+}

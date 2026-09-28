@@ -30,6 +30,7 @@ import { getTranslations } from "next-intl/server";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { buildListingJsonLd, buildListingFaqJsonLd } from "@/lib/listing-schema";
 import { formatDecimal } from "@/lib/formatNumber";
+import { formatPrice } from "@/lib/formatPrice";
 import { DOGS_MAX_LIMIT, dogPolicyDetails, parseDogPolicy, parseDogsParam } from "@/lib/dogPolicy";
 import PawIcon from "@/components/PawIcon";
 import AccessibilityIcon from "@/components/AccessibilityIcon";
@@ -189,8 +190,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 250,
-        system: [{ type: "text", text: "Tu es un assistant qui résume des avis de voyageurs sur des chalets québécois. Style : chaleureux, synthétique, 2-3 phrases max.", cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: `Résume ces ${reviews.length} avis :\n${reviews.map((r) => `"${r.comment}" (${r.rating}/5)`).join("\n")}` }],
+        system: isEn
+          ? [{ type: "text", text: "You summarize guest reviews of cabins in Quebec. Style: warm, concise, 2-3 sentences max. Always write in English, even if the reviews are in French.", cache_control: { type: "ephemeral" } }]
+          : [{ type: "text", text: "Tu es un assistant qui résume des avis de voyageurs sur des chalets québécois. Style : chaleureux, synthétique, 2-3 phrases max.", cache_control: { type: "ephemeral" } }],
+        messages: isEn
+          ? [{ role: "user", content: `Summarize these ${reviews.length} reviews:\n${reviews.map((r) => `"${r.comment}" (${r.rating}/5)`).join("\n")}` }]
+          : [{ role: "user", content: `Résume ces ${reviews.length} avis :\n${reviews.map((r) => `"${r.comment}" (${r.rating}/5)`).join("\n")}` }],
       });
       aiSummary = msg.content[0].type === "text" ? msg.content[0].text : null;
     } catch { /* silently fail */ }
@@ -282,12 +287,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const isOwner = !!(user && host && user.id === host.id);
 
   const schemaInput = {
-    title: listing.title as string,
-    description: (listing.description as string | null) ?? null,
+    title: displayTitle,
+    description: displayDescription ?? null,
     photoUrls: photos.map((p) => p.url),
     url: `${SITE_URL}${canonicalPath}`,
     city: city ?? null,
-    region: (listing.region as string | null) ?? null,
+    region: regionConfig && isEn ? regionConfig.nameEn : (listing.region as string | null) ?? null,
     latitude: (listing.latitude as number | null) ?? null,
     longitude: (listing.longitude as number | null) ?? null,
     checkinTime: (listing.checkin_time as string | null) ?? null,
@@ -386,7 +391,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
         </div>
 
         {/* ── Photo gallery ── */}
-        <PhotoGallery photos={photos} title={listing.title} />
+        <PhotoGallery photos={photos} title={displayTitle} />
 
         {/* ── Two-column layout ── */}
         <div className="flex gap-10 items-start">
@@ -521,13 +526,13 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   {listing.checkin_time && (
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
-                      <span>{t("checkinFrom", { time: (listing.checkin_time as string).replace(":", "h") })}</span>
+                      <span>{t("checkinFrom", { time: formatTime(listing.checkin_time as string, locale) })}</span>
                     </div>
                   )}
                   {listing.checkout_time && (
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
-                      <span>{t("checkoutBefore", { time: (listing.checkout_time as string).replace(":", "h") })}</span>
+                      <span>{t("checkoutBefore", { time: formatTime(listing.checkout_time as string, locale) })}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-3">
@@ -605,7 +610,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   responseRate={hostResponseRate}
                   avgResponseMs={hostAvgResponseMs}
                   listingId={listing.id}
-                  listingTitle={listing.title}
+                  listingTitle={displayTitle}
                   currentUserId={user?.id ?? null}
                   currentUserHasAvatar={senderHasAvatar}
                   isOwner={isOwner}
@@ -649,10 +654,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   <ContactForm
                     listingId={listing.id}
                     hostId={host?.id ?? ""}
-                    hostName={host?.name ?? "le propriétaire"}
+                    hostName={host?.name ?? t("fallbackOwnerName")}
                     hostAvatarUrl={host?.avatar_url ?? null}
                     hostCreatedAt={host?.created_at ?? null}
-                    listingTitle={listing.title}
+                    listingTitle={displayTitle}
                     currentUserId={user?.id ?? null}
                     senderFirstName={profileFirstName}
                     senderLastName={profileLastName}
@@ -688,7 +693,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     {formatPromoLines(activePromo, locale).line1}
                   </p>
                 )}
-                <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>
+                <span className="text-lg font-bold text-charcoal-800">{formatPrice(listing.price_low as number, locale)}</span>
                 <span className="text-xs text-charcoal-400"> {t("perNight")}</span>
               </div>
             )}
@@ -696,10 +701,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
               label={t("quoteRequestCta")}
               listingId={listing.id}
               hostId={host?.id ?? ""}
-              hostName={host?.name ?? "le propriétaire"}
+              hostName={host?.name ?? t("fallbackOwnerName")}
               hostAvatarUrl={host?.avatar_url ?? null}
               hostCreatedAt={host?.created_at ?? null}
-              listingTitle={listing.title}
+              listingTitle={displayTitle}
               currentUserId={user?.id ?? null}
               senderFirstName={profileFirstName}
               senderLastName={profileLastName}
@@ -722,6 +727,17 @@ export default async function ListingDetail({ listing, user, searchParams, local
       {!isPreviewFrame && <Footer />}
     </div>
   );
+}
+
+// « 16h00 » en français (inchangé), « 4:00 PM » en anglais.
+function formatTime(time: string, locale: string): string {
+  if (locale !== "en") return time.replace(":", "h");
+  const [hStr, mStr = "00"] = time.split(":");
+  const h = parseInt(hStr, 10);
+  if (Number.isNaN(h)) return time;
+  const period = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${mStr.slice(0, 2)} ${period}`;
 }
 
 function calcHostResponseStats(

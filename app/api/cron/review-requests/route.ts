@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
   const { data: listingsData, error: listingsError } = await supabase
     .from("listings")
-    .select("id, host_id, title");
+    .select("id, host_id, title, title_en");
 
   if (listingsError) {
     console.error("[review-requests] échec lecture listings", listingsError);
@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
 
   const hostByListing = new Map((listingsData ?? []).map((l) => [l.id as string, l.host_id as string]));
   const titleByListing = new Map((listingsData ?? []).map((l) => [l.id as string, l.title as string]));
+  const titleEnByListing = new Map((listingsData ?? []).map((l) => [l.id as string, (l.title_en as string | null) ?? ""]));
 
   type Conv = {
     listingId: string; hostId: string; travelerId: string;
@@ -127,7 +128,7 @@ export async function GET(request: NextRequest) {
 
       const lang: "fr" | "en" = traveler.preferred_language === "en" ? "en" : "fr";
       const firstName = traveler.name?.trim().split(/\s+/)[0];
-      const listingTitle = titleByListing.get(conv.listingId) || (lang === "en" ? "your listing" : "ce chalet");
+      const listingTitle = (lang === "en" ? titleEnByListing.get(conv.listingId) : "") || titleByListing.get(conv.listingId) || (lang === "en" ? "your listing" : "ce chalet");
       const token = generateReviewToken();
       const { echangeUrl, reserveUrl } = reviewUrls(token, lang);
 
@@ -185,7 +186,7 @@ export async function GET(request: NextRequest) {
 
       const lang: "fr" | "en" = traveler.preferred_language === "en" ? "en" : "fr";
       const firstName = traveler.name?.trim().split(/\s+/)[0];
-      const listingTitle = titleByListing.get(row.listing_id as string) || (lang === "en" ? "your listing" : "ce chalet");
+      const listingTitle = (lang === "en" ? titleEnByListing.get(row.listing_id as string) : "") || titleByListing.get(row.listing_id as string) || (lang === "en" ? "your listing" : "ce chalet");
       const { stayDirectUrl } = reviewUrls(row.token as string, lang);
 
       const { error: emailError } = await sendStayReviewRequestEmail({

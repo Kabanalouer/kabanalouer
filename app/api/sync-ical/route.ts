@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { parseIcal, expandDates } from "@/lib/ical";
@@ -42,7 +43,7 @@ async function syncOneListing(
 ) {
   if (!validateIcalUrl(icalUrl)) {
     console.error(`[sync-ical] URL invalide ou non autorisée pour listing ${listingId}: ${icalUrl}`);
-    return { ok: false, error: "URL iCal invalide ou non autorisée" };
+    return { ok: false, error: { fr: "URL iCal invalide ou non autorisée", en: "Invalid or disallowed iCal URL" } };
   }
 
   // Fetch the iCal feed
@@ -56,7 +57,7 @@ async function syncOneListing(
     icalText = await res.text();
   } catch (err) {
     console.error(`[sync-ical] fetch error for listing ${listingId}:`, err);
-    return { ok: false, error: "Impossible de récupérer le calendrier iCal." };
+    return { ok: false, error: { fr: "Impossible de récupérer le calendrier iCal.", en: "Unable to fetch the iCal calendar." } };
   }
 
   // Parse events → individual dates
@@ -119,9 +120,10 @@ export async function GET(request: NextRequest) {
 
 // POST — called manually from the dashboard for one specific listing
 export async function POST(request: NextRequest) {
+  const locale = getRequestLocale(request);
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
 
   const { listingId } = (await request.json()) as { listingId: string };
 
@@ -133,20 +135,21 @@ export async function POST(request: NextRequest) {
     .eq("host_id", user.id)
     .single();
 
-  if (!listing) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
-  if (!listing.ical_url) return NextResponse.json({ error: "Aucune URL iCal configurée" }, { status: 400 });
+  if (!listing) return NextResponse.json({ error: t2(locale, "Introuvable", "Not found") }, { status: 404 });
+  if (!listing.ical_url) return NextResponse.json({ error: t2(locale, "Aucune URL iCal configurée", "No iCal URL configured") }, { status: 400 });
 
   const result = await syncOneListing(adminSupabase(), listingId, listing.ical_url);
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  if (!result.ok) return NextResponse.json({ error: result.error ? t2(locale, result.error.fr, result.error.en) : undefined }, { status: 500 });
 
   return NextResponse.json({ ok: true, count: result.count });
 }
 
 // DELETE — retire le lien iCal d'une annonce et les dates importées (retour au mode manuel)
 export async function DELETE(request: NextRequest) {
+  const locale = getRequestLocale(request);
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
 
   const { listingId } = (await request.json()) as { listingId: string };
 
@@ -157,7 +160,7 @@ export async function DELETE(request: NextRequest) {
     .eq("id", listingId)
     .eq("host_id", user.id)
     .maybeSingle();
-  if (!listing) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
+  if (!listing) return NextResponse.json({ error: t2(locale, "Introuvable", "Not found") }, { status: 404 });
 
   const { error: updateError } = await supabase
     .from("listings")
@@ -165,7 +168,7 @@ export async function DELETE(request: NextRequest) {
     .eq("id", listingId);
   if (updateError) {
     console.error("sync-ical DELETE: échec retrait du lien", updateError);
-    return NextResponse.json({ error: "Erreur lors du retrait du lien iCal." }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, "Erreur lors du retrait du lien iCal.", "Error while removing the iCal link.") }, { status: 500 });
   }
 
   const { error: deleteError } = await supabase
@@ -175,7 +178,7 @@ export async function DELETE(request: NextRequest) {
     .eq("source", "ical");
   if (deleteError) {
     console.error("sync-ical DELETE: échec suppression des dates iCal", deleteError);
-    return NextResponse.json({ error: "Erreur lors du retrait des dates iCal." }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, "Erreur lors du retrait des dates iCal.", "Error while removing the iCal dates.") }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

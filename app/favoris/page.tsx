@@ -27,7 +27,7 @@ export default async function FavorisPage() {
   const [supabase, t, locale] = await Promise.all([createClient(), getTranslations("favoris"), getLocale()]);
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect(localePath(`/login?next=${encodeURIComponent(localePath("/favoris", locale))}`, locale));
 
   // Fetch favorite listing IDs
   const { data: favorites } = await supabase
@@ -44,7 +44,7 @@ export default async function FavorisPage() {
     // Fetch listing data
     const { data: rows } = await supabase
       .from("listings")
-      .select("id, title, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, listing_number, custom_slug")
+      .select("id, title, title_en, region, city, capacity, bedrooms, price_low, price_on_request, photos, amenities, listing_number, custom_slug")
       .in("id", favListingIds)
       .eq("is_published", true);
 
@@ -89,7 +89,7 @@ export default async function FavorisPage() {
         .filter((row): row is NonNullable<typeof row> => !!row)
         .map((row) => ({
           id: row.id as string,
-          title: row.title as string,
+          title: (locale === "en" && (row.title_en as string | null)) || (row.title as string),
           region: row.region as string,
           city: (row.city as string | null) ?? null,
           listing_number: (row.listing_number as number | null) ?? null,

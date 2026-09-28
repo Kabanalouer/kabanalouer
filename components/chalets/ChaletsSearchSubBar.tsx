@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import FiltersModal from "./FiltersModal";
+import { getRegionByDbValue } from "@/lib/regions";
 import { useTranslations, useLocale } from "next-intl";
 
 function formatShort(iso: string, intlLocale: string): string {
@@ -37,7 +38,8 @@ function Inner(props: Props) {
   // Ferme l'overlay après navigation
   useEffect(() => { setOpen(false); }, [pathname, searchParams]);
 
-  const dest = city || region || "";
+  const regionLabel = region && locale === "en" ? getRegionByDbValue(region)?.nameEn ?? region : region;
+  const dest = city || regionLabel || "";
   const datesLabel = checkin
     ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}`
     : "";

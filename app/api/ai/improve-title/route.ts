@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 
 const SYSTEM_PROMPT =
   "Tu es un expert en optimisation de titres pour annonces de location de chalets. " +
@@ -11,25 +12,26 @@ const SYSTEM_PROMPT =
   "Réponds UNIQUEMENT avec le titre, sans guillemets, sans explication.";
 
 export async function POST(request: Request) {
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(locale, "Non autorisé", "Unauthorized") }, { status: 401 });
 
   if (!(await checkAiRateLimit(supabase, user.id, "improve-title"))) {
     return NextResponse.json(
-      { error: "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard." },
+      { error: t2(locale, "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard.", "You have reached the limit of 200 AI generations per hour. Please try again later.") },
       { status: 429 }
     );
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Clé API Anthropic manquante." }, { status: 503 });
+    return NextResponse.json({ error: t2(locale, "Clé API Anthropic manquante.", "Missing Anthropic API key.") }, { status: 503 });
   }
 
   const { title, region, capacity, amenities } = await request.json();
 
   if (!title?.trim()) {
-    return NextResponse.json({ error: "Titre requis." }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "Titre requis.", "Title required.") }, { status: 400 });
   }
 
   const context = [
@@ -53,11 +55,11 @@ export async function POST(request: Request) {
     });
 
     const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
-    if (!raw) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
+    if (!raw) return NextResponse.json({ error: t2(locale, "Génération échouée.", "Generation failed.") }, { status: 500 });
 
     return NextResponse.json({ title: raw.slice(0, 50) });
   } catch (err) {
     console.error("[improve-title]", err);
-    return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, "Erreur lors de la génération.", "Error while generating.") }, { status: 500 });
   }
 }

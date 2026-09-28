@@ -41,6 +41,13 @@ function regionPageUrl(region: string | null | undefined, lang: "fr" | "en"): st
   return lang === "en" ? `${SITE_URL}/en/cabins/${regionConfig.slugEn}` : `${SITE_URL}/chalets/${regionConfig.slug}`;
 }
 
+// Nom de région affiché : valeur en base (FR) pour le français, nameEn pour l'anglais.
+function regionDisplayName(region: string | null | undefined, lang: "fr" | "en"): string {
+  if (!region) return "";
+  if (lang !== "en") return region;
+  return getRegionByDbValue(region)?.nameEn ?? region;
+}
+
 // Phrase complète ("la section vedette de la région Laurentides"), avec un lien cliquable
 // vers la page publique concernée (page d'accueil ou page région) intégré dans la phrase.
 function placementLabel(type: FeaturedType, region: string | null | undefined, lang: "fr" | "en"): string {
@@ -48,7 +55,7 @@ function placementLabel(type: FeaturedType, region: string | null | undefined, l
     if (type === "home") {
       return `the <a href="${homePageUrl(lang)}" style="${LINK_STYLE}">homepage's featured section</a>`;
     }
-    const regionText = region ?? "";
+    const regionText = regionDisplayName(region, lang);
     const url = regionPageUrl(region, lang);
     return url
       ? `the featured section for the <a href="${url}" style="${LINK_STYLE}">${regionText}</a> region`
@@ -68,7 +75,7 @@ function placementLabel(type: FeaturedType, region: string | null | undefined, l
 // (le lien est déjà présent dans la phrase produite par placementLabel juste au-dessus).
 function pageFieldLabel(type: FeaturedType, region: string | null | undefined, lang: "fr" | "en"): string {
   if (type === "home") return lang === "en" ? "Home page" : "Accueil";
-  return region ?? "";
+  return regionDisplayName(region, lang);
 }
 
 function detailsBlock(monthLabel: string, pageField: string, lang: "fr" | "en"): string {

@@ -38,7 +38,9 @@ export default function InvoicesClient({ rows }: { rows: InvoiceRow[] }) {
   };
 
   const formatCad = (amount: number) =>
-    `${amount.toLocaleString(locale === "en" ? "en-CA" : "fr-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
+    locale === "en"
+      ? `$${amount.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : `${amount.toLocaleString("fr-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { day: "numeric", month: "short", year: "numeric" });

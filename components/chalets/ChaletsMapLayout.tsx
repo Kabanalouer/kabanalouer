@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import PawIcon from "@/components/PawIcon";
 import AccessibilityIcon from "@/components/AccessibilityIcon";
 import { localePath } from "@/lib/localePath";
+import { getRegionByDbValue } from "@/lib/regions";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
@@ -39,7 +40,8 @@ interface Props {
 export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
   const t = useTranslations("chaletsMap");
   const locale = useLocale();
-  const destination = filters.city || filters.region || null;
+  const regionLabel = filters.region && locale === "en" ? getRegionByDbValue(filters.region)?.nameEn ?? filters.region : filters.region;
+  const destination = filters.city || regionLabel || null;
   const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
   const [hoveredId, setHoveredId] = useState<string | null>(null);

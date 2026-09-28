@@ -28,6 +28,7 @@ const MUNICIPALITIES = municipalitiesData as Municipality[];
 const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
+const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
 const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
@@ -136,6 +137,11 @@ function NavSearchBarInner() {
   const t = useTranslations("searchBar");
   const locale = useLocale();
   const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  // Nom affiché de la région (nameEn en anglais) — la valeur envoyée dans
+  // la requête reste toujours le dbValue français.
+  const regionLabel = (dbValue: string) => locale === "en" ? REGION_EN_NAME_BY_NAME.get(dbValue) ?? dbValue : dbValue;
+  const displayLabel = (item: DestItem) => item.type === "region" ? regionLabel(item.value) : item.label;
+  const matchRegion = (q: string) => REGION_NAMES.find(r => r.toLowerCase() === q.toLowerCase() || regionLabel(r).toLowerCase() === q.toLowerCase());
   const router = useRouter();
   const searchParams = useSearchParams();
   const now = new Date();
@@ -152,9 +158,9 @@ function NavSearchBarInner() {
   const initMinBathrooms = searchParams.get("minBathrooms") ?? undefined;
   const initAmenities = searchParams.get("amenities") ?? undefined;
 
-  const [destInput, setDestInput] = useState(initRegion || initCity);
+  const [destInput, setDestInput] = useState(initRegion ? regionLabel(initRegion) : initCity);
   const [destSelected, setDestSelected] = useState<DestItem | null>(
-    initRegion ? { label: initRegion, type: "region", value: initRegion }
+    initRegion ? { label: regionLabel(initRegion), type: "region", value: initRegion }
     : initCity ? { label: initCity, type: "city", value: initCity }
     : null
   );
@@ -192,14 +198,15 @@ function NavSearchBarInner() {
   const suggestions = useMemo<DestItem[]>(() => {
     const q = destInput.trim().toLowerCase();
     if (!q) return [];
-    const regionHits = REGION_NAMES.filter(r => r.toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: r, type: "region" as const, value: r }));
+    const regionHits = REGION_NAMES.filter(r => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: regionLabel(r), type: "region" as const, value: r }));
     const cityHits = MUNICIPALITIES.filter(m => m.name.toLowerCase().includes(q)).slice(0, 4).map(m => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
-  }, [destInput]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destInput, locale]);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
-    setDestInput(item.label);
+    setDestInput(displayLabel(item));
     saveRecent(item);
     setRecentSearches(loadRecent());
     setActiveField("dates");
@@ -210,8 +217,8 @@ function NavSearchBarInner() {
     const active = destSelected ?? (() => {
       const q = destInput.trim();
       if (!q) return null;
-      const regionMatch = REGION_NAMES.find(r => r.toLowerCase() === q.toLowerCase());
-      if (regionMatch) return { label: regionMatch, type: "region" as const, value: regionMatch };
+      const regionMatch = matchRegion(q);
+      if (regionMatch) return { label: regionLabel(regionMatch), type: "region" as const, value: regionMatch };
       return { label: q, type: "city" as const, value: q };
     })();
 
@@ -267,11 +274,11 @@ function NavSearchBarInner() {
     else { setCheckin(ds); setCheckout(""); }
   };
 
-  const destLabel = destSelected?.label ?? null;
+  const destLabel = destSelected ? displayLabel(destSelected) : null;
   const datesLabel = checkin ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}` : null;
   const totalGuests = adults + children + babies;
   const guestsLabel = totalGuests > 0 ? t("guestsCount", { count: totalGuests }) : null;
-  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map(r => ({ label: r, type: "region", value: r }));
+  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map(r => ({ label: regionLabel(r), type: "region", value: r }));
 
   const filtersCurrentParams = {
     region: initRegion || undefined,
@@ -335,7 +342,7 @@ function NavSearchBarInner() {
                           }
                         </svg>
                         <div className="min-w-0">
-                          <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
+                          <p className="text-sm text-charcoal-800 truncate">{displayLabel(item)}</p>
                           <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                         </div>
                       </button>
@@ -353,7 +360,7 @@ function NavSearchBarInner() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       <div className="min-w-0">
-                        <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
+                        <p className="text-sm text-charcoal-800 truncate">{displayLabel(item)}</p>
                         <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                       </div>
                     </button>
@@ -486,7 +493,7 @@ function NavSearchBarInner() {
         {/* Search button */}
         <button
           onClick={handleSearch}
-          aria-label="Rechercher"
+          aria-label={t("searchAriaLabel")}
           className="m-1.5 w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shrink-0 hover:bg-primary-dark transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

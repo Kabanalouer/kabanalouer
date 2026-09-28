@@ -2,12 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { claimTravelerWelcomeSlot, sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
+import { localePath } from "@/lib/localePath";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
   const localeParam = searchParams.get("locale");
+  // Langue de la page d'où vient l'utilisateur (LoginForm/SignupForm ajoutent
+  // ?locale=en) — détermine la destination par défaut, pour qu'un visiteur
+  // anglais ne retombe jamais sur l'accueil ou le dashboard en français.
+  const locale = localeParam === "en" ? "en" : "fr";
+  const defaultHome = locale === "en" ? "/en" : "/";
+  const nextParam = searchParams.get("next");
+  // Chemin relatif seulement ("//evil.com" serait une redirection ouverte)
+  const next =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+      ? nextParam === "/en/" ? "/en" : nextParam
+      : defaultHome;
 
   if (code) {
     const cookieStore = await cookies();
@@ -51,6 +62,13 @@ export async function GET(request: Request) {
         if (lang === "fr" || lang === "en") {
           await supabase.from("users").update({ preferred_language: lang }).eq("id", user.id);
         }
+        // Le middleware lit user_metadata.preferred_language (pas la table users)
+        // pour la redirection de langue de l'espace connecté — sans ça, un nouveau
+        // compte Google créé depuis /en n'aurait aucune préférence côté session.
+        if (!user.user_metadata?.preferred_language && lang === "en") {
+          const { error: metaError } = await supabase.auth.updateUser({ data: { preferred_language: lang } });
+          if (metaError) console.error("auth/callback: échec mise à jour user_metadata.preferred_language", metaError);
+        }
 
         // Google OAuth n'a pas d'étape de confirmation email — le compte est actif
         // immédiatement ici. La garde (role = 'traveler' AND welcome_email_sent = false)
@@ -70,12 +88,12 @@ export async function GET(request: Request) {
         }
 
         // Redirect hosts to their dashboard by default (unless a specific `next` was set)
-        if (next === "/") {
+        if (next === defaultHome) {
           const isHost = resolvedRole
             ? resolvedRole === "host"
             : (await supabase.from("users").select("role").eq("id", user.id).single()).data?.role === "host";
           if (isHost) {
-            return NextResponse.redirect(`${origin}/dashboard`);
+            return NextResponse.redirect(`${origin}${localePath("/dashboard", locale)}`);
           }
         }
       }
@@ -83,5 +101,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${origin}${defaultHome}`);
 }

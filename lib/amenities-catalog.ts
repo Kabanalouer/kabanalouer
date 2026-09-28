@@ -22,6 +22,7 @@ export interface AmenityDetailField {
   // Champs "number" seulement — unité affichée après la valeur (ex. "pers.")
   // dans le résumé et le panneau de détails, jamais stockée dans details[key].
   unit?: string;
+  unitEn?: string;
   // N'affiche (et ne sauvegarde) ce champ que si details[showIf.key] vaut
   // exactement showIf.equals — ex. "Bois inclus" seulement si Type = "Bois".
   showIf?: { key: string; equals: string | boolean };
@@ -254,7 +255,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     detailSchema: [
       { key: "emplacement", type: "single-select", label: "Emplacement", labelEn: "Location", options: ["Intérieur", "Extérieur"], optionsEn: ["Indoor", "Outdoor"], excludeFromSummary: true },
       { key: "acces", type: "single-select", label: "Accès", labelEn: "Access", options: ["Privé", "Partagé"], optionsEn: ["Private", "Shared"] },
-      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20, unit: "pers." },
+      { key: "capacite", type: "number", label: "Capacité (personnes)", labelEn: "Capacity (people)", placeholder: "Ex. 6", placeholderEn: "E.g. 6", max: 20, unit: "pers.", unitEn: "people" },
       {
         key: "disponibleAnnee", type: "boolean", label: "Disponible toute l'année", labelEn: "Available year-round",
         summaryLabel: "À l'année", summaryLabelEn: "Year-round",
@@ -582,7 +583,8 @@ export function summarizeAmenityDetails(
     if (field.type === "boolean") {
       if (value === true) parts.push(isEn ? (field.summaryLabelEn ?? field.labelEn) : (field.summaryLabel ?? field.label));
     } else if (field.type === "number") {
-      parts.push(field.unit ? `${value} ${field.unit}` : String(value));
+      const unit = isEn ? (field.unitEn ?? field.unit) : field.unit;
+      parts.push(unit ? `${value} ${unit}` : String(value));
     } else if (field.type === "hours" && typeof value === "object") {
       const hv = value as { open24?: boolean; start?: string; end?: string };
       if (hv.open24) parts.push(isEn ? "Open 24/7" : "Ouvert 24h/24");

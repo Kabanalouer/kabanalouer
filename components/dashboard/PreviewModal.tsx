@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 
 type ViewMode = "desktop" | "mobile";
 
@@ -12,6 +13,8 @@ interface Props {
 
 export default function PreviewModal({ listingId, onClose }: Props) {
   const t = useTranslations("listings.edit");
+  const locale = useLocale();
+  const previewSrc = localePath(`/chalets/${listingId}?preview=1`, locale);
   const [viewMode, setViewMode] = useState<ViewMode>("desktop");
 
   useEffect(() => {
@@ -69,7 +72,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
             <div className="flex-1 rounded-xl overflow-hidden shadow-2xl">
               <iframe
                 key="desktop"
-                src={`/chalets/${listingId}?preview=1`}
+                src={previewSrc}
                 className="w-full h-full border-none block bg-white"
                 title={t("previewDesktopFrameTitle")}
               />
@@ -90,7 +93,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
               <div className="overflow-hidden rounded-[36px]" style={{ height: 780 }}>
                 <iframe
                   key="mobile"
-                  src={`/chalets/${listingId}?preview=1`}
+                  src={previewSrc}
                   className="border-none block bg-white"
                   style={{ width: 390, height: 780 }}
                   title={t("previewMobileFrameTitle")}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
@@ -11,29 +12,30 @@ function adminSupabase() {
 }
 
 export async function POST(request: NextRequest) {
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
   const { listingId } = await request.json();
   if (!listingId) {
-    return NextResponse.json({ error: "listingId requis" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "listingId requis", "listingId required") }, { status: 400 });
   }
 
   const admin = adminSupabase();
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title")
+    .select("id, title, title_en")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
 
   if (!listing) {
-    return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+    return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
 
   // Éligibilité par ANNONCE, pas par proprio : l'existence d'une ligne
@@ -49,8 +51,8 @@ export async function POST(request: NextRequest) {
 
   if (existingSub) {
     const message = existingSub.status === "active"
-      ? "Cette annonce a déjà un abonnement actif"
-      : "Cette annonce a déjà eu un abonnement — l'offre de lancement ne s'applique plus";
+      ? t2(locale, "Cette annonce a déjà un abonnement actif", "This listing already has an active subscription")
+      : t2(locale, "Cette annonce a déjà eu un abonnement — l'offre de lancement ne s'applique plus", "This listing has already had a subscription — the launch offer no longer applies");
     return NextResponse.json({ error: message }, { status: 409 });
   }
 
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
 
   if (subError) {
     console.error("subscriptions/activate-free: échec upsert subscriptions", subError);
-    return NextResponse.json({ error: "Erreur lors de l'activation." }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, "Erreur lors de l'activation.", "Error while activating.") }, { status: 500 });
   }
 
   await admin.from("users").update({ role: "host" }).eq("id", user.id);
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       preferredLanguage: lang,
       firstName: profile?.name?.trim().split(/\s+/)[0],
-      listingTitle: listing.title || (lang === "en" ? "your listing" : "ton chalet"),
+      listingTitle: (lang === "en" ? listing.title_en : null) || listing.title || (lang === "en" ? "your listing" : "ton chalet"),
     });
     if (emailError) {
       console.error("activate-free: échec envoi email de bienvenue", emailError);

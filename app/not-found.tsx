@@ -1,10 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 
-export const metadata = { title: "Page introuvable" };
+export async function generateMetadata(): Promise<Metadata> {
+  const isEn = (await getLocale()) === "en";
+  return { title: isEn ? "Page not found" : "Page introuvable" };
+}
 
 export default async function NotFound() {
   const locale = await getLocale();

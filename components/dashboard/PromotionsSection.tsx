@@ -324,7 +324,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <input
                         type="number" min={1} max={rabaisUnit === "percent" ? 100 : undefined}
                         value={rabaisValue} onChange={(e) => { setRabaisValue(e.target.value); setNoPromoChecked(false); }}
-                        className={inputCls} placeholder={rabaisUnit === "percent" ? "ex. 20" : "ex. 50"}
+                        className={inputCls} placeholder={`${locale === "en" ? "e.g." : "ex."} ${rabaisUnit === "percent" ? "20" : "50"}`}
                       />
                       <span className="text-sm text-charcoal-500 shrink-0">{rabaisUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
@@ -437,7 +437,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <input
                         type="number" min={1} max={lmUnit === "percent" ? 100 : undefined}
                         value={lmValue} onChange={(e) => { setLmValue(e.target.value); setNoPromoChecked(false); }}
-                        className={inputCls} placeholder={lmUnit === "percent" ? "ex. 15" : "ex. 25"}
+                        className={inputCls} placeholder={`${locale === "en" ? "e.g." : "ex."} ${lmUnit === "percent" ? "15" : "25"}`}
                       />
                       <span className="text-sm text-charcoal-500 shrink-0">{lmUnit === "percent" ? "%" : t("perNight")}</span>
                     </div>
@@ -452,7 +452,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                           setLmDays(String(Math.min(21, Math.max(7, v))));
                           setNoPromoChecked(false);
                         }}
-                        className={inputCls} placeholder="ex. 7"
+                        className={inputCls} placeholder={locale === "en" ? "e.g. 7" : "ex. 7"}
                       />
                       <span className="text-sm text-charcoal-500 shrink-0">{t("days")}</span>
                     </div>

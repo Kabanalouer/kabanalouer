@@ -9,6 +9,8 @@ import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
+import { getRegionByDbValue } from "@/lib/regions";
+import { formatPrice } from "@/lib/formatPrice";
 
 export interface Listing {
   id: string;
@@ -74,7 +76,8 @@ export default function ListingCard({
     setIdx((i) => Math.min(photos.length - 1, i + 1));
   };
 
-  const location = listing.city?.trim() || listing.region;
+  const regionLabel = locale === "en" ? getRegionByDbValue(listing.region)?.nameEn ?? listing.region : listing.region;
+  const location = listing.city?.trim() || regionLabel;
 
   return (
     <Link href={listingHref} className="group block">
@@ -200,7 +203,7 @@ export default function ListingCard({
           <p className="text-sm text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
         ) : listing.price > 0 ? (
           <p className="text-sm font-semibold text-charcoal-800">
-            {listing.price} $ <span className="text-charcoal-400">{t("perNight")}</span>
+            {formatPrice(listing.price, locale)} <span className="text-charcoal-400">{t("perNight")}</span>
           </p>
         ) : null}
       </div>

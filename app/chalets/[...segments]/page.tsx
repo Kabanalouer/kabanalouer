@@ -286,7 +286,10 @@ export async function generateMetadata({ params }: Props) {
 
     const rawTitle = (isEn && data.title_en) ? data.title_en : data.title;
     const rawDesc = (isEn && data.description_en) ? data.description_en : data.description;
-    const location = [data.city, data.region].filter(Boolean).join(", ");
+    const regionLabel = isEn && data.region
+      ? getRegionByDbValue(data.region as string)?.nameEn ?? data.region
+      : data.region;
+    const location = [data.city, regionLabel].filter(Boolean).join(", ");
     const title = location ? `${rawTitle} | ${location}` : rawTitle;
     const description = (rawDesc as string | null)?.slice(0, 160) ?? "";
     const photos = normalizePhotos(data.photos);

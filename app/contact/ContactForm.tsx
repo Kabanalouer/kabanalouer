@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { submitContactForm, type ContactFormState } from "./actions";
 
 const initialState: ContactFormState = { status: "idle" };
@@ -11,6 +11,7 @@ const inputCls =
 
 export default function ContactForm() {
   const t = useTranslations("contact");
+  const locale = useLocale();
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
 
   const SUBJECTS = [
@@ -41,6 +42,7 @@ export default function ContactForm() {
 
   return (
     <form action={formAction} className="space-y-5">
+      <input type="hidden" name="locale" value={locale} />
       {/* First name + Last name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

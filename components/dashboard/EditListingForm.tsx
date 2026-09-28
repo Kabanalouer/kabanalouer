@@ -832,14 +832,14 @@ export default function EditListingForm({
     {isAdminReview && localImportStatus === "pending_review" && safeImportSourceUrl && (
       <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3 mb-6">
         <p className="text-sm text-charcoal-700">
-          Annonce importée depuis Airbnb —{" "}
+          {locale === "en" ? "Listing imported from Airbnb —" : "Annonce importée depuis Airbnb —"}{" "}
           <a
             href={safeImportSourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-primary hover:text-primary-700 hover:underline transition-colors"
           >
-            voir l&apos;annonce originale ↗
+            {locale === "en" ? "view the original listing ↗" : "voir l'annonce originale ↗"}
           </a>
         </p>
       </div>
@@ -1340,7 +1340,7 @@ export default function EditListingForm({
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={form.capacity >= 40 ? "40 et +" : String(form.capacity)}
+                      value={form.capacity >= 40 ? (locale === "en" ? "40+" : "40 et +") : String(form.capacity)}
                       onFocus={(e) => { if (form.capacity >= 40) e.target.select(); }}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/[^0-9]/g, "");
@@ -1770,7 +1770,7 @@ export default function EditListingForm({
                       value={form.citq_number}
                       onChange={(e) => set("citq_number", e.target.value.replace(/\D/g, "").slice(0, 6))}
                       className={`${inputCls} sm:max-w-xs`}
-                      placeholder="ex. 123456"
+                      placeholder={locale === "en" ? "e.g. 123456" : "ex. 123456"}
                     />
                   </div>
                 </InfoBlock>
@@ -1844,7 +1844,7 @@ export default function EditListingForm({
                       disabled={publishLoading}
                       className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                     >
-                      {publishLoading ? tEdit("publishing") : t("publish.adminPublishButton")}
+                      {publishLoading ? (locale === "en" ? "Publishing…" : "Publication…") : t("publish.adminPublishButton")}
                     </button>
                   </div>
                 </SectionShell>

@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   const { data: subs, error } = await supabase
     .from("subscriptions")
     .select(
-      "id, listing_id, user_id, status, expires_at, is_free_launch, price_cents, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at, listings(title)"
+      "id, listing_id, user_id, status, expires_at, is_free_launch, price_cents, reminder_30d_sent, reminder_10d_sent, reminder_3d_sent, reminder_auto_renewal_sent, reminder_past_due_sent, reminder_cycle_expires_at, listings(title, title_en)"
     )
     .not("expires_at", "is", null)
     .or(`and(status.eq.active,expires_at.lte.${windowEnd}),status.eq.past_due`);
@@ -65,8 +65,10 @@ export async function GET(request: NextRequest) {
   let cyclesReset = 0;
 
   for (const sub of subs ?? []) {
-    const listingsField = sub.listings as { title: string } | { title: string }[] | null;
-    const listingTitleRaw = Array.isArray(listingsField) ? listingsField[0]?.title : listingsField?.title;
+    type ListingTitles = { title: string; title_en: string | null };
+    const listingsField = sub.listings as ListingTitles | ListingTitles[] | null;
+    const listingTitles = Array.isArray(listingsField) ? listingsField[0] : listingsField;
+    const titleFor = (lang: "fr" | "en") => (lang === "en" ? listingTitles?.title_en : null) || listingTitles?.title;
 
     // ── Paiement échoué : notification unique, indépendante du décompte d'échéance ──
     // Garde is_free_launch = false : une ligne gratuite n'a jamais de vraie carte
@@ -89,7 +91,7 @@ export async function GET(request: NextRequest) {
         email: profile.email,
         preferredLanguage,
         firstName: profile.name?.trim().split(/\s+/)[0],
-        listingTitle: listingTitleRaw || (preferredLanguage === "en" ? "your listing" : "ton chalet"),
+        listingTitle: titleFor(preferredLanguage) || (preferredLanguage === "en" ? "your listing" : "ton chalet"),
         priceCents: sub.price_cents,
       });
 
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest) {
 
     const preferredLanguage: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
     const firstName = profile.name?.trim().split(/\s+/)[0];
-    const listingTitle = listingTitleRaw || (preferredLanguage === "en" ? "your listing" : "ton chalet");
+    const listingTitle = titleFor(preferredLanguage) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
 
     if (isFreeLaunch) {
       for (const { days, column } of dueThresholds) {
@@ -237,7 +239,7 @@ export async function GET(request: NextRequest) {
   // deux annonces du même proprio peuvent expirer/s'annuler à des moments différents.
   const { data: unpublishedListings, error: winbackError } = await supabase
     .from("listings")
-    .select("id, host_id, title, unpublished_at, reminder_winback_3d_sent, reminder_winback_14d_sent")
+    .select("id, host_id, title, title_en, unpublished_at, reminder_winback_3d_sent, reminder_winback_14d_sent")
     .eq("unpublished_reason", "subscription")
     .not("unpublished_at", "is", null);
 
@@ -267,7 +269,7 @@ export async function GET(request: NextRequest) {
         preferredLanguage: winbackLang,
         firstName: profile.name?.trim().split(/\s+/)[0],
         threshold: dueThreshold.days,
-        listingTitle: listing.title || (winbackLang === "en" ? "your listing" : "ton chalet"),
+        listingTitle: (winbackLang === "en" ? listing.title_en : null) || listing.title || (winbackLang === "en" ? "your listing" : "ton chalet"),
       });
 
       if (emailError) {

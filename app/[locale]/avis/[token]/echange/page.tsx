@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { adminSupabase } from "@/lib/sendMessage";
@@ -7,7 +8,10 @@ import { getReviewRequestByToken } from "@/lib/reviewToken";
 import { localePath } from "@/lib/localePath";
 import EchangeReviewClient from "./EchangeReviewClient";
 
-export const metadata = { title: "Laisser un avis" };
+export async function generateMetadata(): Promise<Metadata> {
+  const isEn = (await getLocale()) === "en";
+  return { title: isEn ? "Leave a review" : "Laisser un avis" };
+}
 
 export default async function EchangeReviewPage({
   params,
@@ -25,10 +29,12 @@ export default async function EchangeReviewPage({
 
   const { data: listing } = await admin
     .from("listings")
-    .select("title")
+    .select("title, title_en")
     .eq("id", reviewRequest.listing_id)
     .single();
-  const listingTitle = (listing?.title as string | undefined) ?? (isEn ? "your listing" : "ce chalet");
+  const titleFr = (listing?.title as string | null | undefined) || undefined;
+  const titleEn = (listing?.title_en as string | null | undefined) || undefined;
+  const listingTitle = (isEn ? titleEn ?? titleFr : titleFr) ?? (isEn ? "your listing" : "ce chalet");
 
   const { data: host } = await admin
     .from("users")

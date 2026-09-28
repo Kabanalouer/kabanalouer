@@ -218,6 +218,14 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           role: "traveler",
           preferred_language: locale,
         },
+        // Le lien de confirmation atterrit sur l'accueil (AuthCodeWelcomeTrigger y
+        // échange le ?code=) — accueil anglais pour un visiteur anglais. Sans
+        // emailRedirectTo, Supabase utilise son Site URL (accueil français). Une
+        // URL absente de la liste « Redirect URLs » de Supabase retombe sur ce
+        // même Site URL : jamais de lien cassé.
+        ...(locale === "en"
+          ? { emailRedirectTo: `${window.location.origin}/en` }
+          : {}),
       },
     });
     if (error) {

@@ -83,6 +83,7 @@ export default function CreationChoiceSection() {
               </button>
             ) : (
               <form action={formAction} className="space-y-4">
+                <input type="hidden" name="locale" value={locale} />
                 <div>
                   <label htmlFor="import-name" className="block text-sm font-medium text-charcoal-700 mb-1.5">
                     {t("formName")}

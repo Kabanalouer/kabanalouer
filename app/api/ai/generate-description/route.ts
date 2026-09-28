@@ -12,6 +12,7 @@ import {
   findGenericAdjectives,
 } from "@/lib/aiWritingRules";
 import { NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 
 const SYSTEM_PROMPT_FR =
   "Tu es un expert en rédaction d'annonces de location de chalet au Québec. " +
@@ -52,19 +53,20 @@ const DESC_OUTPUT_RULES_EN =
   "Return ONLY the description text, no title, no header, no label, no section, no markdown, no asterisks, no hash (#), no counting. Start directly with the first sentence. ABSOLUTE CONSTRAINT: the description must be STRICTLY less than 2500 characters including spaces. Stop at a complete sentence before the limit. Never cut a sentence mid-way. Start with a strong hook sentence. Never address the traveler informally, keep a polite tone.";
 
 export async function POST(request: Request) {
+  const reqLocale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(reqLocale, "Non autorisé", "Unauthorized") }, { status: 401 });
 
   if (!(await checkAiRateLimit(supabase, user.id, "generate-description"))) {
     return NextResponse.json(
-      { error: "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard." },
+      { error: t2(reqLocale, "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard.", "You have reached the limit of 200 AI generations per hour. Please try again later.") },
       { status: 429 }
     );
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Clé API Anthropic manquante." }, { status: 503 });
+    return NextResponse.json({ error: t2(reqLocale, "Clé API Anthropic manquante.", "Missing Anthropic API key.") }, { status: 503 });
   }
 
   const {
@@ -155,10 +157,10 @@ export async function POST(request: Request) {
       console.warn("[generate-description] mot générique détecté, nouvel essai :", hits);
     }
 
-    if (!cleaned) return NextResponse.json({ error: "Génération échouée." }, { status: 500 });
+    if (!cleaned) return NextResponse.json({ error: t2(isEn ? "en" : reqLocale, "Génération échouée.", "Generation failed.") }, { status: 500 });
     return NextResponse.json({ description: truncateToLastSentence(cleaned, 2500) });
   } catch (err) {
     console.error("[generate-description]", err);
-    return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
+    return NextResponse.json({ error: t2(isEn ? "en" : reqLocale, "Erreur lors de la génération.", "Error while generating.") }, { status: 500 });
   }
 }

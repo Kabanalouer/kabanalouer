@@ -1,1 +1,1 @@
-export { default, metadata } from "@/app/dashboard/listings/page";
+export { default, generateMetadata } from "@/app/dashboard/listings/page";

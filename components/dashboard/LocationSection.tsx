@@ -8,11 +8,12 @@ import {
   useMapsLibrary,
   useMap,
 } from "@vis.gl/react-google-maps";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/slugify";
 import { getMunicipalityBySlug } from "@/lib/municipalities";
 import MunicipalityCombobox from "./MunicipalityCombobox";
+import { getRegionByDbValue } from "@/lib/regions";
 
 // Ville + région ne sont plus déduites d'un matching flou sur le texte brut
 // renvoyé par Google Places (administrative_area_level_2) — la ville est
@@ -50,6 +51,7 @@ function LocationForm({
 }) {
   const t = useTranslations("listings.location");
   const tCommon = useTranslations("common");
+  const isEn = useLocale() === "en";
   const supabase = createClient();
   const placesLib = useMapsLibrary("places");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -192,7 +194,7 @@ function LocationForm({
           </label>
           <input
             type="text"
-            value={region}
+            value={isEn && region ? (getRegionByDbValue(region)?.nameEn ?? region) : region}
             readOnly
             className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-500 cursor-default focus:outline-none"
             placeholder={t("regionPlaceholder")}

@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: `${SITE_URL}/hero-chalet.webp`,
           width: 1200,
           height: 630,
-          alt: "Chalet au bord du lac au Québec",
+          alt: isEn ? "Lakeside cabin in Quebec" : "Chalet au bord du lac au Québec",
         },
       ],
     },
@@ -77,7 +77,7 @@ export default async function HomePage() {
 
   const { data: rawListings } = await supabase
     .from("listings")
-    .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
+    .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(6);
@@ -96,13 +96,13 @@ export default async function HomePage() {
   const { data: rawVedette } = vedetteIds.length > 0
     ? await supabase
         .from("listings")
-        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
+        .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
         .in("id", vedetteIds)
         .eq("is_published", true)
     : { data: [] as typeof rawListings };
   const vedetteListings: Listing[] = (rawVedette ?? []).map((l) => ({
     id: l.id,
-    title: l.title ?? "",
+    title: (locale === "en" && (l.title_en as string | null)) || (l.title ?? ""),
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
     listing_number: (l.listing_number as number | null) ?? null,
@@ -130,7 +130,7 @@ export default async function HomePage() {
 
   const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({
     id: l.id,
-    title: l.title ?? "",
+    title: (locale === "en" && (l.title_en as string | null)) || (l.title ?? ""),
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
     listing_number: (l.listing_number as number | null) ?? null,
@@ -146,16 +146,17 @@ export default async function HomePage() {
   }));
 
   const BASE_URL = SITE_URL;
+  const isEn = locale === "en";
 
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Kabanalouer",
     url: BASE_URL,
-    description: "Marketplace de location de chalets au Québec",
+    description: isEn ? "Cabin rental marketplace in Quebec" : "Marketplace de location de chalets au Québec",
     potentialAction: {
       "@type": "SearchAction",
-      target: `${BASE_URL}/chalets?destination={search_term_string}`,
+      target: `${BASE_URL}${isEn ? "/en/cabins" : "/chalets"}?city={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
@@ -166,7 +167,9 @@ export default async function HomePage() {
     name: "Kabanalouer",
     url: BASE_URL,
     logo: `${BASE_URL}/logo-wordmark.svg`,
-    description: "Marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service.",
+    description: isEn
+      ? "Cabin rental marketplace in Quebec — contact owners directly, no service fees."
+      : "Marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service.",
     areaServed: "Québec, Canada",
     sameAs: [],
   };
@@ -222,9 +225,9 @@ export default async function HomePage() {
 
         {/* Stats footer — masquées en mobile */}
         <div className="hidden lg:flex absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm divide-x divide-white/20">
-          <HeroStat value="0 $" label={t("statFeeLabel")} footer />
+          <HeroStat value={isEn ? "$0" : "0 $"} label={t("statFeeLabel")} footer />
           <HeroStat value="Direct" label={t("statDirectLabel")} footer />
-          <HeroStat value="100 %" label={t("statVerifiedLabel")} footer />
+          <HeroStat value={isEn ? "100%" : "100 %"} label={t("statVerifiedLabel")} footer />
           <HeroStat value={t("statFreeValue")} label={t("statFreeLabel")} footer />
         </div>
       </section>

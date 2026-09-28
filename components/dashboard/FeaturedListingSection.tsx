@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { getRegionByDbValue } from "@/lib/regions";
 import {
   MAX_FEATURED_HOME,
   MAX_FEATURED_REGION,
@@ -232,6 +233,8 @@ export default function FeaturedListingSection({
   const locale = useLocale();
   const supabase = createClient();
   const MONTHS = getMonths(MAX_MONTHS_AHEAD, locale);
+  const regionLabel = (dbValue: string | null) =>
+    locale === "en" && dbValue ? (getRegionByDbValue(dbValue)?.nameEn ?? dbValue) : (dbValue ?? "");
 
   const [loading, setLoading] = useState(true);
   const [existing, setExisting] = useState<ExistingFeatured[]>([]);
@@ -271,7 +274,7 @@ export default function FeaturedListingSection({
           {existing.map((f) => (
             <p key={f.id} className="text-sm font-medium text-primary">
               {f.type === "region"
-                ? t("existingRegion", { region: f.region ?? "", month: fmtMonth(f.month, locale) })
+                ? t("existingRegion", { region: regionLabel(f.region), month: fmtMonth(f.month, locale) })
                 : t("existingHome", { month: fmtMonth(f.month, locale) })}
             </p>
           ))}
@@ -280,7 +283,7 @@ export default function FeaturedListingSection({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FeaturedCard
-          title={t("regionTitle", { region })}
+          title={t("regionTitle", { region: regionLabel(region) })}
           desc={t("regionDesc")}
           price={PRIX_VEDETTE_REGION}
           type="region"

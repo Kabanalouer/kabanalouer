@@ -140,14 +140,14 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
       <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"}`}>
         <StatCard
           label={t("views")}
-          value={viewsUnavailable ? "N/D" : (stats?.totalConsultations ?? 0).toLocaleString("fr-CA")}
+          value={viewsUnavailable ? (locale === "en" ? "N/A" : "N/D") : (stats?.totalConsultations ?? 0).toLocaleString(locale === "en" ? "en-CA" : "fr-CA")}
           sub={viewsUnavailable ? t("unavailable") : t("viewsSub")}
           icon={<DocIcon />}
           unavailable={viewsUnavailable}
         />
         <StatCard
           label={t("contacts")}
-          value={(stats?.totalContacts ?? 0).toLocaleString("fr-CA")}
+          value={(stats?.totalContacts ?? 0).toLocaleString(locale === "en" ? "en-CA" : "fr-CA")}
           sub={t("contactsSub")}
           icon={<ChatIcon />}
         />
@@ -155,7 +155,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
           label={t("conversionRate")}
           value={
             viewsUnavailable
-              ? "N/D"
+              ? (locale === "en" ? "N/A" : "N/D")
               : (stats?.totalConsultations ?? 0) === 0
                 ? "—"
                 : formatPercent((stats?.totalContacts ?? 0) / (stats?.totalConsultations ?? 1), locale)

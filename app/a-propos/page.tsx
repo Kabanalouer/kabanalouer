@@ -11,7 +11,7 @@ const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
-  const canonical = isEn ? "/en/a-propos" : "/a-propos";
+  const canonical = isEn ? "/en/about" : "/a-propos";
   const title = isEn ? "About" : "À propos";
   const description = isEn
     ? "Kabanalouer is the leading marketplace for cabin rentals in Quebec. Our mission: connecting travelers and owners without intermediaries."
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical,
-      languages: { fr: "/a-propos", en: "/en/a-propos", "x-default": "/a-propos" },
+      languages: { fr: "/a-propos", en: "/en/about", "x-default": "/a-propos" },
     },
     openGraph: {
       title,
@@ -41,16 +41,18 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Kabanalouer",
-  url: SITE_URL,
-  description: "Marketplace de location de chalets au Québec",
-  areaServed: "Québec, Canada",
-  foundingDate: "2026",
-  slogan: "La marketplace des chalets québécois",
-};
+function organizationJsonLd(isEn: boolean) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kabanalouer",
+    url: SITE_URL,
+    description: isEn ? "Cabin rental marketplace in Quebec" : "Marketplace de location de chalets au Québec",
+    areaServed: isEn ? "Quebec, Canada" : "Québec, Canada",
+    foundingDate: "2026",
+    slogan: isEn ? "The marketplace for Quebec cabins" : "La marketplace des chalets québécois",
+  };
+}
 
 export default async function AProposPage() {
   const [t, locale] = await Promise.all([getTranslations("aPropos"), getLocale()]);
@@ -59,7 +61,7 @@ export default async function AProposPage() {
     <div className="flex flex-col min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(locale === "en")) }}
       />
       <Navbar />
 

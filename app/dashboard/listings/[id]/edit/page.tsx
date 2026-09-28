@@ -8,6 +8,9 @@ import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogPolicy } from "@/lib/dogPolicy";
 import { parseAccessibility } from "@/lib/accessibility";
+import { getLocale } from "next-intl/server";
+import { localePath } from "@/lib/localePath";
+import { buildListingPath } from "@/lib/listingUrl";
 
 function adminSupabase() {
   return createAdminClient(
@@ -16,7 +19,10 @@ function adminSupabase() {
   );
 }
 
-export const metadata = { title: "Modifier le chalet" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "Edit cabin" : "Modifier le chalet" };
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -24,10 +30,11 @@ interface Props {
 
 export default async function EditListingPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
+  const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
+  const isEn = locale === "en";
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect(localePath(`/login?next=${encodeURIComponent(localePath(`/dashboard/listings/${id}/edit`, locale))}`, locale));
 
   // Pas de filtre host_id ici — RLS laisse passer soit le propriétaire, soit
   // un admin (nouvelle politique "Les admins gèrent tous les listings"). Le
@@ -71,19 +78,31 @@ export default async function EditListingPage({ params }: Props) {
   const { cents: nextPaidPriceCents } = priceForRank(nextPaidRank);
   const dogPolicy = parseDogPolicy(listing);
   const accessibility = parseAccessibility(listing);
+  const publicHref =
+    buildListingPath(
+      {
+        region: (listing.region as string | null) ?? null,
+        city: (listing.city as string | null) ?? null,
+        listing_number: (listing.listing_number as number | null) ?? null,
+        custom_slug: (listing.custom_slug as string | null) ?? null,
+      },
+      isEn ? "en" : "fr"
+    ) ?? localePath(`/chalets/${id}`, locale);
 
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-charcoal-900">{listing.title ? "Modifier mon annonce" : "Créer mon annonce"}</h1>
+        <h1 className="text-2xl font-bold text-charcoal-900">{listing.title
+          ? (isEn ? "Edit my listing" : "Modifier mon annonce")
+          : (isEn ? "Create my listing" : "Créer mon annonce")}</h1>
         <p className="text-charcoal-500 text-sm mt-1 flex items-center gap-1.5">
-          <span className="line-clamp-1">{listing.title}</span>
+          <span className="line-clamp-1">{(isEn && (listing.title_en as string | null)) || listing.title}</span>
           {listing.title && (
             <a
-              href={`/chalets/${id}`}
+              href={publicHref}
               target="_blank"
               rel="noopener noreferrer"
-              title="Voir la fiche publique"
+              title={isEn ? "View public listing" : "Voir la fiche publique"}
               className="shrink-0 text-charcoal-400 hover:text-charcoal-700 transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">

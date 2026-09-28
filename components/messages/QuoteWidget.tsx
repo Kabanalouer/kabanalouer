@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { getMonthNamesShort } from "@/lib/dateLocale";
 import { createClient } from "@/lib/supabase/client";
 import {
   SIGNATURE_TOKEN,
@@ -18,8 +19,9 @@ const MONTHS_SHORT_FR = [
   "juil.", "août", "sept.", "oct.", "nov.", "déc.",
 ];
 
-function formatDateShort(iso: string): string {
+function formatDateShort(iso: string, locale: string): string {
   const [, m, d] = iso.split("-").map(Number);
+  if (locale === "en") return `${getMonthNamesShort("en")[m - 1]} ${d}`;
   return `${d} ${MONTHS_SHORT_FR[m - 1]}`;
 }
 
@@ -31,6 +33,7 @@ type Translate = (key: string, values?: Record<string, string | number>) => stri
 // lib/quoteMessage.ts).
 function buildDatesGuestsBlock(
   t: Translate,
+  locale: string,
   {
     checkIn,
     checkOut,
@@ -50,8 +53,8 @@ function buildDatesGuestsBlock(
   const humanTotal = numAdults + numChildren + numBabies;
 
   const datesLines = [
-    checkIn ? t("arrivalLabel", { date: formatDateShort(checkIn) }) : null,
-    checkOut ? t("departureLabel", { date: formatDateShort(checkOut) }) : null,
+    checkIn ? t("arrivalLabel", { date: formatDateShort(checkIn, locale) }) : null,
+    checkOut ? t("departureLabel", { date: formatDateShort(checkOut, locale) }) : null,
   ].filter((l): l is string => l !== null);
   const datesBlock = datesLines.length > 0 ? [t("datesHeading"), ...datesLines].join("\n") : null;
 
@@ -121,6 +124,7 @@ export default function QuoteWidget({
   onCancel: () => void;
 }) {
   const t = useTranslations("quote");
+  const locale = useLocale();
   const supabase = createClient();
 
   const [templateLoaded, setTemplateLoaded] = useState(false);
@@ -139,7 +143,7 @@ export default function QuoteWidget({
   const babiesCount = numBabies ?? 0;
   const petsCount = numPets ?? 0;
 
-  const datesGuestsBlock = buildDatesGuestsBlock(t, {
+  const datesGuestsBlock = buildDatesGuestsBlock(t, locale, {
     checkIn,
     checkOut,
     numAdults: adultsCount,

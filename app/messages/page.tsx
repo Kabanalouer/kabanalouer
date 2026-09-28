@@ -5,6 +5,7 @@ import MessagesClient from "@/components/messages/MessagesClient";
 import DashboardBottomNav from "@/components/dashboard/DashboardBottomNav";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { localePath } from "@/lib/localePath";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations("messages"), getLocale()]);
@@ -22,7 +23,10 @@ export default async function MessagesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login?next=/messages");
+  const locale = await getLocale();
+  const isEn = locale === "en";
+
+  if (!user) redirect(localePath(`/login?next=${encodeURIComponent(localePath("/messages", locale))}`, locale));
 
   const { data: profile } = await supabase
     .from("users")
@@ -37,7 +41,7 @@ export default async function MessagesPage() {
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
     .from("messages")
-    .select("*, listing:listing_id(id, title, host_id, region, city, listing_number, custom_slug)")
+    .select("*, listing:listing_id(id, title, title_en, host_id, region, city, listing_number, custom_slug)")
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
@@ -48,6 +52,7 @@ export default async function MessagesPage() {
     sender_id: string;
     receiver_id: string;
     content: string;
+    content_translated: string | null;
     is_read: boolean;
     created_at: string;
     check_in: string | null;
@@ -56,6 +61,7 @@ export default async function MessagesPage() {
     listing: {
       id: string;
       title: string;
+      title_en: string | null;
       host_id: string;
       region: string | null;
       city: string | null;
@@ -88,12 +94,14 @@ export default async function MessagesPage() {
       other_user_created_at: string | null;
       listing_id: string;
       listing_title: string;
+      listing_title_en: string | null;
       listing_host_id: string | null;
       listing_region: string | null;
       listing_city: string | null;
       listing_number: number | null;
       listing_custom_slug: string | null;
       last_message: string;
+      last_message_translated: string | null;
       last_message_at: string;
       unread_count: number;
     }
@@ -110,18 +118,20 @@ export default async function MessagesPage() {
     if (!convMap.has(key)) {
       convMap.set(key, {
         other_user_id: otherId,
-        other_user_name: other?.name ?? "Inconnu",
+        other_user_name: other?.name ?? (isEn ? "Unknown" : "Inconnu"),
         other_user_avatar: other?.avatar_url ?? null,
         other_user_bio: other?.bio ?? null,
         other_user_created_at: other?.created_at ?? null,
         listing_id: msg.listing_id,
         listing_title: msg.listing?.title ?? "",
+        listing_title_en: msg.listing?.title_en ?? null,
         listing_host_id: msg.listing?.host_id ?? null,
         listing_region: msg.listing?.region ?? null,
         listing_city: msg.listing?.city ?? null,
         listing_number: msg.listing?.listing_number ?? null,
         listing_custom_slug: msg.listing?.custom_slug ?? null,
         last_message: msg.content,
+        last_message_translated: msg.receiver_id === user.id ? msg.content_translated ?? null : null,
         last_message_at: msg.created_at,
         unread_count: 0,
       });

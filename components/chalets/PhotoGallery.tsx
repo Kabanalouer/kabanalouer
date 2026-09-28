@@ -93,7 +93,7 @@ export default function PhotoGallery({ photos, title }: Props) {
             </div>
             {photos.slice(1, 5).map((p, i) => (
               <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
-                <Image src={p.url} alt={displayCaption(p, locale) || `Chalet ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+                <Image src={p.url} alt={displayCaption(p, locale) || `${locale === "en" ? "Cabin" : "Chalet"} ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
               </div>
             ))}
@@ -140,7 +140,7 @@ export default function PhotoGallery({ photos, title }: Props) {
               <div className="relative w-full h-full">
                 <Image
                   src={photos[idx].url}
-                  alt={displayCaption(photos[idx], locale) || `Chalet ${title} – photo ${idx + 1}`}
+                  alt={displayCaption(photos[idx], locale) || `${locale === "en" ? "Cabin" : "Chalet"} ${title} – photo ${idx + 1}`}
                   fill
                   className="object-contain"
                   sizes="100vw"

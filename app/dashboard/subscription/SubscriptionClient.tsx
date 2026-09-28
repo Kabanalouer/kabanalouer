@@ -34,7 +34,7 @@ export default function SubscriptionClient() {
       const [{ data: listings }, { data: subs }] = await Promise.all([
         supabase
           .from("listings")
-          .select("id, title")
+          .select("id, title, title_en")
           .eq("host_id", user.id)
           .order("created_at", { ascending: true }),
         supabase
@@ -44,7 +44,7 @@ export default function SubscriptionClient() {
       ]);
 
       const subsByListing = new Map((subs ?? []).map((s) => [s.listing_id as string, s as ListingSub]));
-      setRows((listings ?? []).map((l) => ({ id: l.id, title: l.title, sub: subsByListing.get(l.id) ?? null })));
+      setRows((listings ?? []).map((l) => ({ id: l.id, title: (locale === "en" && l.title_en) ? l.title_en : l.title, sub: subsByListing.get(l.id) ?? null })));
       setLoading(false);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

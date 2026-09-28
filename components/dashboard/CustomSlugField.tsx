@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { buildListingPath } from "@/lib/listingUrl";
 import { CUSTOM_SLUG_MAX_LENGTH } from "@/lib/customSlug";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -33,6 +33,7 @@ export default function CustomSlugField({
   city: string | null;
 }) {
   const tEdit = useTranslations("listings.edit");
+  const locale = useLocale();
   const [value, setValue] = useState(initialCustomSlug ?? "");
   const [savedValue, setSavedValue] = useState(initialCustomSlug ?? "");
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ export default function CustomSlugField({
   // centralisée dans lib/listingUrl.ts.
   const fullPathWithPlaceholder = buildListingPath(
     { region, city, listing_number: null, custom_slug: "x" },
-    "fr"
+    locale === "en" ? "en" : "fr"
   );
   const urlPrefix = fullPathWithPlaceholder
     ? `${DISPLAY_DOMAIN}${fullPathWithPlaceholder.slice(0, fullPathWithPlaceholder.lastIndexOf("/") + 1)}`

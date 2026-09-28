@@ -16,20 +16,22 @@ export async function submitImportRequest(
   const name = (formData.get("name") as string | null)?.trim() ?? "";
   const email = (formData.get("email") as string | null)?.trim() ?? "";
   const listingUrl = (formData.get("listing_url") as string | null)?.trim() ?? "";
+  // Champ caché posé par CreationChoiceSection (langue de la page).
+  const isEn = formData.get("locale") === "en";
 
   if (!name || !email || !listingUrl) {
-    return { status: "error", message: "Tous les champs sont obligatoires." };
+    return { status: "error", message: isEn ? "All fields are required." : "Tous les champs sont obligatoires." };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return { status: "error", message: "Adresse courriel invalide." };
+    return { status: "error", message: isEn ? "Invalid email address." : "Adresse courriel invalide." };
   }
 
   try {
     new URL(listingUrl);
   } catch {
-    return { status: "error", message: "Le lien de l'annonce n'est pas valide." };
+    return { status: "error", message: isEn ? "The listing link is not valid." : "Le lien de l'annonce n'est pas valide." };
   }
 
   const supabase = createClient(
@@ -46,7 +48,7 @@ export async function submitImportRequest(
 
   if (error) {
     console.error("contact_messages insert error:", error.message);
-    return { status: "error", message: "Une erreur est survenue. Veuillez réessayer." };
+    return { status: "error", message: isEn ? "Something went wrong. Please try again." : "Une erreur est survenue. Veuillez réessayer." };
   }
 
   if (process.env.RESEND_API_KEY) {

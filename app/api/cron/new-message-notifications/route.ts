@@ -91,14 +91,14 @@ export async function GET(request: NextRequest) {
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
       supabase.from("users").select("email, name, preferred_language, phone, notify_sms").eq("id", group.receiverId).single(),
-      supabase.from("listings").select("title").eq("id", group.listingId).single(),
+      supabase.from("listings").select("title, title_en").eq("id", group.listingId).single(),
     ]);
 
     if (!receiver?.email) continue;
 
     const lang: "fr" | "en" = receiver.preferred_language === "en" ? "en" : "fr";
     const senderFirstName = (sender?.name?.trim() || "Un utilisateur").split(/\s+/)[0];
-    const listingTitle = listing?.title || (lang === "en" ? "your listing" : "ce chalet");
+    const listingTitle = (lang === "en" ? listing?.title_en : null) || listing?.title || (lang === "en" ? "your listing" : "ce chalet");
 
     const { error: emailError } = await sendNewMessageNotificationEmail(supabase, {
       email: receiver.email,

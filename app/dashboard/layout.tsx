@@ -14,7 +14,7 @@ export default async function DashboardLayout({
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect(localePath("/login?next=/dashboard", locale));
+  if (!user) redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard", locale))}`, locale));
 
   // Bandeau "compléter votre profil" — affiché seulement si la photo ou la
   // bio manque ET qu'au moins une fiche de ce proprio est publiée (un

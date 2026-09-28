@@ -7,7 +7,8 @@ interface Props {
 }
 
 export async function generateMetadata() {
-  return { title: "Disponibilités" };
+  const locale = await getLocale();
+  return { title: locale === "en" ? "Availability" : "Disponibilités" };
 }
 
 // Ancienne page de disponibilités : le calendrier se gère maintenant dans la

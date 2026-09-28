@@ -28,10 +28,10 @@ function loadImage(file: File, unreadableMessage: string): Promise<HTMLImageElem
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number, failMessage: string): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Conversion échouée."))),
+      (blob) => (blob ? resolve(blob) : reject(new Error(failMessage))),
       "image/webp",
       quality
     );
@@ -64,7 +64,7 @@ async function compressToWebP(
     if (!ctx) return { error: t("canvasUnavailable") };
     ctx.drawImage(img, 0, 0, w, h);
     for (const quality of [0.85, 0.75, 0.65, 0.5]) {
-      const blob = await canvasToBlob(canvas, quality);
+      const blob = await canvasToBlob(canvas, quality, t("compressionError"));
       const sizeMb = blob.size / 1024 / 1024;
       if (sizeMb <= MAX_SIZE_MB) return { blob, sizeMb };
     }
@@ -107,6 +107,7 @@ export default function PhotoUpload({
   const supabase = createClient();
   const locale = useLocale();
   const tEdit = useTranslations("listings.edit");
+  const isEn = locale === "en";
 
   const totalCount = photos.length + processing.length;
   const canUpload = totalCount < MAX_PHOTOS;
@@ -227,7 +228,7 @@ export default function PhotoUpload({
 
       if (error) {
         setProcessing((prev) =>
-          prev.map((p) => (p.id === slotId ? { ...p, phase: "error", error: "Erreur lors de l'upload." } : p))
+          prev.map((p) => (p.id === slotId ? { ...p, phase: "error", error: isEn ? "Upload failed." : "Erreur lors de l'upload." } : p))
         );
         setTimeout(() => setProcessing((prev) => prev.filter((p) => p.id !== slotId)), 5000);
         continue;
@@ -392,7 +393,7 @@ export default function PhotoUpload({
       {/* Size */}
       {item.sizeMb !== undefined && (
         <span className="absolute bottom-1.5 right-1.5 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-full pointer-events-none">
-          {formatDecimal(item.sizeMb, locale)} Mo
+          {formatDecimal(item.sizeMb, locale)} {isEn ? "MB" : "Mo"}
         </span>
       )}
       {/* Delete */}
@@ -400,7 +401,7 @@ export default function PhotoUpload({
         type="button"
         onClick={() => void removePhoto(item.url)}
         className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
-        aria-label="Supprimer"
+        aria-label={isEn ? "Delete" : "Supprimer"}
       >
         <svg className="w-3.5 h-3.5 text-error-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -441,7 +442,7 @@ export default function PhotoUpload({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <span className="text-xs text-charcoal-400 text-center">Compression…</span>
+          <span className="text-xs text-charcoal-400 text-center">{isEn ? "Compressing…" : "Compression…"}</span>
         </>
       )}
       {proc.phase === "uploading" && (
@@ -449,7 +450,7 @@ export default function PhotoUpload({
           <svg className="w-7 h-7 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
-          <span className="text-xs text-primary text-center animate-pulse">Upload…</span>
+          <span className="text-xs text-primary text-center animate-pulse">{isEn ? "Uploading…" : "Upload…"}</span>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary/20 rounded-b-xl overflow-hidden">
             <div className="h-full bg-primary rounded-full w-1/2 animate-[progressSlide_1.2s_ease-in-out_infinite]" />
           </div>
@@ -485,15 +486,15 @@ export default function PhotoUpload({
         onChange={(e) => e.target.files && void uploadFiles(e.target.files)}
       />
 
-      {saving && <span className="text-xs text-charcoal-400 animate-pulse">Sauvegarde…</span>}
+      {saving && <span className="text-xs text-charcoal-400 animate-pulse">{isEn ? "Saving…" : "Sauvegarde…"}</span>}
 
       {/* ── Section 1: Photo de couverture ───────────────────────────────── */}
       <div>
-        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Photo de couverture</h3>
-        <p className="text-sm text-charcoal-400 mb-3">La première photo que verront les voyageurs dans les résultats de recherche.</p>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">{isEn ? "Cover photo" : "Photo de couverture"}</h3>
+        <p className="text-sm text-charcoal-400 mb-3">{isEn ? "The first photo travelers will see in search results." : "La première photo que verront les voyageurs dans les résultats de recherche."}</p>
         <div className="aspect-video w-full relative">
           {photos[0] ? (
-            renderPhotoTile(photos[0], 0, "Couverture", "w-full h-full")
+            renderPhotoTile(photos[0], 0, isEn ? "Cover" : "Couverture", "w-full h-full")
           ) : (
             <button
               type="button"
@@ -503,7 +504,7 @@ export default function PhotoUpload({
               <svg className="w-8 h-8 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-xs text-charcoal-400 font-medium">Couverture</span>
+              <span className="text-xs text-charcoal-400 font-medium">{isEn ? "Cover" : "Couverture"}</span>
             </button>
           )}
         </div>
@@ -524,12 +525,12 @@ export default function PhotoUpload({
 
       {/* ── Section 2: Photos miniatures ─────────────────────────────────── */}
       <div className="bg-[#f5f6ec] rounded-2xl p-4">
-        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Photos miniatures</h3>
-        <p className="text-sm text-charcoal-600 mb-3">Ces photos s&apos;affichent en grand dès l&apos;arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc.</p>
+        <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">{isEn ? "Thumbnail photos" : "Photos miniatures"}</h3>
+        <p className="text-sm text-charcoal-600 mb-3">{isEn ? "These photos are shown large as soon as travelers open your listing — highlight your best features: lake, hot tub, sauna, pool, etc." : "Ces photos s'affichent en grand dès l'arrivée sur votre fiche — misez sur vos points forts : lac, spa, sauna, piscine, etc."}</p>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((photoIdx) => {
             const photo = photos[photoIdx];
-            const label = `Miniature ${photoIdx}`;
+            const label = isEn ? `Thumbnail ${photoIdx}` : `Miniature ${photoIdx}`;
             if (!photo) {
               return (
                 <button
@@ -551,7 +552,7 @@ export default function PhotoUpload({
                 <CaptionField
                   value={photo.caption}
                   valueEn={photo.caption_en ?? ""}
-                  placeholder={`Légende ${photoIdx}`}
+                  placeholder={isEn ? `Caption ${photoIdx}` : `Légende ${photoIdx}`}
                   placeholderEn={tEdit("captionEnPlaceholder")}
                   onChange={(v) => updateCaption(photoIdx, v)}
                   onChangeEn={(v) => updateCaptionEn(photoIdx, v)}
@@ -575,8 +576,8 @@ export default function PhotoUpload({
       {/* ── Section 3: Autres photos ─────────────────────────────────────── */}
       {others.length > 0 && (
         <div>
-          <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">Autres photos</h3>
-          <p className="text-sm text-charcoal-400 mb-3">Ajoutez d&apos;autres belles photos pour présenter votre chalet en détail.</p>
+          <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">{isEn ? "Other photos" : "Autres photos"}</h3>
+          <p className="text-sm text-charcoal-400 mb-3">{isEn ? "Add more great photos to showcase your cabin in detail." : "Ajoutez d'autres belles photos pour présenter votre chalet en détail."}</p>
           <div className="grid grid-cols-2 gap-3">
             {others.map((item, j) => {
               const i = j + 5;
@@ -614,15 +615,19 @@ export default function PhotoUpload({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <p className="text-sm text-charcoal-500">
-              <span className="text-primary font-semibold">Cliquez pour uploader</span> ou glissez des photos ici
+              {isEn ? (
+                <><span className="text-primary font-semibold">Click to upload</span> or drag photos here</>
+              ) : (
+                <><span className="text-primary font-semibold">Cliquez pour uploader</span> ou glissez des photos ici</>
+              )}
             </p>
-            <p className="text-xs text-charcoal-400">JPG, PNG, WebP · Compressées automatiquement en WebP</p>
+            <p className="text-xs text-charcoal-400">{isEn ? "JPG, PNG, WebP · Automatically compressed to WebP" : "JPG, PNG, WebP · Compressées automatiquement en WebP"}</p>
           </div>
         </div>
       ) : (
         <div className="border-2 border-dashed border-[#ebebeb] rounded-2xl p-5 text-center bg-charcoal-50">
-          <p className="text-sm font-semibold text-charcoal-500">Limite de {MAX_PHOTOS} photos atteinte</p>
-          <p className="text-xs text-charcoal-400 mt-1">Supprimez des photos pour en ajouter de nouvelles.</p>
+          <p className="text-sm font-semibold text-charcoal-500">{isEn ? `${MAX_PHOTOS}-photo limit reached` : `Limite de ${MAX_PHOTOS} photos atteinte`}</p>
+          <p className="text-xs text-charcoal-400 mt-1">{isEn ? "Delete some photos to add new ones." : "Supprimez des photos pour en ajouter de nouvelles."}</p>
         </div>
       )}
 
@@ -631,9 +636,13 @@ export default function PhotoUpload({
         <p className={photos.length >= MIN_PHOTOS ? "text-success-600" : "text-warning-600"}>
           {totalCount}/{MAX_PHOTOS} photos
         </p>
-        <p><span className="font-semibold text-charcoal-500">Minimum de photos :</span> {MIN_PHOTOS}</p>
-        <p><span className="font-semibold text-charcoal-500">Maximum de photos :</span> {MAX_PHOTOS}</p>
+        <p><span className="font-semibold text-charcoal-500">{isEn ? "Minimum photos:" : "Minimum de photos :"}</span> {MIN_PHOTOS}</p>
+        <p><span className="font-semibold text-charcoal-500">{isEn ? "Maximum photos:" : "Maximum de photos :"}</span> {MAX_PHOTOS}</p>
+        {isEn ? (
+          <p><span className="font-semibold text-charcoal-500">Tip:</span> Drag and drop your photos to reorder them, or click a photo&apos;s number to type its new position directly.</p>
+        ) : (
         <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage, ou cliquez sur le numéro d&apos;une photo pour saisir directement sa nouvelle position.</p>
+        )}
       </div>
     </div>
   );
@@ -679,7 +688,7 @@ function CaptionField({
 
   const frField = (
     <div>
-      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">Légende (français)</p>
+      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">{locale === "en" ? "Caption (French)" : "Légende (français)"}</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={ref}
@@ -703,7 +712,7 @@ function CaptionField({
 
   const enField = (
     <div className="mt-1.5">
-      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">Légende (anglais)</p>
+      <p className="text-xs font-semibold text-charcoal-400 mb-0.5">{locale === "en" ? "Caption (English)" : "Légende (anglais)"}</p>
       <div className="flex items-start gap-1">
         <textarea
           ref={refEn}

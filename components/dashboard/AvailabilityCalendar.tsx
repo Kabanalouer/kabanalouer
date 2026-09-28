@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { AvailabilityLegend, blockedBackground, offsetDate } from "@/components/chalets/availabilityStyle";
 
 const MONTH_KEYS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const;
@@ -36,6 +36,7 @@ export default function AvailabilityCalendar({
   onSaved?: (dates: string[]) => void;
 }) {
   const t = useTranslations("listings.calendar");
+  const locale = useLocale();
   const today = new Date().toISOString().slice(0, 10);
   const now   = new Date();
 
@@ -108,8 +109,7 @@ export default function AvailabilityCalendar({
       if (!res.ok) return;
       setIsDirty(false);
       onSaved?.(Array.from(manualBlocked));
-      setSavedAt(new Date().toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" }));
-      // ^ format fr-CA volontaire (24h), le libellé affiché ("Sauvegardé à HH:MM") est traduit, pas le format d'heure.
+      setSavedAt(new Date().toLocaleTimeString(locale === "en" ? "en-CA" : "fr-CA", { hour: "2-digit", minute: "2-digit" }));
     } finally {
       setSaving(false);
     }

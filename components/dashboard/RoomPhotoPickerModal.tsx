@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import type { PhotoItem } from "@/lib/photo";
 
 export default function RoomPhotoPickerModal({
@@ -17,6 +18,7 @@ export default function RoomPhotoPickerModal({
   onClose: () => void;
 }) {
   const [selected, setSelected] = useState<string[]>([]);
+  const isEn = useLocale() === "en";
 
   // Une photo déjà assignée à cette chambre ne se propose pas une deuxième
   // fois — elle reste réutilisable ailleurs (galerie générale, autres
@@ -36,16 +38,20 @@ export default function RoomPhotoPickerModal({
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="p-6 pb-4 border-b border-[#ebebeb]">
-          <h2 className="text-heading-3 font-bold text-charcoal-800">Choisir une photo existante</h2>
+          <h2 className="text-heading-3 font-bold text-charcoal-800">{isEn ? "Choose an existing photo" : "Choisir une photo existante"}</h2>
           <p className="text-base text-charcoal-500 mt-1">
-            Sélectionnez une ou plusieurs photos déjà présentes dans la galerie de l&apos;annonce.
+            {isEn
+              ? "Select one or more photos already in the listing gallery."
+              : "Sélectionnez une ou plusieurs photos déjà présentes dans la galerie de l'annonce."}
           </p>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
           {selectable.length === 0 ? (
             <p className="text-base text-charcoal-400 text-center py-8">
-              Toutes les photos de la galerie sont déjà assignées à cette chambre.
+              {isEn
+                ? "All gallery photos are already assigned to this room."
+                : "Toutes les photos de la galerie sont déjà assignées à cette chambre."}
             </p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -67,7 +73,7 @@ export default function RoomPhotoPickerModal({
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt={photo.caption || "Photo de l'annonce"} className="w-full h-full object-cover" />
+                    <img src={photo.url} alt={(isEn && photo.caption_en) || photo.caption || (isEn ? "Listing photo" : "Photo de l'annonce")} className="w-full h-full object-cover" />
                     {isSelected && (
                       <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +94,7 @@ export default function RoomPhotoPickerModal({
             onClick={onClose}
             className="flex-1 border border-[#ebebeb] text-charcoal-700 py-2.5 rounded-full text-sm font-semibold hover:bg-charcoal-50 transition-colors"
           >
-            Annuler
+            {isEn ? "Cancel" : "Annuler"}
           </button>
           <button
             type="button"
@@ -96,7 +102,9 @@ export default function RoomPhotoPickerModal({
             disabled={selected.length === 0}
             className="flex-1 bg-primary text-white py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {selected.length > 0 ? `Ajouter (${selected.length})` : "Ajouter"}
+            {isEn
+              ? (selected.length > 0 ? `Add (${selected.length})` : "Add")
+              : (selected.length > 0 ? `Ajouter (${selected.length})` : "Ajouter")}
           </button>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   PRIORITIZE_DIFFERENTIATING_AMENITIES_EN,
 } from "@/lib/aiWritingRules";
 import { NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 
 const SYSTEM_PROMPT_FR =
   "Tu es un expert en rédaction d'annonces de location de chalet au Québec. " +
@@ -40,19 +41,20 @@ const SYSTEM_PROMPT_EN =
   PRIORITIZE_DIFFERENTIATING_AMENITIES_EN;
 
 export async function POST(request: Request) {
+  const reqLocale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(reqLocale, "Non autorisé", "Unauthorized") }, { status: 401 });
 
   if (!(await checkAiRateLimit(supabase, user.id, "suggest-titles"))) {
     return NextResponse.json(
-      { error: "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard." },
+      { error: t2(reqLocale, "Vous avez atteint la limite de 200 générations IA par heure. Réessayez plus tard.", "You have reached the limit of 200 AI generations per hour. Please try again later.") },
       { status: 429 }
     );
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "Clé API Anthropic manquante." }, { status: 503 });
+    return NextResponse.json({ error: t2(reqLocale, "Clé API Anthropic manquante.", "Missing Anthropic API key.") }, { status: 503 });
   }
 
   const { current_title, region, city, capacity, bedrooms, amenities, nearby_activities, locale } = await request.json();
@@ -116,6 +118,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[suggest-titles]", err);
-    return NextResponse.json({ error: "Erreur lors de la génération." }, { status: 500 });
+    return NextResponse.json({ error: t2(isEn ? "en" : reqLocale, "Erreur lors de la génération.", "Error while generating.") }, { status: 500 });
   }
 }

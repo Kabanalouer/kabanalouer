@@ -1,6 +1,6 @@
 "use client";
 
-import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
+import { NEARBY_BY_CATEGORY, getNearbyLabel, getNearbyCategoryLabel } from "@/lib/nearbyActivities";
 import { useLocale } from "next-intl";
 
 export default function NearbyActivitiesPicker({
@@ -24,7 +24,7 @@ export default function NearbyActivitiesPicker({
       {Object.entries(NEARBY_BY_CATEGORY).map(([category, items]) => (
         <div key={category}>
           <h4 className="text-xs font-semibold text-charcoal-400 tracking-wide mb-3">
-            {category}
+            {getNearbyCategoryLabel(category, locale)}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {items.map((item) => {

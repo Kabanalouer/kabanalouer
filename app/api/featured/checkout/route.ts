@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
+import { localePath } from "@/lib/localePath";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -22,11 +24,12 @@ function allowedMonths(): string[] {
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
   const body = await request.json().catch(() => ({}));
@@ -35,11 +38,11 @@ export async function POST(request: Request) {
   const month: string | undefined = body.month;
 
   if (!listingId || (type !== "home" && type !== "region") || !month) {
-    return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "Paramètres manquants", "Missing parameters") }, { status: 400 });
   }
 
   if (!allowedMonths().includes(month)) {
-    return NextResponse.json({ error: "Mois non disponible" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "Mois non disponible", "Month not available") }, { status: 400 });
   }
 
   const { data: listing } = await supabase
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
     .single();
 
   if (!listing) {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    return NextResponse.json({ error: t2(locale, "Accès refusé", "Access denied") }, { status: 403 });
   }
 
   const monthDate = `${month}-01`;
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (ownFeatured) {
-    return NextResponse.json({ error: "Cette annonce a déjà un boost pour ce mois." }, { status: 409 });
+    return NextResponse.json({ error: t2(locale, "Cette annonce a déjà un boost pour ce mois.", "This listing already has a boost for this month.") }, { status: 409 });
   }
 
   let slotQuery = supabase
@@ -83,13 +86,14 @@ export async function POST(request: Request) {
   const max = type === "home" ? MAX_FEATURED_HOME : MAX_FEATURED_REGION;
 
   if ((count ?? 0) >= max) {
-    return NextResponse.json({ error: "Les places sont déjà toutes occupées pour ce mois." }, { status: 409 });
+    return NextResponse.json({ error: t2(locale, "Les places sont déjà toutes occupées pour ce mois.", "All spots are already taken for this month.") }, { status: 409 });
   }
 
   const price = type === "home" ? STRIPE_PRICE_FEATURED_HOME : STRIPE_PRICE_FEATURED_REGION;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    locale: locale === "en" ? "en" : "fr-CA",
     line_items: [
       {
         price,
@@ -108,8 +112,8 @@ export async function POST(request: Request) {
     // ("Can only be provided when customer is provided", doc API Stripe).
     // Sans Customer existant, l'adresse de facturation collectée ici sert
     // directement au calcul de taxe, aucune ambiguïté à résoudre.
-    success_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?paid=1`,
-    cancel_url: `${SITE_URL}/dashboard/listings/${listingId}/edit?canceled=1`,
+    success_url: `${SITE_URL}${localePath(`/dashboard/listings/${listingId}/edit?paid=1`, locale)}`,
+    cancel_url: `${SITE_URL}${localePath(`/dashboard/listings/${listingId}/edit?canceled=1`, locale)}`,
     metadata: {
       listing_id: listingId,
       type,

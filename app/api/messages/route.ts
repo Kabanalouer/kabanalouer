@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
 
 export async function POST(request: NextRequest) {
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
   // checkIn/checkOut/numGuests(+répartition) : capturés uniquement sur la
@@ -16,7 +18,7 @@ export async function POST(request: NextRequest) {
   const { listingId, receiverId, content, checkIn, checkOut, numGuests, numAdults, numChildren, numBabies, numPets } =
     await request.json().catch(() => ({}));
   if (!listingId || !receiverId || !content?.trim()) {
-    return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "Paramètres manquants", "Missing parameters") }, { status: 400 });
   }
 
   const admin = adminSupabase();
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
   });
 
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, result.error, "Failed to send the message.") }, { status: 500 });
   }
 
   return NextResponse.json({ id: result.message.id }, { status: 201 });

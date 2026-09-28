@@ -43,7 +43,7 @@ export default async function CityLanding({
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
+      "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
     )
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
@@ -52,7 +52,7 @@ export default async function CityLanding({
 
   const listings: Listing[] = (rawListings ?? []).map((l) => ({
     id: l.id,
-    title: l.title ?? "",
+    title: (isEn && (l.title_en as string | null)) || (l.title ?? ""),
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
     listing_number: (l.listing_number as number | null) ?? null,
@@ -86,7 +86,7 @@ export default async function CityLanding({
 
   // JSON-LD
   const crumbs = [
-    { "@type": "ListItem", position: 1, name: "Accueil", item: `${SITE_URL}/` },
+    { "@type": "ListItem", position: 1, name: isEn ? "Home" : "Accueil", item: isEn ? `${SITE_URL}/en` : `${SITE_URL}/` },
     { "@type": "ListItem", position: 2, name: isEn ? "Cabins" : "Chalets", item: `${SITE_URL}${localePath("/chalets", locale)}` },
     { "@type": "ListItem", position: 3, name: displayRegionName, item: `${SITE_URL}${regionBasePath}` },
     { "@type": "ListItem", position: 4, name: cityName, item: `${SITE_URL}${cityBasePath}` },

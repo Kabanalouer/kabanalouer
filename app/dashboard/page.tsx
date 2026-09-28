@@ -11,13 +11,20 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { buildListingPath } from "@/lib/listingUrl";
 import { localePath } from "@/lib/localePath";
 import { formatDecimal } from "@/lib/formatNumber";
+import { getRegionByDbValue } from "@/lib/regions";
 
-export const metadata = { title: "Tableau de bord" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "Dashboard" : "Tableau de bord" };
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const loginLocale = await getLocale();
+    redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard", loginLocale))}`, loginLocale));
+  }
 
   const userId = user.id;
 
@@ -87,7 +94,10 @@ export default async function DashboardPage() {
     }));
   }
 
-  const firstName = profile?.name?.split(" ")[0] ?? "là";
+  const isEn = locale === "en";
+  const firstName = profile?.name?.split(" ")[0] ?? (isEn ? "there" : "là");
+  const displayTitle = (l: { title?: string | null; title_en?: string | null }) =>
+    (isEn && l.title_en?.trim()) || l.title || "";
   const dateLocale = locale === "en" ? "en-CA" : "fr-CA";
   const dateDisplay = new Date().toLocaleDateString(dateLocale, {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -106,7 +116,7 @@ export default async function DashboardPage() {
       {/* Masquée tant qu'aucune annonce n'existe — évite un mur de "0"/tirets
           juste au-dessus de l'état vide "Créer une annonce" ci-dessous. */}
       {listings && listings.length > 0 && (
-        <DashboardStats listings={listings.map((l) => ({ id: l.id, title: l.title ?? t("untitled") }))} />
+        <DashboardStats listings={listings.map((l) => ({ id: l.id, title: displayTitle(l) || t("untitled") }))} />
       )}
 
       {/* ── Listings ────────────────────────────────────────────────────────── */}
@@ -136,7 +146,7 @@ export default async function DashboardPage() {
                 {/* Thumbnail */}
                 <div className="w-16 h-16 rounded-xl bg-charcoal-100 overflow-hidden shrink-0">
                   {photo ? (
-                    <Image src={photo} alt={listing.title ?? ""} width={64} height={64} className="w-full h-full object-cover" />
+                    <Image src={photo} alt={displayTitle(listing)} width={64} height={64} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <svg className="w-7 h-7 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -148,8 +158,10 @@ export default async function DashboardPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-charcoal-800 truncate">{listing.title || t("untitled")}</p>
-                  <p className="text-xs text-charcoal-400 mt-0.5">{listing.region}</p>
+                  <p className="font-semibold text-charcoal-800 truncate">{displayTitle(listing) || t("untitled")}</p>
+                  <p className="text-xs text-charcoal-400 mt-0.5">
+                    {isEn && listing.region ? (getRegionByDbValue(listing.region)?.nameEn ?? listing.region) : listing.region}
+                  </p>
                   <div className="flex items-center flex-wrap gap-2 mt-1.5">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                       listing.is_published ? "bg-success-50 text-success-700" : "bg-charcoal-100 text-charcoal-500"
@@ -178,7 +190,7 @@ export default async function DashboardPage() {
                         buildListingPath(
                           { region: listing.region, city: listing.city ?? null, listing_number: listing.listing_number ?? null, custom_slug: listing.custom_slug ?? null },
                           locale === "en" ? "en" : "fr"
-                        ) ?? `/chalets/${listing.id}`
+                        ) ?? localePath(`/chalets/${listing.id}`, locale)
                       }
                       target="_blank"
                       className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors hidden sm:block"
@@ -187,7 +199,7 @@ export default async function DashboardPage() {
                     </Link>
                   )}
                   <Link
-                    href={`/dashboard/listings/${listing.id}/edit`}
+                    href={localePath(`/dashboard/listings/${listing.id}/edit`, locale)}
                     className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                   >
                     {t("edit")}

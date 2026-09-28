@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getLocale } from "next-intl/server";
+import { localePath } from "@/lib/localePath";
 
 function adminSupabase() {
   return createAdminClient(
@@ -18,9 +20,9 @@ export default async function PublishPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { paid } = await searchParams;
 
-  const supabase = await createClient();
+  const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(localePath(`/login?next=${encodeURIComponent(localePath(`/dashboard/listings/${id}/publish${paid === "1" ? "?paid=1" : ""}`, locale))}`, locale));
 
   // Stripe callback: if subscription just activated, publish and redirect to public listing
   if (paid === "1") {
@@ -36,9 +38,9 @@ export default async function PublishPage({ params, searchParams }: Props) {
         .update({ is_published: true })
         .eq("id", id)
         .eq("host_id", user.id);
-      redirect(`/chalets/${id}?published=1`);
+      redirect(localePath(`/chalets/${id}?published=1`, locale));
     }
   }
 
-  redirect(`/dashboard/listings/${id}/edit`);
+  redirect(localePath(`/dashboard/listings/${id}/edit`, locale));
 }

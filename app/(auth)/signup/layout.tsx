@@ -1,16 +1,6 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Créer un compte",
-  description: "Rejoignez Kabanalouer gratuitement. Trouvez des chalets au Québec ou affichez votre propriété.",
-  alternates: { canonical: "/signup" },
-  openGraph: {
-    title: "Créer un compte | Kabanalouer",
-    description: "Rejoignez Kabanalouer gratuitement. Trouvez des chalets au Québec ou affichez votre propriété.",
-    url: "/signup",
-  },
-};
-
+// Métadonnées déplacées dans page.tsx (generateMetadata, selon la langue) : ce
+// layout ne s'applique pas aux routes réelles /signup et /en/signup, servies par
+// app/[locale]/signup/page.tsx.
 export default function SignupLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

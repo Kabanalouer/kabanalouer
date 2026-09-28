@@ -13,7 +13,7 @@ const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
-  const canonical = isEn ? "/en/devenir-hote" : "/devenir-hote";
+  const canonical = isEn ? "/en/become-a-host" : "/devenir-hote";
   const title = isEn ? "List My Cabin" : "Inscrire mon chalet";
   const description = isEn
     ? "Join Quebec's cabin marketplace. Direct contact with travelers, zero commission, $299/year. Free for your first year."
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical,
-      languages: { fr: "/devenir-hote", en: "/en/devenir-hote", "x-default": "/devenir-hote" },
+      languages: { fr: "/devenir-hote", en: "/en/become-a-host", "x-default": "/devenir-hote" },
     },
     openGraph: {
       title,
@@ -43,23 +43,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Kabanalouer",
-  url: SITE_URL,
-  logo: `${SITE_URL}/favicon.ico`,
-  description:
-    "Marketplace de location de chalets au Québec. Contact direct avec les propriétaires, zéro frais de service.",
-  areaServed: { "@type": "AdministrativeArea", name: "Québec, Canada" },
-  offers: {
-    "@type": "Offer",
-    name: "Abonnement annuel propriétaire",
-    price: "299",
-    priceCurrency: "CAD",
-    description: "Abonnement annuel pour les propriétaires de chalets — tout inclus, aucune commission.",
-  },
-};
+function organizationJsonLd(isEn: boolean) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kabanalouer",
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon.ico`,
+    description: isEn
+      ? "Cabin rental marketplace in Quebec. Direct contact with owners, zero service fees."
+      : "Marketplace de location de chalets au Québec. Contact direct avec les propriétaires, zéro frais de service.",
+    areaServed: { "@type": "AdministrativeArea", name: isEn ? "Quebec, Canada" : "Québec, Canada" },
+    offers: {
+      "@type": "Offer",
+      name: isEn ? "Annual owner subscription" : "Abonnement annuel propriétaire",
+      price: "299",
+      priceCurrency: "CAD",
+      description: isEn
+        ? "Annual subscription for cabin owners — all inclusive, no commission."
+        : "Abonnement annuel pour les propriétaires de chalets — tout inclus, aucune commission.",
+    },
+  };
+}
 
 export default async function DevenirHotePage() {
   const [t, locale] = await Promise.all([getTranslations("devenirHote"), getLocale()]);
@@ -74,7 +79,7 @@ export default async function DevenirHotePage() {
     <div className="flex flex-col min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(locale === "en")) }}
       />
       <Navbar />
 

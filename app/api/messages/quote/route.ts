@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
 import type { QuoteData, QuoteReplyType } from "@/lib/quoteMessage";
@@ -7,16 +8,17 @@ import type { QuoteData, QuoteReplyType } from "@/lib/quoteMessage";
 // (QuoteWidget.tsx, gabarit + section de fermeture personnalisable) ; cette
 // route ne fait que revalider le message source et enregistrer le résultat.
 export async function POST(request: NextRequest) {
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
   const { type, listingId, receiverId, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
     await request.json().catch(() => ({}));
   if (!listingId || !receiverId || !sourceMessageId || !editedContent?.trim()) {
-    return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "Paramètres manquants", "Missing parameters") }, { status: 400 });
   }
   const replyType: QuoteReplyType = type === "no_availability" ? "no_availability" : "quote";
 
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!listing || listing.host_id !== user.id) {
-    return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+    return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
 
   const [{ data: receiver }, { data: sourceMessage }] = await Promise.all([
@@ -51,7 +53,7 @@ export async function POST(request: NextRequest) {
     sourceMessage.sender_id !== receiverId ||
     sourceMessage.receiver_id !== user.id
   ) {
-    return NextResponse.json({ error: "Message introuvable" }, { status: 404 });
+    return NextResponse.json({ error: t2(locale, "Message introuvable", "Message not found") }, { status: 404 });
   }
 
   const travelerFirstName = receiver?.name?.split(" ")[0] ?? null;
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
   });
 
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, result.error, "Failed to send the message.") }, { status: 500 });
   }
 
   // Sauvegarde du modèle de fermeture — best-effort, n'échoue jamais l'envoi

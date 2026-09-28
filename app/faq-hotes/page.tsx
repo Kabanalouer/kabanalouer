@@ -11,7 +11,7 @@ const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
-  const canonical = isEn ? "/en/faq-hotes" : "/faq-hotes";
+  const canonical = isEn ? "/en/owner-faq" : "/faq-hotes";
   const title = isEn ? "Owner FAQ" : "FAQ proprios";
   const description = isEn
     ? "All answers to your questions about listing your cabin on Kabanalouer."
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical,
-      languages: { fr: "/faq-hotes", en: "/en/faq-hotes", "x-default": "/faq-hotes" },
+      languages: { fr: "/faq-hotes", en: "/en/owner-faq", "x-default": "/faq-hotes" },
     },
     openGraph: {
       title,
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqJsonLd = {
+const faqJsonLdFr = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
@@ -57,6 +57,30 @@ const faqJsonLd = {
 
 export default async function FaqHotesPage() {
   const [t, locale] = await Promise.all([getTranslations("faqHotes"), getLocale()]);
+  // EN : mêmes 7 questions que la version FR ci-dessus, tirées des clés faqHotes.*
+  // de la FAQ visible ; FR : texte historique inchangé.
+  const faqJsonLd =
+    locale === "en"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: (
+            [
+              ["s1q1", "s1a1"],
+              ["s1q2", "s1a2"],
+              ["s1q3", "s1a3"],
+              ["s2q1", "s2a1"],
+              ["s3q2", "s3a2"],
+              ["s5q1", "s5a1"],
+              ["s5q2", "s5a2"],
+            ] as const
+          ).map(([q, a]) => ({
+            "@type": "Question",
+            name: t(q),
+            acceptedAnswer: { "@type": "Answer", text: t(a) },
+          })),
+        }
+      : faqJsonLdFr;
 
   const SECTIONS = [
     {

@@ -12,8 +12,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("metaTitle"),
     description: t("metaDesc"),
-    alternates: { canonical },
-    openGraph: { title: t("metaTitle"), description: t("metaDesc"), url: canonical },
+    alternates: {
+      canonical,
+      languages: { fr: "/conditions", en: "/en/terms", "x-default": "/conditions" },
+    },
+    openGraph: {
+      title: t("metaTitle"),
+      description: t("metaDesc"),
+      url: canonical,
+      locale: locale === "en" ? "en_CA" : "fr_CA",
+    },
   };
 }
 

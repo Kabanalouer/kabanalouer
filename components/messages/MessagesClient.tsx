@@ -46,12 +46,16 @@ type Conversation = {
   other_user_created_at: string | null;
   listing_id: string;
   listing_title: string;
+  listing_title_en: string | null;
   listing_host_id: string | null;
   listing_region: string | null;
   listing_city: string | null;
   listing_number: number | null;
   listing_custom_slug: string | null;
   last_message: string;
+  // Traduction automatique du dernier message, seulement s'il a été REÇU par
+  // l'utilisateur courant — même règle que l'affichage du fil (showTranslation).
+  last_message_translated: string | null;
   last_message_at: string;
   unread_count: number;
 };
@@ -92,6 +96,7 @@ export default function MessagesClient({
   const tq = useTranslations("quote");
   const [phoneBannerHidden, setPhoneBannerHidden] = useState(false);
   const locale = useLocale();
+  const isEn = locale === "en";
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -121,6 +126,8 @@ export default function MessagesClient({
   const selectedListingIdRef = useRef<string | null>(selectedListingId);
   const selectedWithIdRef = useRef<string | null>(selectedWithId);
   const conversationsRef = useRef<Conversation[]>(initialConversations);
+
+  const convTitle = (c: Conversation) => (isEn && c.listing_title_en?.trim()) || c.listing_title;
 
   const activeConv = conversations.find(
     (c) => c.listing_id === selectedListingId && c.other_user_id === selectedWithId
@@ -263,6 +270,7 @@ export default function MessagesClient({
         const updated = {
           ...prev[idx],
           last_message: msg.content,
+          last_message_translated: null,
           last_message_at: msg.created_at,
           unread_count: prev[idx].unread_count + addUnread,
         };
@@ -272,7 +280,7 @@ export default function MessagesClient({
 
       const [{ data: other }, { data: listing }] = await Promise.all([
         supabase.from("public_profiles").select("name, avatar_url, bio, created_at").eq("id", otherId).single(),
-        supabase.from("listings").select("title, host_id, region, city, listing_number, custom_slug").eq("id", msg.listing_id).single(),
+        supabase.from("listings").select("title, title_en, host_id, region, city, listing_number, custom_slug").eq("id", msg.listing_id).single(),
       ]);
       const conv: Conversation = {
         other_user_id: otherId,
@@ -282,12 +290,14 @@ export default function MessagesClient({
         other_user_created_at: (other?.created_at as string | null) ?? null,
         listing_id: msg.listing_id,
         listing_title: (listing?.title as string | null) ?? "",
+        listing_title_en: (listing?.title_en as string | null) ?? null,
         listing_host_id: (listing?.host_id as string | null) ?? null,
         listing_region: (listing?.region as string | null) ?? null,
         listing_city: (listing?.city as string | null) ?? null,
         listing_number: (listing?.listing_number as number | null) ?? null,
         listing_custom_slug: (listing?.custom_slug as string | null) ?? null,
         last_message: msg.content,
+        last_message_translated: null,
         last_message_at: msg.created_at,
         unread_count: addUnread,
       };
@@ -359,12 +369,12 @@ export default function MessagesClient({
 
   const selectConversation = (conv: Conversation) => {
     setMobileView("thread");
-    router.push(`/messages?listing=${conv.listing_id}&with=${conv.other_user_id}`);
+    router.push(localePath(`/messages?listing=${conv.listing_id}&with=${conv.other_user_id}`, locale));
   };
 
   const handleBack = () => {
     setMobileView("list");
-    router.push("/messages");
+    router.push(localePath("/messages", locale));
   };
 
   const handleToggleTranslation = async () => {
@@ -458,8 +468,10 @@ export default function MessagesClient({
                           )}
                         </div>
                       </div>
-                      <p className="text-xs text-charcoal-400 truncate mt-0.5">{conv.listing_title}</p>
-                      <p className="text-sm text-charcoal-500 truncate mt-0.5">{conv.last_message}</p>
+                      <p className="text-xs text-charcoal-400 truncate mt-0.5">{convTitle(conv)}</p>
+                      <p className="text-sm text-charcoal-500 truncate mt-0.5">
+                        {(translationEnabled && conv.last_message_translated) || conv.last_message}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -537,10 +549,10 @@ export default function MessagesClient({
                           title={t("viewListing")}
                           className="text-sm text-charcoal-400 truncate max-w-xs hover:underline"
                         >
-                          {activeConv.listing_title}
+                          {convTitle(activeConv)}
                         </a>
                       ) : (
-                        <p className="text-sm text-charcoal-400 truncate max-w-xs">{activeConv.listing_title}</p>
+                        <p className="text-sm text-charcoal-400 truncate max-w-xs">{convTitle(activeConv)}</p>
                       )}
                       {activeListingPath && (
                         <a
@@ -645,7 +657,7 @@ export default function MessagesClient({
                               isMine ? "text-white/50" : "text-charcoal-400"
                             }`}
                           >
-                            {new Date(msg.created_at).toLocaleTimeString("fr-CA", {
+                            {new Date(msg.created_at).toLocaleTimeString(isEn ? "en-CA" : "fr-CA", {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -669,7 +681,7 @@ export default function MessagesClient({
                                   numBabies={msg.num_babies}
                                   numPets={msg.num_pets}
                                   travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
-                                  listingTitle={activeConv.listing_title}
+                                  listingTitle={convTitle(activeConv)}
                                   onSent={(insertedMessage) => {
                                     setActiveQuickReply(null);
                                     // Affichage optimiste immédiat — ne pas attendre l'événement
@@ -686,7 +698,7 @@ export default function MessagesClient({
                                   receiverId={activeConv.other_user_id}
                                   sourceMessageId={msg.id}
                                   travelerFirstName={activeConv.other_user_name?.split(" ")[0] ?? null}
-                                  listingTitle={activeConv.listing_title}
+                                  listingTitle={convTitle(activeConv)}
                                   onSent={(insertedMessage) => {
                                     setActiveQuickReply(null);
                                     setMessages((prev) =>
@@ -743,7 +755,7 @@ export default function MessagesClient({
                   disabled={sending || !newMessage.trim()}
                   className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
                 >
-                  {sending ? "…" : "Envoyer"}
+                  {sending ? "…" : isEn ? "Send" : "Envoyer"}
                 </button>
               </div>
             </div>

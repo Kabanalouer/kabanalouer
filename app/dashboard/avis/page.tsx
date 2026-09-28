@@ -1,12 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { localePath } from "@/lib/localePath";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ReviewReplyForm from "@/components/dashboard/ReviewReplyForm";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import { buildListingPath } from "@/lib/listingUrl";
 
-export const metadata = { title: "Mes avis" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "My reviews" : "Mes avis" };
+}
 
 const STAR_PATH =
   "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z";
@@ -26,7 +31,10 @@ function Stars({ rating }: { rating: number }) {
 export default async function MesAvisPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/dashboard/avis");
+  if (!user) {
+    const loginLocale = await getLocale();
+    redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard/avis", loginLocale))}`, loginLocale));
+  }
 
   const [t, locale] = await Promise.all([
     getTranslations("reviews"),
@@ -51,11 +59,28 @@ export default async function MesAvisPage() {
 
   const { data: listings } = await supabase
     .from("listings")
-    .select("id, title")
+    .select("id, title, title_en, region, city, listing_number, custom_slug")
     .eq("host_id", user.id);
 
+  const isEn = locale === "en";
+
   const listingIds = (listings ?? []).map((l) => l.id);
-  const listingMap = new Map((listings ?? []).map((l) => [l.id, l.title as string]));
+  const listingMap = new Map((listings ?? []).map((l) => [
+    l.id,
+    ((isEn && (l.title_en as string | null)?.trim()) || (l.title as string)) ?? "",
+  ]));
+  const listingHrefMap = new Map((listings ?? []).map((l) => [
+    l.id,
+    buildListingPath(
+      {
+        region: (l.region as string | null) ?? null,
+        city: (l.city as string | null) ?? null,
+        listing_number: (l.listing_number as number | null) ?? null,
+        custom_slug: (l.custom_slug as string | null) ?? null,
+      },
+      isEn ? "en" : "fr"
+    ) ?? localePath(`/chalets/${l.id}`, locale),
+  ]));
 
   type ReviewRow = {
     id: string;
@@ -138,7 +163,7 @@ export default async function MesAvisPage() {
             const author = review.author;
             const authorName = author?.name ?? t("defaultAuthor");
             const authorFirstName = authorName.split(" ")[0];
-            const initial = authorFirstName[0]?.toUpperCase() ?? "V";
+            const initial = authorFirstName[0]?.toUpperCase() ?? (isEn ? "T" : "V");
             const listingTitle = listingMap.get(review.listing_id) ?? "";
 
             return (
@@ -146,7 +171,7 @@ export default async function MesAvisPage() {
                 {/* Chalet name */}
                 <div className="mb-3">
                   <Link
-                    href={`/chalets/${review.listing_id}`}
+                    href={listingHrefMap.get(review.listing_id) ?? localePath(`/chalets/${review.listing_id}`, locale)}
                     className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                   >
                     {listingTitle}

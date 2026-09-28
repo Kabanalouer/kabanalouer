@@ -9,13 +9,15 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
 import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
+import { getRegionByDbValue } from "@/lib/regions";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { city, region } = await searchParams;
-  const destination = city || region || null;
   const [t, locale] = await Promise.all([getTranslations("chaletsPage"), getLocale()]);
   const isEn = locale === "en";
-  const basePath = isEn ? "/en/chalets" : "/chalets";
+  const regionLabel = region && isEn ? getRegionByDbValue(region)?.nameEn ?? region : region;
+  const destination = city || regionLabel || null;
+  const basePath = isEn ? "/en/cabins" : "/chalets";
 
   const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -25,7 +27,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       description: t("metaDescDestination", { destination }),
       alternates: {
         canonical: basePath,
-        languages: { fr: "/chalets", en: "/en/chalets", "x-default": "/chalets" },
+        languages: { fr: "/chalets", en: "/en/cabins", "x-default": "/chalets" },
       },
       openGraph: {
         title: t("ogTitleDestination", { destination }),
@@ -50,7 +52,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     description: t("metaDesc"),
     alternates: {
       canonical: basePath,
-      languages: { fr: "/chalets", en: "/en/chalets", "x-default": "/chalets" },
+      languages: { fr: "/chalets", en: "/en/cabins", "x-default": "/chalets" },
     },
     openGraph: {
       title: t("ogTitle"),
@@ -111,7 +113,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at")
+    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug")
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(48);
@@ -190,9 +192,11 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       })
       .map((row) => ({
         id: row.id as string,
-        title: row.title as string,
+        title: (locale === "en" && (row.title_en as string | null)) || (row.title as string),
         region: row.region as string,
         city: (row.city as string | null) ?? null,
+        listing_number: (row.listing_number as number | null) ?? null,
+        custom_slug: (row.custom_slug as string | null) ?? null,
         price: row.price_low as number,
         priceOnRequest: !!(row.price_on_request),
         capacity: row.capacity as number,

@@ -12,7 +12,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
-import { REGIONS } from "@/lib/regions";
+import { REGIONS, getRegionByDbValue } from "@/lib/regions";
 import {
   ACCESSIBILITY_COLUMNS, ACCESSIBILITY_GROUPS, ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR,
   accessibilityFeatureLabel, accessibilityShortSummary, parseAccessibility,
@@ -82,6 +82,7 @@ export default async function AccessibleLanding() {
     .filter((r) => r.count > 0);
 
   const pagePath = isEn ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR;
+  const regionName = (dbValue: string) => (isEn ? getRegionByDbValue(dbValue)?.nameEn ?? dbValue : dbValue);
   const searchPath = (regionDbValue: string) => {
     const params = new URLSearchParams({ accessible: "1", region: regionDbValue });
     return localePath(`/chalets?${params.toString()}`, locale);
@@ -179,8 +180,8 @@ export default async function AccessibleLanding() {
         ) ?? `/chalets/${l.id}`}`,
         address: {
           "@type": "PostalAddress",
-          addressLocality: l.city ?? l.region,
-          addressRegion: l.region,
+          addressLocality: l.city ?? regionName(l.region),
+          addressRegion: regionName(l.region),
           addressCountry: "CA",
         },
         amenityFeature: l.accessibility.features.map((id) => ({

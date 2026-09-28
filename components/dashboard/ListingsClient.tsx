@@ -8,6 +8,8 @@ import { getScoreLevel } from "@/lib/listingScore";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { buildListingPath } from "@/lib/listingUrl";
 import { formatDecimal } from "@/lib/formatNumber";
+import { localePath } from "@/lib/localePath";
+import { getRegionByDbValue } from "@/lib/regions";
 
 type Listing = {
   id: string;
@@ -34,13 +36,17 @@ interface Props {
 export default function ListingsClient({ listings, reviews, scores, translationPending }: Props) {
   const t = useTranslations("listings");
   const locale = useLocale();
+  const isEn = locale === "en";
 
   return (
     <div className="space-y-3">
       {listings.map((listing) => {
           const rev = reviews[listing.id];
           const photo = firstPhotoUrl(listing.photos);
-          const title = listing.title || t("untitled");
+          const title = (isEn && listing.title_en?.trim()) || listing.title || t("untitled");
+          const regionLabel = isEn && listing.region
+            ? (getRegionByDbValue(listing.region)?.nameEn ?? listing.region)
+            : listing.region;
 
           return (
             <div
@@ -63,7 +69,7 @@ export default function ListingsClient({ listings, reviews, scores, translationP
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-charcoal-800 truncate">{title}</p>
-                <p className="text-xs text-charcoal-400 mt-0.5">{listing.region}</p>
+                <p className="text-xs text-charcoal-400 mt-0.5">{regionLabel}</p>
                 <div className="flex items-center flex-wrap gap-2 mt-1.5">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                     listing.is_published ? "bg-success-50 text-success-700" : "bg-charcoal-100 text-charcoal-500"
@@ -97,7 +103,7 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                       buildListingPath(
                         { region: listing.region, city: listing.city ?? null, listing_number: listing.listing_number ?? null, custom_slug: listing.custom_slug ?? null },
                         locale === "en" ? "en" : "fr"
-                      ) ?? `/chalets/${listing.id}`
+                      ) ?? localePath(`/chalets/${listing.id}`, locale)
                     }
                     target="_blank"
                     className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors hidden sm:block"
@@ -107,7 +113,7 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                 )}
 
                 <Link
-                  href={`/dashboard/listings/${listing.id}/edit`}
+                  href={localePath(`/dashboard/listings/${listing.id}/edit`, locale)}
                   className={`text-xs ${TEXT_LINK_CLASSNAME}`}
                 >
                   {t("editLink")}

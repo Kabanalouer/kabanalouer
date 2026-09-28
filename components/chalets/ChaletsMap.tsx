@@ -7,6 +7,7 @@ import type { ListingForMap } from "./ChaletsMapLayout";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
+import { getRegionByDbValue } from "@/lib/regions";
 
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
 
@@ -86,6 +87,9 @@ function MapContent({
 
   const withCoords = listings.filter((l) => l.lat != null && l.lng != null);
   const selected = selectedId ? withCoords.find((l) => l.id === selectedId) ?? null : null;
+  const selectedRegion = selected
+    ? (locale === "en" ? getRegionByDbValue(selected.region)?.nameEn ?? selected.region : selected.region)
+    : "";
 
   return (
     <>
@@ -147,7 +151,7 @@ function MapContent({
             )}
             <p className="font-semibold text-charcoal-900 text-sm leading-snug mb-0.5 line-clamp-2">{selected.title}</p>
             <p className="text-xs text-charcoal-500 mb-2">
-              {selected.city ? `${selected.city}, ${selected.region}` : selected.region}
+              {selected.city ? `${selected.city}, ${selectedRegion}` : selectedRegion}
             </p>
             <p className="text-sm font-bold text-charcoal-900 mb-3">
               {selected.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: selected.price })}
@@ -192,6 +196,7 @@ export default function ChaletsMap({
   onToggleExpand: () => void;
 }) {
   const tMap = useTranslations("chaletsMap");
+  const isEn = useLocale() === "en";
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [hasMoved, setHasMoved] = useState(false);
   const [pendingBounds, setPendingBounds] = useState<MapBounds | null>(null);
@@ -219,7 +224,7 @@ export default function ChaletsMap({
   if (!apiKey) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-charcoal-50">
-        <p className="text-charcoal-400 text-sm">Carte non disponible</p>
+        <p className="text-charcoal-400 text-sm">{isEn ? "Map unavailable" : "Carte non disponible"}</p>
       </div>
     );
   }
@@ -256,7 +261,7 @@ export default function ChaletsMap({
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Rechercher dans cette zone
+              {isEn ? "Search this area" : "Rechercher dans cette zone"}
             </button>
           </div>
         )}

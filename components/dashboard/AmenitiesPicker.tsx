@@ -109,7 +109,7 @@ function NumberField({ field, value, onChange, locale }: {
           </svg>
         </button>
         <span className="min-w-[2.5rem] px-1 text-center text-sm font-medium text-charcoal-800 tabular-nums">
-          {num}{field.unit ? ` ${field.unit}` : ""}
+          {num}{field.unit ? ` ${isEn ? (field.unitEn ?? field.unit) : field.unit}` : ""}
         </span>
         <button
           type="button"

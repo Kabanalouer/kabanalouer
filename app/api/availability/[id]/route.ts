@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 
 // POST /api/availability/[id]
@@ -8,10 +9,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
 
   // Vérification explicite en plus de RLS (défense en profondeur — revue de sécurité 2026-07-10)
   const { data: listing } = await supabase
@@ -20,10 +22,10 @@ export async function POST(
     .eq("id", id)
     .eq("host_id", user.id)
     .maybeSingle();
-  if (!listing) return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+  if (!listing) return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   // Une annonce synchronisée par iCal ne peut pas avoir de blocages manuels
   if (listing.ical_url) {
-    return NextResponse.json({ error: "Retirez le lien iCal pour bloquer des dates manuellement." }, { status: 409 });
+    return NextResponse.json({ error: t2(locale, "Retirez le lien iCal pour bloquer des dates manuellement.", "Remove the iCal link to block dates manually.") }, { status: 409 });
   }
 
   const { dates } = (await request.json()) as { dates: string[] };
@@ -38,7 +40,7 @@ export async function POST(
 
   if (deleteError) {
     console.error("availability/[id]: échec suppression blocages manuels", deleteError);
-    return NextResponse.json({ error: "Erreur lors de la mise à jour du calendrier." }, { status: 500 });
+    return NextResponse.json({ error: t2(locale, "Erreur lors de la mise à jour du calendrier.", "Error while updating the calendar.") }, { status: 500 });
   }
 
   if (dates.length > 0) {
@@ -57,7 +59,7 @@ export async function POST(
 
     if (upsertError) {
       console.error("availability/[id]: échec upsert blocages manuels", upsertError);
-      return NextResponse.json({ error: "Erreur lors de la mise à jour du calendrier." }, { status: 500 });
+      return NextResponse.json({ error: t2(locale, "Erreur lors de la mise à jour du calendrier.", "Error while updating the calendar.") }, { status: 500 });
     }
   }
 

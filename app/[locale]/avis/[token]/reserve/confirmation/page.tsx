@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { adminSupabase } from "@/lib/sendMessage";
 import { getReviewRequestByToken } from "@/lib/reviewToken";
 import { localePath } from "@/lib/localePath";
 
-export const metadata = { title: "Merci" };
+export async function generateMetadata(): Promise<Metadata> {
+  const isEn = (await getLocale()) === "en";
+  return { title: isEn ? "Thank you" : "Merci" };
+}
 
 export default async function ReserveConfirmationPage({
   params,

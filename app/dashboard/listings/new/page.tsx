@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation";
+import { localePath } from "@/lib/localePath";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import NewListingStepZero from "@/components/dashboard/NewListingStepZero";
 
-export const metadata = { title: "Nouveau chalet" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "New cabin" : "Nouveau chalet" };
+}
 
 // Une Server Action hérite de la config de timeout de la route qui l'a
 // invoquée, pas de son propre fichier — même contrainte que
@@ -13,7 +18,10 @@ export default async function NewListingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    const loginLocale = await getLocale();
+    redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard/listings/new", loginLocale))}`, loginLocale));
+  }
 
   return (
     <div className="max-w-3xl">

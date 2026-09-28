@@ -10,9 +10,10 @@ import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale
 export function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
-export function formatShort(iso: string, monthsShort: string[]) {
+// « 12 janv. » en français, « Jan 12 » en anglais.
+export function formatShort(iso: string, monthsShort: string[], locale?: string) {
   const [, m, d] = iso.split("-").map(Number);
-  return `${d} ${monthsShort[m - 1]}`;
+  return locale === "en" ? `${monthsShort[m - 1]} ${d}` : `${d} ${monthsShort[m - 1]}`;
 }
 function getGrid(y: number, m: number): (number | null)[] {
   const first = new Date(y, m, 1).getDay();
@@ -143,7 +144,7 @@ export function DateRangeField({
           >
             <span className="text-xs font-medium text-charcoal-400">{label}</span>
             <span className={`text-sm ${value ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
-              {value ? formatShort(value, monthNamesShort) : placeholder}
+              {value ? formatShort(value, monthNamesShort, locale) : placeholder}
             </span>
           </button>
         ))}

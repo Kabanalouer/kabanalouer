@@ -9,6 +9,8 @@ import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
 import { PhotoTip } from "@/components/PhotoReminderBanner";
 import { CalendarMonth, formatShort } from "@/components/DateRangePicker";
+import { localePath } from "@/lib/localePath";
+import { formatPrice } from "@/lib/formatPrice";
 
 // ── ContactForm ───────────────────────────────────────────────────────────────
 
@@ -160,8 +162,8 @@ export default function ContactForm({
     setError("");
 
     const datesLines = [
-      checkin ? t("quoteMessageArrivalLine", { date: formatShort(checkin, monthNamesShort) }) : null,
-      checkout ? t("quoteMessageDepartureLine", { date: formatShort(checkout, monthNamesShort) }) : null,
+      checkin ? t("quoteMessageArrivalLine", { date: formatShort(checkin, monthNamesShort, locale) }) : null,
+      checkout ? t("quoteMessageDepartureLine", { date: formatShort(checkout, monthNamesShort, locale) }) : null,
     ].filter((l): l is string => l !== null);
     // Sous-titres "Dates"/"Nombre total de voyageurs" en majuscules — appliqué
     // après interpolation, donc jamais sur les accolades {count}/{date} de la
@@ -231,7 +233,7 @@ export default function ContactForm({
         <p className="text-sm text-charcoal-400">
           {t("requestSentDetail")}
         </p>
-        <Link href={`/messages?listing=${listingId}&with=${hostId}`} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
+        <Link href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
           {t("viewMessagesArrow")}
         </Link>
         {currentUserId && !senderHasAvatar && <PhotoTip userId={currentUserId} />}
@@ -278,7 +280,7 @@ export default function ContactForm({
         <p className="text-xs text-charcoal-400 mb-0.5">{t("startingFromLabel")}</p>
         {price && price > 0 && !priceOnRequest ? (
           <p>
-            <span className="text-2xl font-bold text-charcoal-800">{price} $</span>
+            <span className="text-2xl font-bold text-charcoal-800">{formatPrice(price, locale)}</span>
             <span className="text-charcoal-400 text-sm font-semibold"> {t("perNight")}</span>
           </p>
         ) : (
@@ -297,7 +299,7 @@ export default function ContactForm({
           >
             <span className="text-xs font-medium text-charcoal-400">{t("arrivalLabel")}</span>
             <span className={`text-sm ${checkin ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
-              {checkin ? formatShort(checkin, monthNamesShort) : t("addDate")}
+              {checkin ? formatShort(checkin, monthNamesShort, locale) : t("addDate")}
             </span>
           </button>
           <button
@@ -307,7 +309,7 @@ export default function ContactForm({
           >
             <span className="text-xs font-medium text-charcoal-400">{t("departureLabel")}</span>
             <span className={`text-sm ${checkout ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
-              {checkout ? formatShort(checkout, monthNamesShort) : t("addDate")}
+              {checkout ? formatShort(checkout, monthNamesShort, locale) : t("addDate")}
             </span>
           </button>
         </div>

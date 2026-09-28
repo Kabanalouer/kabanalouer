@@ -18,18 +18,20 @@ export async function submitContactForm(
   const email = (formData.get("email") as string | null)?.trim() ?? "";
   const subject = (formData.get("subject") as string | null)?.trim() ?? "";
   const message = (formData.get("message") as string | null)?.trim() ?? "";
+  // Champ caché posé par ContactForm (langue de la page).
+  const isEn = formData.get("locale") === "en";
 
   if (!firstName || !lastName || !email || !subject || !message) {
-    return { status: "error", message: "Tous les champs sont obligatoires." };
+    return { status: "error", message: isEn ? "All fields are required." : "Tous les champs sont obligatoires." };
   }
 
   if (message.length > 5000) {
-    return { status: "error", message: "Le message ne peut pas dépasser 5000 caractères." };
+    return { status: "error", message: isEn ? "The message cannot exceed 5,000 characters." : "Le message ne peut pas dépasser 5000 caractères." };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return { status: "error", message: "Adresse courriel invalide." };
+    return { status: "error", message: isEn ? "Invalid email address." : "Adresse courriel invalide." };
   }
 
   const supabase = createClient(
@@ -43,7 +45,7 @@ export async function submitContactForm(
 
   if (error) {
     console.error("contact_messages insert error:", error.message);
-    return { status: "error", message: "Une erreur est survenue. Veuillez réessayer." };
+    return { status: "error", message: isEn ? "Something went wrong. Please try again." : "Une erreur est survenue. Veuillez réessayer." };
   }
 
   // Notification à l'admin — ne doit jamais faire échouer la soumission du

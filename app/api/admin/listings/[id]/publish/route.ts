@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, host_id, import_status")
+    .select("id, title, title_en, host_id, import_status")
     .eq("id", id)
     .single();
 
@@ -110,13 +110,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .select("region, city, listing_number, custom_slug")
       .eq("id", id)
       .single();
-    const listingPath = (freshListing && buildListingPath(freshListing, lang)) ?? `/chalets/${id}`;
+    const listingPath = (freshListing && buildListingPath(freshListing, lang)) ?? (lang === "en" ? `/en/cabins/${id}` : `/chalets/${id}`);
     const { error: emailError } = await sendImportPublishedEmail({
       email: hostRow.email,
       preferredLanguage: lang,
       firstName: hostRow.name?.trim().split(/\s+/)[0],
       listingPath,
-      listingTitle: listing.title || (lang === "en" ? "your listing" : "ton chalet"),
+      listingTitle: (lang === "en" ? listing.title_en : null) || listing.title || (lang === "en" ? "your listing" : "ton chalet"),
       isFreeLaunch: subscriptionCreated,
     });
     if (emailError) {

@@ -10,7 +10,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
-import { REGIONS } from "@/lib/regions";
+import { REGIONS, getRegionByDbValue } from "@/lib/regions";
 import {
   DEALS_PATH_EN, DEALS_PATH_FR, PROMO_DISPLAY_COLUMNS,
   formatPromoLines, promoFamily, visiblePromoFilter,
@@ -117,12 +117,14 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
     };
   });
 
-  const families: { id: PromoFamily; label: string }[] = [
-    { id: "rabais",          label: isEn ? "Discounts" : "Rabais" },
-    { id: "nuit-gratuite",   label: isEn ? "Free night" : "Nuit gratuite" },
-    { id: "derniere-minute", label: isEn ? "Last minute" : "Dernière minute" },
+  // ?type= : valeurs françaises sur /chalets/pas-cher, anglaises sur
+  // /en/cabins/deals — les deux jeux sont acceptés dans les deux langues.
+  const families: { id: PromoFamily; slugEn: string; label: string }[] = [
+    { id: "rabais",          slugEn: "discounts",   label: isEn ? "Discounts" : "Rabais" },
+    { id: "nuit-gratuite",   slugEn: "free-night",  label: isEn ? "Free night" : "Nuit gratuite" },
+    { id: "derniere-minute", slugEn: "last-minute", label: isEn ? "Last minute" : "Dernière minute" },
   ];
-  const activeFamily = families.find((f) => f.id === filter)?.id ?? null;
+  const activeFamily = families.find((f) => f.id === filter || f.slugEn === filter)?.id ?? null;
   const deals = activeFamily ? allDeals.filter((d) => d.family === activeFamily) : allDeals;
 
   const count = allDeals.length;
@@ -150,7 +152,12 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
     .filter((r) => r.count > 0);
 
   const pagePath = isEn ? DEALS_PATH_EN : DEALS_PATH_FR;
-  const filterHref = (f: PromoFamily | null) => (f ? `${pagePath}?type=${f}` : pagePath);
+  const regionName = (dbValue: string) => (isEn ? getRegionByDbValue(dbValue)?.nameEn ?? dbValue : dbValue);
+  const filterHref = (f: PromoFamily | null) => {
+    if (!f) return pagePath;
+    const value = isEn ? families.find((fam) => fam.id === f)?.slugEn ?? f : f;
+    return `${pagePath}?type=${value}`;
+  };
 
   const faq: { question: string; answer: string }[] = isEn
     ? [
@@ -246,8 +253,8 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
           ) ?? `/chalets/${l.id}`}`,
           address: {
             "@type": "PostalAddress",
-            addressLocality: l.city ?? l.region,
-            addressRegion: l.region,
+            addressLocality: l.city ?? regionName(l.region),
+            addressRegion: regionName(l.region),
             addressCountry: "CA",
           },
           description: [lines.line1, lines.line2].filter(Boolean).join(" — "),

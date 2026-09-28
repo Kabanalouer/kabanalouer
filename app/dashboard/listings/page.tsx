@@ -8,7 +8,10 @@ import { normalizePhotos } from "@/lib/photo";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
 
-export const metadata = { title: "Mes chalets" };
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "My cabins" : "Mes chalets" };
+}
 
 export default async function ListingsPage({
   searchParams,
@@ -18,7 +21,10 @@ export default async function ListingsPage({
   const { deleted } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const loginLocale = await getLocale();
+    redirect(localePath(`/login?next=${encodeURIComponent(localePath("/dashboard/listings", loginLocale))}`, loginLocale));
+  }
 
   const [t, locale] = await Promise.all([getTranslations("listings"), getLocale()]);
 

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
 import { PhotoTip } from "@/components/PhotoReminderBanner";
 
@@ -24,6 +25,7 @@ export default function ContactButton({
 }) {
   const t = useTranslations("listing");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const router = useRouter();
@@ -55,7 +57,7 @@ export default function ContactButton({
   if (currentUserId === hostId) {
     return (
       <a
-        href="/dashboard"
+        href={localePath("/dashboard", locale)}
         className="block w-full bg-charcoal-100 text-charcoal-600 py-4 rounded-xl font-bold text-center hover:bg-charcoal-200 transition-colors text-sm"
       >
         {t("ownListingCta")}
@@ -106,6 +108,7 @@ function ContactModal({
 }) {
   const t = useTranslations("listing");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -145,7 +148,7 @@ function ContactModal({
             <p className="text-charcoal-500 text-base mb-6">{t("messageSentHint", { name: hostName.split(" ")[0] })}</p>
             <div className="flex gap-3">
               <Link
-                href={`/messages?listing=${listingId}&with=${hostId}`}
+                href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)}
                 className="flex-1 text-center border border-charcoal-100 text-charcoal-600 py-3 rounded-xl text-sm font-medium hover:bg-charcoal-50 transition-colors"
               >
                 {t("viewConversation")}

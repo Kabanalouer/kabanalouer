@@ -1,21 +1,24 @@
 import { NextResponse } from "next/server";
+import { getRequestLocale, t2 } from "@/lib/requestLocale";
+import { localePath } from "@/lib/localePath";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const locale = getRequestLocale(request);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const body = await request.json().catch(() => ({}));
   const listingId: string | undefined = body.listingId;
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
   if (!listingId) {
-    return NextResponse.json({ error: "listingId requis" }, { status: 400 });
+    return NextResponse.json({ error: t2(locale, "listingId requis", "listingId required") }, { status: 400 });
   }
 
   // Fetch user profile to get or create Stripe customer
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
     .single();
 
   if (profile?.role !== "host") {
-    return NextResponse.json({ error: "Accès réservé aux propriétaires" }, { status: 403 });
+    return NextResponse.json({ error: t2(locale, "Accès réservé aux propriétaires", "Access restricted to owners") }, { status: 403 });
   }
 
   const { data: listing } = await supabase
@@ -37,7 +40,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!listing) {
-    return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+    return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
 
   const { data: existingSub } = await supabase
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existingSub?.status === "active" && existingSub?.is_free_launch === false) {
-    return NextResponse.json({ error: "Cette annonce a déjà un abonnement actif" }, { status: 409 });
+    return NextResponse.json({ error: t2(locale, "Cette annonce a déjà un abonnement actif", "This listing already has an active subscription") }, { status: 409 });
   }
 
   const preferredLanguage: "fr" | "en" = profile?.preferred_language === "en" ? "en" : "fr";
@@ -99,8 +102,8 @@ export async function POST(request: Request) {
     // cette session pour le calcul de taxe, plutôt que l'adresse déjà
     // présente (ou absente) sur le Customer.
     customer_update: { address: "auto" },
-    success_url: `${appUrl}/dashboard/listings/${listingId}/publish?paid=1`,
-    cancel_url: `${appUrl}/dashboard/listings/${listingId}/publish?canceled=1`,
+    success_url: `${appUrl}${localePath(`/dashboard/listings/${listingId}/publish?paid=1`, locale)}`,
+    cancel_url: `${appUrl}${localePath(`/dashboard/listings/${listingId}/publish?canceled=1`, locale)}`,
     allow_promotion_codes: true,
     metadata: { supabase_user_id: user.id, listing_id: listingId, price_tier: tier },
   });

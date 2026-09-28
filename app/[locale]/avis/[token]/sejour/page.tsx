@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { adminSupabase } from "@/lib/sendMessage";
@@ -9,7 +10,10 @@ import SejourReviewClient from "./SejourReviewClient";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export const metadata = { title: "Avis de séjour" };
+export async function generateMetadata(): Promise<Metadata> {
+  const isEn = (await getLocale()) === "en";
+  return { title: isEn ? "Stay review" : "Avis de séjour" };
+}
 
 export default async function SejourReviewPage({
   params,
@@ -27,10 +31,12 @@ export default async function SejourReviewPage({
 
   const { data: listing } = await admin
     .from("listings")
-    .select("title")
+    .select("title, title_en")
     .eq("id", reviewRequest.listing_id)
     .single();
-  const listingTitle = (listing?.title as string | undefined) ?? (isEn ? "your listing" : "ce chalet");
+  const titleFr = (listing?.title as string | null | undefined) || undefined;
+  const titleEn = (listing?.title_en as string | null | undefined) || undefined;
+  const listingTitle = (isEn ? titleEn ?? titleFr : titleFr) ?? (isEn ? "your listing" : "ce chalet");
 
   const checkOutPassed = reviewRequest.check_out
     ? Date.now() - new Date(`${reviewRequest.check_out}T00:00:00Z`).getTime() >= DAY_MS

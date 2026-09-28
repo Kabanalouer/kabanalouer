@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { MUNICIPALITIES, type Municipality } from "@/lib/municipalities";
-import { REGIONS } from "@/lib/regions";
+import { REGIONS, getRegionByDbValue } from "@/lib/regions";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
 export type { Municipality };
@@ -34,6 +34,7 @@ export default function MunicipalityCombobox({
   placeholder?: string;
 }) {
   const t = useTranslations("listings.location");
+  const isEn = useLocale() === "en";
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [manualMode, setManualMode] = useState(false);
@@ -106,7 +107,7 @@ export default function MunicipalityCombobox({
           <option value="">{t("manualRegionPlaceholder")}</option>
           {REGIONS.map((r) => (
             <option key={r.slug} value={r.dbValue}>
-              {r.name}
+              {isEn ? r.nameEn : r.name}
             </option>
           ))}
         </select>
@@ -160,7 +161,7 @@ export default function MunicipalityCombobox({
                 className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left text-sm hover:bg-charcoal-50 transition-colors"
               >
                 <span className="text-charcoal-700">{m.name}</span>
-                <span className="text-xs text-charcoal-400 shrink-0">{m.region}</span>
+                <span className="text-xs text-charcoal-400 shrink-0">{isEn ? (getRegionByDbValue(m.region)?.nameEn ?? m.region) : m.region}</span>
               </button>
             ))
           ) : (

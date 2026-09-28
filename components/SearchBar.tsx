@@ -30,6 +30,7 @@ const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 // dbValue -> slug URL, pour le raccourci vers la page région SEO existante.
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
+const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
 // nom de municipalité -> fiche complète (région, slug), pour choisir entre
 // /chalets/ville/[slug] et la page région parente au moment de la recherche.
 const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
@@ -167,12 +168,16 @@ export default function SearchBar({
   const t = useTranslations("searchBar");
   const locale = useLocale();
   const intlLocale = locale === "en" ? "en-CA" : "fr-CA";
+  // Nom affiché de la région (nameEn en anglais) — la valeur envoyée dans
+  // la requête reste toujours le dbValue français.
+  const regionLabel = (dbValue: string) => locale === "en" ? REGION_EN_NAME_BY_NAME.get(dbValue) ?? dbValue : dbValue;
+  const displayLabel = (item: DestItem) => item.type === "region" ? regionLabel(item.value) : item.label;
   const router = useRouter();
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
   const initDest: DestItem | null = initialRegion
-    ? { label: initialRegion, type: "region", value: initialRegion }
+    ? { label: regionLabel(initialRegion), type: "region", value: initialRegion }
     : initialCity
     ? { label: initialCity, type: "city", value: initialCity }
     : null;
@@ -254,19 +259,20 @@ export default function SearchBar({
     const q = destQuery.trim().toLowerCase();
     if (!q) return [];
     const regionHits = REGION_NAMES
-      .filter((r) => r.toLowerCase().includes(q))
+      .filter((r) => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q))
       .slice(0, 4)
-      .map((r) => ({ label: r, type: "region" as const, value: r }));
+      .map((r) => ({ label: regionLabel(r), type: "region" as const, value: r }));
     const cityHits = MUNICIPALITIES
       .filter((m) => m.name.toLowerCase().includes(q))
       .slice(0, 6)
       .map((m) => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
-  }, [destQuery]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destQuery, locale]);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
-    setDestQuery(item.label);
+    setDestQuery(displayLabel(item));
     setDestOpen(false);
     saveRecent(item);
     setRecentSearches(loadRecent());
@@ -310,8 +316,8 @@ export default function SearchBar({
     const active = destSelected ?? (() => {
       const q = destQuery.trim();
       if (!q) return null;
-      const regionMatch = REGION_NAMES.find((r) => r.toLowerCase() === q.toLowerCase());
-      if (regionMatch) return { label: regionMatch, type: "region" as const, value: regionMatch };
+      const regionMatch = REGION_NAMES.find((r) => r.toLowerCase() === q.toLowerCase() || regionLabel(r).toLowerCase() === q.toLowerCase());
+      if (regionMatch) return { label: regionLabel(regionMatch), type: "region" as const, value: regionMatch };
       return { label: q, type: "city" as const, value: q };
     })();
 
@@ -366,7 +372,7 @@ export default function SearchBar({
   };
 
   // Popular regions for empty-query state (no recent searches)
-  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: r, type: "region", value: r }));
+  const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: regionLabel(r), type: "region", value: r }));
 
   const showDropdown = destOpen && !calendarOpen;
 
@@ -423,7 +429,7 @@ export default function SearchBar({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="min-w-0">
-                        <p className="text-sm text-charcoal-800 truncate">{item.label}</p>
+                        <p className="text-sm text-charcoal-800 truncate">{displayLabel(item)}</p>
                         <p className="text-xs text-charcoal-400">{item.type === "region" ? t("typeRegion") : t("typeCity")}</p>
                       </div>
                     </button>

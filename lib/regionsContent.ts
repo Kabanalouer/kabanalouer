@@ -813,6 +813,63 @@ const REGIONS_CONTENT: RegionContent[] = [
       },
     ],
   },
+  {
+    slug: "centre-du-quebec",
+    region_fr: "le Centre-du-Québec",
+    region_en: "Centre-du-Québec",
+    locative_en: "in Centre-du-Québec",
+    description_en: [
+      "Centre-du-Québec takes its name from its location, halfway between Montreal and Quebec City on the south shore of the St. Lawrence. This farming and forest region is home to the wide plain of Lac Saint-Pierre — the largest fluvial lake on the St. Lawrence, recognized as a UNESCO World Biosphere Reserve — and to the wooded hills of the Bois-Francs around Victoriaville.",
+      "Renting a cabin in Centre-du-Québec means easy, peaceful access to nature: the shores of Lac Saint-Pierre for birdwatching and fishing, Bois-Francs trails for hiking and cycling, and a living maple tradition with many family-run sugar shacks.",
+      "Drummondville, Victoriaville and Bécancour are the region's main towns, with attractions like the Village Québécois d'Antan, a heritage village that brings 19th-century rural Quebec to life. Beyond them, the countryside of farm roads, quiet villages, rivers and forests is the real draw for a cabin getaway, less than two hours from both Montreal and Quebec City.",
+    ],
+    highlights_fr: [
+      "À mi-chemin entre Montréal et Québec",
+      "Lac Saint-Pierre, Réserve mondiale de la biosphère UNESCO",
+      "Village Québécois d'Antan à Drummondville",
+      "Sentiers et collines boisées des Bois-Francs",
+      "Cabanes à sucre familiales au printemps",
+    ],
+    highlights_en: [
+      "Halfway between Montreal and Quebec City",
+      "Lac Saint-Pierre, a UNESCO World Biosphere Reserve",
+      "Village Québécois d'Antan in Drummondville",
+      "Trails and wooded hills of the Bois-Francs",
+      "Family-run sugar shacks in spring",
+    ],
+    meta_title_fr: "Chalets à louer au Centre-du-Québec",
+    meta_title_en: "Cabin Rentals in Centre-du-Québec, Quebec",
+    meta_description_fr: "Louez un chalet au Centre-du-Québec, entre Montréal et Québec : lac Saint-Pierre, Bois-Francs, Drummondville et Victoriaville. Contact direct avec les propriétaires, aucun frais de service.",
+    meta_description_en: "Rent a cabin in Centre-du-Québec, halfway between Montreal and Quebec City: Lac Saint-Pierre, the Bois-Francs, Drummondville and Victoriaville. Direct contact with owners, no service fees.",
+    faq_fr: [
+      {
+        question: "Où se trouve le Centre-du-Québec ?",
+        answer: "Le Centre-du-Québec est situé sur la rive sud du Saint-Laurent, à mi-chemin entre Montréal et Québec. Drummondville est à environ 1 h 15 de Montréal par l'autoroute 20, et Victoriaville à environ 1 h 30 de Québec. C'est une destination pratique pour une escapade en chalet sans long trajet, peu importe d'où vous partez.",
+      },
+      {
+        question: "Que faire au Centre-du-Québec ?",
+        answer: "La région offre l'observation d'oiseaux et la pêche sur le lac Saint-Pierre, Réserve mondiale de la biosphère de l'UNESCO, la randonnée et le vélo dans les Bois-Francs, la visite du Village Québécois d'Antan à Drummondville et, au printemps, les cabanes à sucre familiales. L'hiver, les sentiers de motoneige et de raquette complètent l'offre.",
+      },
+      {
+        question: "Quelles sont les principales villes du Centre-du-Québec ?",
+        answer: "Drummondville, Victoriaville et Bécancour sont les principaux pôles de la région. Autour, la campagne — rangs agricoles, villages tranquilles, rivières et forêts — est l'endroit idéal pour trouver un chalet au calme.",
+      },
+    ],
+    faq_en: [
+      {
+        question: "Where is Centre-du-Québec?",
+        answer: "Centre-du-Québec lies on the south shore of the St. Lawrence, halfway between Montreal and Quebec City. Drummondville is about 1 h 15 from Montreal via Highway 20, and Victoriaville about 1 h 30 from Quebec City. It's a convenient cabin getaway without a long drive, wherever you're coming from.",
+      },
+      {
+        question: "What is there to do in Centre-du-Québec?",
+        answer: "The region offers birdwatching and fishing on Lac Saint-Pierre, a UNESCO World Biosphere Reserve, hiking and cycling in the Bois-Francs, a visit to the Village Québécois d'Antan in Drummondville and, in spring, family-run sugar shacks. In winter, snowmobile and snowshoe trails round out the options.",
+      },
+      {
+        question: "What are the main towns in Centre-du-Québec?",
+        answer: "Drummondville, Victoriaville and Bécancour are the region's main towns. Around them, the countryside of farm roads, quiet villages, rivers and forests is the ideal place to find a quiet cabin.",
+      },
+    ],
+  },
 ];
 
 export function getRegionContent(slug: string): RegionContent | undefined {

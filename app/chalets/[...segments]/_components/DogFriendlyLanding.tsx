@@ -12,7 +12,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
-import { REGIONS } from "@/lib/regions";
+import { REGIONS, getRegionByDbValue } from "@/lib/regions";
 import {
   DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR, DOG_POLICY_COLUMNS,
   dogPolicyShortSummary, parseDogPolicy, type DogPolicy,
@@ -80,6 +80,7 @@ export default async function DogFriendlyLanding() {
     .filter((r) => r.count > 0);
 
   const pagePath = isEn ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR;
+  const regionName = (dbValue: string) => (isEn ? getRegionByDbValue(dbValue)?.nameEn ?? dbValue : dbValue);
   const searchPath = (regionDbValue?: string) => {
     const params = new URLSearchParams({ dogs: "1" });
     if (regionDbValue) params.set("region", regionDbValue);
@@ -184,8 +185,8 @@ export default async function DogFriendlyLanding() {
           ) ?? `/chalets/${l.id}`}`,
           address: {
             "@type": "PostalAddress",
-            addressLocality: l.city ?? l.region,
-            addressRegion: l.region,
+            addressLocality: l.city ?? regionName(l.region),
+            addressRegion: regionName(l.region),
             addressCountry: "CA",
           },
           petsAllowed: true,

@@ -18,12 +18,13 @@ type FeaturedRow = {
   type: string;
   region: string | null;
   month: string;
-  listings: { title: string } | { title: string }[] | null;
+  listings: { title: string; title_en: string | null } | { title: string; title_en: string | null }[] | null;
 };
 
-function listingTitleOf(row: FeaturedRow): string | undefined {
+function listingTitleOf(row: FeaturedRow, lang: "fr" | "en"): string | undefined {
   const field = row.listings;
-  return Array.isArray(field) ? field[0]?.title : field?.title;
+  const l = Array.isArray(field) ? field[0] : field;
+  return (lang === "en" ? l?.title_en : null) || l?.title;
 }
 
 // Un boost déjà renouvelé (même annonce+type+région, mois strictement postérieur,
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
   const { data: expiringSoon, error: expiringError } = await supabase
     .from("featured_listings")
-    .select("id, listing_id, host_id, type, region, month, listings(title)")
+    .select("id, listing_id, host_id, type, region, month, listings(title, title_en)")
     .eq("status", "active")
     .lte("expires_at", threeDaysFromNow)
     .is("reminder_3d_sent_at", null);
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
       if (!profile?.email) continue;
 
       const preferredLanguage: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
-      const listingTitle = listingTitleOf(featured) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
+      const listingTitle = listingTitleOf(featured, preferredLanguage) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
 
       const { error: emailError } = await sendFeaturedExpiringEmail({
         email: profile.email,
@@ -138,7 +139,7 @@ export async function GET(request: NextRequest) {
 
   const { data: justExpired, error: justExpiredError } = await supabase
     .from("featured_listings")
-    .select("id, listing_id, host_id, type, region, month, listings(title)")
+    .select("id, listing_id, host_id, type, region, month, listings(title, title_en)")
     .eq("status", "expired")
     .gte("expires_at", threeDaysAgo)
     .is("expired_email_sent_at", null);
@@ -162,7 +163,7 @@ export async function GET(request: NextRequest) {
       if (!profile?.email) continue;
 
       const preferredLanguage: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
-      const listingTitle = listingTitleOf(featured) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
+      const listingTitle = listingTitleOf(featured, preferredLanguage) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
 
       const { error: emailError } = await sendFeaturedExpiredEmail({
         email: profile.email,

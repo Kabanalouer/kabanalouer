@@ -27,7 +27,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
+      "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
     )
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
@@ -36,7 +36,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
   const listings: Listing[] = (rawListings ?? []).map((l) => ({
     id: l.id,
-    title: l.title ?? "",
+    title: (isEn && (l.title_en as string | null)) || (l.title ?? ""),
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
     listing_number: (l.listing_number as number | null) ?? null,
@@ -64,13 +64,13 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const { data: rawVedette } = vedetteIds.length > 0
     ? await supabase
         .from("listings")
-        .select("id, title, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
+        .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
         .in("id", vedetteIds)
         .eq("is_published", true)
     : { data: [] as typeof rawListings };
   const vedetteListings: Listing[] = (rawVedette ?? []).map((l) => ({
     id: l.id,
-    title: l.title ?? "",
+    title: (isEn && (l.title_en as string | null)) || (l.title ?? ""),
     region: l.region ?? "",
     city: (l.city as string | null) ?? null,
     listing_number: (l.listing_number as number | null) ?? null,
@@ -93,8 +93,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {
         "@type": "ListItem",
         position: 1,
-        name: "Accueil",
-        item: `${SITE_URL}/`,
+        name: isEn ? "Home" : "Accueil",
+        item: isEn ? `${SITE_URL}/en` : `${SITE_URL}/`,
       },
       {
         "@type": "ListItem",
@@ -125,7 +125,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
               { region: l.region as string | null, city: l.city as string | null, listing_number: l.listing_number as number | null, custom_slug: l.custom_slug as string | null },
               isEn ? "en" : "fr"
             ) ?? `/chalets/${l.id}`}`,
-            name: l.title,
+            name: (isEn && (l.title_en as string | null)) || l.title,
           })),
         }
       : null;
@@ -317,8 +317,11 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
               : `Découvrez ${content?.region_fr ?? displayRegionName}`}
           </h2>
           <div className="space-y-4">
-            {(isEn && content?.description_en
-              ? content.description_en
+            {(isEn
+              ? content?.description_en ?? [
+                  `${displayRegionName} is one of Quebec's regions to explore by cabin, with lakes, forests and small towns to discover in every season.`,
+                  `Renting a cabin in ${displayRegionName} means dealing directly with local owners, with no service fees. Browse the listings above and contact the owner to check availability and rates.`,
+                ]
               : regionConfig.seoText
             ).map((paragraph, i) => (
               <p key={i} className="text-charcoal-500 leading-relaxed">

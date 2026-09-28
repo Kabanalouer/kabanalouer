@@ -1,35 +1,36 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { PhotoItem } from "@/lib/photo";
 import RoomPhotoPickerModal from "./RoomPhotoPickerModal";
 
 const MAX_PHOTOS = 5;
 
-function loadImage(file: File): Promise<HTMLImageElement> {
+function loadImage(file: File, isEn: boolean): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     const url = URL.createObjectURL(file);
     img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Fichier illisible.")); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(isEn ? "Unreadable file." : "Fichier illisible.")); };
     img.src = url;
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number, isEn: boolean): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Conversion échouée."))),
+      (blob) => (blob ? resolve(blob) : reject(new Error(isEn ? "Conversion failed." : "Conversion échouée."))),
       "image/webp",
       quality
     );
   });
 }
 
-async function compressToWebP(file: File): Promise<{ blob: Blob } | { error: string }> {
+async function compressToWebP(file: File, isEn: boolean): Promise<{ blob: Blob } | { error: string }> {
   try {
-    const img = await loadImage(file);
+    const img = await loadImage(file, isEn);
     let w = img.naturalWidth;
     let h = img.naturalHeight;
     const longest = Math.max(w, h);
@@ -42,15 +43,15 @@ async function compressToWebP(file: File): Promise<{ blob: Blob } | { error: str
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return { error: "Canvas non disponible." };
+    if (!ctx) return { error: isEn ? "Canvas unavailable." : "Canvas non disponible." };
     ctx.drawImage(img, 0, 0, w, h);
     for (const quality of [0.85, 0.75, 0.65, 0.5]) {
-      const blob = await canvasToBlob(canvas, quality);
+      const blob = await canvasToBlob(canvas, quality, isEn);
       if (blob.size / 1024 / 1024 <= 8) return { blob };
     }
-    return { error: "Impossible de compresser cette photo." };
+    return { error: isEn ? "Unable to compress this photo." : "Impossible de compresser cette photo." };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Erreur de compression." };
+    return { error: e instanceof Error ? e.message : (isEn ? "Compression error." : "Erreur de compression.") };
   }
 }
 
@@ -75,6 +76,7 @@ export default function RoomPhotoManager({
   const [pickerOpen, setPickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+  const isEn = useLocale() === "en";
 
   const canUpload = photos.length < MAX_PHOTOS;
 
@@ -91,13 +93,13 @@ export default function RoomPhotoManager({
 
     for (const file of Array.from(files).slice(0, remaining)) {
       if (!file.type.startsWith("image/")) continue;
-      const compressed = await compressToWebP(file);
+      const compressed = await compressToWebP(file, isEn);
       if ("error" in compressed) { setError(compressed.error); continue; }
       const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
       const { data, error: uploadError } = await supabase.storage
         .from("listing-photos")
         .upload(path, compressed.blob, { cacheControl: "3600", upsert: false, contentType: "image/webp" });
-      if (uploadError) { setError("Erreur lors de l'upload."); continue; }
+      if (uploadError) { setError(isEn ? "Upload failed." : "Erreur lors de l'upload."); continue; }
       const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(data.path);
       newUrls.push(urlData.publicUrl);
     }
@@ -168,7 +170,7 @@ export default function RoomPhotoManager({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); void removePhoto(url); }}
                 className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
-                aria-label="Supprimer cette photo"
+                aria-label={isEn ? "Delete this photo" : "Supprimer cette photo"}
               >
                 <svg className="w-2.5 h-2.5 text-error-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -209,7 +211,7 @@ export default function RoomPhotoManager({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <p className="text-xs text-charcoal-500">Upload en cours…</p>
+              <p className="text-xs text-charcoal-500">{isEn ? "Uploading…" : "Upload en cours…"}</p>
             </>
           ) : (
             <>
@@ -217,8 +219,8 @@ export default function RoomPhotoManager({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
               </svg>
-              <p className="text-sm font-medium text-charcoal-700">Glissez vos photos ici</p>
-              <p className="text-xs text-charcoal-400">ou cliquez pour sélectionner</p>
+              <p className="text-sm font-medium text-charcoal-700">{isEn ? "Drag your photos here" : "Glissez vos photos ici"}</p>
+              <p className="text-xs text-charcoal-400">{isEn ? "or click to select" : "ou cliquez pour sélectionner"}</p>
             </>
           )}
         </div>
@@ -227,7 +229,7 @@ export default function RoomPhotoManager({
       {/* Choisir parmi les photos déjà présentes dans la galerie de l'annonce */}
       {canUpload && availablePhotos.some((p) => !photos.includes(p.url)) && (
         <div className="flex items-center gap-3 mt-3">
-          <span className="text-xs text-charcoal-400 shrink-0">ou</span>
+          <span className="text-xs text-charcoal-400 shrink-0">{isEn ? "or" : "ou"}</span>
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
@@ -237,7 +239,7 @@ export default function RoomPhotoManager({
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 8.25V7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 16.5v-.75m0-7.5v7.5" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
             </svg>
-            Choisir parmi les photos de l&apos;annonce
+            {isEn ? "Choose from the listing photos" : "Choisir parmi les photos de l'annonce"}
           </button>
         </div>
       )}

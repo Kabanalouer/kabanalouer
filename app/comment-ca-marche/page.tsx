@@ -12,7 +12,7 @@ const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
-  const canonical = isEn ? "/en/comment-ca-marche" : "/comment-ca-marche";
+  const canonical = isEn ? "/en/how-it-works" : "/comment-ca-marche";
   const title = isEn ? "How It Works" : "Comment ça marche";
   const description = isEn
     ? "Find and contact Quebec cabin owners directly. No service fees for travelers. 3 simple steps."
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical,
-      languages: { fr: "/comment-ca-marche", en: "/en/comment-ca-marche", "x-default": "/comment-ca-marche" },
+      languages: { fr: "/comment-ca-marche", en: "/en/how-it-works", "x-default": "/comment-ca-marche" },
     },
     openGraph: {
       title,
@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqJsonLd = {
+const faqJsonLdFr = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
@@ -91,6 +91,20 @@ const faqJsonLd = {
 
 export default async function CommentCaMarchePage() {
   const [t, locale] = await Promise.all([getTranslations("commentCaMarche"), getLocale()]);
+  // EN : mêmes questions que la FAQ visible (clés faq1Q…faq5A) ; FR : texte
+  // historique inchangé.
+  const faqJsonLd =
+    locale === "en"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: ([1, 2, 3, 4, 5] as const).map((i) => ({
+            "@type": "Question",
+            name: t(`faq${i}Q`),
+            acceptedAnswer: { "@type": "Answer", text: t(`faq${i}A`) },
+          })),
+        }
+      : faqJsonLdFr;
 
   return (
     <div className="flex flex-col min-h-screen">
