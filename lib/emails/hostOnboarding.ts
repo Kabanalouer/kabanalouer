@@ -7,7 +7,7 @@ import { PRIX_VEDETTE_HOME, PRIX_VEDETTE_REGION } from "@/lib/featuredConfig";
 // Courriels d'accueil des nouveaux proprios, envoyés par le cron
 // host-onboarding-emails après la première publication :
 // - 48 h : invitation à booster l'annonce (vedette région / accueil)
-// - 96 h : guide pour installer l'app et activer les notifications de messages
+// - 96 h : invitation à recevoir les demandes et messages par texto
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
@@ -53,69 +53,47 @@ export async function sendBoostInviteEmail({
   return { error: error ? new Error(error.message) : null };
 }
 
-export async function sendInstallAppGuideEmail({
-  email, lang, firstName, hasPhone,
+export async function sendSmsInviteEmail({
+  email, lang, firstName,
 }: {
-  email: string; lang: Lang; firstName?: string | null; hasPhone: boolean;
+  email: string; lang: Lang; firstName?: string | null;
 }): Promise<{ error: Error | null }> {
   const name = firstName?.trim();
   const fr = lang === "fr";
-  const profilePath = `${fr ? "" : "/en"}/dashboard/profile#notifications-appareil`;
+  const profilePath = `${fr ? "" : "/en"}/dashboard/profile#phone`;
 
-  const iphone = fr
+  const howTo = fr
     ? steps([
-        "Ouvre <strong>kabanalouer.ca</strong> dans <strong>Safari</strong> (la boussole bleue).",
-        "Touche le bouton <strong>Partager</strong> (le carré avec une flèche vers le haut). Sur les iPhone récents, touche d’abord <strong>⋯</strong> en bas à droite.",
-        "Fais défiler le menu <strong>jusqu’en bas</strong> et choisis <strong>«&nbsp;Sur l’écran d’accueil&nbsp;»</strong>, puis <strong>Ajouter</strong>.",
-        "Ouvre Kabanalouer <strong>depuis la nouvelle icône</strong>, va dans ton profil et active <strong>«&nbsp;Notifications sur ce téléphone&nbsp;»</strong>.",
+        "Ouvre ton profil avec le bouton ci-dessous.",
+        "Dans <strong>Notifications</strong>, active <strong>«&nbsp;Par texto&nbsp;»</strong>.",
+        "Entre ton numéro de cellulaire. C’est tout&nbsp;!",
       ])
     : steps([
-        "Open <strong>kabanalouer.ca</strong> in <strong>Safari</strong> (the blue compass).",
-        "Tap <strong>Share</strong> (the square with an arrow pointing up). On recent iPhones, tap <strong>⋯</strong> at the bottom right first.",
-        "Scroll the menu <strong>all the way down</strong>, choose <strong>“Add to Home Screen”</strong>, then <strong>Add</strong>.",
-        "Open Kabanalouer <strong>from the new icon</strong>, go to your profile and turn on <strong>“Notifications on this device”</strong>.",
-      ]);
-  const android = fr
-    ? steps([
-        "Ouvre <strong>kabanalouer.ca</strong> dans <strong>Chrome</strong>.",
-        "Touche le menu <strong>⋮</strong> en haut à droite, puis <strong>«&nbsp;Installer l’application&nbsp;»</strong>.",
-        "Ouvre Kabanalouer depuis l’icône, va dans ton profil et active <strong>«&nbsp;Notifications sur ce téléphone&nbsp;»</strong>.",
-      ])
-    : steps([
-        "Open <strong>kabanalouer.ca</strong> in <strong>Chrome</strong>.",
-        "Tap the <strong>⋮</strong> menu at the top right, then <strong>“Install app”</strong>.",
-        "Open Kabanalouer from the icon, go to your profile and turn on <strong>“Notifications on this device”</strong>.",
+        "Open your profile with the button below.",
+        "Under <strong>Notifications</strong>, turn on <strong>“By text message”</strong>.",
+        "Enter your cell phone number. That’s it!",
       ]);
 
-  const sms = hasPhone
-    ? (fr
-        ? "Tu reçois déjà un texto à chaque nouveau message, puisque ton numéro de cellulaire est dans ton profil."
-        : "You already get a text for every new message, since your cell number is in your profile.")
-    : (fr
-        ? "<strong>Plus simple encore :</strong> ajoute ton numéro de cellulaire dans ton profil pour recevoir un texto à chaque nouveau message, sans rien installer."
-        : "<strong>Even simpler:</strong> add your cell number in your profile to get a text for every new message, with nothing to install.");
-
-  const h = (t: string) => `<p style="margin:20px 0 4px 0;font-size:16px;font-weight:700;color:#222222;">${t}</p>`;
   const body = fr
-    ? `Un voyageur qui attend une réponse va souvent voir ailleurs. Répondre en moins de 24&nbsp;h aide aussi ton annonce à mieux se classer.<br/><br/>Installe Kabanalouer sur ton téléphone pour recevoir une notification dès qu’un voyageur t’écrit — gratuit, rien à télécharger dans une boutique d’applications.${h("Sur iPhone")}${iphone}${h("Sur Android")}${android}${sms}`
-    : `A traveler waiting for an answer often looks elsewhere. Replying within 24 hours also helps your listing rank higher.<br/><br/>Install Kabanalouer on your phone to get a notification as soon as a traveler writes to you — free, nothing to download from an app store.${h("On iPhone")}${iphone}${h("On Android")}${android}${sms}`;
+    ? `Un voyageur qui attend une réponse va souvent voir ailleurs. Répondre en moins de 24&nbsp;h aide aussi ton annonce à mieux se classer.<br/><br/>Reçois un texto 2 à 3 minutes après chaque nouvelle demande de prix ou nouveau message, avec un lien pour répondre tout de suite. Rien à installer.${howTo}`
+    : `A traveler waiting for an answer often looks elsewhere. Replying within 24 hours also helps your listing rank higher.<br/><br/>Get a text 2 to 3 minutes after every new price request or message, with a link to reply right away. Nothing to install.${howTo}`;
 
   const html = renderEmail({
     lang,
-    greeting: name ? (fr ? `Bonjour ${escapeHtml(name)} !` : `Hi ${escapeHtml(name)}!`) : undefined,
-    heading: fr ? "Ne manque plus aucun message" : "Never miss a message",
+    greeting: name ? (fr ? `Bonjour ${escapeHtml(name)} !` : `Hi ${escapeHtml(name)}!`) : undefined,
+    heading: fr ? "Reçois tes demandes par texto" : "Get your requests by text",
     body,
-    buttonLabel: fr ? "Activer mes notifications" : "Turn on my notifications",
+    buttonLabel: fr ? "Activer les textos" : "Turn on text messages",
     buttonUrl: `${SITE_URL}${profilePath}`,
     footerNote: fr
-      ? "Besoin d’aide pour l’installer ? Réponds à ce courriel, on va t’aider avec plaisir."
-      : "Need help installing it? Just reply to this email — we’re happy to help.",
+      ? "Tu continues de recevoir les courriels aussi. Tu peux régler les deux dans ton profil."
+      : "You’ll keep getting emails too. You can adjust both in your profile.",
   });
 
   const { error } = await resend.emails.send({
     from: FROM,
     to: [email],
-    subject: fr ? "Reçois une notification à chaque nouveau message" : "Get notified for every new message",
+    subject: fr ? "Reçois tes demandes de prix par texto" : "Get your price requests by text",
     html,
   });
   return { error: error ? new Error(error.message) : null };

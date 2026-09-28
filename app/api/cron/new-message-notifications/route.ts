@@ -18,6 +18,9 @@ type Group = {
   // Traduction automatique du dernier message (lib/sendMessage.ts), si elle existe
   latestTranslated: string | null;
   latestTranslatedLanguage: string | null;
+  // Au moins un message avec dates + voyageurs : une demande de prix (même
+  // règle que isQuoteRequest dans MessagesClient.tsx)
+  hasQuoteRequest: boolean;
 };
 
 // Cron chaque minute — Phase 2a (voir CLAUDE.md) : notifie par courriel les
@@ -36,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   const { data: candidates, error } = await supabase
     .from("messages")
-    .select("id, listing_id, sender_id, receiver_id, content, content_translated, translated_language, created_at")
+    .select("id, listing_id, sender_id, receiver_id, content, content_translated, translated_language, check_in, check_out, num_guests, created_at")
     .eq("is_read", false)
     .is("notification_sent_at", null)
     .lte("created_at", cutoff)
@@ -51,6 +54,7 @@ export async function GET(request: NextRequest) {
   for (const msg of candidates ?? []) {
     const key = `${msg.listing_id}::${msg.sender_id}::${msg.receiver_id}`;
     const existing = groups.get(key);
+    const isQuoteRequest = !!msg.check_in && !!msg.check_out && !!msg.num_guests;
     if (!existing) {
       groups.set(key, {
         listingId: msg.listing_id as string,
@@ -60,6 +64,7 @@ export async function GET(request: NextRequest) {
         latestContent: msg.content as string,
         latestTranslated: (msg.content_translated as string | null) ?? null,
         latestTranslatedLanguage: (msg.translated_language as string | null) ?? null,
+        hasQuoteRequest: isQuoteRequest,
       });
     } else {
       existing.messageIds.push(msg.id as string);
@@ -67,6 +72,7 @@ export async function GET(request: NextRequest) {
       existing.latestContent = msg.content as string;
       existing.latestTranslated = (msg.content_translated as string | null) ?? null;
       existing.latestTranslatedLanguage = (msg.translated_language as string | null) ?? null;
+      existing.hasQuoteRequest ||= isQuoteRequest;
     }
   }
 
@@ -99,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
-      supabase.from("users").select("email, name, preferred_language, phone, notify_sms, translation_enabled").eq("id", group.receiverId).single(),
+      supabase.from("users").select("email, name, preferred_language, phone, notify_email, notify_sms, translation_enabled").eq("id", group.receiverId).single(),
       supabase.from("listings").select("title, title_en, host_id").eq("id", group.listingId).single(),
     ]);
 
@@ -116,23 +122,29 @@ export async function GET(request: NextRequest) {
         ? { previewText: group.latestTranslated, previewTranslated: true }
         : { previewText: group.latestContent, previewTranslated: false };
 
-    const { error: emailError } = await sendNewMessageNotificationEmail(supabase, {
-      email: receiver.email,
-      preferredLanguage: lang,
-      recipientFirstName: receiver.name?.split(" ")[0],
-      recipientId: group.receiverId,
-      senderFirstName,
-      listingTitle,
-      messageCount: stillUnread.length,
-      recipientIsHost: listing?.host_id === group.receiverId,
-      ...preview,
-      listingId: group.listingId,
-      otherUserId: group.senderId,
-    });
+    const recipientIsHost = listing?.host_id === group.receiverId;
 
-    if (emailError) {
-      console.error(`[new-message-notifications] échec envoi (listing ${group.listingId}, receiver ${group.receiverId})`, emailError);
-      continue; // pas de flag posé — retenté au prochain passage
+    // Courriel désactivé dans le profil (notify_email) : seuls le texto et
+    // la notification sur l'appareil partent.
+    if (receiver.notify_email !== false) {
+      const { error: emailError } = await sendNewMessageNotificationEmail(supabase, {
+        email: receiver.email,
+        preferredLanguage: lang,
+        recipientFirstName: receiver.name?.split(" ")[0],
+        recipientId: group.receiverId,
+        senderFirstName,
+        listingTitle,
+        messageCount: stillUnread.length,
+        recipientIsHost,
+        ...preview,
+        listingId: group.listingId,
+        otherUserId: group.senderId,
+      });
+
+      if (emailError) {
+        console.error(`[new-message-notifications] échec envoi (listing ${group.listingId}, receiver ${group.receiverId})`, emailError);
+        continue; // pas de flag posé — retenté au prochain passage
+      }
     }
 
     // SMS — bonus, jamais bloquant : n'affecte ni le message, ni le courriel
@@ -142,6 +154,7 @@ export async function GET(request: NextRequest) {
         to: receiver.phone,
         senderFirstName,
         preferredLanguage: lang,
+        isQuoteRequest: recipientIsHost && group.hasQuoteRequest,
       });
       if (smsError) {
         console.error(`[new-message-notifications] échec envoi SMS (listing ${group.listingId}, receiver ${group.receiverId})`, smsError);

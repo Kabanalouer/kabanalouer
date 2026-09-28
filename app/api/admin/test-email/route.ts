@@ -5,7 +5,7 @@ import { EMAIL_CATALOG } from "@/lib/adminEmailCatalog";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
-import { sendBoostInviteEmail, sendInstallAppGuideEmail } from "@/lib/emails/hostOnboarding";
+import { sendBoostInviteEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
@@ -48,7 +48,7 @@ function senders(): Record<string, Sender> {
     "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
     "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE, isFreeLaunch: true }),
     "boost-invite": (to, lang) => sendBoostInviteEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
-    "install-app": (to, lang) => sendInstallAppGuideEmail({ email: to, lang, firstName: "Simon", hasPhone: false }),
+    "sms-invite": (to, lang) => sendSmsInviteEmail({ email: to, lang, firstName: "Simon" }),
     "new-message-host": (to, lang) => sendNewMessageNotificationEmail(admin, {
       email: to, preferredLanguage: lang, recipientFirstName: "Simon", recipientId: HOST_ID,
       senderFirstName: "Emma", listingTitle: TITLE, messageCount: 1, previewText: sampleMessage(lang),

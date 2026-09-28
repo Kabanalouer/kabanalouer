@@ -10,6 +10,7 @@ import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
 import AutoTextarea from "@/components/AutoTextarea";
 import PushOptIn from "@/components/PushOptIn";
+import { normalizePhone } from "@/lib/phone";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
@@ -156,7 +157,8 @@ export default function ProfileForm({
   initialName,
   initialAvatarUrl,
   initialPhone,
-  initialNotifPrefs,
+  initialNotifyEmail,
+  initialNotifySms,
   role,
   initialBio,
   initialBioEn,
@@ -168,7 +170,8 @@ export default function ProfileForm({
   initialName: string;
   initialAvatarUrl: string | null;
   initialPhone: string;
-  initialNotifPrefs: Record<string, boolean>;
+  initialNotifyEmail: boolean;
+  initialNotifySms: boolean;
   role: string;
   initialBio: string;
   initialBioEn: string;
@@ -310,9 +313,14 @@ export default function ProfileForm({
   const [contactError, setContactError] = useState("");
 
   const saveContact = async () => {
-    setContactSaving(true);
     setContactError("");
-    const { error } = await supabase.from("users").update({ phone: phone.trim() || null }).eq("id", userId);
+    const normalized = phone.trim() ? normalizePhone(phone) : null;
+    if (phone.trim() && !normalized) {
+      setContactError(t("phoneInvalid"));
+      return;
+    }
+    setContactSaving(true);
+    const { error } = await supabase.from("users").update({ phone: normalized }).eq("id", userId);
     setContactSaving(false);
     if (error) setContactError(t("errorSaving"));
     else { setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); }
@@ -375,32 +383,39 @@ export default function ProfileForm({
   };
 
   // ── Notifications ────────────────────────────────────────────────────────────
-  const [notifMessages, setNotifMessages] = useState(initialNotifPrefs.notif_messages ?? true);
-  const [notifFavorites, setNotifFavorites] = useState(initialNotifPrefs.notif_favorites ?? false);
-  const [notifMonthly, setNotifMonthly] = useState(initialNotifPrefs.notif_monthly_report ?? false);
+  // Canaux de notification des nouveaux messages et demandes de prix, lus
+  // par le cron new-message-notifications. Texto affiché désactivé tant
+  // qu'aucun numéro n'est enregistré (rien ne part sans numéro).
+  const [notifyEmail, setNotifyEmail] = useState(initialNotifyEmail);
+  const [notifySms, setNotifySms] = useState(initialNotifySms && !!initialPhone.trim());
   const [notifSaving, setNotifSaving] = useState(false);
   const [notifSaved, setNotifSaved] = useState(false);
   const [notifError, setNotifError] = useState("");
+
+  // Arrivée par un lien « Ajouter mon numéro » (#phone : bandeau messagerie,
+  // courriel d'accueil) : texto activé d'emblée pour afficher le champ.
+  useEffect(() => {
+    if (window.location.hash !== "#phone") return;
+    const id = requestAnimationFrame(() => setNotifySms(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const saveNotifs = async () => {
     setNotifSaving(true);
     setNotifError("");
     const { error } = await supabase.from("users").update({
-      notifications_prefs: {
-        notif_messages: notifMessages,
-        notif_favorites: notifFavorites,
-        notif_monthly_report: notifMonthly,
-      },
+      notify_email: notifyEmail,
+      notify_sms: notifySms,
     }).eq("id", userId);
     setNotifSaving(false);
     if (error) setNotifError(t("errorSaving"));
     else { setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2500); }
   };
 
-  // Cases à cocher : pas de frappe à attendre — sauvegarde dès le changement
+  // Interrupteurs : pas de frappe à attendre — sauvegarde dès le changement
   // d'état plutôt qu'après un délai (delay: 0, mais toujours via le même
   // hook partagé pour rester couvert par le beforeunload ci-dessous).
-  const notifAutosaveTrigger = JSON.stringify([notifMessages, notifFavorites, notifMonthly]);
+  const notifAutosaveTrigger = JSON.stringify([notifyEmail, notifySms]);
   const { pending: notifAutosavePending } = useAutosave(
     "notifications",
     notifAutosaveTrigger,
@@ -685,23 +700,52 @@ export default function ProfileForm({
           />
           <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
         </div>
-        <div id="phone">
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-            {t("phone")} <span className="text-charcoal-400 font-normal">{t("optional")}</span>
-          </label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className={inputCls}
-            placeholder="+1 (418) 555-0100"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <SaveButton saving={contactSaving} saved={contactSaved} onClick={saveContact} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
-          <ErrorMsg msg={contactError} />
-        </div>
       </Section>
+
+      {/* ── Notifications (nouveaux messages et demandes de prix) ─────────── */}
+      <div id="notifications" className="scroll-mt-28">
+        <Section title={t("notifications")} description={t("notificationsDesc")}>
+          <div className="space-y-5">
+            <Toggle
+              checked={notifyEmail}
+              onChange={setNotifyEmail}
+              label={t("notifEmail")}
+              description={t((role === "host" || role === "admin") ? "notifEmailDescHost" : "notifEmailDesc", { email })}
+            />
+            <div id="phone" className="scroll-mt-28 space-y-3">
+              <Toggle
+                checked={notifySms}
+                onChange={setNotifySms}
+                label={t("notifSms")}
+                description={t((role === "host" || role === "admin") ? "notifSmsDescHost" : "notifSmsDesc")}
+              />
+              {notifySms && (
+                <div>
+                  <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("mobilePhone")}</label>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className={inputCls}
+                    placeholder="418 555-0100"
+                  />
+                  {!phone.trim() && <p className="text-xs text-warning-700 mt-1">{t("smsNeedsPhone")}</p>}
+                  <ErrorMsg msg={contactError} />
+                </div>
+              )}
+            </div>
+            {!notifyEmail && !notifySms && (
+              <p className="text-sm text-warning-700 bg-warning-50 rounded-xl px-4 py-3">{t("notifNoneWarning")}</p>
+            )}
+          </div>
+          <div className="pt-2 flex items-center gap-3">
+            <SaveButton saving={notifSaving || contactSaving} saved={notifSaved || contactSaved} onClick={() => { void saveNotifs(); if (notifySms) void saveContact(); }} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
+            <ErrorMsg msg={notifError} />
+          </div>
+        </Section>
+      </div>
 
       {/* ── Langue ────────────────────────────────────────────────────────── */}
       <Section title={t("language")} description={t("languageDesc")}>
@@ -747,34 +791,6 @@ export default function ProfileForm({
             {pwdSaving ? t("changingPassword") : pwdSaved ? t("passwordChanged") : t("changePassword")}
           </button>
           <ErrorMsg msg={pwdError} />
-        </div>
-      </Section>
-
-      {/* ── Préférences de notification ────────────────────────────────────── */}
-      <Section title={t("notifications")}>
-        <div className="space-y-5">
-          <Toggle
-            checked={notifMessages}
-            onChange={setNotifMessages}
-            label={t("notifMessages")}
-            description={t("notifMessagesDesc")}
-          />
-          <Toggle
-            checked={notifFavorites}
-            onChange={setNotifFavorites}
-            label={t("notifFavorites")}
-            description={t("notifFavoritesDesc")}
-          />
-          <Toggle
-            checked={notifMonthly}
-            onChange={setNotifMonthly}
-            label={t("notifMonthly")}
-            description={t("notifMonthlyDesc")}
-          />
-        </div>
-        <div className="pt-2 flex items-center gap-3">
-          <SaveButton saving={notifSaving} saved={notifSaved} onClick={saveNotifs} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
-          <ErrorMsg msg={notifError} />
         </div>
       </Section>
 

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { sendBoostInviteEmail, sendInstallAppGuideEmail } from "@/lib/emails/hostOnboarding";
+import { sendBoostInviteEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
 
 // Cron quotidien — courriels d'accueil des nouveaux proprios, après leur
 // première publication. Une annonce ne peut être publiée qu'avec un
 // abonnement actif : la date du premier abonnement du proprio sert donc de
 // date de première publication (aucune colonne published_at en base).
 // - 48 h : invitation à booster (users.boost_invite_email_sent_at)
-// - 96 h : guide installation de l'app + notifications (users.install_app_email_sent_at)
+// - 96 h : invitation à activer les textos (users.install_app_email_sent_at,
+//   nom hérité de l'ancien guide d'installation de l'app) — sautée si le
+//   proprio reçoit déjà les textos
 // Seulement pour les proprios publiés depuis moins de 14 jours : les comptes
 // déjà établis ne reçoivent pas ces courriels d'un coup au lancement.
 
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const { data: user } = await supabase
       .from("users")
-      .select("email, name, preferred_language, phone, boost_invite_email_sent_at, install_app_email_sent_at")
+      .select("email, name, preferred_language, phone, notify_sms, boost_invite_email_sent_at, install_app_email_sent_at")
       .eq("id", userId)
       .single();
     if (!user?.email) continue;
@@ -92,10 +94,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (needInstall) {
-      const { error } = await sendInstallAppGuideEmail({
-        email: user.email as string, lang, firstName, hasPhone: !!user.phone,
-      });
-      if (error) console.error(`[host-onboarding-emails] install ${userId}`, error);
+      const alreadyGetsSms = !!user.phone && user.notify_sms !== false;
+      const { error } = alreadyGetsSms
+        ? { error: null }
+        : await sendSmsInviteEmail({ email: user.email as string, lang, firstName });
+      if (error) console.error(`[host-onboarding-emails] sms-invite ${userId}`, error);
       else {
         await supabase.from("users").update({ install_app_email_sent_at: new Date().toISOString() }).eq("id", userId);
         installSent++;
