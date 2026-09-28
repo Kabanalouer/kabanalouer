@@ -10,6 +10,15 @@ export default function FooterLangToggle() {
   const basePath = isEn ? pathname.slice(3) || "/" : pathname;
 
   function switchTo(locale: "fr" | "en") {
+    // Les adresses FR et EN diffèrent souvent (/chalets ↔ /en/cabins, slugs de
+    // région traduits…) : on suit le lien hreflang que chaque page déclare,
+    // et on ne préfixe/retire « /en » qu'à défaut.
+    const alternate = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${locale}"]`);
+    if (alternate) {
+      const url = new URL(alternate.href, window.location.origin);
+      router.push(`${url.pathname}${window.location.search}`);
+      return;
+    }
     router.push(locale === "en" ? `/en${basePath}` : basePath);
   }
 

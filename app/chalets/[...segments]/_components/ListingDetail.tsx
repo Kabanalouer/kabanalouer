@@ -619,7 +619,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
             <div className="bg-white rounded-2xl border border-[#ebebeb] shadow-lg p-6">
               {/* Promo bandeau */}
               {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (() => {
-                const lines = formatPromoLines(activePromo);
+                const lines = formatPromoLines(activePromo, locale);
                 return (
                   <div className="mb-4 flex items-start gap-2 bg-accent/5 border border-accent/20 rounded-xl px-3 py-2.5">
                     <svg className="w-4 h-4 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -685,7 +685,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
               <div>
                 {activePromo && isLastminuteVisible(activePromo, urlCheckin) && (
                   <p className="text-xs font-medium text-accent leading-none mb-1 truncate max-w-[160px]">
-                    {formatPromoLines(activePromo).line1}
+                    {formatPromoLines(activePromo, locale).line1}
                   </p>
                 )}
                 <span className="text-lg font-bold text-charcoal-800">{listing.price_low} $</span>

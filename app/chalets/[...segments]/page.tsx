@@ -15,6 +15,8 @@ import CityLanding from "./_components/CityLanding";
 import DogFriendlyLanding, { buildDogFriendlyMeta } from "./_components/DogFriendlyLanding";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR, DOG_FRIENDLY_SLUG_EN, DOG_FRIENDLY_SLUG_FR } from "@/lib/dogPolicy";
 import AccessibleLanding, { buildAccessibleMeta } from "./_components/AccessibleLanding";
+import DealsLanding, { buildDealsMeta, countDealListings } from "./_components/DealsLanding";
+import { DEALS_PATH_EN, DEALS_PATH_FR, DEALS_SLUG_EN, DEALS_SLUG_FR, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib/promoLabel";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR, ACCESSIBLE_SLUG_EN, ACCESSIBLE_SLUG_FR } from "@/lib/accessibility";
 import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
@@ -47,7 +49,7 @@ interface Props {
   searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string }>;
 }
 
-type SearchParams = { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string };
+type SearchParams = { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string; type?: string };
 
 type ListingRow = Record<string, unknown> & {
   title: string | null;
@@ -131,6 +133,25 @@ export async function generateMetadata({ params }: Props) {
         alternates: {
           canonical,
           languages: { fr: DOG_FRIENDLY_PATH_FR, en: DOG_FRIENDLY_PATH_EN, "x-default": DOG_FRIENDLY_PATH_FR },
+        },
+        openGraph: { title, description, url: canonical },
+        twitter: { title, description },
+      };
+    }
+
+    if (slug === (isEn ? DEALS_SLUG_EN : DEALS_SLUG_FR)) {
+      const { title, description } = buildDealsMeta(isEn);
+      const dealCount = await countDealListings();
+      const canonical = isEn ? DEALS_PATH_EN : DEALS_PATH_FR;
+      return {
+        title,
+        description,
+        ...(dealCount < MIN_DEAL_LISTINGS_FOR_INDEX
+          ? { robots: { index: false, follow: true } }
+          : {}),
+        alternates: {
+          canonical,
+          languages: { fr: DEALS_PATH_FR, en: DEALS_PATH_EN, "x-default": DEALS_PATH_FR },
         },
         openGraph: { title, description, url: canonical },
         twitter: { title, description },
@@ -323,6 +344,9 @@ export default async function ChaletPage({ params, searchParams }: Props) {
 async function renderSingleSegment(slug: string, locale: string, isEn: boolean, sp: SearchParams) {
   if (slug === (isEn ? DOG_FRIENDLY_SLUG_EN : DOG_FRIENDLY_SLUG_FR)) return <DogFriendlyLanding />;
   if (slug === (isEn ? ACCESSIBLE_SLUG_EN : ACCESSIBLE_SLUG_FR)) return <AccessibleLanding />;
+  if (slug === (isEn ? DEALS_SLUG_EN : DEALS_SLUG_FR)) {
+    return <DealsLanding filter={sp.type} />;
+  }
 
   // Region landing page — check before any DB query
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);

@@ -4,6 +4,7 @@ import FooterLangToggle from "./FooterLangToggle";
 import { localePath } from "@/lib/localePath";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR } from "@/lib/accessibility";
+import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
 
 function FooterLogo() {
   return (
@@ -47,6 +48,7 @@ export default async function Footer() {
             <ul className="space-y-3 text-sm">
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
               <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />
+              <FooterLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR} label={t("travelers.deals")} />
               <FooterLink href={locale === "en" ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR} label={t("travelers.dogFriendly")} />
               <FooterLink href={locale === "en" ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR} label={t("travelers.accessible")} />
               <FooterLink href={localePath("/comment-ca-marche", locale)} label={t("travelers.howItWorks")} />

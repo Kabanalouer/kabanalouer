@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { formatPromoLines, type PromoRow } from "@/lib/promoLabel";
 import { DateRangeField } from "@/components/DateRangePicker";
@@ -80,6 +80,7 @@ function PromoPeriodFields({
 
 export default function PromotionsSection({ listingId }: { listingId: string }) {
   const t = useTranslations("listings.promotions");
+  const locale = useLocale();
   const supabase = createClient();
   const [activePromo, setActivePromo] = useState<PromoRow | null>(null);
   const [expiredDate, setExpiredDate] = useState<string | null>(null);
@@ -222,13 +223,13 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     ? formatPromoLines({
         type: rabaisUnit, value: parseInt(rabaisValue), min_nights: null, days_before: null,
         start_date: startDate, end_date: endDate, date_basis: dateBasis,
-      })
+      }, locale)
     : null;
   const dureePreview = hasPeriod
     ? formatPromoLines({
         type: "duration", value: 1, min_nights: 2, days_before: null,
         start_date: startDate, end_date: endDate, date_basis: dateBasis,
-      })
+      }, locale)
     : null;
 
   if (loading) {
@@ -242,7 +243,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
           <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-2">{t("activeLabel")}</p>
           <div className="flex items-start justify-between gap-4">
             {(() => {
-              const lines = formatPromoLines(activePromo);
+              const lines = formatPromoLines(activePromo, locale);
               return (
                 <div>
                   <p className="text-base font-semibold text-charcoal-800">{lines.line1}</p>
@@ -275,7 +276,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
           {expiredDate ? (
             <p className="text-sm text-charcoal-400 mb-5">
               {t("expired", {
-                date: new Date(expiredDate + "T12:00:00").toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })
+                date: new Date(expiredDate + "T12:00:00").toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { day: "numeric", month: "long", year: "numeric" })
               })}
             </p>
           ) : (

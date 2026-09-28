@@ -156,7 +156,7 @@ export default function ListingCard({
           )}
           {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
             <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-              {formatPromoLines(listing.promoData).line1}
+              {formatPromoLines(listing.promoData, locale).line1}
             </span>
           )}
           {listing.isNew && (
