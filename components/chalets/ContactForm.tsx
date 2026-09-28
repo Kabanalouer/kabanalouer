@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
@@ -38,6 +39,9 @@ interface Props {
   dogsMax: number;
   blockedDates?: string[];
   hideMessage?: boolean;
+  // Feuille modale mobile : calendrier et voyageurs affichés dans le flux
+  // (pleine largeur) plutôt qu'en fenêtre flottante qui dépasserait l'écran.
+  inlinePanels?: boolean;
   senderHasAvatar?: boolean;
 }
 
@@ -60,7 +64,7 @@ export default function ContactForm({
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
   price, priceOnRequest,
-  capacity, dogsMax, blockedDates, hideMessage, senderHasAvatar = true,
+  capacity, dogsMax, blockedDates, hideMessage, inlinePanels = false, senderHasAvatar = true,
 }: Props) {
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
@@ -80,6 +84,8 @@ export default function ContactForm({
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const calRef = useRef<HTMLDivElement>(null);
+  const calPanelRef = useRef<HTMLDivElement>(null);
+  const guestsPanelRef = useRef<HTMLDivElement>(null);
 
   const blockedSet = useMemo(() => new Set(blockedDates ?? []), [blockedDates]);
 
@@ -105,6 +111,14 @@ export default function ContactForm({
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [calendarOpen]);
+
+  // Panneau ouvert dans la feuille mobile : le ramener dans la zone visible.
+  useEffect(() => {
+    if (inlinePanels && calendarOpen) calPanelRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [inlinePanels, calendarOpen]);
+  useEffect(() => {
+    if (inlinePanels && guestsOpen) guestsPanelRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [inlinePanels, guestsOpen]);
 
   // Close guests panel on outside click
   useEffect(() => {
@@ -254,7 +268,15 @@ export default function ContactForm({
       <div className="flex items-center gap-3 pb-1">
         <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-charcoal-100 flex items-center justify-center">
           {hostAvatarUrl ? (
-            <img src={hostAvatarUrl} alt={hostFirstName ?? t("ownerLabel")} className="w-full h-full object-cover" />
+            <Image
+              src={hostAvatarUrl}
+              alt={hostFirstName ?? t("ownerLabel")}
+              width={56}
+              height={56}
+              sizes="56px"
+              loading="lazy"
+              className="w-full h-full object-cover rounded-full"
+            />
           ) : (
             <span className="text-charcoal-600 font-bold text-lg">{hostInitials}</span>
           )}
@@ -316,7 +338,12 @@ export default function ContactForm({
         </div>
 
         {calendarOpen && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] p-4 z-50 w-full">
+          <div
+            ref={calPanelRef}
+            className={inlinePanels
+              ? "mt-2 bg-white rounded-xl border border-[#ebebeb] p-3 w-full scroll-mb-4"
+              : "absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] p-4 z-50 w-full"}
+          >
             <CalendarMonth
               year={calYear} month={calMonth} today={today}
               checkin={checkin} checkout={checkout} hoverDate={hoverDate} blockedDates={blockedSet}
@@ -350,7 +377,12 @@ export default function ContactForm({
         </button>
 
         {guestsOpen && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] z-50 w-full">
+          <div
+            ref={guestsPanelRef}
+            className={inlinePanels
+              ? "mt-2 bg-white rounded-xl border border-[#ebebeb] w-full scroll-mb-4"
+              : "absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-[#ebebeb] z-50 w-full"}
+          >
             {([
               { label: ts("adults"), sub: ts("adultsSub"), val: adults,
                 onDecr: () => setAdults((v) => Math.max(1, v - 1)),

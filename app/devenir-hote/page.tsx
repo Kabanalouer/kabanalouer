@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CreationChoiceSection from "@/components/devenir-hote/CreationChoiceSection";
@@ -86,12 +87,14 @@ export default async function DevenirHotePage() {
       {/* ── Hero ── */}
       <section className="relative min-h-[600px] flex items-center z-10">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1920&q=80')",
-            }}
+          <Image
+            src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1920&q=80"
+            alt=""
+            fill
+            priority
+            fetchPriority="high"
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/30" />
         </div>

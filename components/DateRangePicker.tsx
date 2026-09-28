@@ -38,11 +38,11 @@ export function CalendarMonth({
   return (
     <div className="select-none w-full">
       <div className="flex items-center mb-3">
-        <button type="button" onClick={onPrev} className={`p-1.5 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
+        <button type="button" onClick={onPrev} aria-label={monthNames[(month + 11) % 12]} className={`p-1.5 [@media(pointer:coarse)]:p-3 rounded-lg transition-colors ${showPrev ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
         <p className="flex-1 text-center text-sm font-semibold text-charcoal-800">{monthNames[month]} {year}</p>
-        <button type="button" onClick={onNext} className={`p-1.5 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
+        <button type="button" onClick={onNext} aria-label={monthNames[(month + 1) % 12]} className={`p-1.5 [@media(pointer:coarse)]:p-3 rounded-lg transition-colors ${showNext ? "hover:bg-charcoal-50 text-charcoal-600" : "invisible"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
@@ -53,7 +53,7 @@ export function CalendarMonth({
       </div>
       <div className="grid grid-cols-7">
         {days.map((day, i) => {
-          if (day === null) return <div key={`e-${i}`} className="h-8" />;
+          if (day === null) return <div key={`e-${i}`} className="h-8 [@media(pointer:coarse)]:h-11" />;
           const ds = toISO(year, month, day);
           const isPast = ds < today;
           const isBlocked = !isPast && blockedDates.has(ds);
@@ -64,7 +64,7 @@ export function CalendarMonth({
           const inRange = !!checkin && !!effectiveEnd && ds > checkin && ds < effectiveEnd;
           const hasRange = !!(checkin && effectiveEnd);
           return (
-            <div key={ds} className="relative h-8 flex items-center justify-center">
+            <div key={ds} className="relative h-8 [@media(pointer:coarse)]:h-11 flex items-center justify-center">
               {isStart && hasRange && <div className="absolute inset-y-0.5 left-1/2 right-0 bg-primary/10" />}
               {(isEnd || isHoverEnd) && <div className="absolute inset-y-0.5 left-0 right-1/2 bg-primary/10" />}
               {inRange && <div className="absolute inset-y-0.5 left-0 right-0 bg-primary/10" />}
@@ -74,7 +74,7 @@ export function CalendarMonth({
                 onClick={() => !isDisabled && onDayClick(ds)}
                 onMouseEnter={() => !isDisabled && onDayEnter(ds)}
                 onMouseLeave={onDayLeave}
-                className={["relative z-10 w-8 h-8 flex items-center justify-center text-xs rounded-full transition-all",
+                className={["relative z-10 w-8 h-8 [@media(pointer:coarse)]:w-10 [@media(pointer:coarse)]:h-10 flex items-center justify-center text-xs [@media(pointer:coarse)]:text-sm rounded-full transition-all",
                   isPast ? "text-charcoal-200 cursor-not-allowed" :
                   isBlocked ? "text-charcoal-300 line-through cursor-not-allowed bg-charcoal-50" :
                   isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :

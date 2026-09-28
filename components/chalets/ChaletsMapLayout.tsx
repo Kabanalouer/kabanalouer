@@ -151,14 +151,15 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       ) : listings.length === 0 ? (
         <EmptyState />
       ) : (
-        listings.map((listing) => (
+        listings.map((listing, i) => (
           <div
             key={listing.id}
             onMouseEnter={() => setHoveredId(listing.id)}
             onMouseLeave={() => setHoveredId(null)}
             className="rounded-xl"
           >
-            <ListingCard listing={listing} currentUserId={currentUserId} />
+            {/* 2 premières cartes : photo chargée en priorité (élément LCP) */}
+            <ListingCard listing={listing} currentUserId={currentUserId} priority={i < 2} />
           </div>
         ))
       )}

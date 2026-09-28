@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
 interface BedEntry { type: string; quantity: number; }
@@ -25,6 +26,23 @@ function bedLabel(type: string, locale: string): string {
   const entry = BED_LABEL[type];
   if (!entry) return type;
   return locale === "en" ? entry.en : entry.fr;
+}
+
+// Hôtes autorisés par images.remotePatterns (next.config.ts). Une URL hors de
+// cette liste ferait planter next/image : on la sert alors sans optimisation.
+function isOptimizableHost(src: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(src);
+    if (protocol !== "https:") return false;
+    return (
+      hostname === "images.unsplash.com" ||
+      hostname === "fgdwhbemzmccchemtzog.supabase.co" ||
+      hostname.endsWith(".muscache.com")
+    );
+  } catch {
+    // URL relative (ex. /images/...) : servie par l'app, optimisable.
+    return src.startsWith("/");
+  }
 }
 
 function displayRoomName(room: Room, locale: string): string {
@@ -151,11 +169,13 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
       {/* Photo — 16:9 with optional carousel */}
       <div className="relative w-full aspect-video overflow-hidden bg-charcoal-50">
         {photos.length > 0 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={photos[photoIdx]}
             alt={`${displayRoomName(room, locale)} – photo ${photoIdx + 1}`}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 768px) 50vw, 380px"
+            unoptimized={!isOptimizableHost(photos[photoIdx])}
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">

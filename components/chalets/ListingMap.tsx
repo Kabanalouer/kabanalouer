@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
@@ -46,16 +46,46 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
 export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
   const t = useTranslations("listing");
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const containerRef = useRef<HTMLDivElement>(null);
+  // La carte est loin sous la ligne de flottaison : on ne monte APIProvider
+  // (qui injecte le script Google Maps JS, ~480 KiB) qu'à l'approche du
+  // viewport. Avant ça, le conteneur h-64 reste vide (même taille → CLS 0).
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visible]);
+
   if (!apiKey) return null;
 
   return (
-    <APIProvider apiKey={apiKey}>
-      <div className="h-64 rounded-2xl overflow-hidden border border-charcoal-100">
-        <MapInner lat={lat} lng={lng} />
+    <>
+      <div
+        ref={containerRef}
+        className="h-64 rounded-2xl overflow-hidden border border-charcoal-100 bg-charcoal-50"
+      >
+        {visible && (
+          <APIProvider apiKey={apiKey}>
+            <MapInner lat={lat} lng={lng} />
+          </APIProvider>
+        )}
       </div>
       <p className="text-sm text-charcoal-400 mt-2">
         {t("exactLocationNote")}
       </p>
-    </APIProvider>
+    </>
   );
 }

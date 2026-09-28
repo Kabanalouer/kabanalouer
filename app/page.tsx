@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import AuthCodeWelcomeTrigger from "@/components/AuthCodeWelcomeTrigger";
 import SearchBar from "@/components/SearchBar";
@@ -193,10 +194,18 @@ export default async function HomePage() {
       <section className="relative min-h-[calc(100svh-80px)] sm:h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] flex flex-col z-40">
         {/* overflow-hidden uniquement sur le wrapper background pour clipper le scale-[1.02] */}
         <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center scale-[1.02]"
-            style={{ backgroundImage: "url('/hero-chalet.webp')" }}
-          />
+          {/* next/image (priority) : LCP préchargé + variantes responsive au lieu du webp 2560px en CSS */}
+          <div className="absolute inset-0 scale-[1.02]">
+            <Image
+              src="/hero-chalet.webp"
+              alt=""
+              fill
+              priority
+              fetchPriority="high"
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          </div>
           {/* Overlay — léger en haut, dense en bas */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
         </div>

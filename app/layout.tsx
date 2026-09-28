@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -19,6 +19,15 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   display: "swap",
 });
+
+// viewport-fit=cover : sans lui, env(safe-area-inset-*) vaut 0 sur iPhone
+// (barre d'accueil, encoche) — les marges de sécurité des éléments fixés en
+// bas (barre de la fiche, galerie, panneaux) n'auraient aucun effet.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const isEn = (await getLocale()) === "en";

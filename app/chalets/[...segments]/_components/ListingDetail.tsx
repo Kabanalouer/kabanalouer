@@ -683,7 +683,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
         {/* Mobile CTA */}
         {!isOwner && (
-          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 py-3 z-40 flex items-center justify-between gap-4">
+          <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-4">
             {listing.price_on_request || listing.price_low === 0 ? (
               <span className="text-sm font-bold text-charcoal-800">{t("priceOnRequest")}</span>
             ) : (
@@ -723,8 +723,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
         )}
       </main>
 
-      <div className="lg:hidden h-24" />
       {!isPreviewFrame && <Footer />}
+      {/* Réserve la hauteur de la barre fixe mobile sous le pied de page,
+          sinon elle en masque le bas. */}
+      {!isOwner && <div className="lg:hidden h-[calc(4.5rem+env(safe-area-inset-bottom))]" aria-hidden="true" />}
     </div>
   );
 }

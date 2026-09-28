@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay } from "@/lib/promoLabel";
@@ -36,9 +36,12 @@ export interface Listing {
 export default function ListingCard({
   listing,
   currentUserId,
+  priority = false,
 }: {
   listing: Listing;
   currentUserId?: string | null;
+  // Cartes au-dessus de la ligne de flottaison : première photo chargée en priorité.
+  priority?: boolean;
 }) {
   const t = useTranslations("listingCard");
   const locale = useLocale();
@@ -47,6 +50,9 @@ export default function ListingCard({
       ? listing.photos
       : ["https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80"];
   const [idx, setIdx] = useState(0);
+  // Plus grand index atteint : les photos ne sont montées qu'au fil du balayage.
+  const [maxSeen, setMaxSeen] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const checkin = searchParams.get("checkin");
   const checkout = searchParams.get("checkout");
@@ -64,16 +70,35 @@ export default function ListingCard({
     return `${path}${s ? `?${s}` : ""}`;
   })();
 
+  // Flèches (bureau) : font défiler la piste ; l'index suit via onScroll.
+  const goTo = (i: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const target = Math.max(0, Math.min(photos.length - 1, i));
+    if (target > maxSeen) setMaxSeen(target);
+    el.scrollTo({ left: target * el.clientWidth, behavior: "smooth" });
+  };
+
   const prev = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIdx((i) => Math.max(0, i - 1));
+    goTo(idx - 1);
   };
 
   const next = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIdx((i) => Math.min(photos.length - 1, i + 1));
+    goTo(idx + 1);
+  };
+
+  // Balayage tactile (scroll-snap natif) : un geste de défilement annule le
+  // clic, donc balayer ne déclenche pas la navigation vers la fiche.
+  const onScroll = () => {
+    const el = trackRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.max(0, Math.min(photos.length - 1, Math.round(el.scrollLeft / el.clientWidth)));
+    if (i !== idx) setIdx(i);
+    if (i > maxSeen) setMaxSeen(i);
   };
 
   const regionLabel = locale === "en" ? getRegionByDbValue(listing.region)?.nameEn ?? listing.region : listing.region;
@@ -84,14 +109,28 @@ export default function ListingCard({
       {/* ── Photo ── */}
       <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-charcoal-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
         {listing.photos.length > 0 ? (
-          <Image
-            src={photos[idx]}
-            alt={`${listing.title} — photo ${idx + 1}`}
-            fill
-            loading="lazy"
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <div
+            ref={trackRef}
+            onScroll={onScroll}
+            className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {photos.map((src, i) => (
+              <div key={i} className="relative w-full h-full shrink-0 snap-center snap-always">
+                {i <= maxSeen + 1 && (
+                  <Image
+                    src={src}
+                    alt={`${listing.title} — photo ${i + 1}`}
+                    fill
+                    {...(priority && i === 0 ? { priority: true } : { loading: "lazy" as const })}
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    draggable={false}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-charcoal-100">
             <svg
@@ -115,9 +154,9 @@ export default function ListingCard({
           <button
             onClick={prev}
             aria-label={t("prevPhoto")}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity z-10 [@media(hover:none)]:hidden"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </button>
@@ -128,9 +167,9 @@ export default function ListingCard({
           <button
             onClick={next}
             aria-label={t("nextPhoto")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-[30px] h-[30px] flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-sm border border-charcoal-100 text-charcoal-800 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity z-10 [@media(hover:none)]:hidden"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </button>
@@ -171,10 +210,12 @@ export default function ListingCard({
 
         {/* Favorite */}
         <div className="absolute top-2.5 right-2.5 z-10">
+          {/* Pseudo-élément : zone de toucher 44x44 autour du cœur visuel de 32 px */}
           <FavoriteButton
             listingId={listing.id}
             initialIsFavorite={listing.isFavorite ?? false}
             currentUserId={currentUserId ?? null}
+            className="relative block before:absolute before:-inset-1.5 before:rounded-full"
           />
         </div>
       </div>
