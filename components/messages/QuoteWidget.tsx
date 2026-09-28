@@ -13,6 +13,7 @@ import {
   tokenizeMessage,
 } from "@/lib/quoteMessage";
 import type { Message } from "./MessagesClient";
+import AutoTextarea from "@/components/AutoTextarea";
 
 const MONTHS_SHORT_FR = [
   "janv.", "févr.", "mars", "avr.", "mai", "juin",
@@ -239,7 +240,7 @@ export default function QuoteWidget({
         <label className="block text-sm font-medium text-charcoal-500 mb-1">
           {t("quoteTextareaLabel")}
         </label>
-        <textarea
+        <AutoTextarea
           value={editedText}
           onChange={(e) => {
             hasEditedText.current = true;

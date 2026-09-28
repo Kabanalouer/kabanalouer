@@ -11,6 +11,7 @@ import { PhotoTip } from "@/components/PhotoReminderBanner";
 import { CalendarMonth, formatShort } from "@/components/DateRangePicker";
 import { localePath } from "@/lib/localePath";
 import { formatPrice } from "@/lib/formatPrice";
+import AutoTextarea from "@/components/AutoTextarea";
 
 // ── ContactForm ───────────────────────────────────────────────────────────────
 
@@ -410,7 +411,7 @@ export default function ContactForm({
 
       {/* Message — masqué en mobile (feuille modale, voir MobileContactTrigger) */}
       {!hideMessage && (
-        <textarea
+        <AutoTextarea
           placeholder={t("messagePlaceholderOptional")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}

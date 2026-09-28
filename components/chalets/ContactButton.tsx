@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
 import { PhotoTip } from "@/components/PhotoReminderBanner";
+import AutoTextarea from "@/components/AutoTextarea";
 
 export default function ContactButton({
   listingId,
@@ -176,7 +177,7 @@ function ContactModal({
               </button>
             </div>
 
-            <textarea
+            <AutoTextarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}

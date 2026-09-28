@@ -11,6 +11,7 @@ import {
   tokenizeMessage,
 } from "@/lib/quoteMessage";
 import type { Message } from "./MessagesClient";
+import AutoTextarea from "@/components/AutoTextarea";
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 
@@ -142,7 +143,7 @@ export default function NoAvailabilityWidget({
         <label className="block text-sm font-medium text-charcoal-500 mb-1">
           {t("noAvailabilityTextareaLabel")}
         </label>
-        <textarea
+        <AutoTextarea
           value={editedText}
           onChange={(e) => {
             hasEditedText.current = true;

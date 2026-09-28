@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { useAutosave } from "@/lib/useAutosave";
 import TranslateButton from "./TranslateButton";
+import AutoTextarea from "@/components/AutoTextarea";
 
 const inputCls =
   "w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition";
@@ -476,10 +477,11 @@ export default function ProfileForm({
         </div>
       </div>
       <div className="relative">
-        <textarea
+        <AutoTextarea
           value={bio}
           onChange={(e) => setBio(e.target.value.slice(0, 300))}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition pb-6"
+          rows={4}
           placeholder={t("bioPlaceholder")}
           maxLength={300}
         />
@@ -505,10 +507,11 @@ export default function ProfileForm({
         />
       </div>
       <div className="relative">
-        <textarea
+        <AutoTextarea
           value={bioEn}
           onChange={(e) => setBioEn(e.target.value.slice(0, 300))}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none h-28 pb-6"
+          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition pb-6"
+          rows={4}
           placeholder={t("bioEnPlaceholder")}
           maxLength={300}
         />
@@ -652,7 +655,7 @@ export default function ProfileForm({
       {role !== "host" && role !== "admin" && (
         <Section title={t("travelerAboutTitle")} description={t("travelerAboutDesc")}>
           <div>
-            <textarea
+            <AutoTextarea
               value={bio}
               onChange={(e) => setBio(e.target.value.slice(0, 200))}
               rows={3}

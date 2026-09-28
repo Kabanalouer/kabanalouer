@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { submitContactForm, type ContactFormState } from "./actions";
+import AutoTextarea from "@/components/AutoTextarea";
 
 const initialState: ContactFormState = { status: "idle" };
 
@@ -115,7 +116,7 @@ export default function ContactForm() {
         <label htmlFor="message" className="block text-sm font-medium text-charcoal-700 mb-1.5">
           {t("formMessage")} <span className="text-error-400">*</span>
         </label>
-        <textarea
+        <AutoTextarea
           id="message"
           name="message"
           required

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import AutoTextarea from "@/components/AutoTextarea";
 
 interface Props {
   reviewId: string;
@@ -57,7 +58,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
 
   return (
     <div className="mt-3">
-      <textarea
+      <AutoTextarea
         value={reply}
         onChange={(e) => setReply(e.target.value)}
         rows={3}
