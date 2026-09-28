@@ -120,7 +120,7 @@ const SECTIONS: Array<{
   { id: "localisation", sectionKey: "location",  isComplete: (f) => f.region.trim().length > 0 },
   { id: "proximite",    sectionKey: "nearby",    isComplete: () => true },
   { id: "infos",        sectionKey: "general",   isComplete: (f) => f.citq_number.length === 6 && isDogPolicyComplete(formDogPolicy(f)) },
-  { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 50 },
+  { id: "tarifs",       sectionKey: "pricing",   isComplete: (f) => f.price_on_request || f.price_low >= 10 },
   { id: "calendrier",   sectionKey: "calendar",  isComplete: () => true },
   { id: "lienPersonnalise", sectionKey: "customSlug", isComplete: () => true },
   { id: "promotions",   sectionKey: "promotions", isComplete: () => true },
@@ -354,7 +354,7 @@ export default function EditListingForm({
     capacite: form.capacity >= 1 && form.bedrooms >= 1,
     chambres: roomsHasBeds,
     equipements: form.amenities.length >= 3,
-    tarifs: form.price_on_request || form.price_low >= 50,
+    tarifs: form.price_on_request || form.price_low >= 10,
     localisation: locationValid,
   };
 
@@ -1574,17 +1574,21 @@ export default function EditListingForm({
                   </button>
                   {!form.price_on_request && (
                     <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 rounded-b-xl bg-[#f5f6ec]">
-                      <Label>{tEdit("pricingFromLabel")} <Req /> <span className="font-normal text-charcoal-400 text-xs">{tEdit("pricingFromMin")}</span></Label>
-                      <div className="relative max-w-xs">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
-                        <input
-                          type="number"
-                          min={0}
-                          value={form.price_low || ""}
-                          onChange={(e) => set("price_low", parseInt(e.target.value) || 0)}
-                          className={`${inputCls} pl-7`}
-                          placeholder="189"
-                        />
+                      <Label>{tEdit("pricingFromLabel")} <Req /></Label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-28">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={5}
+                            value={form.price_low || ""}
+                            onChange={(e) => set("price_low", parseInt(e.target.value.replace(/\D/g, "").slice(0, 5)) || 0)}
+                            className={`${inputCls} pl-7`}
+                            placeholder="189"
+                          />
+                        </div>
+                        <span className="text-sm text-charcoal-600">{tEdit("pricingFromPerNight")}</span>
                       </div>
                       <p className="text-sm text-charcoal-400 mt-3 leading-relaxed">
                         {tEdit("pricingFromNote")}
