@@ -40,12 +40,12 @@ function fmtDate(dateStr: string): string {
   });
 }
 
-// « sur les séjours du X au Y » ou « pour toute réservation faite entre le X et le Y »
+// « sur les séjours du X au Y » ou « pour toutes réservations faites entre le X et le Y, peu importe la date du séjour »
 function periodPhrase(promo: PromoDisplay): string | undefined {
   const { start_date, end_date, date_basis } = promo;
   if (!start_date || !end_date) return undefined;
   return date_basis === "booking"
-    ? `pour toute réservation faite entre le ${fmtDate(start_date)} et le ${fmtDate(end_date)}`
+    ? `pour toutes réservations faites entre le ${fmtDate(start_date)} et le ${fmtDate(end_date)}, peu importe la date du séjour`
     : `sur les séjours du ${fmtDate(start_date)} au ${fmtDate(end_date)}`;
 }
 
@@ -101,7 +101,7 @@ export function formatPromoLines(promo: PromoDisplay): { line1: string; line2?: 
       line1: "Nuitée GRATUITE",
       line2: start_date && end_date
         ? date_basis === "booking"
-          ? `Sur tous les séjours de ${nights} nuits minimum réservés entre le ${fmtDate(start_date)} et le ${fmtDate(end_date)}.`
+          ? `Sur tous les séjours de ${nights} nuits minimum réservés entre le ${fmtDate(start_date)} et le ${fmtDate(end_date)}, peu importe la date du séjour.`
           : `Sur tous les séjours de ${nights} nuits minimum du ${fmtDate(start_date)} au ${fmtDate(end_date)}.`
         : undefined,
     };
