@@ -482,7 +482,7 @@ export default function MessagesClient({
       </div>
 
       {/* Main: thread view */}
-      <div className={`flex-1 flex-col bg-charcoal-50 ${mobileView === "thread" ? "flex" : "hidden"} md:flex`}>
+      <div className={`flex-1 min-w-0 flex-col bg-charcoal-50 ${mobileView === "thread" ? "flex" : "hidden"} md:flex`}>
         {!selectedListingId || !selectedWithId ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center max-w-sm">
@@ -595,7 +595,7 @@ export default function MessagesClient({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-3">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
               {/* Fiche du voyageur, visible seulement par le proprio de l'annonce */}
               {isHostOfListing && activeConv && <TravelerCard conv={activeConv} />}
               {loadingMessages ? (
@@ -613,7 +613,7 @@ export default function MessagesClient({
 
                   if (msg.quote_data) {
                     return (
-                      <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                      <div key={msg.id} className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
                         <QuoteCard content={msg.content} isMine={isMine} type={msg.quote_data.type ?? "quote"} />
                       </div>
                     );
@@ -628,9 +628,9 @@ export default function MessagesClient({
 
                   return (
                     <div key={msg.id} className={`flex flex-col gap-1.5 ${isMine ? "items-end" : "items-start"}`}>
-                      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                      <div className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-base leading-relaxed ${
+                          className={`max-w-[80%] md:max-w-sm min-w-0 px-4 py-2.5 rounded-2xl text-base leading-relaxed [overflow-wrap:anywhere] ${
                             isMine
                               ? "bg-primary text-white rounded-br-sm"
                               : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"

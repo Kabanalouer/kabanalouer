@@ -25,7 +25,7 @@ export default function QuoteCard({
 
   return (
     <div
-      className={`max-w-[80%] md:max-w-sm px-4 py-2.5 rounded-2xl text-base leading-relaxed ${
+      className={`max-w-[80%] md:max-w-sm min-w-0 px-4 py-2.5 rounded-2xl text-base leading-relaxed [overflow-wrap:anywhere] ${
         isMine
           ? "bg-primary text-white rounded-br-sm"
           : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
