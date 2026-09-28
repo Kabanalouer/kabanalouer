@@ -9,7 +9,9 @@ const MAX_OFFSET = 17;
 const BLOCKED_COLOR = "#FECACA"; // error-200
 
 type BlockedEntry = { date: string; source: "manual" | "ical" };
-type RangePos = "start" | "end" | "middle" | "single";
+// Chaque nuit bloquée D occupe la moitié droite de D (arrivée) et la moitié
+// gauche de D+1 (départ) — le jour de départ reste disponible pour une arrivée.
+type HalfFill = { left: boolean; right: boolean };
 
 function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -21,26 +23,12 @@ function offsetDate(dateStr: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function getRangePos(dateStr: string, allBlocked: Set<string>): RangePos {
-  const hasPrev = allBlocked.has(offsetDate(dateStr, -1));
-  const hasNext = allBlocked.has(offsetDate(dateStr, +1));
-  if (!hasPrev && !hasNext) return "single";
-  if (!hasPrev) return "start";
-  if (!hasNext) return "end";
-  return "middle";
-}
-
-function BlockBg({ pos }: { pos: RangePos }) {
+function BlockBg({ fill }: { fill: HalfFill }) {
   const c = BLOCKED_COLOR;
-  if (pos === "middle") return <div className="absolute inset-0 rounded" style={{ background: c }} />;
-  if (pos === "start")  return <div className="absolute inset-y-0 right-0 w-1/2 rounded-r" style={{ background: c }} />;
-  if (pos === "end")    return <div className="absolute inset-y-0 left-0 w-1/2 rounded-l" style={{ background: c }} />;
-  return (
-    <div className="absolute inset-0 rounded overflow-hidden">
-      <div className="absolute inset-0" style={{ background: `linear-gradient(to top right, transparent 50%, ${c} 50%)` }} />
-      <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom left, transparent 50%, ${c} 50%)` }} />
-    </div>
-  );
+  if (fill.left && fill.right) return <div className="absolute inset-0 rounded" style={{ background: c }} />;
+  if (fill.right) return <div className="absolute inset-y-0 right-0 w-1/2 rounded-r" style={{ background: c }} />;
+  if (fill.left)  return <div className="absolute inset-y-0 left-0 w-1/2 rounded-l" style={{ background: c }} />;
+  return null;
 }
 
 function MonthGrid({
@@ -80,14 +68,14 @@ function MonthGrid({
           const dateStr  = toDateStr(year, month, day);
           const isPast   = dateStr < today;
           const isBlocked = allBlocked.has(dateStr);
-          const rangePos  = isBlocked ? getRangePos(dateStr, allBlocked) : null;
+          const fill: HalfFill = { left: allBlocked.has(offsetDate(dateStr, -1)), right: isBlocked };
 
           return (
             <div
               key={day}
               className="aspect-square relative flex items-center justify-center"
             >
-              {rangePos && <BlockBg pos={rangePos} />}
+              <BlockBg fill={fill} />
               <span className={[
                 "relative z-10 text-xs",
                 isPast    ? "text-charcoal-100" :
