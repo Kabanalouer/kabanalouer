@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { translateField } from "@/lib/translateField";
 import { normalizePhotos } from "@/lib/photo";
-import { detectAndTranslate } from "@/lib/googleTranslate";
+import { detectAndTranslate, detectLanguage } from "@/lib/googleTranslate";
 
 export const maxDuration = 90;
 
@@ -24,9 +24,34 @@ async function tryTranslate(args: Parameters<typeof translateField>[0]): Promise
   }
 }
 
+// Complète une paire de champs FR/EN d'une annonce quand un des deux manque.
+// Le proprio peut avoir écrit dans l'une ou l'autre langue, même dans le
+// champ « français » : la langue réelle est détectée. Si le champ FR contient
+// de l'anglais, l'original passe dans le champ EN et le champ FR reçoit la
+// traduction française (et inversement). Retourne la paire complète à
+// écrire, ou null s'il n'y a rien à faire / en cas d'échec.
+async function completePair(
+  fr: string | null | undefined,
+  en: string | null | undefined,
+  fieldType: Parameters<typeof translateField>[0]["fieldType"]
+): Promise<{ fr: string; en: string } | null> {
+  const frText = fr?.trim();
+  const enText = en?.trim();
+  if (frText && enText) return null;
+  const original = frText || enText;
+  if (!original) return null;
+
+  const lang = (await detectLanguage(original)) ?? (frText ? "fr" : "en");
+  const target = lang === "fr" ? "en" : "fr";
+  const translated = await tryTranslate({ text: original, sourceLang: lang, targetLang: target, fieldType });
+  if (!translated) return null;
+  return lang === "fr" ? { fr: original, en: translated } : { fr: translated, en: original };
+}
+
 // GET — appelé par le cron Vercel (toutes les 10 minutes) : balaie les annonces
-// publiées avec des champs _en manquants (titre, description, légendes de
-// photos, noms de chambre) et les traduit via Sonnet. Action système, hors
+// publiées dont un champ FR ou EN manque (titre, description, légendes de
+// photos, noms de chambre) et le traduit via Sonnet, dans les deux sens
+// (voir completePair). Action système, hors
 // quota IA interactif (n'appelle jamais checkAiRateLimit) — plafond propre
 // de FIELD_CAP champs traduits par exécution, le reste attend le prochain
 // passage.
@@ -76,26 +101,24 @@ export async function GET(request: NextRequest) {
 
     const updates: Record<string, unknown> = {};
 
-    if (!listing.title_en && (listing.title as string | null)?.trim()) {
-      const translated = await tryTranslate({ text: listing.title as string, sourceLang: "fr", targetLang: "en", fieldType: "title" });
-      if (translated) { updates.title_en = translated; fieldsTranslated++; }
-    }
-
-    if (fieldsTranslated < FIELD_CAP && !listing.description_en && (listing.description as string | null)?.trim()) {
-      const translated = await tryTranslate({ text: listing.description as string, sourceLang: "fr", targetLang: "en", fieldType: "description" });
-      if (translated) { updates.description_en = translated; fieldsTranslated++; }
+    for (const [frKey, enKey, fieldType] of [
+      ["title", "title_en", "title"],
+      ["description", "description_en", "description"],
+    ] as const) {
+      if (fieldsTranslated >= FIELD_CAP) break;
+      const pair = await completePair(listing[frKey] as string | null, listing[enKey] as string | null, fieldType);
+      if (pair) { updates[frKey] = pair.fr; updates[enKey] = pair.en; fieldsTranslated++; }
     }
 
     const photos = normalizePhotos(listing.photos);
     for (const photo of photos) {
       if (fieldsTranslated >= FIELD_CAP) break;
-      if (photo.caption?.trim() && !photo.caption_en) {
-        const translated = await tryTranslate({ text: photo.caption, sourceLang: "fr", targetLang: "en", fieldType: "caption" });
-        if (translated) {
-          photo.caption_en = translated;
-          fieldsTranslated++;
-          await supabase.from("listings").update({ photos }).eq("id", listing.id);
-        }
+      const pair = await completePair(photo.caption, photo.caption_en, "caption");
+      if (pair) {
+        photo.caption = pair.fr;
+        photo.caption_en = pair.en;
+        fieldsTranslated++;
+        await supabase.from("listings").update({ photos }).eq("id", listing.id);
       }
     }
 
@@ -106,12 +129,10 @@ export async function GET(request: NextRequest) {
     const listingRooms = roomsByListing.get(listing.id as string) ?? [];
     for (const room of listingRooms) {
       if (fieldsTranslated >= FIELD_CAP) break;
-      if (room.name?.trim() && !room.name_en) {
-        const translated = await tryTranslate({ text: room.name, sourceLang: "fr", targetLang: "en", fieldType: "roomName" });
-        if (translated) {
-          await supabase.from("rooms").update({ name_en: translated }).eq("id", room.id);
-          fieldsTranslated++;
-        }
+      const pair = await completePair(room.name, room.name_en, "roomName");
+      if (pair) {
+        await supabase.from("rooms").update({ name: pair.fr, name_en: pair.en }).eq("id", room.id);
+        fieldsTranslated++;
       }
     }
   }
@@ -141,7 +162,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Présentations (bio) sans version anglaise — proprios et voyageurs
+  // Présentations (bio) — proprios et voyageurs, écrites en français ou en
+  // anglais : langue détectée, traduite vers l'autre (voir lib/bio.ts).
+  // bio_en vide = présentation nouvelle ou modifiée depuis la dernière passe.
   if (fieldsTranslated < FIELD_CAP) {
     const { data: pendingBios } = await supabase
       .from("users")
@@ -150,12 +173,15 @@ export async function GET(request: NextRequest) {
       .is("bio_en", null)
       .limit(FIELD_CAP - fieldsTranslated);
     for (const u of pendingBios ?? []) {
-      if (!(u.bio as string | null)?.trim()) continue;
-      const translated = await tryTranslate({ text: u.bio as string, sourceLang: "fr", targetLang: "en", fieldType: "bio" });
-      if (translated) {
-        await supabase.from("users").update({ bio_en: translated }).eq("id", u.id);
-        fieldsTranslated++;
-      }
+      const bio = (u.bio as string | null)?.trim();
+      if (!bio) continue;
+      const t = await detectAndTranslate(bio);
+      if (!t) continue;
+      const update = t.lang === "en"
+        ? { bio_en: bio, bio_fr: t.translated }
+        : { bio_en: t.translated, bio_fr: null };
+      await supabase.from("users").update(update).eq("id", u.id);
+      fieldsTranslated++;
     }
   }
 

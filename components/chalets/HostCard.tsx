@@ -1,12 +1,13 @@
 import Image from "next/image";
 import ContactButton from "./ContactButton";
+import { localizedBio, type BioFields } from "@/lib/bio";
 import { getTranslations, getLocale } from "next-intl/server";
 import { formatDecimal } from "@/lib/formatNumber";
 import Link from "next/link";
 import { localePath } from "@/lib/localePath";
 
 interface Props {
-  host: { id: string; name: string; avatar_url: string; created_at: string; bio?: string | null; bio_en?: string | null };
+  host: { id: string; name: string; avatar_url: string; created_at: string } & BioFields;
   reviewCount: number;
   avgRating: number;
   responseRate: number | null;
@@ -44,7 +45,7 @@ export default async function HostCard({
     return y === 1 ? t("seniorityYear") : t("seniorityYears", { y });
   }
 
-  const displayBio = (locale === "en" && host.bio_en) ? host.bio_en : host.bio;
+  const displayBio = localizedBio(host, locale);
 
   return (
     <div>

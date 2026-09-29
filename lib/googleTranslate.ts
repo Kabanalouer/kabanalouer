@@ -36,6 +36,33 @@ export async function translateText(
   }
 }
 
+// Détecte seulement la langue (FR ou EN) d'un texte. Tout ce qui n'est pas
+// reconnu comme de l'anglais est traité comme du français (langue par défaut
+// du site). Retourne null en cas d'échec — à l'appelant de supposer le français.
+export async function detectLanguage(text: string): Promise<SupportedLanguage | null> {
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  if (!apiKey || !text.trim()) return null;
+
+  try {
+    const res = await fetch(`${ENDPOINT}/detect?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ q: text }),
+    });
+    if (!res.ok) {
+      console.error(`[googleTranslate] détection ${res.status}`, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json();
+    const language = data?.data?.detections?.[0]?.[0]?.language;
+    if (typeof language !== "string") return null;
+    return language.startsWith("en") ? "en" : "fr";
+  } catch (err) {
+    console.error("[googleTranslate] échec de la détection", err);
+    return null;
+  }
+}
+
 // Détecte la langue du texte (FR ou EN) et le traduit dans l'autre langue.
 // Utilisé pour le contenu libre écrit par les utilisateurs (avis, réponses des
 // proprios), dont on ne connaît pas la langue d'avance. Retourne null en cas

@@ -68,11 +68,14 @@ export default async function ListingsPage({
     listingRooms: { name?: unknown; name_en?: unknown }[]
   ): boolean {
     if (!listing.is_published) return false;
-    if (!(listing.title_en as string | null)) return true;
-    if (!(listing.description_en as string | null)) return true;
+    // Une seule des deux langues remplie : le cron traduit dans un sens ou l'autre.
+    const half = (fr: unknown, en: unknown) =>
+      !!(fr as string | null)?.trim() !== !!(en as string | null)?.trim();
+    if (half(listing.title, listing.title_en)) return true;
+    if (half(listing.description, listing.description_en)) return true;
     const photos = normalizePhotos(listing.photos);
-    if (photos.some((p) => p.caption?.trim() && !p.caption_en)) return true;
-    if (listingRooms.some((r) => (r.name as string | null)?.trim() && !r.name_en)) return true;
+    if (photos.some((p) => half(p.caption, p.caption_en))) return true;
+    if (listingRooms.some((r) => half(r.name, r.name_en))) return true;
     return false;
   }
 

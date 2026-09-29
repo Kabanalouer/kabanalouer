@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { BIO_COLUMNS, localizedBio, type BioFields } from "@/lib/bio";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -288,14 +289,14 @@ export default function MessagesClient({
       if (known) return;
 
       const [{ data: other }, { data: listing }] = await Promise.all([
-        supabase.from("public_profiles").select("name, avatar_url, bio, bio_en, created_at").eq("id", otherId).single(),
+        supabase.from("public_profiles").select(`name, avatar_url, created_at, ${BIO_COLUMNS}`).eq("id", otherId).single(),
         supabase.from("listings").select("title, title_en, host_id, region, city, listing_number, custom_slug").eq("id", msg.listing_id).single(),
       ]);
       const conv: Conversation = {
         other_user_id: otherId,
         other_user_name: (other?.name as string | null) ?? "—",
         other_user_avatar: (other?.avatar_url as string | null) ?? null,
-        other_user_bio: (locale === "en" && other?.bio_en ? (other.bio_en as string) : (other?.bio as string | null)) ?? null,
+        other_user_bio: localizedBio(other as BioFields | null, locale),
         other_user_created_at: (other?.created_at as string | null) ?? null,
         listing_id: msg.listing_id,
         listing_title: (listing?.title as string | null) ?? "",

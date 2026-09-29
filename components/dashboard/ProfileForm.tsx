@@ -259,17 +259,25 @@ export default function ProfileForm({
   const [bioError, setBioError] = useState("");
   const [bioGenerating, setBioGenerating] = useState(false);
 
-  // La version anglaise n'est plus saisie : vidée à chaque modification pour
-  // que le cron translate-listings (bio_en IS NULL) la retraduise.
+  // Les traductions ne sont plus saisies : vidées à chaque modification pour
+  // que le cron translate-listings (bio_en IS NULL) détecte la langue et
+  // retraduise. bioChanged couvre aussi bio_fr, qui n'est pas dans l'état.
+  const bioChanged = useRef(false);
   const editBio = (value: string) => {
     setBio(value);
     setBioEn("");
+    bioChanged.current = true;
   };
 
   const saveBio = async () => {
     setBioSaving(true);
     setBioError("");
-    const { error } = await supabase.from("users").update({ bio: bio.trim() || null, bio_en: bioEn.trim() || null }).eq("id", userId);
+    const { error } = await supabase.from("users").update({
+      bio: bio.trim() || null,
+      bio_en: bioEn.trim() || null,
+      ...(bioChanged.current ? { bio_fr: null } : {}),
+    }).eq("id", userId);
+    if (!error) bioChanged.current = false;
     setBioSaving(false);
     if (error) setBioError(t("errorSaving"));
     else {
@@ -302,7 +310,8 @@ export default function ProfileForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t("errorBioGeneration"));
       setBio(data.bio.slice(0, 300));
-      if (data.bioEn) setBioEn((data.bioEn as string).slice(0, 300));
+      setBioEn(data.bioEn ? (data.bioEn as string).slice(0, 300) : "");
+      bioChanged.current = true;
     } catch (e) {
       setBioError(e instanceof Error ? e.message : t("errorBioGeneration"));
     } finally {
