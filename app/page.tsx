@@ -235,13 +235,6 @@ export default async function HomePage() {
 
         </div>
 
-        {/* Stats footer — masquées en mobile */}
-        <div className="hidden lg:flex absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm divide-x divide-white/20">
-          <HeroStat value={isEn ? "$0" : "0 $"} label={t("statFeeLabel")} footer />
-          <HeroStat value="Direct" label={t("statDirectLabel")} footer />
-          <HeroStat value={isEn ? "100%" : "100 %"} label={t("statVerifiedLabel")} footer />
-          <HeroStat value={t("statFreeValue")} label={t("statFreeLabel")} footer />
-        </div>
       </section>
 
       {/* ── Chalets en vedette ── */}
@@ -310,24 +303,6 @@ export default async function HomePage() {
       </main>
 
       <Footer />
-    </div>
-  );
-}
-
-/* ── HeroStat ── */
-function HeroStat({ value, label, footer }: { value: string; label: string; footer?: boolean }) {
-  if (footer) {
-    return (
-      <div className="flex-1 text-center py-4 px-6">
-        <div className="text-xl font-bold text-white tracking-tight">{value}</div>
-        <div className="text-xs text-white/70 mt-0.5 tracking-wide">{label}</div>
-      </div>
-    );
-  }
-  return (
-    <div className="text-center">
-      <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
-      <div className="text-xs text-white/70 mt-0.5 tracking-wide">{label}</div>
     </div>
   );
 }
