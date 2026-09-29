@@ -6,7 +6,6 @@ import { normalizeAirbnbInput, savePendingAirbnbImport } from "@/lib/pendingAirb
 import type { DevenirHoteContent, Faq } from "@/lib/devenirHoteContent";
 import { NEW_LISTING_PATH, useOwnerAccess } from "./OwnerAccess";
 
-export const HEADER_HEIGHT = 76;
 const IMPORT_INPUT_ID = "airbnb-link";
 
 function prefersReducedMotion(): boolean {
@@ -19,7 +18,8 @@ function goToImportForm() {
   const reduce = prefersReducedMotion();
   if (section) {
     window.scrollTo({
-      top: section.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT,
+      // Hauteur réelle de l'en-tête collant du site (Navbar), variable selon l'écran.
+      top: section.getBoundingClientRect().top + window.scrollY - (document.querySelector("nav")?.getBoundingClientRect().height ?? 0),
       behavior: reduce ? "auto" : "smooth",
     });
   }

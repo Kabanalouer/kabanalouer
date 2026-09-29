@@ -955,7 +955,7 @@ Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kaba
 
 ### Page `/devenir-hote` — publiée telle quelle malgré 3 écarts (2026-09-29)
 
-Refaite d'après `landing-page-proprio/` (textes client dans `lib/devenirHoteContent.ts`, FR mot pour mot, EN = traduction maison à valider ; suivi GA4 `lp_hote_*` via `lib/analytics.ts`). Publiée telle quelle par décision de Simon malgré : « Forfaits réguliers 199 $ à 399 $/an » (les vrais paliers vont de 199 $ à 299 $), le mot « hôte » dans le title (règle « jamais hôte »), et l'étape « Publiez » (un import reste en brouillon jusqu'à la publication par l'admin). Carte du hero rendue côté serveur, pas avec `ListingCard` (qui embarque le client Supabase : Lighthouse mobile 76 → 92).
+Refaite d'après `landing-page-proprio/` (textes client dans `lib/devenirHoteContent.ts`, FR mot pour mot, EN = traduction maison à valider ; suivi GA4 `lp_hote_*` via `lib/analytics.ts`). Publiée telle quelle par décision de Simon malgré : « Forfaits réguliers 199 $ à 399 $/an » (les vrais paliers vont de 199 $ à 299 $), le mot « hôte » dans le title (règle « jamais hôte »), et l'étape « Publiez » (un import reste en brouillon jusqu'à la publication par l'admin). Carte du hero rendue côté serveur, pas avec `ListingCard` (qui embarque le client Supabase : Lighthouse mobile 76 → 92). En-tête : la `Navbar` du site, comme partout (demande de Simon — jamais d'en-tête maison sur une page) ; Lighthouse mobile 88–89 avec elle.
 
 ### Pistes proposées, non faites (2026-09-24)
 

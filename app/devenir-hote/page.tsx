@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CreateListingLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
 import {
@@ -91,44 +92,7 @@ export default async function DevenirHotePage() {
     <OwnerAccessProvider>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       <div className="flex flex-col min-h-screen bg-white">
-        {/* ── En-tête ── */}
-        <header className="sticky top-0 z-50 bg-white/[0.88] backdrop-blur-md border-b border-charcoal-100">
-          <div className={`mx-auto max-w-[1240px] h-[76px] ${SECTION_X} flex items-center justify-between gap-4`}>
-            <Link href={localePath("/", locale)} className="flex items-center shrink-0">
-              {/* Icône seule sous 420 px : sinon « Publier gratuitement » déborde */}
-              <Image
-                src="/logo-wordmark.svg"
-                alt="Kabanalouer"
-                width={138}
-                height={34}
-                priority
-                className="hidden min-[420px]:block h-7 w-auto sm:h-[34px]"
-              />
-              <Image
-                src="/logo-mark.svg"
-                alt="Kabanalouer"
-                width={32}
-                height={32}
-                priority
-                className="min-[420px]:hidden h-8 w-8"
-              />
-            </Link>
-            <nav className="flex items-center gap-4 sm:gap-5">
-              <a href="#faq" className="hidden sm:inline text-[15px] font-semibold text-charcoal-800 hover:underline">
-                {c.header.questions}
-              </a>
-              <Link href={localePath("/login", locale)} className="text-sm sm:text-[15px] font-semibold text-charcoal-800 hover:underline">
-                {c.header.login}
-              </Link>
-              <ScrollToImportButton
-                emplacement="entete"
-                className={`bg-primary text-white text-sm sm:text-[15px] font-bold px-3.5 sm:px-[18px] py-2.5 sm:py-3 rounded-full hover:bg-primary-dark whitespace-nowrap ${BTN_MOTION}`}
-              >
-                {c.header.publish}
-              </ScrollToImportButton>
-            </nav>
-          </div>
-        </header>
+        <Navbar />
 
         <main className="flex-1">
           {/* ── 01 Hero : gratuité seulement ── */}
@@ -356,7 +320,7 @@ export default async function DevenirHotePage() {
           </section>
 
           {/* ── 06 FAQ ── */}
-          <section id="faq" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50 scroll-mt-[76px]`}>
+          <section id="faq" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50 scroll-mt-24`}>
             <div className="mx-auto max-w-[820px] flex flex-col gap-8">
               <h2 className="m-0 text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-charcoal-800">
                 {c.faq.h2}
