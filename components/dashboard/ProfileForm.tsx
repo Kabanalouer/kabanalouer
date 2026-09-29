@@ -436,8 +436,8 @@ export default function ProfileForm({
     { delay: 0 }
   );
 
-  // Garde-fou de sortie unique pour les 4 sections à autosave (Bio, Infos,
-  // Coordonnées, Notifications) — en attente, en cours, ou échouée sur
+  // Garde-fou de sortie unique pour les 4 sauvegardes automatiques (Bio, Infos,
+  // numéro de cellulaire, Notifications) — en attente, en cours, ou échouée sur
   // n'importe laquelle. La section Sécurité (mot de passe) reste volontairement
   // hors de ce mécanisme, à sauvegarde manuelle uniquement.
   useEffect(() => {
@@ -650,6 +650,17 @@ export default function ProfileForm({
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
+          />
+          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
+        </div>
+
         {(role === "host" || role === "admin") && (
           <div>
             <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("companyName")}</label>
@@ -747,39 +758,6 @@ export default function ProfileForm({
         </Section>
       </div>
 
-      {/* ── Coordonnées ───────────────────────────────────────────────────── */}
-      <Section title={t("contact")} description={t("contactDesc")}>
-        <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
-          <input
-            type="email"
-            value={email}
-            readOnly
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
-          />
-          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
-        </div>
-      </Section>
-
-      {/* ── Langue ────────────────────────────────────────────────────────── */}
-      <Section title={t("language")} description={t("languageDesc")}>
-        <div className="flex gap-3">
-          <LangButton
-            selected={preferredLanguage === "fr"}
-            onClick={() => changeLanguage("fr")}
-            disabled={langSaving}
-            label={t("languageFrench")}
-          />
-          <LangButton
-            selected={preferredLanguage === "en"}
-            onClick={() => changeLanguage("en")}
-            disabled={langSaving}
-            label={t("languageEnglish")}
-          />
-        </div>
-        <ErrorMsg msg={langError} />
-      </Section>
-
       {/* ── Sécurité ──────────────────────────────────────────────────────── */}
       <Section title={t("security")}>
         <div>
@@ -806,6 +784,25 @@ export default function ProfileForm({
           </button>
           <ErrorMsg msg={pwdError} />
         </div>
+      </Section>
+
+      {/* ── Langue ────────────────────────────────────────────────────────── */}
+      <Section title={t("language")} description={t("languageDesc")}>
+        <div className="flex gap-3">
+          <LangButton
+            selected={preferredLanguage === "fr"}
+            onClick={() => changeLanguage("fr")}
+            disabled={langSaving}
+            label={t("languageFrench")}
+          />
+          <LangButton
+            selected={preferredLanguage === "en"}
+            onClick={() => changeLanguage("en")}
+            disabled={langSaving}
+            label={t("languageEnglish")}
+          />
+        </div>
+        <ErrorMsg msg={langError} />
       </Section>
 
       {/* ── Zone de danger ─────────────────────────────────────────────────── */}

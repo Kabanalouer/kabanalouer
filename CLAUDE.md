@@ -363,7 +363,7 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 
 ### Notifications — profil, texto, Web Push (2026-09-28)
 
-- **Section « Notifications » du profil** (`ProfileForm.tsx`, ancre `#notifications`) : interrupteurs « Par courriel » (`notify_email`) et « Par texto » (`notify_sms`), champ « Numéro de cellulaire » sous le texto (ancre `#phone` ; y arriver par ce lien active le texto d'emblée). Section « Coordonnées » (courriel en lecture seule) placée juste dessous.
+- **Section « Notifications » du profil** (`ProfileForm.tsx`, ancre `#notifications`) : interrupteurs « Par courriel » (`notify_email`) et « Par texto » (`notify_sms`), champ « Numéro de cellulaire » sous le texto (ancre `#phone` ; y arriver par ce lien active le texto d'emblée). Courriel (lecture seule) dans « Informations personnelles » ; plus de section « Coordonnées » (2026-09-29). Ordre : … Notifications, Sécurité, Langue, Zone de danger.
 - **Au moins un canal toujours actif** : impossible de couper le dernier ; le texto ne compte que s'il y a un numéro valide.
 - **Numéro** : `lib/phone.ts` (`normalizePhone()`, 10 chiffres nord-américains → `+1XXXXXXXXXX`), utilisé à la sauvegarde du profil et par `lib/sms.ts` avant Twilio.
 - **Cron `new-message-notifications`** : courriel sauté si `notify_email = false` (texto et push partent quand même). Le texto dit « Nouvelle demande de prix de {prénom} » quand le groupe contient un message avec dates + voyageurs adressé au proprio (même règle que `isQuoteRequest` dans `MessagesClient.tsx`), sinon « Nouveau message ».

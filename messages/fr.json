@@ -710,8 +710,6 @@
     "bioLabelFr": "Bio (français)",
     "bioLabelEn": "Bio (anglais)",
     "bioEnPlaceholder": "ex. Hi! My name is…",
-    "contact": "Coordonnées",
-    "contactDesc": "Ces informations ne seront pas publiques.",
     "email": "Adresse email",
     "emailReadOnly": "L'adresse email ne peut pas être modifiée ici.",
     "phone": "Numéro de téléphone",
