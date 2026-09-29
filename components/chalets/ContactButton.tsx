@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
-import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
+import dynamic from "next/dynamic";
+
+// Fenêtre de connexion chargée à l'ouverture : elle embarque le client
+// Supabase (~240 Ko), inutile au chargement de la page.
+const QuoteAuthModal = dynamic(() => import("@/components/chalets/QuoteAuthModal"), { ssr: false });
 import { PhotoTip } from "@/components/PhotoReminderBanner";
 import AutoTextarea from "@/components/AutoTextarea";
 

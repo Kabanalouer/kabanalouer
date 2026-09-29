@@ -6,22 +6,12 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
-import municipalitiesData from "@/lib/municipalities.json";
+import { loadMunicipalities } from "@/lib/loadMunicipalities";
+import type { Municipality } from "@/lib/municipalities";
 
 // État et logique de la barre de recherche (destination, dates, voyageurs,
 // URL de recherche), partagés entre la barre en ligne (SearchBar.tsx, tablette
 // et ordinateur) et la feuille plein écran des téléphones (MobileSearchSheet).
-
-// Même forme que Municipality dans components/dashboard/MunicipalityCombobox.tsx
-// (généré par scripts/generate-municipalities.js à partir du répertoire MAMH).
-interface Municipality {
-  name: string;
-  slug: string;
-  region: string;
-  officialCode: string;
-  mrc: string;
-}
-const MUNICIPALITIES = municipalitiesData as Municipality[];
 
 // Dérivée de REGIONS (lib/regions.ts) : toujours synchro avec les pages
 // région/sitemap/meta tags.
@@ -30,9 +20,6 @@ const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
-// nom de municipalité -> fiche complète (région, slug), pour choisir entre
-// /chalets/[région]/[ville] et la page région parente au moment de la recherche.
-const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 export type DestItem = { label: string; type: "region" | "city"; value: string };
 
@@ -127,6 +114,12 @@ export function useSearchForm({
   const [destQuery, setDestQuery] = useState(initDest?.label ?? "");
   const [destSelected, setDestSelected] = useState<DestItem | null>(initDest);
   const [cities, setCities] = useState<string[]>([]);
+  // Liste officielle des municipalités (~200 Ko) : chargée dès la première
+  // saisie d'une destination, jamais au chargement de la page.
+  const [municipalities, setMunicipalities] = useState<Municipality[] | null>(null);
+  useEffect(() => {
+    if (destQuery.trim() && !municipalities) loadMunicipalities().then(setMunicipalities).catch(() => {});
+  }, [destQuery, municipalities]);
   const recentSearches = useSyncExternalStore(subscribeRecent, getRecentSnapshot, () => NO_RECENT);
 
   // ── Dates ──
@@ -140,7 +133,7 @@ export function useSearchForm({
   const [pets, setPets] = useState(initialPets ?? 0);
 
   // Villes avec au moins une annonce publiée (pas la source des suggestions
-  // — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
+  // — voir municipalities ci-dessus — seulement pour savoir si
   // /chalets/[région]/[ville] existe pour une municipalité donnée au moment
   // de rechercher, voir search()).
   useEffect(() => {
@@ -157,13 +150,13 @@ export function useSearchForm({
       .filter((r) => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q))
       .slice(0, 4)
       .map((r) => ({ label: regionLabel(r), type: "region" as const, value: r }));
-    const cityHits = MUNICIPALITIES
+    const cityHits = (municipalities ?? [])
       .filter((m) => m.name.toLowerCase().includes(q))
       .slice(0, 6)
       .map((m) => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destQuery, locale]);
+  }, [destQuery, locale, municipalities]);
 
   // Régions populaires pour l'état sans saisie (aucune recherche récente)
   const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: regionLabel(r), type: "region", value: r }));
@@ -224,7 +217,7 @@ export function useSearchForm({
       decrDis: pets === 0, incrDis: pets >= DOGS_MAX_LIMIT },
   ];
 
-  const search = () => {
+  const search = async () => {
     // Destination : saisie sans clic sur une suggestion → on tente une correspondance
     const active = destSelected ?? (() => {
       const q = destQuery.trim();
@@ -250,7 +243,8 @@ export function useSearchForm({
     // (région-scopée, /chalets/[région]/[ville]) si elle a des annonces
     // publiées (sinon 404), sinon la page de sa région parente.
     if (active?.type === "city" && noFilters) {
-      const municipality = MUNICIPALITY_BY_NAME.get(active.value);
+      const list = municipalities ?? (await loadMunicipalities().catch(() => []));
+      const municipality = list.find((m) => m.name === active.value);
       if (municipality) {
         const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
         if (regionSlug) {

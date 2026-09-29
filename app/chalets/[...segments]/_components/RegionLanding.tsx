@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -169,9 +170,15 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {/* ── Hero ── */}
       <section className="relative h-[460px] z-10">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${regionConfig.heroImage}')` }}
+          {/* next/image en priorité plutôt qu'un fond CSS : compressée (WebP/AVIF),
+              à la bonne taille et découverte dès le HTML — c'est l'élément LCP. */}
+          <Image
+            src={regionConfig.heroImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/75" />
         </div>

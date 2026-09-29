@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
-import QuoteAuthModal from "@/components/chalets/QuoteAuthModal";
+import dynamic from "next/dynamic";
+
+// Fenêtre de connexion chargée à l'ouverture : elle embarque le client
+// Supabase (~240 Ko), inutile au chargement de la page.
+const QuoteAuthModal = dynamic(() => import("@/components/chalets/QuoteAuthModal"), { ssr: false });
 
 export default function FavoriteButton({
   listingId,
@@ -22,7 +25,6 @@ export default function FavoriteButton({
   const [loading, setLoading] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,6 +37,9 @@ export default function FavoriteButton({
     setLoading(true);
     const next = !isFavorite;
     setIsFavorite(next);
+    // Client chargé au clic seulement (voir QuoteAuthModal ci-dessus).
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
     if (next) {
       await supabase.from("favorites").insert({ user_id: currentUserId, listing_id: listingId });
     } else {

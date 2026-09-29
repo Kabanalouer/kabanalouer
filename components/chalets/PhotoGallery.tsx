@@ -176,7 +176,9 @@ export default function PhotoGallery({ photos, title }: Props) {
             onClick={() => { setIdx(0); setOpen(true); }}
           >
             <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
-              <Image src={photos[0].url} alt={displayCaption(photos[0], locale) || title} fill className="object-cover" sizes="50vw" priority />
+              {/* Pas de priority ici : son préchargement partait aussi sur téléphone (grille
+                  masquée), en double avec la photo du carrousel mobile. */}
+              <Image src={photos[0].url} alt={displayCaption(photos[0], locale) || title} fill className="object-cover" sizes="50vw" fetchPriority="high" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
             </div>
             {photos.slice(1, 5).map((p, i) => (

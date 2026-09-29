@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 
 // Ajout de photo de profil sur place (sans passer par « Mon profil ») —
 // même stockage que ProfileForm.uploadAvatar : bucket « avatars », fichier
@@ -28,6 +27,9 @@ export default function AvatarUploadButton({
     if (file.size > 5 * 1024 * 1024) { setError(t("errorImageSize")); return; }
     setUploading(true);
     setError("");
+    // Client chargé à l'envoi seulement : ce bouton est inclus dans des pages
+    // publiques (astuce après l'envoi d'un message sur une fiche chalet).
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const ext = file.name.split(".").pop() ?? "jpg";
     const { data, error: uploadError } = await supabase.storage
