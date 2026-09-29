@@ -665,6 +665,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `push-subscriptions.sql` | Crée la table `push_subscriptions` (Web Push, un abonnement par appareil, RLS) | Exécutée et confirmée en prod le 2026-09-28 |
 | *(migration MCP, pas de fichier)* | Ajoute `users.boost_invite_email_sent_at`/`install_app_email_sent_at` (courriels d'accueil proprio) | Exécutée et confirmée en prod le 2026-09-28 |
 | `add-bio-fr.sql` | Ajoute `users.bio_fr` + à la vue `public_profiles` (en dernier), remet `bio_en` à NULL pour que le cron redétecte la langue des présentations existantes | À exécuter par Simon (2026-09-29) — **avant** le déploiement du code qui lit `bio_fr` |
+| `bio-translation-reset-trigger.sql` | Trigger `reset_bio_translations` : quand `users.bio` change, vide `bio_en`/`bio_fr` (sauf si la même sauvegarde les fournit) — robuste face aux onglets restés sur une ancienne version du site | À exécuter par Simon (2026-09-29) |
 | `ai-usage-log.sql` | Crée la table `ai_usage_log` pour le rate limiting IA | À vérifier |
 | `messages-constraints.sql` | Contrainte max 5000 chars sur `messages.content` | À vérifier |
 | `avatar-bucket-mime.sql` | Restreint les MIME types du bucket `avatars` | À vérifier |
