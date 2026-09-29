@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createBlankListing, submitImportRequest, type ImportState } from "@/app/dashboard/listings/new/actions";
+import { clearPendingAirbnbImport, readPendingAirbnbImport } from "@/lib/pendingAirbnbImport";
 
 const initialState: ImportState = { status: "idle" };
 
@@ -17,11 +18,28 @@ const PENDING_MESSAGE_KEYS = [
 ] as const;
 const PENDING_MESSAGE_INTERVAL_MS = 22000;
 
-export default function NewListingStepZero() {
+export default function NewListingStepZero({ initialImportUrl = null }: { initialImportUrl?: string | null }) {
   const t = useTranslations("listings.new");
   const [state, importAction, isPending] = useActionState(submitImportRequest, initialState);
   const [photosConfirmed, setPhotosConfirmed] = useState(false);
   const [pendingMessageIdx, setPendingMessageIdx] = useState(0);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  // Lien venu de /devenir-hote (?import= ou, à défaut, localStorage) :
+  // prérempli, puis la case de consentement photos reste à cocher.
+  useEffect(() => {
+    const input = importInputRef.current;
+    if (!input) return;
+    const url = initialImportUrl ?? readPendingAirbnbImport();
+    if (!url) return;
+    if (!input.value) input.value = url;
+    input.scrollIntoView({ block: "center" });
+    input.focus({ preventScroll: true });
+  }, [initialImportUrl]);
+
+  useEffect(() => {
+    if (state.status === "success" || state.status === "duplicate") clearPendingAirbnbImport();
+  }, [state.status]);
 
   useEffect(() => {
     if (!isPending) {
@@ -130,6 +148,7 @@ export default function NewListingStepZero() {
                 {t("importLabel")}
               </label>
               <input
+                ref={importInputRef}
                 id="listing-url"
                 name="listing_url"
                 type="url"

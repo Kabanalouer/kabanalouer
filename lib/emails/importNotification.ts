@@ -19,8 +19,8 @@ export async function sendImportReviewNotification({
   platform: "airbnb" | "vrbo";
   hostName: string;
 }): Promise<{ error: Error | null }> {
-  // Construction paresseuse — jamais au chargement du module (voir
-  // app/devenir-hote/actions.ts) : sinon une clé absente/invalide ferait
+  // Construction paresseuse — jamais au chargement du module : sinon une
+  // clé absente/invalide ferait
   // planter tout module qui importe ce fichier, y compris le pipeline
   // d'import Airbnb qui ne devrait jamais échouer pour une notification.
   if (!process.env.RESEND_API_KEY) {
