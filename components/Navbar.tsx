@@ -6,11 +6,14 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
-import { createClient } from "@/lib/supabase/client";
 import NavSearchBar from "./NavSearchBar";
 import type { User } from "@supabase/supabase-js";
 import { CountBadge, AvatarDot } from "@/components/CountBadge";
 import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
+
+// Client Supabase chargé après l'affichage (import dynamique) : l'importer
+// directement ajoutait ~240 Ko de JavaScript au chargement de chaque page.
+type BrowserClient = ReturnType<typeof import("@/lib/supabase/client")["createClient"]>;
 
 type Profile = {
   name: string;
@@ -89,7 +92,14 @@ export default function Navbar() {
   const tf = useTranslations("footer");
   const locale = useLocale();
   const lp = (path: string) => localePath(path, locale);
-  const supabase = createClient();
+  const supabaseRef = useRef<BrowserClient | null>(null);
+  const getSupabase = async () => {
+    if (!supabaseRef.current) {
+      const { createClient } = await import("@/lib/supabase/client");
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
   const pathname = usePathname();
   const strippedPathname = locale === "en" && pathname.startsWith("/en")
     ? (pathname.slice(3) || "/")
@@ -148,6 +158,7 @@ export default function Navbar() {
   };
 
   const loadProfile = async (userId: string) => {
+    const supabase = await getSupabase();
     const { data } = await supabase
       .from("users")
       .select("name, role, avatar_url")
@@ -172,26 +183,34 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      if (data.user) {
-        loadProfile(data.user.id);
-        loadNavCounts();
-      }
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+    getSupabase().then((supabase) => {
+      if (cancelled) return;
+      supabase.auth.getUser().then(({ data }) => {
+        setUser(data.user);
+        if (data.user) {
+          loadProfile(data.user.id);
+          loadNavCounts();
+        }
+      });
+
+      const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u) { loadProfile(u.id); loadNavCounts(); }
+        else { setProfile(null); setUnreadCount(0); }
+      });
+      unsubscribe = () => listener.subscription.unsubscribe();
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) { loadProfile(u.id); loadNavCounts(); }
-      else { setProfile(null); setUnreadCount(0); }
-    });
-
-    return () => listener.subscription.unsubscribe();
+    return () => { cancelled = true; unsubscribe?.(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!user) return;
+    // user n'est renseigné qu'une fois le client chargé (effet ci-dessus).
+    const supabase = supabaseRef.current;
+    if (!user || !supabase) return;
     const channel = supabase
       .channel(`navbar-unread-${user.id}`)
       .on("postgres_changes", {
@@ -221,6 +240,7 @@ export default function Navbar() {
   }, [pathname]);
 
   const handleSignOut = async () => {
+    const supabase = await getSupabase();
     await supabase.auth.signOut();
     window.location.href = lp("/");
   };

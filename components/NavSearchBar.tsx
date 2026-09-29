@@ -7,29 +7,19 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
-import municipalitiesData from "@/lib/municipalities.json";
+import { loadMunicipalities } from "@/lib/loadMunicipalities";
+import type { Municipality } from "@/lib/municipalities";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 // Avant : même liste de 14 régions codée en dur que l'ex-SearchBar.tsx
 // (divergente de lib/regions.ts, 15 régions — il manquait Bas-Saint-Laurent).
 // Maintenant dérivée de REGIONS (lib/regions.ts), comme SearchBar.tsx.
 
-// Même forme que Municipality dans components/dashboard/MunicipalityCombobox.tsx
-// et components/SearchBar.tsx (généré par scripts/generate-municipalities.js).
-interface Municipality {
-  name: string;
-  slug: string;
-  region: string;
-  officialCode: string;
-  mrc: string;
-}
-const MUNICIPALITIES = municipalitiesData as Municipality[];
 
 const REGION_NAMES = REGIONS.map((r) => r.dbValue);
 const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
-const MUNICIPALITY_BY_NAME = new Map(MUNICIPALITIES.map((m) => [m.name, m]));
 
 type DestItem = { label: string; type: "region" | "city"; value: string };
 const RECENT_KEY = "kbl_recent_dest";
@@ -176,15 +166,21 @@ function NavSearchBarInner() {
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
   const [cities, setCities] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<DestItem[]>([]);
+  // Liste officielle des municipalités : chargée à l'ouverture de « Destination ».
+  const [municipalities, setMunicipalities] = useState<Municipality[] | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Villes avec au moins une annonce publiée (pas la source des suggestions
-  // — voir MUNICIPALITIES ci-dessus — seulement pour savoir si
+  // — voir municipalities ci-dessus — seulement pour savoir si
   // /chalets/[région]/[ville] existe pour une municipalité donnée, voir handleSearch()).
   useEffect(() => {
     fetch("/api/listings/locations").then(r => r.json()).then(d => setCities(d.cities ?? [])).catch(() => {});
     setRecentSearches(loadRecent());
   }, []);
+
+  useEffect(() => {
+    if (activeField === "dest" && !municipalities) loadMunicipalities().then(setMunicipalities).catch(() => {});
+  }, [activeField, municipalities]);
 
   useEffect(() => {
     if (!activeField) return;
@@ -199,10 +195,10 @@ function NavSearchBarInner() {
     const q = destInput.trim().toLowerCase();
     if (!q) return [];
     const regionHits = REGION_NAMES.filter(r => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: regionLabel(r), type: "region" as const, value: r }));
-    const cityHits = MUNICIPALITIES.filter(m => m.name.toLowerCase().includes(q)).slice(0, 4).map(m => ({ label: m.name, type: "city" as const, value: m.name }));
+    const cityHits = (municipalities ?? []).filter(m => m.name.toLowerCase().includes(q)).slice(0, 4).map(m => ({ label: m.name, type: "city" as const, value: m.name }));
     return [...regionHits, ...cityHits];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destInput, locale]);
+  }, [destInput, locale, municipalities]);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
@@ -212,7 +208,7 @@ function NavSearchBarInner() {
     setActiveField("dates");
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setActiveField(null);
     const active = destSelected ?? (() => {
       const q = destInput.trim();
@@ -235,7 +231,8 @@ function NavSearchBarInner() {
     // page SEO dédiée (région-scopée, /chalets/[région]/[ville]) si elle a
     // des annonces publiées (sinon 404), sinon la page de sa région parente.
     if (active?.type === "city" && noFilters) {
-      const municipality = MUNICIPALITY_BY_NAME.get(active.value);
+      const list = municipalities ?? (await loadMunicipalities().catch(() => []));
+      const municipality = list.find((m) => m.name === active.value);
       if (municipality) {
         const regionSlug = isEn ? REGION_EN_SLUG_BY_NAME.get(municipality.region) : REGION_SLUG_BY_NAME.get(municipality.region);
         if (regionSlug) {
