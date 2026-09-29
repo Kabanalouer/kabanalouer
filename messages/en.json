@@ -683,7 +683,7 @@
   },
   "profile": {
     "travelerAboutTitle": "About you",
-    "travelerAboutDesc": "A few words to introduce yourself to the owners you contact.",
+    "travelerAboutDesc": "Owners are more likely to accept travelers who introduce themselves.",
     "travelerAboutPlaceholder": "E.g.: Family of 4 from Québec City, outdoor and cross-country ski lovers.",
     "heading": "My profile",
     "description": "Manage your personal information and preferences",
@@ -735,7 +735,7 @@
     "phoneInvalid": "Invalid number: enter 10 digits, for example 418 555-0100.",
     "notifNoneWarning": "You won’t receive any alerts: enter a valid cell phone number or turn email back on.",
     "notifKeepOne": "At least one notification type must stay on.",
-    "language": "Language",
+    "language": "Website language",
     "languageDesc": "The language used to browse your Kabanalouer account.",
     "languageFrench": "Français",
     "languageEnglish": "English",

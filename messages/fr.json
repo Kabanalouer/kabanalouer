@@ -683,7 +683,7 @@
   },
   "profile": {
     "travelerAboutTitle": "À propos de vous",
-    "travelerAboutDesc": "Quelques mots pour vous présenter aux proprios que vous contactez.",
+    "travelerAboutDesc": "Les proprios acceptent plus volontiers les voyageurs qui se présentent.",
     "travelerAboutPlaceholder": "Ex. : Famille de 4 de Québec, amateurs de plein air et de ski de fond.",
     "heading": "Mon profil",
     "description": "Gérez vos informations personnelles et préférences",
@@ -735,7 +735,7 @@
     "phoneInvalid": "Numéro invalide : entrez 10 chiffres, par exemple 418 555-0100.",
     "notifNoneWarning": "Aucune alerte ne vous parviendra : entrez un numéro de cellulaire valide ou réactivez le courriel.",
     "notifKeepOne": "Au moins un type de notification doit rester activé.",
-    "language": "Langue",
+    "language": "Langue du site web",
     "languageDesc": "La langue utilisée pour naviguer sur votre espace Kabanalouer.",
     "languageFrench": "Français",
     "languageEnglish": "English",

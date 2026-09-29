@@ -558,7 +558,7 @@ export default function ProfileForm({
     <div className="space-y-6">
 
       {/* ── Informations personnelles ──────────────────────────────────────── */}
-      <Section title={t("personalInfo")} description={t("personalInfoDesc")}>
+      <Section title={t("personalInfo")} description={(role === "host" || role === "admin") ? t("personalInfoDesc") : undefined}>
         {/* Avatar */}
         <div className="flex items-center gap-5">
           <div className="relative w-20 h-20 shrink-0">
