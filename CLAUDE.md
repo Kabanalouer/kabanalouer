@@ -208,6 +208,7 @@ supabase/               Migrations SQL à exécuter manuellement dans Supabase D
 - **Commentaires** : uniquement si le WHY n'est pas évident — pas de commentaires décrivant QUOI fait le code
 - **Pas d'abstraction prématurée** — trois lignes similaires valent mieux qu'une abstraction inutile
 - **Icônes** : SVG inline avec `strokeWidth={1.75}`, jamais de librairie d'icônes externe
+- **Performance des pages publiques (2026-09-29)** : dans un composant client affiché sur une page publique (Navbar, barres de recherche, cartes, fiche), **jamais d'import statique** de `@/lib/supabase/client` (~240 Ko), de `lib/municipalities.json` (~200 Ko) ni d'une fenêtre qui ne sert qu'au clic. Utiliser `await import("@/lib/supabase/client")` dans le gestionnaire, `loadMunicipalities()` (`lib/loadMunicipalities.ts`), ou `next/dynamic` (ex. `QuoteAuthModal`, `FiltersPanel`). Photo LCP : `next/image` + `priority`, jamais un fond CSS ; une seule image préchargée par écran. Rappel : `app/chalets/[...segments]/page.tsx` sert fiche, régions, villes, chiens, promos → tout composant client importé par l'une de ces pages pèse sur toutes.
 
 ---
 
@@ -391,6 +392,7 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 
 ### Analytics
 - **Google Analytics 4** (`components/GoogleAnalytics.tsx`, nouveau, 2026-09-04) : script `gtag.js` via `next/script` (stratégie `afterInteractive`), rendu conditionnel sur `NEXT_PUBLIC_GA_MEASUREMENT_ID` — rien ne se charge si la variable n'est pas définie. ID de mesure : `G-SKLC68FPGV`. CSP (`next.config.ts`) mise à jour : `*.googletagmanager.com` ajouté à `script-src`, `*.google-analytics.com`/`*.googletagmanager.com` à `connect-src` (aucun domaine GA n'était autorisé avant). Vérifié en production : tag chargé, événement `page_view` envoyé, zéro erreur console.
+- **Événements personnalisés (2026-09-29)** : `trackEvent()` (`lib/analytics.ts`, met en file dans `dataLayer` si gtag.js n'est pas encore chargé). Page `/devenir-hote` : `lp_hote_creer_annonce`, `lp_hote_dupliquer_airbnb` (paramètre `emplacement`), `lp_hote_import_soumis` (`valide`), `lp_hote_faq_ouverte`, `lp_hote_calculatrice`. À marquer comme « événements clés » dans GA4 (pas encore fait par Simon).
 
 ### i18n (next-intl)
 - FR par défaut (`/`), EN via préfixe `/en/`
@@ -931,9 +933,32 @@ Très longue session (~40 commits, `a86005b` → `bd6d5c4`), tout en ligne.
 - Captures d'écran : `import pw from "/Users/simonlemay/kabanalouer/node_modules/playwright/index.js"` depuis le dossier scratchpad.
 - Diagnostic d'une route en production : `get_runtime_logs` (MCP Vercel) avec une fenêtre courte (≤ 3 h), sinon la requête expire.
 
+### Session du 2026-09-29 — Landing « Devenir hôte », performance, photos rapatriées, import autonome
+
+Tout en ligne (commits `66541bc` → `9c0e349`). Détails techniques en sections 8, 9 et 14.
+
+1. **Page `/devenir-hote` refaite** d'après `landing-page-proprio/` (`lib/devenirHoteContent.ts`, `components/devenir-hote/`) : CTA branchés sur le vrai flux de création/import (lien Airbnb prérempli via `?import=` + relais localStorage, `lib/pendingAirbnbImport.ts`), JSON-LD FAQPage, suivi GA4, vraies photos du Chalet Authentik 50 dans `public/images/devenir-hote/`. Ancien formulaire de capture de lead supprimé (`app/devenir-hote/actions.ts`, `HostCTA`, `CreationChoiceSection`). Premier jet avec un en-tête maison → remplacé par la `Navbar` à la demande de Simon.
+2. **Performance** : Navbar (municipalités, fenêtre Filtres, client Supabase chargés à la demande), pages région (photo du hero en `next/image` prioritaire, 260 → 58 Ko), fiche (plus de double préchargement, `QuoteAuthModal`/favoris/`AvatarUploadButton` sans Supabase au départ), barre de recherche principale (municipalités à la première saisie). Route chalets : 1 284 → 898 Ko de JS initial. Lighthouse mobile sur le vrai site : Laurentides 72–77 → 94, fiche 88–90 → 95–96.
+3. **Photos Airbnb rapatriées** (`lib/rehostPhotos.ts`, cron `rehost-photos`) : Chalet Authentik 50 migré (78 photos, 9 Mo), prochains imports automatiques.
+4. **Import autonome** : le proprio complète et publie lui-même, rappel à 48 h des brouillons, blocage d'une même annonce Airbnb importée par deux comptes. Vérification par CITQ ajoutée puis **retirée** le jour même (décision de Simon).
+
+**Leçons de la session**
+- Build de production local : `RESEND_API_KEY=re_dummy_local_build npx next build` (sinon échec « Missing API key » à la collecte des pages), puis `next start -p 3124`. Les scores Lighthouse locaux sont plus bas et plus variables que sur kabanalouer.ca → toujours remesurer en production (3 passages).
+- Pour trouver qui embarque un module lourd : lister les chunks d'une page (`curl` + grep `GoTrueClient` / un nom de municipalité) puis remonter le graphe d'imports depuis la route.
+- Scripts ponctuels sur la base : `.tmp-*.mts` à la racine (alias `@/` résolus par `npx tsx`), `set -a; source .env.local`, jamais d'`await` au premier niveau dans un `.ts`. `CRON_SECRET` n'est pas dans `.env.local`.
+- Aperçu d'un courriel sans l'envoyer : remplacer `globalThis.fetch` dans un script tsx pour capturer le HTML que Resend aurait reçu.
+
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### À vérifier après la session du 2026-09-29
+
+- **État connecté jamais testé** après le chargement à la demande du client Supabase : photo et pastilles de la Navbar, « Se déconnecter », ajout aux favoris, ajout d'une photo de profil depuis l'astuce après un message (`AvatarUploadButton`).
+- **Import Airbnb de bout en bout** jamais refait depuis l'autonomie du proprio : coller un lien → redirection vers la fiche avec bandeau → compléter → publier → sortie de `/admin/imports`. Tester aussi le refus « Cette annonce est déjà sur Kabanalouer » avec un 2ᵉ compte, et le premier passage réel du cron `rehost-photos` sur une nouvelle annonce.
+- **Rappel de brouillon à 48 h** : premier envoi réel au cron de 11 h — test possible via Admin → Séquences courriel (« Rappel — annonce commencée mais pas publiée »).
+- **Lighthouse mobile** (vrai site, 2026-09-29) : toutes les pages mesurées ≥ 94 (Laurentides 94, fiche 95–96, accueil 95, /devenir-hote 97). L'accueil charge encore le client Supabase au départ par un autre composant (non identifié). Accessibilité de la fiche à 96 : points de navigation des photos trop petits au toucher (préexistant).
+- **Clients multi-chalets (gestionnaires, sites)** : pistes discutées, **rien de fait à la demande de Simon** — import de plusieurs liens, nom/logo d'entreprise et page gestionnaire, facture annuelle regroupée, tableau de bord pour gros volumes, plusieurs utilisateurs par compte, vocabulaire « gestionnaire ». Le multi-annonces fonctionne déjà (tarif dégressif, offre gratuite par annonce).
 
 ### À vérifier après la session du 2026-09-28
 
@@ -955,11 +980,11 @@ Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kaba
 
 ### Section « Pour les propriétaires » de l'accueil — affirmations à corriger (2026-09-29)
 
-`components/OwnersSection.tsx` : publiée telle quelle par décision de Simon malgré 3 écarts signalés avec le fonctionnement réel — « C'est gratuit » / « 0 $ pour s'afficher » (gratuit la 1ʳᵉ année seulement), « importés automatiquement » (le bouton mène à `/devenir-hote`, simple formulaire de contact), « 5 min pour être en ligne » (un import reste en brouillon jusqu'à la publication par l'admin). « 0 % de commission » est exact.
+`components/OwnersSection.tsx` : publiée telle quelle par décision de Simon malgré 3 écarts signalés avec le fonctionnement réel — « C'est gratuit » / « 0 $ pour s'afficher » (gratuit la 1ʳᵉ année seulement), « importés automatiquement » (vrai depuis le 2026-09-29 : `/devenir-hote` mène au vrai import), « 5 min pour être en ligne » (délai non garanti). « 0 % de commission » est exact.
 
 ### Page `/devenir-hote` — publiée telle quelle malgré 3 écarts (2026-09-29)
 
-Refaite d'après `landing-page-proprio/` (textes client dans `lib/devenirHoteContent.ts`, FR mot pour mot, EN = traduction maison à valider ; suivi GA4 `lp_hote_*` via `lib/analytics.ts`). Publiée telle quelle par décision de Simon malgré : « Forfaits réguliers 199 $ à 399 $/an » (les vrais paliers vont de 199 $ à 299 $), le mot « hôte » dans le title (règle « jamais hôte »), et l'étape « Publiez » (un import reste en brouillon jusqu'à la publication par l'admin). Carte du hero rendue côté serveur, pas avec `ListingCard` (qui embarque le client Supabase : Lighthouse mobile 76 → 92). En-tête : la `Navbar` du site, comme partout (demande de Simon — jamais d'en-tête maison sur une page) ; Lighthouse mobile 88–89 avec elle.
+Refaite d'après `landing-page-proprio/` (textes client dans `lib/devenirHoteContent.ts`, FR mot pour mot, EN = traduction maison à valider ; suivi GA4 `lp_hote_*` via `lib/analytics.ts`). Publiée telle quelle par décision de Simon malgré : « Forfaits réguliers 199 $ à 399 $/an » (les vrais paliers vont de 199 $ à 299 $), le mot « hôte » dans le title (règle « jamais hôte »), (l'étape « Publiez » est devenue exacte le 2026-09-29 : le proprio publie lui-même). Carte du hero rendue côté serveur, pas avec `ListingCard` (qui embarque le client Supabase : Lighthouse mobile 76 → 92). En-tête : la `Navbar` du site, comme partout (demande de Simon — jamais d'en-tête maison sur une page). Lighthouse mobile 97–98 après l'allègement de la Navbar.
 
 ### Pistes proposées, non faites (2026-09-24)
 
