@@ -945,6 +945,10 @@ Toutes les variables d'environnement du projet Vercel sont ciblées **production
 
 Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site — à mettre à jour si Simon s'en sert pour du matériel externe.
 
+### Comparaison de prix fictive sur la page d'accueil (2026-09-29)
+
+Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kabanalouer / Booking.com / Airbnb avec des **frais inventés** (12 %, 0, 15 %, 14,2 %) et la mention « Exemple fictif ». Publiée telle quelle par décision de Simon, malgré le risque de publicité comparative signalé. À remplacer par un relevé réel dès que possible (tableau `PLATFORMS` en haut du fichier).
+
 ### Pistes proposées, non faites (2026-09-24)
 
 - **BIMI** (logo à côté du nom de l'expéditeur dans Gmail/Apple Mail) : exige DMARC en mode strict + certificat de marque payant (~1 000–1 500 $ US/an). Plus tard, quand le volume de courriels augmentera.

@@ -7,6 +7,7 @@ import AuthCodeWelcomeTrigger from "@/components/AuthCodeWelcomeTrigger";
 import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
+import PriceComparison from "@/components/PriceComparison";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -299,37 +300,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Pourquoi Kabanalouer ── */}
-      <section className="bg-charcoal-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-3">
-              {t("whyLabel")}
-            </p>
-            <h2 className="text-3xl font-bold text-charcoal-800 tracking-[-0.03em]">
-              {t("whyTitle")}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <WhyCard
-              icon={<IconUsers />}
-              title={t("why1Title")}
-              description={t("why1Desc")}
-            />
-            <WhyCard
-              icon={<IconShieldCheck />}
-              title={t("why2Title")}
-              description={t("why2Desc")}
-            />
-            <WhyCard
-              icon={<IconPercent />}
-              title={t("why3Title")}
-              description={t("why3Desc")}
-            />
-          </div>
-        </div>
-      </section>
+      {/* ── Notre différence — comparaison des prix ── */}
+      <PriceComparison />
 
       {/* ── CTA Hôtes ── */}
       <section className="bg-primary py-20">
@@ -379,57 +351,5 @@ function HeroStat({ value, label, footer }: { value: string; label: string; foot
       <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
       <div className="text-xs text-white/70 mt-0.5 tracking-wide">{label}</div>
     </div>
-  );
-}
-
-/* ── WhyCard ── */
-function WhyCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl p-7 border border-charcoal-100">
-      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
-        {icon}
-      </div>
-      <h3 className="font-bold text-charcoal-800 text-heading-3 mb-2">{title}</h3>
-      <p className="text-charcoal-400 text-base leading-relaxed">{description}</p>
-    </div>
-  );
-}
-
-/* ── Icons (Lucide-compatible SVG, stroke 1.75) ── */
-function IconUsers() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function IconShieldCheck() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  );
-}
-
-function IconPercent() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="7.5" cy="7.5" r="1.5" />
-      <circle cx="16.5" cy="16.5" r="1.5" />
-      <line x1="19" y1="5" x2="5" y2="19" />
-    </svg>
   );
 }
