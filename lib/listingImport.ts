@@ -27,6 +27,16 @@ export function normalizeListingUrl(url: string): string {
   return `${u.hostname.toLowerCase()}${u.pathname.replace(/\/+$/, "")}`;
 }
 
+// Numéro d'annonce Airbnb (airbnb.ca/rooms/12345678, /rooms/plus/…) : identifie
+// l'annonce peu importe le domaine (.ca, .fr, .com) ou les paramètres du lien.
+export function airbnbRoomId(url: string): string | null {
+  try {
+    return new URL(url).pathname.match(/\/rooms\/(?:plus\/)?(\d+)/)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function adminSupabase() {
   return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -184,6 +194,21 @@ export async function importAirbnbListing(
   });
   if (duplicate) {
     return { ok: true, status: "duplicate", listingId: duplicate.id };
+  }
+
+  // Même annonce Airbnb déjà importée par un AUTRE compte : un chalet ne doit
+  // apparaître qu'une fois sur Kabanalouer. Vérifié avant l'appel Apify payant.
+  const roomId = airbnbRoomId(rawUrl);
+  if (roomId) {
+    const { data: others } = await admin
+      .from("listings")
+      .select("import_source_url")
+      .eq("import_source", platform)
+      .neq("host_id", userId)
+      .ilike("import_source_url", `%/rooms/%${roomId}%`);
+    if ((others ?? []).some((row) => row.import_source_url && airbnbRoomId(row.import_source_url) === roomId)) {
+      return { ok: false, status: 409, error: t("alreadyOnKabanalouer") };
+    }
   }
 
   if (!(await checkAiRateLimit(supabase, userId, "listings-import-apify"))) {

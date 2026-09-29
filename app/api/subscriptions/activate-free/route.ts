@@ -3,6 +3,8 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
+import { findCitqDuplicates } from "@/lib/citqDuplicates";
+import { sendCitqDuplicateAlert } from "@/lib/emails/citqDuplicateAlert";
 
 function adminSupabase() {
   return createAdminClient(
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, title_en")
+    .select("id, title, title_en, import_status")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
@@ -56,6 +58,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 409 });
   }
 
+  // Vérifié avant de créer l'abonnement : un doublon du même proprio ne doit
+  // pas consommer l'offre de lancement de cette annonce.
+  const dup = await findCitqDuplicates(admin, listingId, user.id);
+  if (dup.sameHost) {
+    return NextResponse.json({ error: t2(locale, `Ce chalet est déjà publié sur Kabanalouer avec le même numéro CITQ (« ${dup.sameHost.title || "annonce sans titre"} »). Modifiez cette annonce plutôt que d’en publier une deuxième.`, `This cabin is already published on Kabanalouer with the same CITQ number (“${dup.sameHost.title || "untitled listing"}”). Edit that listing instead of publishing a second one.`) }, { status: 409 });
+  }
+
   const expiresAt = new Date();
   expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
@@ -76,7 +85,18 @@ export async function POST(request: NextRequest) {
   }
 
   await admin.from("users").update({ role: "host" }).eq("id", user.id);
-  await admin.from("listings").update({ is_published: true }).eq("id", listingId);
+  // Annonce importée publiée par son proprio : elle sort de la file /admin/imports.
+  await admin
+    .from("listings")
+    .update({ is_published: true, ...(listing.import_status === "pending_review" ? { import_status: "published" } : {}) })
+    .eq("id", listingId);
+
+  if (dup.citq && dup.otherHosts.length > 0) {
+    const { error: alertError } = await sendCitqDuplicateAlert({
+      citq: dup.citq, listingId, listingTitle: listing.title || "Annonce sans titre", others: dup.otherHosts,
+    });
+    if (alertError) console.error("activate-free: échec alerte CITQ en double", alertError);
+  }
 
   if (user.email) {
     const { data: profile } = await admin

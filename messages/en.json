@@ -284,8 +284,8 @@
       "error": "Something went wrong. Please try again."
     },
     "new": {
-      "successTitle": "Request sent",
-      "successMessage": "We'll take care of everything — you'll receive your listing by email within 24 hours.",
+      "successTitle": "Listing imported",
+      "successMessage": "Opening your listing so you can complete it…",
       "backToListings": "Back to my cabins",
       "heading": "Add a cabin",
       "subheading": "How would you like to create your listing?",
@@ -299,7 +299,7 @@
       "sending": "Sending…",
       "send": "Send →",
       "duplicateTitle": "Already imported",
-      "duplicateMessage": "You've already imported this listing. You'll receive an email as soon as it's published by our team.",
+      "duplicateMessage": "You've already imported this listing. Opening your listing…",
       "manualBadge": "Full control",
       "manualFeature1": "Full control over your content",
       "manualFeature2": "No limits",
@@ -319,6 +319,7 @@
       "errorSessionExpired": "Your session has expired, please sign in again."
     },
     "import": {
+      "alreadyOnKabanalouer": "This listing is already on Kabanalouer. If it’s yours, write to us at info@kabanalouer.ca.",
       "unrecognizedLink": "Unrecognized link — only Airbnb listings can be imported for now",
       "vrboNotSupported": "Importing from VRBO isn't available yet — only Airbnb is supported for now.",
       "ownersOnly": "Access restricted to owners",

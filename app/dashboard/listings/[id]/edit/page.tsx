@@ -26,10 +26,12 @@ export async function generateMetadata() {
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ imported?: string }>;
 }
 
-export default async function EditListingPage({ params }: Props) {
+export default async function EditListingPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { imported } = await searchParams;
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const isEn = locale === "en";
   const { data: { user } } = await supabase.auth.getUser();
@@ -114,6 +116,22 @@ export default async function EditListingPage({ params }: Props) {
           )}
         </p>
       </div>
+      {/* Arrivée juste après un import Airbnb (NewListingStepZero) : le proprio
+          complète et publie lui-même, sans intervention de l'admin. */}
+      {imported && isOwner && !listing.is_published && (
+        <div role="status" className="mb-6 rounded-2xl border border-primary-100 bg-primary-50 px-5 py-4">
+          <p className="font-semibold text-charcoal-800">
+            {imported === "duplicate"
+              ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
+              : (isEn ? "Your listing has been imported" : "Votre annonce est importée")}
+          </p>
+          <p className="mt-1 text-sm text-charcoal-600">
+            {isEn
+              ? "Check the information copied from Airbnb, fill in what’s missing (like your CITQ number), then publish it with the “Publish my listing” button."
+              : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
+          </p>
+        </div>
+      )}
       <EditListingForm
         userId={hostId}
         listingId={id}

@@ -284,8 +284,8 @@
       "error": "Une erreur s'est produite. Réessayez."
     },
     "new": {
-      "successTitle": "Demande envoyée",
-      "successMessage": "On s'occupe de tout — vous recevrez votre annonce par email dans 24h.",
+      "successTitle": "Annonce importée",
+      "successMessage": "Ouverture de votre annonce pour la compléter…",
       "backToListings": "Retour vers mes chalets",
       "heading": "Ajouter un chalet",
       "subheading": "Comment voulez-vous créer votre annonce ?",
@@ -299,7 +299,7 @@
       "sending": "Envoi en cours…",
       "send": "Envoyer →",
       "duplicateTitle": "Déjà importée",
-      "duplicateMessage": "Vous avez déjà importé cette annonce. Vous recevrez un courriel dès qu'elle sera publiée par notre équipe.",
+      "duplicateMessage": "Vous avez déjà importé cette annonce. Ouverture de votre annonce…",
       "manualBadge": "Contrôle total",
       "manualFeature1": "Contrôle total du contenu",
       "manualFeature2": "Aucune limite",
@@ -319,6 +319,7 @@
       "errorSessionExpired": "Session expirée, veuillez vous reconnecter."
     },
     "import": {
+      "alreadyOnKabanalouer": "Cette annonce est déjà sur Kabanalouer. Si c’est la vôtre, écrivez-nous à info@kabanalouer.ca.",
       "unrecognizedLink": "Lien non reconnu — seules les annonces Airbnb peuvent être importées pour l'instant",
       "vrboNotSupported": "L'import depuis VRBO n'est pas encore disponible, seul Airbnb est supporté pour l'instant.",
       "ownersOnly": "Accès réservé aux propriétaires",

@@ -5,7 +5,8 @@ import { EMAIL_CATALOG } from "@/lib/adminEmailCatalog";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
-import { sendBoostInviteEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
+import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
+import { sendCitqDuplicateAlert } from "@/lib/emails/citqDuplicateAlert";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
@@ -47,6 +48,7 @@ function senders(): Record<string, Sender> {
   return {
     "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
     "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE, isFreeLaunch: true }),
+    "draft-reminder": (to, lang) => sendDraftReminderEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
     "boost-invite": (to, lang) => sendBoostInviteEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
     "sms-invite": (to, lang) => sendSmsInviteEmail({ email: to, lang, firstName: "Simon" }),
     "new-message-host": (to, lang) => sendNewMessageNotificationEmail(admin, {
@@ -92,6 +94,7 @@ function senders(): Record<string, Sender> {
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", subject: "Test de notification", message: "Ceci est un message de test envoyé depuis l’admin.",
     }),
+    "citq-duplicate": () => sendCitqDuplicateAlert({ citq: "123456", listingId: LISTING_ID, listingTitle: TITLE, others: [{ id: LISTING_ID, title: "Chalet du Lac (exemple)" }] }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
   };
 }

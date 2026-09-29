@@ -4,8 +4,9 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { renderEmail } from "./renderEmail";
 import { PRIX_VEDETTE_HOME, PRIX_VEDETTE_REGION } from "@/lib/featuredConfig";
 
-// Courriels d'accueil des nouveaux proprios, envoyés par le cron
-// host-onboarding-emails après la première publication :
+// Courriels d'accueil des proprios, envoyés par le cron host-onboarding-emails :
+// - 48 h après la création d'un brouillon jamais publié : rappel de le compléter
+// Après la première publication :
 // - 48 h : invitation à booster l'annonce (vedette région / accueil)
 // - 96 h : invitation à recevoir les demandes et messages par texto
 
@@ -94,6 +95,46 @@ export async function sendSmsInviteEmail({
     from: FROM,
     to: [email],
     subject: fr ? "Reçois tes demandes de prix par texto" : "Get your price requests by text",
+    html,
+  });
+  return { error: error ? new Error(error.message) : null };
+}
+
+export async function sendDraftReminderEmail({
+  email, lang, firstName, listingTitle, listingId,
+}: {
+  email: string; lang: Lang; firstName?: string | null; listingTitle: string | null; listingId: string;
+}): Promise<{ error: Error | null }> {
+  const name = firstName?.trim();
+  const fr = lang === "fr";
+  const title = listingTitle?.trim();
+  const path = `${fr ? "" : "/en"}/dashboard/listings/${listingId}/edit`;
+
+  const intro = fr
+    ? `Ton annonce${title ? ` <strong>${escapeHtml(title)}</strong>` : ""} est commencée, mais pas encore publiée. Il ne reste que quelques informations à compléter avant que les voyageurs puissent la voir.`
+    : `Your listing${title ? ` <strong>${escapeHtml(title)}</strong>` : ""} is started but not published yet. Just a few details are left before travelers can see it.`;
+  const body = fr
+    ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ». C’est gratuit la première année, sans commission.`
+    : `${intro}<br/><br/>Once everything is filled in, click “Publish my listing”. It’s free for the first year, with no commission.`;
+
+  const html = renderEmail({
+    lang,
+    greeting: name ? (fr ? `Bonjour ${escapeHtml(name)} !` : `Hi ${escapeHtml(name)}!`) : undefined,
+    heading: fr ? "Ton chalet est presque en ligne" : "Your cabin is almost online",
+    body,
+    buttonLabel: fr ? "Compléter mon annonce" : "Complete my listing",
+    buttonUrl: `${SITE_URL}${path}`,
+    footerNote: fr
+      ? "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir."
+      : "Got a question? Just reply to this email — we’re happy to help.",
+  });
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: [email],
+    subject: fr
+      ? (title ? `${title} est presque en ligne` : "Ton chalet est presque en ligne")
+      : (title ? `${title} is almost online` : "Your cabin is almost online"),
     html,
   });
   return { error: error ? new Error(error.message) : null };

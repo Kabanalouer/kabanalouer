@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { localePath } from "@/lib/localePath";
 import { createBlankListing, submitImportRequest, type ImportState } from "@/app/dashboard/listings/new/actions";
 import { clearPendingAirbnbImport, readPendingAirbnbImport } from "@/lib/pendingAirbnbImport";
 
@@ -37,9 +39,17 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
     input.focus({ preventScroll: true });
   }, [initialImportUrl]);
 
+  const router = useRouter();
+  const locale = useLocale();
+
+  // Import terminé : le proprio arrive directement sur son brouillon pour le
+  // compléter et le publier lui-même.
   useEffect(() => {
-    if (state.status === "success" || state.status === "duplicate") clearPendingAirbnbImport();
-  }, [state.status]);
+    if (state.status !== "success" && state.status !== "duplicate") return;
+    clearPendingAirbnbImport();
+    const flag = state.status === "duplicate" ? "duplicate" : "1";
+    router.push(localePath(`/dashboard/listings/${state.listingId}/edit?imported=${flag}`, locale));
+  }, [state, router, locale]);
 
   useEffect(() => {
     if (!isPending) {

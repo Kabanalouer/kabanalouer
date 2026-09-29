@@ -77,7 +77,7 @@ export default async function AdminImportsPage() {
                 href={`/dashboard/listings/${row.id}/edit`}
                 className="shrink-0 bg-primary text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-primary-dark transition-colors"
               >
-                Réviser
+                Voir
               </Link>
             </div>
           ))}

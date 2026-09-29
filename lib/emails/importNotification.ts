@@ -1,9 +1,10 @@
-// Notification interne à Simon (admin) qu'une annonce importée attend sa
-// révision. Toujours en français, un seul destinataire — pas de logique
+// Notification interne à Simon (admin) qu'une annonce a été importée — pour
+// info : le proprio la complète et la publie lui-même. Toujours en français, un seul destinataire — pas de logique
 // bilingue comme les courriels envoyés aux proprios/voyageurs.
 import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 const ADMIN_EMAIL = "simon.authentik@gmail.com";
@@ -33,17 +34,17 @@ export async function sendImportReviewNotification({
 
   const html = renderEmail({
     lang: "fr",
-    heading: "Nouvelle annonce importée à réviser",
-    body: `${listingTitle}, importée depuis ${platformLabel} par ${hostName}, attend ta révision avant publication.`,
-    buttonLabel: "Réviser l'annonce",
+    heading: "Nouvelle annonce importée",
+    body: `${escapeHtml(listingTitle)}, importée depuis ${platformLabel} par ${escapeHtml(hostName)}. Le proprio la complète et la publie lui-même — pour info, si tu veux y jeter un œil.`,
+    buttonLabel: "Voir l'annonce",
     buttonUrl: reviewUrl,
-    footerNote: "Notification automatique — file d'attente complète dans /admin/imports.",
+    footerNote: "Notification automatique — imports pas encore publiés dans /admin/imports.",
   });
 
   const { error } = await resend.emails.send({
     from: FROM,
     to: [ADMIN_EMAIL],
-    subject: `Nouvelle annonce importée à réviser — ${listingTitle}`,
+    subject: `Nouvelle annonce importée — ${listingTitle}`,
     html,
   });
 

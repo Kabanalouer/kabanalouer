@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { sendBoostInviteEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
+import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
 
 // Cron quotidien — courriels d'accueil des nouveaux proprios, après leur
 // première publication. Une annonce ne peut être publiée qu'avec un
@@ -12,6 +12,9 @@ import { sendBoostInviteEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboa
 //   proprio reçoit déjà les textos
 // Seulement pour les proprios publiés depuis moins de 14 jours : les comptes
 // déjà établis ne reçoivent pas ces courriels d'un coup au lancement.
+// Aussi : rappel « complète ton annonce » pour chaque brouillon jamais publié
+// (aucune ligne subscriptions), créé il y a 48 h à 14 jours
+// (listings.draft_reminder_sent_at, un seul rappel par brouillon).
 
 const H48 = 48 * 60 * 60 * 1000;
 const H96 = 96 * 60 * 60 * 1000;
@@ -49,6 +52,8 @@ export async function GET(request: NextRequest) {
     if (!uid || firstByUser.has(uid)) continue;
     firstByUser.set(uid, new Date(s.created_at as string).getTime());
   }
+
+  const draftRemindersSent = await sendDraftReminders(supabase, now);
 
   let boostSent = 0;
   let installSent = 0;
@@ -106,5 +111,50 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, boostSent, installSent });
+  return NextResponse.json({ ok: true, draftRemindersSent, boostSent, installSent });
+}
+
+async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, now: number): Promise<number> {
+  const { data: drafts, error } = await supabase
+    .from("listings")
+    .select("id, host_id, title, title_en, created_at")
+    .eq("is_published", false)
+    .is("draft_reminder_sent_at", null)
+    .lte("created_at", new Date(now - H48).toISOString())
+    .gte("created_at", new Date(now - WINDOW_MS).toISOString());
+  if (error) {
+    console.error("[host-onboarding-emails] lecture brouillons", error);
+    return 0;
+  }
+
+  let sent = 0;
+  for (const draft of drafts ?? []) {
+    // Déjà publiée un jour (abonnement existant) : c'est une annonce
+    // dépubliée, pas un brouillon à terminer — relances win-back à part.
+    const { data: sub } = await supabase.from("subscriptions").select("id").eq("listing_id", draft.id).maybeSingle();
+    if (sub) continue;
+
+    const { data: user } = await supabase
+      .from("users")
+      .select("email, name, preferred_language")
+      .eq("id", draft.host_id)
+      .single();
+    if (!user?.email) continue;
+
+    const lang: "fr" | "en" = user.preferred_language === "en" ? "en" : "fr";
+    const { error: sendError } = await sendDraftReminderEmail({
+      email: user.email as string,
+      lang,
+      firstName: (user.name as string | null)?.split(" ")[0] ?? null,
+      listingTitle: ((lang === "en" && draft.title_en) || draft.title || null) as string | null,
+      listingId: draft.id as string,
+    });
+    if (sendError) {
+      console.error(`[host-onboarding-emails] rappel brouillon ${draft.id}`, sendError);
+      continue;
+    }
+    await supabase.from("listings").update({ draft_reminder_sent_at: new Date().toISOString() }).eq("id", draft.id);
+    sent++;
+  }
+  return sent;
 }

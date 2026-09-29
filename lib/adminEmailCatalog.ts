@@ -26,6 +26,7 @@ export const CATEGORY_LABELS: Record<EmailCategory, { title: string; description
 
 export const EMAIL_CATALOG: CatalogEmail[] = [
   // Proprios
+  { id: "draft-reminder", category: "proprio", name: "Rappel — annonce commencée mais pas publiée", trigger: "48 h après la création d’un brouillon jamais publié (cron quotidien, 11 h), une seule fois par brouillon.", testable: true },
   { id: "welcome-subscription", category: "proprio", name: "Abonnement actif — annonce publiée", trigger: "À l’activation de l’offre gratuite ou au paiement de la 1re annonce payante.", testable: true },
   { id: "import-published", category: "proprio", name: "Annonce importée publiée par l’admin", trigger: "Quand l’admin publie une annonce importée d’Airbnb au nom du proprio.", testable: true },
   { id: "boost-invite", category: "proprio", name: "Invitation à booster", trigger: "48 h après la première publication (cron quotidien, 11 h).", testable: true },
@@ -57,5 +58,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
 
   // Interne
   { id: "contact-notification", category: "interne", name: "Nouveau message de contact", trigger: "Quand un visiteur envoie le formulaire /contact.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
-  { id: "import-notification", category: "interne", name: "Import d’annonce à réviser", trigger: "Quand un proprio importe une annonce Airbnb.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
+  { id: "citq-duplicate", category: "interne", name: "Numéro CITQ en double", trigger: "Quand une annonce est publiée avec un numéro CITQ déjà publié par un autre compte (publication non bloquée).", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
+  { id: "import-notification", category: "interne", name: "Import d’annonce (pour info)", trigger: "Quand un proprio importe une annonce Airbnb — il la complète et la publie lui-même.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
 ];
