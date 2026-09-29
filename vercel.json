@@ -25,6 +25,10 @@
       "schedule": "*/10 * * * *"
     },
     {
+      "path": "/api/cron/rehost-photos",
+      "schedule": "5-59/10 * * * *"
+    },
+    {
       "path": "/api/cron/host-onboarding-emails",
       "schedule": "0 15 * * *"
     }
