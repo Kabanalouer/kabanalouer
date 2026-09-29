@@ -949,6 +949,10 @@ Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien l
 
 Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kabanalouer / Booking.com / Airbnb avec des **frais inventés** (12 %, 0, 15 %, 14,2 %) et la mention « Exemple fictif ». Publiée telle quelle par décision de Simon, malgré le risque de publicité comparative signalé. À remplacer par un relevé réel dès que possible (tableau `PLATFORMS` en haut du fichier).
 
+### Section « Pour les propriétaires » de l'accueil — affirmations à corriger (2026-09-29)
+
+`components/OwnersSection.tsx` : publiée telle quelle par décision de Simon malgré 3 écarts signalés avec le fonctionnement réel — « C'est gratuit » / « 0 $ pour s'afficher » (gratuit la 1ʳᵉ année seulement), « importés automatiquement » (le bouton mène à `/devenir-hote`, simple formulaire de contact), « 5 min pour être en ligne » (un import reste en brouillon jusqu'à la publication par l'admin). « 0 % de commission » est exact.
+
 ### Pistes proposées, non faites (2026-09-24)
 
 - **BIMI** (logo à côté du nom de l'expéditeur dans Gmail/Apple Mail) : exige DMARC en mode strict + certificat de marque payant (~1 000–1 500 $ US/an). Plus tard, quand le volume de courriels augmentera.

@@ -8,6 +8,7 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
+import OwnersSection from "@/components/OwnersSection";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -303,31 +304,8 @@ export default async function HomePage() {
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />
 
-      {/* ── CTA Hôtes ── */}
-      <section className="bg-primary py-20">
-        <div className="max-w-3xl mx-auto px-4 text-center text-white">
-          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-white/90 mb-4">
-            {t("ctaLabel")}
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold mb-5 tracking-[-0.03em] leading-tight">
-            {t("ctaTitle")}
-          </h2>
-          <p className="text-white/90 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            {t("ctaDescPre")}{" "}
-            <strong className="text-white font-semibold">{t("ctaPrice")}</strong>{" "}
-            {t("ctaDescPost")}
-          </p>
-          <Link
-            href={localePath("/devenir-hote", locale)}
-            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-xl hover:bg-charcoal-50 transition-colors text-base"
-          >
-            {t("ctaButton")}
-          </Link>
-          <p className="text-white/90 text-xs mt-5 tracking-wide">
-            {t("ctaNote")}
-          </p>
-        </div>
-      </section>
+      {/* ── Pour les propriétaires ── */}
+      <OwnersSection />
 
       </main>
 
