@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { useAutosave } from "@/lib/useAutosave";
-import TranslateButton from "./TranslateButton";
 import AutoTextarea from "@/components/AutoTextarea";
 import { normalizePhone } from "@/lib/phone";
 
@@ -260,6 +259,13 @@ export default function ProfileForm({
   const [bioError, setBioError] = useState("");
   const [bioGenerating, setBioGenerating] = useState(false);
 
+  // La version anglaise n'est plus saisie : vidée à chaque modification pour
+  // que le cron translate-listings (bio_en IS NULL) la retraduise.
+  const editBio = (value: string) => {
+    setBio(value);
+    setBioEn("");
+  };
+
   const saveBio = async () => {
     setBioSaving(true);
     setBioError("");
@@ -476,40 +482,37 @@ export default function ProfileForm({
 
   const initial = (firstName[0] ?? lastName[0] ?? "?").toUpperCase();
 
-  const bioFrBlock = (
+  const hostBioBlock = (
     <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm font-medium text-charcoal-700">{t("bioLabelFr")}</label>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={generateBio}
-            disabled={bioGenerating}
-            className={`inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
-          >
-            {bioGenerating ? (
-              <>
-                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                {t("bioGenerating")}
-              </>
-            ) : (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                </svg>
-                {t("bioGenerate")}
-              </>
-            )}
-          </button>
-        </div>
+      <div className="flex justify-end mb-1.5">
+        <button
+          type="button"
+          onClick={generateBio}
+          disabled={bioGenerating}
+          className={`inline-flex items-center gap-1.5 text-xs disabled:opacity-50 ${TEXT_LINK_CLASSNAME}`}
+        >
+          {bioGenerating ? (
+            <>
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {t("bioGenerating")}
+            </>
+          ) : (
+            <>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              {t("bioGenerate")}
+            </>
+          )}
+        </button>
       </div>
       <div className="relative">
         <AutoTextarea
           value={bio}
-          onChange={(e) => setBio(e.target.value.slice(0, 300))}
+          onChange={(e) => editBio(e.target.value.slice(0, 300))}
           className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition pb-6"
           rows={4}
           placeholder={t("bioPlaceholder")}
@@ -522,43 +525,11 @@ export default function ProfileForm({
     </div>
   );
 
-  const bioEnBlock = (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm font-medium text-charcoal-700">{t("bioLabelEn")}</label>
-        <TranslateButton
-          sourceText={bio}
-          sourceLang="fr"
-          targetLang="en"
-          fieldType="bio"
-          variant="link"
-          disabled={!bio.trim()}
-          onTranslated={(en) => setBioEn(en.slice(0, 300))}
-        />
-      </div>
-      <div className="relative">
-        <AutoTextarea
-          value={bioEn}
-          onChange={(e) => setBioEn(e.target.value.slice(0, 300))}
-          className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition pb-6"
-          rows={4}
-          placeholder={t("bioEnPlaceholder")}
-          maxLength={300}
-        />
-        <span className="absolute bottom-2 right-3 text-xs text-charcoal-400 pointer-events-none">
-          {bioEn.length} / 300
-        </span>
-      </div>
-    </div>
-  );
-
-  const orderedBioBlocks = preferredLanguage === "en" ? [bioEnBlock, bioFrBlock] : [bioFrBlock, bioEnBlock];
-
   return (
     <div className="space-y-6">
 
       {/* ── Informations personnelles ──────────────────────────────────────── */}
-      <Section title={t("personalInfo")} description={(role === "host" || role === "admin") ? t("personalInfoDesc") : undefined}>
+      <Section title={t("personalInfo")}>
         {/* Avatar */}
         <div className="flex items-center gap-5">
           <div className="relative w-20 h-20 shrink-0">
@@ -650,17 +621,6 @@ export default function ProfileForm({
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
-          <input
-            type="email"
-            value={email}
-            readOnly
-            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
-          />
-          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
-        </div>
-
         {(role === "host" || role === "admin") && (
           <div>
             <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("companyName")}</label>
@@ -675,6 +635,17 @@ export default function ProfileForm({
           </div>
         )}
 
+        <div>
+          <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("email")}</label>
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full border border-[#ebebeb] rounded-xl px-4 py-2.5 text-base bg-charcoal-50 text-charcoal-400 cursor-default focus:outline-none"
+          />
+          <p className="text-xs text-charcoal-400 mt-1">{t("emailReadOnly")}</p>
+        </div>
+
         <div className="flex items-center gap-3">
           <SaveButton saving={infoSaving} saved={infoSaved} onClick={saveInfo} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
           <ErrorMsg msg={infoError} />
@@ -683,8 +654,8 @@ export default function ProfileForm({
 
       {/* ── Présentation du propriétaire (hosts only) ─────────────────────── */}
       {(role === "host" || role === "admin") && (
-        <Section title={t("ownerPresentation")} description={t("ownerPresentationDesc")}>
-          {orderedBioBlocks.map((block, i) => <div key={i} className={i > 0 ? "mt-4" : undefined}>{block}</div>)}
+        <Section title={t("travelerAboutTitle")} description={t("ownerPresentationDesc")}>
+          {hostBioBlock}
           <div className="flex items-center gap-3">
             <SaveButton saving={bioSaving} saved={bioSaved} onClick={saveBio} tSave={tc("save")} tSaving={tc("saving")} tSaved={tc("saved")} />
             <ErrorMsg msg={bioError} />
@@ -698,7 +669,7 @@ export default function ProfileForm({
           <div>
             <AutoTextarea
               value={bio}
-              onChange={(e) => setBio(e.target.value.slice(0, 200))}
+              onChange={(e) => editBio(e.target.value.slice(0, 200))}
               rows={3}
               placeholder={t("travelerAboutPlaceholder")}
               className={`${inputCls} resize-none`}
