@@ -58,6 +58,5 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
 
   // Interne
   { id: "contact-notification", category: "interne", name: "Nouveau message de contact", trigger: "Quand un visiteur envoie le formulaire /contact.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
-  { id: "citq-duplicate", category: "interne", name: "Numéro CITQ en double", trigger: "Quand une annonce est publiée avec un numéro CITQ déjà publié par un autre compte (publication non bloquée).", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
   { id: "import-notification", category: "interne", name: "Import d’annonce (pour info)", trigger: "Quand un proprio importe une annonce Airbnb — il la complète et la publie lui-même.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
 ];

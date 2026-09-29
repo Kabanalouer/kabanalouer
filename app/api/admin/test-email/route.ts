@@ -6,7 +6,6 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
-import { sendCitqDuplicateAlert } from "@/lib/emails/citqDuplicateAlert";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
@@ -94,7 +93,6 @@ function senders(): Record<string, Sender> {
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", subject: "Test de notification", message: "Ceci est un message de test envoyé depuis l’admin.",
     }),
-    "citq-duplicate": () => sendCitqDuplicateAlert({ citq: "123456", listingId: LISTING_ID, listingTitle: TITLE, others: [{ id: LISTING_ID, title: "Chalet du Lac (exemple)" }] }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
   };
 }
