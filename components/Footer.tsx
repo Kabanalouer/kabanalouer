@@ -72,15 +72,13 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* Légal / Legal */}
+          {/* Kabanalouer (conditions et confidentialité : barre du bas) */}
           <div>
             <h2 className="text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em] mb-4">
               {t("legal.title")}
             </h2>
             <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/a-propos", locale)} label={t("legal.about")} />
-              <FooterLink href={localePath("/conditions", locale)} label={t("legal.terms")} />
-              <FooterLink href={localePath("/confidentialite", locale)} label={t("legal.privacy")} />
               <FooterLink href={localePath("/contact", locale)} label={t("legal.contact")} />
             </ul>
           </div>
@@ -88,9 +86,17 @@ export default async function Footer() {
 
         {/* ── Bottom bar ── */}
         <div className="border-t border-[#ebebeb] pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-charcoal-400">
-            {t("copyright")}
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 text-xs text-charcoal-400">
+            <p>{t("copyright")}</p>
+            <div className="flex items-center gap-4">
+              <Link href={localePath("/conditions", locale)} className="hover:text-charcoal-800 transition-colors">
+                {t("legal.terms")}
+              </Link>
+              <Link href={localePath("/confidentialite", locale)} className="hover:text-charcoal-800 transition-colors">
+                {t("legal.privacy")}
+              </Link>
+            </div>
+          </div>
           <p className="text-xs text-charcoal-400">
             {t("madeWith")}{" "}
             <svg className="inline w-3.5 h-3.5 text-primary align-[-2px]" viewBox="0 0 24 24" fill="currentColor">
