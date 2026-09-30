@@ -5,13 +5,15 @@ import { formatPrice } from "@/lib/formatPrice";
 // même chalet, mêmes dates, prix total avec les frais de service de chaque
 // plateforme. Ordre volontairement non trié — Kabanalouer en 2ᵉ. À remplacer
 // par un relevé réel : changer NIGHTLY_PRICE / NIGHTS / feeRate ici suffit.
-const NIGHTLY_PRICE = 350;
+// 319 $ × 3 nuits = 957 $ affiché pour Kabanalouer. Les taux ne sont jamais
+// affichés : seuls les prix totaux et le montant des frais le sont.
+const NIGHTLY_PRICE = 319;
 const NIGHTS = 3;
 const PLATFORMS: { name: string; feeRate: number; isKabanalouer?: boolean }[] = [
   { name: "Vrbo", feeRate: 0.12 },
   { name: "Kabanalouer", feeRate: 0, isKabanalouer: true },
-  { name: "Booking.com", feeRate: 0.15 },
-  { name: "Airbnb", feeRate: 0.142 },
+  { name: "Booking.com", feeRate: 0.10 },
+  { name: "Airbnb", feeRate: 0.155 },
 ];
 
 const EASE = "duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
