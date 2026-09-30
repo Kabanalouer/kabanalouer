@@ -976,7 +976,7 @@ Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien l
 
 ### Comparaison de prix fictive sur la page d'accueil (2026-09-29)
 
-Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kabanalouer / Booking.com / Airbnb avec des frais estimés par Simon le 2026-09-30 (Vrbo 12 %, Booking.com 10 %, Airbnb 15,5 %, sur 1 957 $ pour 3 nuits ; seuls les prix et montants de frais sont affichés, jamais les taux) et la mention « Exemple fictif ». Publiée telle quelle par décision de Simon, malgré le risque de publicité comparative signalé. À remplacer par un relevé réel dès que possible (tableau `PLATFORMS` en haut du fichier).
+Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kabanalouer / Booking.com / Airbnb avec des frais estimés par Simon le 2026-09-30 (Vrbo 12 %, Booking.com 10 %, Airbnb 15,5 %, sur 957 $ pour 3 nuits ; seuls les prix et montants de frais sont affichés, jamais les taux) et la mention « Exemple fictif ». Publiée telle quelle par décision de Simon, malgré le risque de publicité comparative signalé. À remplacer par un relevé réel dès que possible (tableau `PLATFORMS` en haut du fichier).
 
 ### Section « Pour les propriétaires » de l'accueil — affirmations à corriger (2026-09-29)
 

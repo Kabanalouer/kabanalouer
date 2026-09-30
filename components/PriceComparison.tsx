@@ -4,10 +4,10 @@ import { formatPrice } from "@/lib/formatPrice";
 // Exemple fictif affiché sur la page d'accueil (section « Notre différence ») :
 // même chalet, mêmes dates, prix total avec les frais de service de chaque
 // plateforme. Ordre volontairement non trié — Kabanalouer en 2ᵉ. À remplacer
-// par un relevé réel : changer STAY_TOTAL / NIGHTS / feeRate ici suffit.
-// Les taux ne sont jamais affichés : seuls les prix totaux et le montant des
-// frais le sont.
-const STAY_TOTAL = 1957;
+// par un relevé réel : changer NIGHTLY_PRICE / NIGHTS / feeRate ici suffit.
+// 319 $ × 3 nuits = 957 $ affiché pour Kabanalouer. Les taux ne sont jamais
+// affichés : seuls les prix totaux et le montant des frais le sont.
+const NIGHTLY_PRICE = 319;
 const NIGHTS = 3;
 const PLATFORMS: { name: string; feeRate: number; isKabanalouer?: boolean }[] = [
   { name: "Vrbo", feeRate: 0.12 },
@@ -24,7 +24,7 @@ export default async function PriceComparison() {
   const money = (n: number) =>
     formatPrice(Math.round(n).toLocaleString(locale === "en" ? "en-CA" : "fr-CA"), locale);
 
-  const base = STAY_TOTAL;
+  const base = NIGHTLY_PRICE * NIGHTS;
   const maxFee = Math.max(...PLATFORMS.map((p) => base * p.feeRate));
 
   return (
