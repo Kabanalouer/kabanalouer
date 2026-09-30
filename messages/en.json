@@ -1240,7 +1240,7 @@
   },
   "faqHotes": {
     "badge": "For owners",
-    "h1": "Frequently asked questions — Owners",
+    "h1": "Frequently asked questions",
     "intro": "Everything you need to know to list your cabin on Kabanalouer",
     "sec1": "Getting started",
     "s1q1": "How do I create my listing?",
@@ -1273,7 +1273,7 @@
     "s5a3": "Yes. Each cabin gets its own free first year, no matter how many cabins you list.",
     "ctaTitle": "Have more questions?",
     "ctaSubtitle": "Our team is available to help you.",
-    "ctaRegister": "List my cabin →",
+    "ctaContact": "Contact us →",
     "ctaPricing": "View pricing"
   },
   "commentCaMarche": {

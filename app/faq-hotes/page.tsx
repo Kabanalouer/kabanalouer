@@ -174,10 +174,10 @@ export default async function FaqHotesPage() {
           <p className="text-charcoal-500 mb-8">{t("ctaSubtitle")}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href={localePath("/devenir-hote", locale)}
+              href={localePath("/contact", locale)}
               className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors"
             >
-              {t("ctaRegister")}
+              {t("ctaContact")}
             </Link>
           </div>
         </div>

@@ -1240,7 +1240,7 @@
   },
   "faqHotes": {
     "badge": "Pour les proprios",
-    "h1": "Questions fréquentes — Propriétaires",
+    "h1": "Questions fréquentes",
     "intro": "Tout ce que vous devez savoir pour afficher votre chalet sur Kabanalouer",
     "sec1": "Démarrage",
     "s1q1": "Comment créer mon annonce ?",
@@ -1273,7 +1273,7 @@
     "s5a3": "Oui. Chaque chalet a droit à sa propre année gratuite, peu importe le nombre de chalets que vous inscrivez.",
     "ctaTitle": "Vous avez d'autres questions ?",
     "ctaSubtitle": "Notre équipe est disponible pour vous accompagner.",
-    "ctaRegister": "Inscrire mon chalet →",
+    "ctaContact": "Contactez-nous →",
     "ctaPricing": "Voir les tarifs"
   },
   "commentCaMarche": {
