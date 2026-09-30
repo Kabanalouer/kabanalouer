@@ -10,7 +10,6 @@
 - [Location de chalet accessible aux personnes à mobilité réduite](https://kabanalouer.ca/chalets/accessible-mobilite-reduite) : chalets adaptés, avec le détail de l'entrée, de la salle de bain, de la chambre et de la circulation (mesures en cm et en pouces)
 - [Devenir proprio](https://kabanalouer.ca/devenir-hote) : inscrire son chalet sur la plateforme
 - [Comment ça marche](https://kabanalouer.ca/comment-ca-marche) : fonctionnement pour voyageurs et propriétaires
-- [Tarifs et abonnement](https://kabanalouer.ca/tarifs) : détails de l'abonnement proprio
 - [FAQ propriétaires](https://kabanalouer.ca/faq-hotes) : questions fréquentes pour les proprios
 - [À propos](https://kabanalouer.ca/a-propos) : présentation de Kabanalouer
 - [Sitemap](https://kabanalouer.ca/sitemap.xml) : liste complète des pages, y compris chaque fiche de chalet

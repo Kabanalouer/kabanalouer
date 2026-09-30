@@ -9,8 +9,7 @@ const STATS = [
 ] as const;
 
 // Section « Pour les propriétaires » de la page d'accueil, juste avant le pied
-// de page. Aucun prix d'abonnement ici (choix de Simon, 2026-09-29) — les
-// tarifs restent sur /tarifs.
+// de page. Aucun prix d'abonnement ici (choix de Simon, 2026-09-29).
 export default async function OwnersSection() {
   const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
 

@@ -5,7 +5,6 @@ const PATH_TRANSLATIONS: Array<[string, string]> = [
   ["/devenir-hote", "/become-a-host"],
   ["/a-propos", "/about"],
   ["/comment-ca-marche", "/how-it-works"],
-  ["/tarifs", "/pricing"],
   ["/faq-hotes", "/owner-faq"],
   ["/conditions", "/terms"],
   ["/confidentialite", "/privacy"],

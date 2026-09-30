@@ -83,7 +83,10 @@ const nextConfig: NextConfig = {
       { source: "/en/devenir-hote",      destination: "/en/become-a-host", permanent: true },
       { source: "/en/a-propos",          destination: "/en/about",         permanent: true },
       { source: "/en/comment-ca-marche", destination: "/en/how-it-works",  permanent: true },
-      { source: "/en/tarifs",            destination: "/en/pricing",       permanent: true },
+      // Page Tarifs retirée (2026-09-30) : redirigée vers la page proprio
+      { source: "/tarifs",               destination: "/devenir-hote",     permanent: true },
+      { source: "/en/tarifs",            destination: "/en/become-a-host", permanent: true },
+      { source: "/en/pricing",           destination: "/en/become-a-host", permanent: true },
       { source: "/en/faq-hotes",         destination: "/en/owner-faq",     permanent: true },
       { source: "/en/conditions",        destination: "/en/terms",         permanent: true },
       { source: "/en/confidentialite",   destination: "/en/privacy",       permanent: true },

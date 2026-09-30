@@ -31,8 +31,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/en/regions`,        lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
     { url: `${BASE}/devenir-hote`,      lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/en/become-a-host`,  lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/tarifs`,            lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/pricing`,        lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/comment-ca-marche`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/en/how-it-works`,   lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/faq-hotes`,         lastModified: now, changeFrequency: "monthly", priority: 0.6 },
