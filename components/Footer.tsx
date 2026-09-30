@@ -68,7 +68,6 @@ export default async function Footer() {
             </h2>
             <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/devenir-hote", locale)} label={t("owners.listCabin")} />
-              <FooterLink href={localePath("/tarifs", locale)} label={t("owners.pricing")} />
               <FooterLink href={localePath("/faq-hotes", locale)} label={t("owners.faq")} />
             </ul>
           </div>

@@ -197,12 +197,6 @@ export default async function FaqHotesPage() {
             >
               {t("ctaRegister")}
             </Link>
-            <Link
-              href={localePath("/tarifs", locale)}
-              className="inline-flex items-center justify-center border border-[#ebebeb] text-charcoal-700 font-semibold px-8 py-4 rounded-full hover:border-primary hover:text-primary transition-colors"
-            >
-              {t("ctaPricing")}
-            </Link>
           </div>
         </div>
       </section>

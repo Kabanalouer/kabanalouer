@@ -520,7 +520,6 @@ export default function Navbar() {
               {themeLinks.regions && <MobileLink href={lp("/regions")}>{tf("travelers.regions")}</MobileLink>}
               {themeLinks.deals && <MobileLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR}>{tf("travelers.deals")}</MobileLink>}
               <MobileLink href={lp("/devenir-hote")}>{tf("owners.listCabin")}</MobileLink>
-              <MobileLink href={lp("/tarifs")}>{tf("owners.pricing")}</MobileLink>
               <MobileLink href={lp("/comment-ca-marche")}>{tf("travelers.howItWorks")}</MobileLink>
             </div>
             <Link
