@@ -43,69 +43,18 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqJsonLdFr = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Est-ce que je paye sur Kabanalouer ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Non. Kabanalouer est une plateforme de mise en relation. Le paiement se fait directement entre vous et le propriétaire, selon les modalités convenues ensemble.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Comment contacter un propriétaire ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Cliquez sur « Contacter le propriétaire » sur la fiche du chalet. Vous devez créer un compte gratuit pour envoyer un message.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Est-ce que je dois payer pour créer un compte ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Non, la création de compte voyageur est entièrement gratuite.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Comment savoir si un chalet est disponible ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Chaque fiche affiche un calendrier de disponibilités mis à jour par le propriétaire. Vous pouvez aussi filtrer par dates dans la recherche.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Que faire si le propriétaire ne répond pas ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Nous vous recommandons d'attendre 24-48h. Si vous n'avez pas de réponse, n'hésitez pas à contacter un autre chalet similaire.",
-      },
-    },
-  ],
-};
-
 export default async function CommentCaMarchePage() {
   const [t, locale] = await Promise.all([getTranslations("commentCaMarche"), getLocale()]);
-  // EN : mêmes questions que la FAQ visible (clés faq1Q…faq5A) ; FR : texte
-  // historique inchangé.
-  const faqJsonLd =
-    locale === "en"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: ([1, 2, 3, 4, 5] as const).map((i) => ({
-            "@type": "Question",
-            name: t(`faq${i}Q`),
-            acceptedAnswer: { "@type": "Answer", text: t(`faq${i}A`) },
-          })),
-        }
-      : faqJsonLdFr;
+  // Mêmes questions et réponses que la FAQ visible (clés faq1Q…faq5A)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: ([1, 2, 3, 4, 5] as const).map((i) => ({
+      "@type": "Question",
+      name: t(`faq${i}Q`),
+      acceptedAnswer: { "@type": "Answer", text: t(`faq${i}A`) },
+    })),
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -115,6 +64,9 @@ export default async function CommentCaMarchePage() {
       />
       <Navbar />
       <main className="flex flex-1 flex-col">
+
+      {/* ── Notre différence — même section que la page d'accueil ── */}
+      <PriceComparison />
 
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] py-20 border-b border-[#ebebeb]">
@@ -146,9 +98,6 @@ export default async function CommentCaMarchePage() {
           </div>
         </div>
       </section>
-
-      {/* ── Notre différence — même section que la page d'accueil ── */}
-      <PriceComparison />
 
       {/* ── FAQ ── */}
       <section className="py-20 bg-white">
