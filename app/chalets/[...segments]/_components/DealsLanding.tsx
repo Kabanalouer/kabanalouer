@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import { createClient } from "@/lib/supabase/server";
+import { countDealListingsWith } from "@/lib/themeLinks";
 import { normalizePhotos } from "@/lib/photo";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
@@ -42,21 +43,7 @@ export function buildDealsMeta(isEn: boolean) {
 
 // Nombre de chalets publiés avec une promo visible aujourd'hui (seuil d'indexation)
 export async function countDealListings(): Promise<number> {
-  const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
-  const { data: promos } = await supabase
-    .from("promotions")
-    .select("listing_id")
-    .eq("is_active", true)
-    .or(visiblePromoFilter(today));
-  const ids = [...new Set((promos ?? []).map((p) => p.listing_id as string))];
-  if (ids.length === 0) return 0;
-  const { count } = await supabase
-    .from("listings")
-    .select("id", { count: "exact", head: true })
-    .eq("is_published", true)
-    .in("id", ids);
-  return count ?? 0;
+  return countDealListingsWith(await createClient());
 }
 
 function toListing(l: Record<string, unknown>, locale: string, isEn: boolean): Listing {

@@ -111,6 +111,9 @@ export default function Navbar() {
   const [unansweredReviewsCount, setUnansweredReviewsCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Liens thématiques du menu mobile, masqués tant que la page a trop peu de
+  // chalets (voir lib/themeLinks.ts) — même règle que le pied de page.
+  const [themeLinks, setThemeLinks] = useState({ regions: false, deals: false });
   const [voyageurMode, setVoyageurMode] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -222,6 +225,19 @@ export default function Navbar() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // Seulement sur mobile : sur ordinateur, ces liens ne sont pas dans la barre.
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    fetch("/api/nav/theme-links")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setThemeLinks({ regions: !!data.regions, deals: !!data.deals });
+      })
+      .catch(() => {
+        // Échec silencieux : les liens restent masqués
+      });
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -501,8 +517,8 @@ export default function Navbar() {
           <div className="md:hidden border-t border-[#ebebeb] px-4 py-4 flex flex-col gap-3 pb-5">
             <div className="flex flex-col border-b border-[#ebebeb] pb-3">
               <MobileLink href={lp("/chalets")}>{tf("travelers.browse")}</MobileLink>
-              <MobileLink href={lp("/regions")}>{tf("travelers.regions")}</MobileLink>
-              <MobileLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR}>{tf("travelers.deals")}</MobileLink>
+              {themeLinks.regions && <MobileLink href={lp("/regions")}>{tf("travelers.regions")}</MobileLink>}
+              {themeLinks.deals && <MobileLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR}>{tf("travelers.deals")}</MobileLink>}
               <MobileLink href={lp("/devenir-hote")}>{tf("owners.listCabin")}</MobileLink>
               <MobileLink href={lp("/tarifs")}>{tf("owners.pricing")}</MobileLink>
               <MobileLink href={lp("/comment-ca-marche")}>{tf("travelers.howItWorks")}</MobileLink>

@@ -5,6 +5,7 @@ import { localePath } from "@/lib/localePath";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR } from "@/lib/accessibility";
 import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
+import { getThemeLinkVisibility } from "@/lib/themeLinks";
 
 function FooterLogo() {
   return (
@@ -20,7 +21,11 @@ function FooterLogo() {
 }
 
 export default async function Footer() {
-  const [t, locale] = await Promise.all([getTranslations("footer"), getLocale()]);
+  const [t, locale, show] = await Promise.all([
+    getTranslations("footer"),
+    getLocale(),
+    getThemeLinkVisibility(),
+  ]);
 
   return (
     <footer className="w-full block bg-charcoal-50 border-t border-[#ebebeb]">
@@ -47,10 +52,11 @@ export default async function Footer() {
             </h2>
             <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
-              <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />
-              <FooterLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR} label={t("travelers.deals")} />
-              <FooterLink href={locale === "en" ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR} label={t("travelers.dogFriendly")} />
-              <FooterLink href={locale === "en" ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR} label={t("travelers.accessible")} />
+              {/* Liens thématiques masqués tant que la page a trop peu de chalets (voir lib/themeLinks.ts) */}
+              {show.regions && <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />}
+              {show.deals && <FooterLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR} label={t("travelers.deals")} />}
+              {show.dogFriendly && <FooterLink href={locale === "en" ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR} label={t("travelers.dogFriendly")} />}
+              {show.accessible && <FooterLink href={locale === "en" ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR} label={t("travelers.accessible")} />}
               <FooterLink href={localePath("/comment-ca-marche", locale)} label={t("travelers.howItWorks")} />
             </ul>
           </div>
