@@ -69,7 +69,7 @@ export default async function CommentCaMarchePage() {
       <PriceComparison />
 
       {/* ── Hero ── */}
-      <section className="bg-[#F8FAF9] py-20 border-b border-[#ebebeb]">
+      <section className="bg-white pt-20 pb-4">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
             {t("badge")}
@@ -84,7 +84,7 @@ export default async function CommentCaMarchePage() {
       </section>
 
       {/* ── 3 Steps ── */}
-      <section className="py-20 bg-white">
+      <section className="pt-12 pb-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
             <Step
@@ -100,7 +100,7 @@ export default async function CommentCaMarchePage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-charcoal-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-bold text-charcoal-800 text-center mb-12">
             {t("faqTitle")}
@@ -174,7 +174,7 @@ function Step({
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <div className="border border-[#ebebeb] rounded-2xl p-6 bg-[#F8FAF9]">
+    <div className="border border-[#ebebeb] rounded-2xl p-6 bg-white">
       <p className="text-heading-3 font-semibold text-charcoal-800 mb-2">{question}</p>
       <p className="text-charcoal-500 text-base leading-relaxed">{answer}</p>
     </div>
