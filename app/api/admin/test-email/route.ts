@@ -91,7 +91,7 @@ function senders(): Record<string, Sender> {
     }),
 
     "contact-notification": () => sendContactMessageNotification({
-      name: "Emma Test", email: "emma@example.com", subject: "Test de notification", message: "Ceci est un message de test envoyé depuis l’admin.",
+      name: "Emma Test", email: "emma@example.com", message: "Ceci est un message de test envoyé depuis l’admin.",
     }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
   };

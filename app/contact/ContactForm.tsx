@@ -15,15 +15,6 @@ export default function ContactForm() {
   const locale = useLocale();
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
 
-  const SUBJECTS = [
-    t("subject0"),
-    t("subject1"),
-    t("subject2"),
-    t("subject3"),
-    t("subject4"),
-    t("subject5"),
-  ];
-
   if (state.status === "success") {
     return (
       <div className="bg-success-50 border border-success-200 rounded-2xl p-8 text-center">
@@ -90,25 +81,6 @@ export default function ContactForm() {
           className={inputCls}
           placeholder={t("formEmailPlaceholder")}
         />
-      </div>
-
-      {/* Subject */}
-      <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("formSubject")} <span className="text-error-400">*</span>
-        </label>
-        <select
-          id="subject"
-          name="subject"
-          required
-          defaultValue=""
-          className="w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-white"
-        >
-          <option value="" disabled>{t("formSubjectPlaceholder")}</option>
-          {SUBJECTS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
       </div>
 
       {/* Message */}

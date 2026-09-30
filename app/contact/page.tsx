@@ -31,12 +31,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const t = await getTranslations("contact");
 
-  const FAQ = [
-    { q: t("faq1Q"), a: t("faq1A") },
-    { q: t("faq2Q"), a: t("faq2A") },
-    { q: t("faq3Q"), a: t("faq3A") },
-  ];
-
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -106,74 +100,8 @@ export default async function ContactPage() {
                 </p>
               </div>
 
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.96 8.96 0 01.284-2.253" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-charcoal-800">{t("infoSocialLabel")}</h3>
-                </div>
-                <div className="flex gap-3">
-                  {/* Facebook */}
-                  <span
-                    aria-label="Facebook"
-                    className="w-9 h-9 rounded-xl border border-[#ebebeb] flex items-center justify-center text-charcoal-400 cursor-not-allowed"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                    </svg>
-                  </span>
-                  {/* Instagram */}
-                  <span
-                    aria-label="Instagram"
-                    className="w-9 h-9 rounded-xl border border-[#ebebeb] flex items-center justify-center text-charcoal-400 cursor-not-allowed"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                      <circle cx="12" cy="12" r="4" />
-                      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-                    </svg>
-                  </span>
-                </div>
-                <p className="text-xs text-charcoal-400 mt-2">{t("infoSocialSoon")}</p>
-              </div>
 
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Quick FAQ ── */}
-      <section className="py-12 md:py-20 bg-[#F8FAF9] border-t border-[#ebebeb]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl font-bold text-charcoal-800 text-center mb-10">
-            {t("faqTitle")}
-          </h2>
-          <div className="space-y-3">
-            {FAQ.map(({ q, a }) => (
-              <details
-                key={q}
-                className="group border border-[#ebebeb] rounded-2xl bg-white overflow-hidden"
-              >
-                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-semibold text-charcoal-800 text-base select-none">
-                  {q}
-                  <svg
-                    className="w-4 h-4 text-charcoal-400 shrink-0 ml-3 transition-transform group-open:rotate-180"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-5 text-base text-charcoal-500 leading-relaxed border-t border-[#ebebeb] pt-4">
-                  {a}
-                </div>
-              </details>
-            ))}
           </div>
         </div>
       </section>

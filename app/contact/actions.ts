@@ -16,12 +16,13 @@ export async function submitContactForm(
   const lastName = (formData.get("last_name") as string | null)?.trim() ?? "";
   const name = `${firstName} ${lastName}`.trim();
   const email = (formData.get("email") as string | null)?.trim() ?? "";
-  const subject = (formData.get("subject") as string | null)?.trim() ?? "";
+  // Le formulaire n'a plus de champ Sujet ; la colonne reste NOT NULL en base.
+  const subject = "Formulaire de contact";
   const message = (formData.get("message") as string | null)?.trim() ?? "";
   // Champ caché posé par ContactForm (langue de la page).
   const isEn = formData.get("locale") === "en";
 
-  if (!firstName || !lastName || !email || !subject || !message) {
+  if (!firstName || !lastName || !email || !message) {
     return { status: "error", message: isEn ? "All fields are required." : "Tous les champs sont obligatoires." };
   }
 
@@ -51,7 +52,7 @@ export async function submitContactForm(
   // Notification à l'admin — ne doit jamais faire échouer la soumission du
   // formulaire si Resend est indisponible (le message est déjà en base).
   try {
-    const { error: emailError } = await sendContactMessageNotification({ name, email, subject, message });
+    const { error: emailError } = await sendContactMessageNotification({ name, email, message });
     if (emailError) {
       console.error("sendContactMessageNotification error:", emailError.message);
     }
