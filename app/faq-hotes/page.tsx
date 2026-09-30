@@ -41,46 +41,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqJsonLdFr = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    { "@type": "Question", name: "Comment créer mon annonce ?", acceptedAnswer: { "@type": "Answer", text: "Créez un compte propriétaire gratuit, remplissez les informations de votre chalet (photos, description, équipements, calendrier), puis activez votre annonce via la section « Publier mon annonce »." } },
-    { "@type": "Question", name: "Combien de temps faut-il pour créer une annonce ?", acceptedAnswer: { "@type": "Answer", text: "Entre 15 et 30 minutes pour une annonce complète. Notre IA peut générer votre titre et description automatiquement." } },
-    { "@type": "Question", name: "Ai-je besoin d'un numéro CITQ ?", acceptedAnswer: { "@type": "Answer", text: "Oui, un numéro CITQ valide à 6 chiffres est obligatoire pour publier votre annonce sur Kabanalouer, conformément à la réglementation québécoise." } },
-    { "@type": "Question", name: "Combien de photos puis-je ajouter ?", acceptedAnswer: { "@type": "Answer", text: "Jusqu'à 80 photos par annonce. Un minimum de 5 photos est requis pour publier. Les photos sont automatiquement compressées en WebP." } },
-    { "@type": "Question", name: "La synchronisation iCal est-elle automatique ?", acceptedAnswer: { "@type": "Answer", text: "Oui, une synchronisation automatique se fait toutes les heures. Vous pouvez aussi forcer une synchronisation manuelle à tout moment." } },
-    { "@type": "Question", name: "Que se passe-t-il si je ne renouvelle pas ?", acceptedAnswer: { "@type": "Answer", text: "Votre annonce est automatiquement dépubliée à l'expiration, mais vos données restent intactes — photos, description, avis — le temps que vous le souhaitiez. Rien n'est supprimé automatiquement." } },
-    { "@type": "Question", name: "Puis-je avoir plusieurs chalets ?", acceptedAnswer: { "@type": "Answer", text: "Oui. Chaque chalet a son propre abonnement, avec un tarif dégressif : 299 $/an pour votre premier chalet, 249 $/an pour le 2ᵉ et le 3ᵉ, puis 199 $/an à partir du 4ᵉ." } },
-  ],
-};
-
 export default async function FaqHotesPage() {
   const [t, locale] = await Promise.all([getTranslations("faqHotes"), getLocale()]);
-  // EN : mêmes 7 questions que la version FR ci-dessus, tirées des clés faqHotes.*
-  // de la FAQ visible ; FR : texte historique inchangé.
-  const faqJsonLd =
-    locale === "en"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: (
-            [
-              ["s1q1", "s1a1"],
-              ["s1q2", "s1a2"],
-              ["s1q3", "s1a3"],
-              ["s2q1", "s2a1"],
-              ["s3q2", "s3a2"],
-              ["s5q1", "s5a1"],
-              ["s5q2", "s5a2"],
-            ] as const
-          ).map(([q, a]) => ({
-            "@type": "Question",
-            name: t(q),
-            acceptedAnswer: { "@type": "Answer", text: t(a) },
-          })),
-        }
-      : faqJsonLdFr;
+  // Mêmes questions et réponses que la FAQ visible (clés faqHotes.*)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: (
+      [
+        ["s1q1", "s1a1"],
+        ["s1q2", "s1a2"],
+        ["s1q3", "s1a3"],
+        ["s2q1", "s2a1"],
+        ["s3q2", "s3a2"],
+        ["s5q1", "s5a1"],
+        ["s5q2", "s5a2"],
+      ] as const
+    ).map(([q, a]) => ({
+      "@type": "Question",
+      name: t(q),
+      acceptedAnswer: { "@type": "Answer", text: t(a) },
+    })),
+  };
 
   const SECTIONS = [
     {
