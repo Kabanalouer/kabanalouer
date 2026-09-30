@@ -228,7 +228,7 @@ const fr: DevenirHoteContent = {
     h2: "Votre chalet en ligne aujourd’hui. C’est gratuit pendant 1 an.",
     subtitle: "Offre de lancement valable pour toute inscription avant le 31 octobre 2026.",
     importBtn: "Importer mon annonce Airbnb",
-    createBtn: "Créer une annonce de zéro",
+    createBtn: "Créer une annonce à partir de 0",
     reassurance: "Aucune carte de crédit · Aucune commission · Aucun engagement",
   },
   sticky: { title: "Gratuit 12 mois", subtitle: "Avant le 31 oct. 2026", cta: "Publier mon chalet" },
