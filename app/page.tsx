@@ -79,10 +79,12 @@ export default async function HomePage() {
     }
   }
 
-  // « Nouveautés » : les 6 chalets publiés le plus récemment. Pas de colonne
+  // « Nouveautés » : les 3 chalets publiés le plus récemment (6 plus tard,
+  // quand il y aura plus d'annonces). Pas de colonne
   // de date de publication : la ligne subscriptions d'une annonce est créée à
   // sa première publication (gratuite ou payante), on trie donc par sa date.
   // Lecture serveur seulement (subscriptions n'est pas lisible par les visiteurs).
+  const NEW_LISTINGS_COUNT = 3;
   const LISTING_CARD_COLUMNS = "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug";
   const { data: recentSubs } = await createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -103,7 +105,7 @@ export default async function HomePage() {
     : { data: [] };
   const rawListings = (candidateListings ?? [])
     .sort((a, b) => publishedOrder.indexOf(a.id as string) - publishedOrder.indexOf(b.id as string))
-    .slice(0, 6);
+    .slice(0, NEW_LISTINGS_COUNT);
 
   // Vedette listings for current month
   const now = new Date();
