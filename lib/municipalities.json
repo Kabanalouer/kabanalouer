@@ -28,6 +28,13 @@
     "mrc": "MRC Minganie"
   },
   {
+    "name": "Akulivik",
+    "slug": "akulivik",
+    "region": "Nunavik",
+    "officialCode": "99125",
+    "mrc": ""
+  },
+  {
     "name": "Akwesasne",
     "slug": "akwesasne",
     "region": "Montérégie",
@@ -140,6 +147,13 @@
     "mrc": "MRC La Vallée-de-la-Gatineau"
   },
   {
+    "name": "Aupaluk",
+    "slug": "aupaluk",
+    "region": "Nunavik",
+    "officialCode": "99105",
+    "mrc": ""
+  },
+  {
     "name": "Austin",
     "slug": "austin",
     "region": "Estrie (Cantons-de-l'Est)",
@@ -180,6 +194,20 @@
     "region": "Côte-Nord",
     "officialCode": "96020",
     "mrc": "MRC Manicouagan"
+  },
+  {
+    "name": "Baie-d'Hudson",
+    "slug": "baie-d-hudson",
+    "region": "Nunavik",
+    "officialCode": "99904",
+    "mrc": ""
+  },
+  {
+    "name": "Baie-D'Urfé",
+    "slug": "baie-d-urfe",
+    "region": "Montréal",
+    "officialCode": "66112",
+    "mrc": ""
   },
   {
     "name": "Baie-de-la-Bouteille",
@@ -273,6 +301,13 @@
     "mrc": "MRC Des Chenaux"
   },
   {
+    "name": "Beaconsfield",
+    "slug": "beaconsfield",
+    "region": "Montréal",
+    "officialCode": "66107",
+    "mrc": ""
+  },
+  {
     "name": "Béarn",
     "slug": "bearn",
     "region": "Abitibi-Témiscamingue",
@@ -326,13 +361,6 @@
     "slug": "bedford",
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "46040",
-    "mrc": "MRC Brome-Missisquoi"
-  },
-  {
-    "name": "Bedford",
-    "slug": "bedford",
-    "region": "Estrie (Cantons-de-l'Est)",
-    "officialCode": "46035",
     "mrc": "MRC Brome-Missisquoi"
   },
   {
@@ -588,13 +616,6 @@
     "mrc": ""
   },
   {
-    "name": "Cacouna",
-    "slug": "cacouna",
-    "region": "Bas-Saint-Laurent",
-    "officialCode": "12057",
-    "mrc": "MRC Rivière-du-Loup"
-  },
-  {
     "name": "Calixa-Lavallée",
     "slug": "calixa-lavallee",
     "region": "Montérégie",
@@ -735,6 +756,13 @@
     "mrc": "MRC Le Rocher-Percé"
   },
   {
+    "name": "Chapais",
+    "slug": "chapais",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99020",
+    "mrc": ""
+  },
+  {
     "name": "Charette",
     "slug": "charette",
     "region": "Mauricie",
@@ -805,11 +833,25 @@
     "mrc": "MRC Arthabaska"
   },
   {
+    "name": "Chibougamau",
+    "slug": "chibougamau",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99025",
+    "mrc": ""
+  },
+  {
     "name": "Chichester",
     "slug": "chichester",
     "region": "Outaouais",
     "officialCode": "84090",
     "mrc": "MRC Pontiac"
+  },
+  {
+    "name": "Chisasibi",
+    "slug": "chisasibi",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99814",
+    "mrc": ""
   },
   {
     "name": "Chute-aux-Outardes",
@@ -842,16 +884,16 @@
   {
     "name": "Clermont",
     "slug": "clermont",
-    "region": "Charlevoix",
-    "officialCode": "15035",
-    "mrc": "MRC Charlevoix-Est"
+    "region": "Abitibi-Témiscamingue",
+    "officialCode": "87110",
+    "mrc": "MRC Abitibi-Ouest"
   },
   {
     "name": "Clermont",
     "slug": "clermont",
-    "region": "Abitibi-Témiscamingue",
-    "officialCode": "87110",
-    "mrc": "MRC Abitibi-Ouest"
+    "region": "Charlevoix",
+    "officialCode": "15035",
+    "mrc": "MRC Charlevoix-Est"
   },
   {
     "name": "Clerval",
@@ -922,6 +964,13 @@
     "region": "Côte-Nord",
     "officialCode": "98015",
     "mrc": "MRC Le Golfe-du-Saint-Laurent"
+  },
+  {
+    "name": "Côte-Saint-Luc",
+    "slug": "cote-saint-luc",
+    "region": "Montréal",
+    "officialCode": "66058",
+    "mrc": ""
   },
   {
     "name": "Coteau-du-Lac",
@@ -1046,13 +1095,6 @@
     "name": "Disraeli",
     "slug": "disraeli",
     "region": "Chaudière-Appalaches",
-    "officialCode": "31020",
-    "mrc": "MRC Les Appalaches"
-  },
-  {
-    "name": "Disraeli",
-    "slug": "disraeli",
-    "region": "Chaudière-Appalaches",
     "officialCode": "31015",
     "mrc": "MRC Les Appalaches"
   },
@@ -1071,6 +1113,13 @@
     "mrc": "MRC Maria-Chapdelaine"
   },
   {
+    "name": "Dollard-des-Ormeaux",
+    "slug": "dollard-des-ormeaux",
+    "region": "Montréal",
+    "officialCode": "66142",
+    "mrc": ""
+  },
+  {
     "name": "Doncaster",
     "slug": "doncaster",
     "region": "Laurentides",
@@ -1083,6 +1132,13 @@
     "region": "Québec (ville et région)",
     "officialCode": "34025",
     "mrc": "MRC Portneuf"
+  },
+  {
+    "name": "Dorval",
+    "slug": "dorval",
+    "region": "Montréal",
+    "officialCode": "66087",
+    "mrc": ""
   },
   {
     "name": "Dosquet",
@@ -1183,11 +1239,25 @@
     "mrc": "MRC Coaticook"
   },
   {
+    "name": "Eastmain",
+    "slug": "eastmain",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99810",
+    "mrc": ""
+  },
+  {
     "name": "Eastman",
     "slug": "eastman",
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "45093",
     "mrc": "MRC Memphrémagog"
+  },
+  {
+    "name": "Eeyou Istchee Baie-James",
+    "slug": "eeyou-istchee-baie-james",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99060",
+    "mrc": ""
   },
   {
     "name": "Egan-Sud",
@@ -1519,6 +1589,13 @@
     "mrc": "MRC Le Haut-Saint-François"
   },
   {
+    "name": "Hampstead",
+    "slug": "hampstead",
+    "region": "Montréal",
+    "officialCode": "66062",
+    "mrc": ""
+  },
+  {
     "name": "Harrington",
     "slug": "harrington",
     "region": "Laurentides",
@@ -1530,13 +1607,6 @@
     "slug": "hatley",
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "45055",
-    "mrc": "MRC Memphrémagog"
-  },
-  {
-    "name": "Hatley",
-    "slug": "hatley",
-    "region": "Estrie (Cantons-de-l'Est)",
-    "officialCode": "45043",
     "mrc": "MRC Memphrémagog"
   },
   {
@@ -1565,13 +1635,6 @@
     "slug": "hemmingford",
     "region": "Montérégie",
     "officialCode": "68015",
-    "mrc": "MRC Les Jardins-de-Napierville"
-  },
-  {
-    "name": "Hemmingford",
-    "slug": "hemmingford",
-    "region": "Montérégie",
-    "officialCode": "68010",
     "mrc": "MRC Les Jardins-de-Napierville"
   },
   {
@@ -1645,6 +1708,13 @@
     "mrc": "MRC Le Haut-Saint-Laurent"
   },
   {
+    "name": "Inukjuak",
+    "slug": "inukjuak",
+    "region": "Nunavik",
+    "officialCode": "99879",
+    "mrc": ""
+  },
+  {
     "name": "Inverness",
     "slug": "inverness",
     "region": "Centre-du-Québec",
@@ -1664,6 +1734,13 @@
     "region": "Laurentides",
     "officialCode": "78042",
     "mrc": "MRC Les Laurentides"
+  },
+  {
+    "name": "Ivujivik",
+    "slug": "ivujivik",
+    "region": "Nunavik",
+    "officialCode": "99885",
+    "mrc": ""
   },
   {
     "name": "Joliette",
@@ -1687,6 +1764,27 @@
     "mrc": "MRC Kamouraska"
   },
   {
+    "name": "Kangiqsualujjuaq",
+    "slug": "kangiqsualujjuaq",
+    "region": "Nunavik",
+    "officialCode": "99090",
+    "mrc": ""
+  },
+  {
+    "name": "Kangiqsujuaq",
+    "slug": "kangiqsujuaq",
+    "region": "Nunavik",
+    "officialCode": "99888",
+    "mrc": ""
+  },
+  {
+    "name": "Kangirsuk",
+    "slug": "kangirsuk",
+    "region": "Nunavik",
+    "officialCode": "99890",
+    "mrc": ""
+  },
+  {
     "name": "Kataskomiq",
     "slug": "kataskomiq",
     "region": "Bas-Saint-Laurent",
@@ -1698,6 +1796,13 @@
     "slug": "kawawachikamach",
     "region": "Côte-Nord",
     "officialCode": "97806",
+    "mrc": ""
+  },
+  {
+    "name": "Kawawachikamach",
+    "slug": "kawawachikamach",
+    "region": "Nunavik",
+    "officialCode": "99065",
     "mrc": ""
   },
   {
@@ -1750,10 +1855,31 @@
     "mrc": "MRC Témiscamingue"
   },
   {
+    "name": "Kirkland",
+    "slug": "kirkland",
+    "region": "Montréal",
+    "officialCode": "66102",
+    "mrc": ""
+  },
+  {
     "name": "Kitigan Zibi",
     "slug": "kitigan-zibi",
     "region": "Outaouais",
     "officialCode": "83802",
+    "mrc": ""
+  },
+  {
+    "name": "Kuujjuaq",
+    "slug": "kuujjuaq",
+    "region": "Nunavik",
+    "officialCode": "99095",
+    "mrc": ""
+  },
+  {
+    "name": "Kuujjuarapik",
+    "slug": "kuujjuarapik",
+    "region": "Nunavik",
+    "officialCode": "99075",
     "mrc": ""
   },
   {
@@ -1839,6 +1965,13 @@
     "region": "Côte-Nord",
     "officialCode": "98020",
     "mrc": "MRC Minganie"
+  },
+  {
+    "name": "L'Île-Dorval",
+    "slug": "l-ile-dorval",
+    "region": "Montréal",
+    "officialCode": "66092",
+    "mrc": ""
   },
   {
     "name": "L'Île-du-Grand-Calumet",
@@ -2578,16 +2711,16 @@
   {
     "name": "Lac-Simon",
     "slug": "lac-simon",
-    "region": "Abitibi-Témiscamingue",
-    "officialCode": "89804",
-    "mrc": ""
+    "region": "Outaouais",
+    "officialCode": "80095",
+    "mrc": "MRC Papineau"
   },
   {
     "name": "Lac-Simon",
     "slug": "lac-simon",
-    "region": "Outaouais",
-    "officialCode": "80095",
-    "mrc": "MRC Papineau"
+    "region": "Abitibi-Témiscamingue",
+    "officialCode": "89804",
+    "mrc": ""
   },
   {
     "name": "Lac-Supérieur",
@@ -2730,6 +2863,13 @@
     "mrc": "MRC L'Érable"
   },
   {
+    "name": "Laval",
+    "slug": "laval",
+    "region": "Laval",
+    "officialCode": "65005",
+    "mrc": ""
+  },
+  {
     "name": "Lavaltrie",
     "slug": "lavaltrie",
     "region": "Lanaudière",
@@ -2749,6 +2889,13 @@
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "42045",
     "mrc": "MRC Le Val-Saint-François"
+  },
+  {
+    "name": "Lebel-sur-Quévillon",
+    "slug": "lebel-sur-quevillon",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99005",
+    "mrc": ""
   },
   {
     "name": "Leclercville",
@@ -3101,6 +3248,13 @@
     "mrc": "MRC Pierre-De Saurel"
   },
   {
+    "name": "Matagami",
+    "slug": "matagami",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99015",
+    "mrc": ""
+  },
+  {
     "name": "Matane",
     "slug": "matane",
     "region": "Bas-Saint-Laurent",
@@ -3206,6 +3360,13 @@
     "mrc": ""
   },
   {
+    "name": "Mistissini",
+    "slug": "mistissini",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99030",
+    "mrc": ""
+  },
+  {
     "name": "Moffet",
     "slug": "moffet",
     "region": "Abitibi-Témiscamingue",
@@ -3267,6 +3428,13 @@
     "region": "Laurentides",
     "officialCode": "79088",
     "mrc": "MRC Antoine-Labelle"
+  },
+  {
+    "name": "Mont-Royal",
+    "slug": "mont-royal",
+    "region": "Montréal",
+    "officialCode": "66072",
+    "mrc": ""
   },
   {
     "name": "Mont-Saint-Grégoire",
@@ -3346,6 +3514,27 @@
     "mrc": "MRC Papineau"
   },
   {
+    "name": "Montréal",
+    "slug": "montreal",
+    "region": "Montréal",
+    "officialCode": "66023",
+    "mrc": ""
+  },
+  {
+    "name": "Montréal-Est",
+    "slug": "montreal-est",
+    "region": "Montréal",
+    "officialCode": "66007",
+    "mrc": ""
+  },
+  {
+    "name": "Montréal-Ouest",
+    "slug": "montreal-ouest",
+    "region": "Montréal",
+    "officialCode": "66047",
+    "mrc": ""
+  },
+  {
     "name": "Morin-Heights",
     "slug": "morin-heights",
     "region": "Laurentides",
@@ -3395,18 +3584,18 @@
     "mrc": ""
   },
   {
-    "name": "Natashquan",
-    "slug": "natashquan",
-    "region": "Côte-Nord",
-    "officialCode": "98025",
-    "mrc": "MRC Minganie"
-  },
-  {
     "name": "Nédélec",
     "slug": "nedelec",
     "region": "Abitibi-Témiscamingue",
     "officialCode": "85100",
     "mrc": "MRC Témiscamingue"
+  },
+  {
+    "name": "Nemaska",
+    "slug": "nemaska",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99040",
+    "mrc": ""
   },
   {
     "name": "Neuville",
@@ -3530,16 +3719,16 @@
   {
     "name": "Notre-Dame-de-Lourdes",
     "slug": "notre-dame-de-lourdes",
-    "region": "Centre-du-Québec",
-    "officialCode": "32080",
-    "mrc": "MRC L'Érable"
+    "region": "Lanaudière",
+    "officialCode": "61045",
+    "mrc": "MRC Joliette"
   },
   {
     "name": "Notre-Dame-de-Lourdes",
     "slug": "notre-dame-de-lourdes",
-    "region": "Lanaudière",
-    "officialCode": "61045",
-    "mrc": "MRC Joliette"
+    "region": "Centre-du-Québec",
+    "officialCode": "32080",
+    "mrc": "MRC L'Érable"
   },
   {
     "name": "Notre-Dame-de-Montauban",
@@ -3616,13 +3805,6 @@
     "slug": "notre-dame-du-bon-conseil",
     "region": "Centre-du-Québec",
     "officialCode": "49080",
-    "mrc": "MRC Drummond"
-  },
-  {
-    "name": "Notre-Dame-du-Bon-Conseil",
-    "slug": "notre-dame-du-bon-conseil",
-    "region": "Centre-du-Québec",
-    "officialCode": "49075",
     "mrc": "MRC Drummond"
   },
   {
@@ -3736,6 +3918,13 @@
     "region": "Montérégie",
     "officialCode": "57030",
     "mrc": "MRC La Vallée-du-Richelieu"
+  },
+  {
+    "name": "Oujé-Bougoumou",
+    "slug": "ouje-bougoumou",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99818",
+    "mrc": ""
   },
   {
     "name": "Packington",
@@ -3934,6 +4123,13 @@
     "mrc": "MRC Deux-Montagnes"
   },
   {
+    "name": "Pointe-Claire",
+    "slug": "pointe-claire",
+    "region": "Montréal",
+    "officialCode": "66097",
+    "mrc": ""
+  },
+  {
     "name": "Pointe-des-Cascades",
     "slug": "pointe-des-cascades",
     "region": "Montérégie",
@@ -4044,6 +4240,20 @@
     "region": "Centre-du-Québec",
     "officialCode": "32033",
     "mrc": "MRC L'Érable"
+  },
+  {
+    "name": "Puvirnituq",
+    "slug": "puvirnituq",
+    "region": "Nunavik",
+    "officialCode": "99120",
+    "mrc": ""
+  },
+  {
+    "name": "Quaqtaq",
+    "slug": "quaqtaq",
+    "region": "Nunavik",
+    "officialCode": "99115",
+    "mrc": ""
   },
   {
     "name": "Québec",
@@ -4233,6 +4443,13 @@
     "region": "Abitibi-Témiscamingue",
     "officialCode": "89010",
     "mrc": "MRC La Vallée-de-l'Or"
+  },
+  {
+    "name": "Rivière-Koksoak",
+    "slug": "riviere-koksoak",
+    "region": "Nunavik",
+    "officialCode": "99902",
+    "mrc": ""
   },
   {
     "name": "Rivière-Mistassini",
@@ -4889,13 +5106,6 @@
     "name": "Saint-Célestin",
     "slug": "saint-celestin",
     "region": "Centre-du-Québec",
-    "officialCode": "50030",
-    "mrc": "MRC Nicolet-Yamaska"
-  },
-  {
-    "name": "Saint-Célestin",
-    "slug": "saint-celestin",
-    "region": "Centre-du-Québec",
     "officialCode": "50035",
     "mrc": "MRC Nicolet-Yamaska"
   },
@@ -5028,16 +5238,16 @@
   {
     "name": "Saint-Cyprien",
     "slug": "saint-cyprien",
-    "region": "Bas-Saint-Laurent",
-    "officialCode": "12005",
-    "mrc": "MRC Rivière-du-Loup"
+    "region": "Chaudière-Appalaches",
+    "officialCode": "28040",
+    "mrc": "MRC Les Etchemins"
   },
   {
     "name": "Saint-Cyprien",
     "slug": "saint-cyprien",
-    "region": "Chaudière-Appalaches",
-    "officialCode": "28040",
-    "mrc": "MRC Les Etchemins"
+    "region": "Bas-Saint-Laurent",
+    "officialCode": "12005",
+    "mrc": "MRC Rivière-du-Loup"
   },
   {
     "name": "Saint-Cyprien-de-Napierville",
@@ -6764,16 +6974,16 @@
   {
     "name": "Saint-Siméon",
     "slug": "saint-simeon",
-    "region": "Charlevoix",
-    "officialCode": "15058",
-    "mrc": "MRC Charlevoix-Est"
+    "region": "Gaspésie–Îles-de-la-Madeleine",
+    "officialCode": "05055",
+    "mrc": "MRC Bonaventure"
   },
   {
     "name": "Saint-Siméon",
     "slug": "saint-simeon",
-    "region": "Gaspésie–Îles-de-la-Madeleine",
-    "officialCode": "05055",
-    "mrc": "MRC Bonaventure"
+    "region": "Charlevoix",
+    "officialCode": "15058",
+    "mrc": "MRC Charlevoix-Est"
   },
   {
     "name": "Saint-Simon",
@@ -7082,6 +7292,13 @@
     "region": "Québec (ville et région)",
     "officialCode": "21030",
     "mrc": "MRC La Côte-de-Beaupré"
+  },
+  {
+    "name": "Sainte-Anne-de-Bellevue",
+    "slug": "sainte-anne-de-bellevue",
+    "region": "Montréal",
+    "officialCode": "66117",
+    "mrc": ""
   },
   {
     "name": "Sainte-Anne-de-la-Pérade",
@@ -7646,16 +7863,16 @@
   {
     "name": "Sainte-Perpétue",
     "slug": "sainte-perpetue",
-    "region": "Centre-du-Québec",
-    "officialCode": "50050",
-    "mrc": "MRC Nicolet-Yamaska"
+    "region": "Chaudière-Appalaches",
+    "officialCode": "17030",
+    "mrc": "MRC L'Islet"
   },
   {
     "name": "Sainte-Perpétue",
     "slug": "sainte-perpetue",
-    "region": "Chaudière-Appalaches",
-    "officialCode": "17030",
-    "mrc": "MRC L'Islet"
+    "region": "Centre-du-Québec",
+    "officialCode": "50050",
+    "mrc": "MRC Nicolet-Yamaska"
   },
   {
     "name": "Sainte-Pétronille",
@@ -7695,16 +7912,16 @@
   {
     "name": "Sainte-Sabine",
     "slug": "sainte-sabine",
-    "region": "Estrie (Cantons-de-l'Est)",
-    "officialCode": "46105",
-    "mrc": "MRC Brome-Missisquoi"
+    "region": "Chaudière-Appalaches",
+    "officialCode": "28065",
+    "mrc": "MRC Les Etchemins"
   },
   {
     "name": "Sainte-Sabine",
     "slug": "sainte-sabine",
-    "region": "Chaudière-Appalaches",
-    "officialCode": "28065",
-    "mrc": "MRC Les Etchemins"
+    "region": "Estrie (Cantons-de-l'Est)",
+    "officialCode": "46105",
+    "mrc": "MRC Brome-Missisquoi"
   },
   {
     "name": "Sainte-Séraphine",
@@ -7798,6 +8015,13 @@
     "mrc": "MRC Beauharnois-Salaberry"
   },
   {
+    "name": "Salluit",
+    "slug": "salluit",
+    "region": "Nunavik",
+    "officialCode": "99887",
+    "mrc": ""
+  },
+  {
     "name": "Sault-au-Cochon",
     "slug": "sault-au-cochon",
     "region": "Québec (ville et région)",
@@ -7840,11 +8064,11 @@
     "mrc": "MRC La Vallée-de-l'Or"
   },
   {
-    "name": "Senneterre",
-    "slug": "senneterre",
-    "region": "Abitibi-Témiscamingue",
-    "officialCode": "89040",
-    "mrc": "MRC La Vallée-de-l'Or"
+    "name": "Senneville",
+    "slug": "senneville",
+    "region": "Montréal",
+    "officialCode": "66127",
+    "mrc": ""
   },
   {
     "name": "Sept-Îles",
@@ -7931,13 +8155,6 @@
     "mrc": "MRC Memphrémagog"
   },
   {
-    "name": "Stanstead",
-    "slug": "stanstead",
-    "region": "Estrie (Cantons-de-l'Est)",
-    "officialCode": "45025",
-    "mrc": "MRC Memphrémagog"
-  },
-  {
     "name": "Stanstead-Est",
     "slug": "stanstead-est",
     "region": "Estrie (Cantons-de-l'Est)",
@@ -7999,6 +8216,13 @@
     "region": "Abitibi-Témiscamingue",
     "officialCode": "87042",
     "mrc": "MRC Abitibi-Ouest"
+  },
+  {
+    "name": "Tasiujaq",
+    "slug": "tasiujaq",
+    "region": "Nunavik",
+    "officialCode": "99100",
+    "mrc": ""
   },
   {
     "name": "Témiscaming",
@@ -8134,6 +8358,13 @@
     "mrc": "MRC Le Val-Saint-François"
   },
   {
+    "name": "Umiujaq",
+    "slug": "umiujaq",
+    "region": "Nunavik",
+    "officialCode": "99878",
+    "mrc": ""
+  },
+  {
     "name": "Upton",
     "slug": "upton",
     "region": "Montérégie",
@@ -8232,13 +8463,6 @@
     "mrc": "MRC Le Val-Saint-François"
   },
   {
-    "name": "Valcourt",
-    "slug": "valcourt",
-    "region": "Estrie (Cantons-de-l'Est)",
-    "officialCode": "42055",
-    "mrc": "MRC Le Val-Saint-François"
-  },
-  {
     "name": "Vallée-Jonction",
     "slug": "vallee-jonction",
     "region": "Chaudière-Appalaches",
@@ -8323,6 +8547,20 @@
     "mrc": "MRC Arthabaska"
   },
   {
+    "name": "Waskaganish",
+    "slug": "waskaganish",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99806",
+    "mrc": ""
+  },
+  {
+    "name": "Waswanipi",
+    "slug": "waswanipi",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99010",
+    "mrc": ""
+  },
+  {
     "name": "Waterloo",
     "slug": "waterloo",
     "region": "Estrie (Cantons-de-l'Est)",
@@ -8342,6 +8580,13 @@
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "41098",
     "mrc": "MRC Le Haut-Saint-François"
+  },
+  {
+    "name": "Wemindji",
+    "slug": "wemindji",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99812",
+    "mrc": ""
   },
   {
     "name": "Wemotaci",
@@ -8377,6 +8622,20 @@
     "region": "Estrie (Cantons-de-l'Est)",
     "officialCode": "41065",
     "mrc": "MRC Le Haut-Saint-François"
+  },
+  {
+    "name": "Westmount",
+    "slug": "westmount",
+    "region": "Montréal",
+    "officialCode": "66032",
+    "mrc": ""
+  },
+  {
+    "name": "Whapmagoostui",
+    "slug": "whapmagoostui",
+    "region": "Eeyou Istchee Baie-James",
+    "officialCode": "99070",
+    "mrc": ""
   },
   {
     "name": "Wickham",

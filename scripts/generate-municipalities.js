@@ -26,22 +26,23 @@ function slugify(str) {
 }
 
 // Région officielle MAMH (sans le code numérique, ex. "Estrie") → dbValue de
-// lib/regions.ts (nos 15 régions "touristiques"). null = région exclue
-// (pas une destination chalet). "Capitale-Nationale" est gérée à part dans
-// resolveRegion() : scindée en Charlevoix / Québec (ville et région).
+// lib/regions.ts. Aucune région exclue depuis le 2026-10-01 (Montréal, Laval et
+// Nord-du-Québec ajoutées). Gérées à part dans resolveRegion() :
+// "Capitale-Nationale" (Charlevoix / Québec) et "Nord-du-Québec" (Nunavik /
+// Eeyou Istchee Baie-James, les deux régions touristiques officielles).
 const REGION_MAP = {
   "Bas-Saint-Laurent": "Bas-Saint-Laurent",
   "Saguenay--Lac-Saint-Jean": "Saguenay–Lac-Saint-Jean",
   "Mauricie": "Mauricie",
   "Estrie": "Estrie (Cantons-de-l'Est)",
-  "Montréal": null,
+  "Montréal": "Montréal",
   "Outaouais": "Outaouais",
   "Abitibi-Témiscamingue": "Abitibi-Témiscamingue",
   "Côte-Nord": "Côte-Nord",
-  "Nord-du-Québec": null,
+  "Nord-du-Québec": "Eeyou Istchee Baie-James",
   "Gaspésie--Îles-de-la-Madeleine": "Gaspésie–Îles-de-la-Madeleine",
   "Chaudière-Appalaches": "Chaudière-Appalaches",
-  "Laval": null,
+  "Laval": "Laval",
   "Lanaudière": "Lanaudière",
   "Laurentides": "Laurentides",
   "Montérégie": "Montérégie",
@@ -76,7 +77,7 @@ const stripCode = (s) => s.replace(/\s*\(\d+\)\s*$/, "").trim();
 // Retourne le dbValue (une de nos 15 régions), null (exclue), ou undefined
 // (région officielle non reconnue — ne devrait jamais arriver avec le CSV
 // MAMH actuel, garde-fou défensif seulement).
-function resolveRegion(regadmRaw, mrcRaw) {
+function resolveRegion(regadmRaw, mrcRaw, nameRaw) {
   const regadm = stripCode(regadmRaw || "");
   if (regadm === "Capitale-Nationale") {
     const mrc = stripCode(mrcRaw || "");
@@ -84,8 +85,20 @@ function resolveRegion(regadmRaw, mrcRaw) {
       ? "Charlevoix"
       : "Québec (ville et région)";
   }
+  if (regadm === "Nord-du-Québec") {
+    return NUNAVIK.has(nameRaw) ? "Nunavik" : "Eeyou Istchee Baie-James";
+  }
   return Object.prototype.hasOwnProperty.call(REGION_MAP, regadm) ? REGION_MAP[regadm] : undefined;
 }
+
+// Nord-du-Québec au-delà du 55e parallèle : villages nordiques inuits,
+// territoires de Kuujjuaq/Baie-d'Hudson et Kawawachikamach (naskapi).
+// Tout le reste (Jamésie et communautés cries) va en Eeyou Istchee Baie-James.
+const NUNAVIK = new Set([
+  "Akulivik", "Aupaluk", "Baie-d'Hudson", "Inukjuak", "Ivujivik", "Kangiqsualujjuaq",
+  "Kangiqsujuaq", "Kangirsuk", "Kawawachikamach", "Kuujjuaq", "Kuujjuarapik", "Puvirnituq",
+  "Quaqtaq", "Rivière-Koksoak", "Salluit", "Tasiujaq", "Umiujaq",
+]);
 
 async function main() {
   console.log(`Téléchargement de ${SOURCE_URL} ...`);
@@ -110,7 +123,9 @@ async function main() {
   for (const r of rows.slice(1)) {
     if (r.length < 2 || !r[iName]) continue;
     const name = r[iName];
-    const region = resolveRegion(r[iRegadm], r[iMrc]);
+    // Lignes sans vrai nom au répertoire (terres réservées pas encore nommées).
+    if (name === "Toponyme à venir") continue;
+    const region = resolveRegion(r[iRegadm], r[iMrc], name);
 
     if (region === undefined) {
       unmappedCount++;
@@ -122,6 +137,9 @@ async function main() {
       continue; // Montréal, Laval, Nord-du-Québec — hors scope (pas de destination chalet)
     }
 
+    // Un même nom peut apparaître deux fois dans la même région (ex. village
+    // nordique + terre réservée du même nom) : une seule entrée par nom.
+    if (municipalities.some((m) => m.name === name && m.region === region)) continue;
     municipalities.push({
       name,
       slug: slugify(name),
@@ -135,7 +153,7 @@ async function main() {
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(municipalities, null, 2) + "\n");
   console.log(`✅ ${municipalities.length} municipalités écrites dans ${path.relative(process.cwd(), OUTPUT_PATH)}`);
-  console.log(`   ${excludedCount} exclues (Montréal, Laval, Nord-du-Québec)`);
+  if (excludedCount > 0) console.log(`   ${excludedCount} exclues`);
   if (unmappedCount > 0) {
     console.log(`   ${unmappedCount} avec une région non reconnue (voir avertissements ci-dessus)`);
   }

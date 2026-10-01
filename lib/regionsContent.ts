@@ -870,6 +870,202 @@ const REGIONS_CONTENT: RegionContent[] = [
       },
     ],
   },
+  {
+    slug: "montreal",
+    region_fr: "Montréal",
+    region_en: "Montreal",
+    locative_en: "in Montreal",
+    description_en: [
+      "Montreal, Quebec's largest city, also has a nature side: Mount Royal Park in the heart of the city, the nature parks of the West Island such as Cap-Saint-Jacques and Bois-de-l'Île-Bizard, and the shores of the St. Lawrence and the Rivière des Prairies.",
+      "Renting a house or cabin in Montreal gives you a base close to the festivals, the lively Plateau and Old Montreal neighbourhoods and the city's great restaurants, with quick access to nearby cottage regions like the Laurentians and the Eastern Townships.",
+      "Rentals here are mostly houses, lofts and waterfront homes on the West Island. A good option for an urban getaway with family or a group.",
+    ],
+    highlights_fr: [
+      "Parc du Mont-Royal et parcs-nature de l'Ouest-de-l'Île",
+      "Festivals d'été et vie culturelle",
+      "Vieux-Montréal et quartiers animés",
+      "Maisons au bord de l'eau dans l'Ouest-de-l'Île",
+      "Accès rapide aux Laurentides et aux Cantons-de-l'Est",
+    ],
+    highlights_en: [
+      "Mount Royal Park and West Island nature parks",
+      "Summer festivals and cultural life",
+      "Old Montreal and lively neighbourhoods",
+      "Waterfront homes on the West Island",
+      "Quick access to the Laurentians and Eastern Townships",
+    ],
+    meta_title_fr: "Chalets et maisons à louer à Montréal",
+    meta_title_en: "Cabin and House Rentals in Montreal, Quebec",
+    meta_description_fr: "Louez une maison ou un chalet à Montréal : parc du Mont-Royal, parcs-nature de l'Ouest-de-l'Île, festivals et Vieux-Montréal. Contact direct avec les propriétaires, aucun frais de service.",
+    meta_description_en: "Rent a house or cabin in Montreal: Mount Royal Park, West Island nature parks, festivals and Old Montreal. Direct contact with owners, no service fees.",
+    faq_fr: [
+      {
+        question: "Peut-on louer un chalet à Montréal ?",
+        answer: "Oui, mais l'offre à Montréal est surtout composée de maisons, de lofts et de résidences au bord de l'eau, notamment dans l'Ouest-de-l'Île. Pour un vrai chalet en forêt ou au bord d'un lac, les Laurentides et les Cantons-de-l'Est sont à environ une heure de route.",
+      },
+      {
+        question: "Que faire à Montréal en nature ?",
+        answer: "Le parc du Mont-Royal, les parcs-nature du Cap-Saint-Jacques et du Bois-de-l'Île-Bizard, et les berges de la rivière des Prairies offrent randonnée, vélo, plage et kayak sans quitter l'île.",
+      },
+    ],
+    faq_en: [
+      {
+        question: "Can you rent a cabin in Montreal?",
+        answer: "Yes, but rentals in Montreal are mostly houses, lofts and waterfront homes, especially on the West Island. For a true cabin in the woods or by a lake, the Laurentians and the Eastern Townships are about an hour's drive away.",
+      },
+      {
+        question: "What nature activities are there in Montreal?",
+        answer: "Mount Royal Park, the Cap-Saint-Jacques and Bois-de-l'Île-Bizard nature parks and the shores of the Rivière des Prairies offer hiking, cycling, a beach and kayaking without leaving the island.",
+      },
+    ],
+  },
+  {
+    slug: "laval",
+    region_fr: "Laval",
+    region_en: "Laval",
+    locative_en: "in Laval",
+    description_en: [
+      "Laval is an island between the Rivière des Prairies and the Rivière des Mille Îles, just north of Montreal. Despite being so close to the city, it has many green spaces and easy access to the water.",
+      "Rivière-des-Mille-Îles Park is one of the region's highlights: canoeing, kayaking and paddleboarding in summer, skating and cross-country skiing in winter. The Centre de la nature and landscaped riverbanks round out the outdoor options.",
+      "Renting a house in Laval means staying close to Montreal in a quieter setting, at the gateway to the Laurentians.",
+    ],
+    highlights_fr: [
+      "Parc de la Rivière-des-Mille-Îles",
+      "Canot, kayak et planche à pagaie",
+      "Centre de la nature",
+      "À quelques minutes de Montréal",
+      "À la porte des Laurentides",
+    ],
+    highlights_en: [
+      "Rivière-des-Mille-Îles Park",
+      "Canoeing, kayaking and paddleboarding",
+      "Centre de la nature",
+      "Minutes from Montreal",
+      "Gateway to the Laurentians",
+    ],
+    meta_title_fr: "Chalets et maisons à louer à Laval",
+    meta_title_en: "Cabin and House Rentals in Laval, Quebec",
+    meta_description_fr: "Louez une maison ou un chalet à Laval, entre la rivière des Prairies et la rivière des Mille Îles : kayak, Centre de la nature, à quelques minutes de Montréal. Contact direct avec les propriétaires, aucun frais de service.",
+    meta_description_en: "Rent a house or cabin in Laval, between the Rivière des Prairies and the Rivière des Mille Îles: kayaking, Centre de la nature, minutes from Montreal. Direct contact with owners, no service fees.",
+    faq_fr: [
+      {
+        question: "Que faire à Laval ?",
+        answer: "Le parc de la Rivière-des-Mille-Îles propose canot, kayak et planche à pagaie l'été, et patin et ski de fond l'hiver. Le Centre de la nature et les berges aménagées sont parfaits pour la marche et le vélo.",
+      },
+      {
+        question: "Où se trouve Laval ?",
+        answer: "Laval est une île au nord de Montréal, entre la rivière des Prairies et la rivière des Mille Îles. Elle se trouve à environ 20 minutes du centre-ville de Montréal et à l'entrée des Laurentides.",
+      },
+    ],
+    faq_en: [
+      {
+        question: "What is there to do in Laval?",
+        answer: "Rivière-des-Mille-Îles Park offers canoeing, kayaking and paddleboarding in summer, and skating and cross-country skiing in winter. The Centre de la nature and landscaped riverbanks are perfect for walking and cycling.",
+      },
+      {
+        question: "Where is Laval?",
+        answer: "Laval is an island north of Montreal, between the Rivière des Prairies and the Rivière des Mille Îles. It is about 20 minutes from downtown Montreal and at the gateway to the Laurentians.",
+      },
+    ],
+  },
+  {
+    slug: "eeyou-istchee-baie-james",
+    region_fr: "Eeyou Istchee Baie-James",
+    region_en: "Eeyou Istchee James Bay",
+    locative_en: "in Eeyou Istchee James Bay",
+    description_en: [
+      "Eeyou Istchee James Bay is a vast territory in northern Quebec, shared between the Cree communities of Eeyou Istchee and the Jamésie towns such as Chibougamau, Chapais, Matagami and Lebel-sur-Quévillon. Boreal forest, powerful rivers and thousands of lakes dominate the landscape.",
+      "The region is home to Lake Mistassini, the largest natural freshwater lake in Quebec, and to the James Bay Road, which leads all the way to Radisson and the great hydroelectric dams. Fishing, hunting, canoe camping and northern lights draw lovers of wide-open spaces.",
+      "Renting a cabin in Eeyou Istchee James Bay means experiencing northern nature at its purest, far from everything, with the chance to discover Cree culture.",
+    ],
+    highlights_fr: [
+      "Lac Mistassini, plus grand lac naturel du Québec",
+      "Forêt boréale et milliers de lacs",
+      "Route de la Baie-James jusqu'à Radisson",
+      "Pêche, chasse et canot-camping",
+      "Culture crie d'Eeyou Istchee",
+    ],
+    highlights_en: [
+      "Lake Mistassini, Quebec's largest natural lake",
+      "Boreal forest and thousands of lakes",
+      "James Bay Road to Radisson",
+      "Fishing, hunting and canoe camping",
+      "Cree culture of Eeyou Istchee",
+    ],
+    meta_title_fr: "Chalets à louer en Eeyou Istchee Baie-James",
+    meta_title_en: "Cabin Rentals in Eeyou Istchee James Bay, Quebec",
+    meta_description_fr: "Louez un chalet en Eeyou Istchee Baie-James : lac Mistassini, forêt boréale, pêche et aurores boréales, de Chibougamau à Radisson. Contact direct avec les propriétaires, aucun frais de service.",
+    meta_description_en: "Rent a cabin in Eeyou Istchee James Bay: Lake Mistassini, boreal forest, fishing and northern lights, from Chibougamau to Radisson. Direct contact with owners, no service fees.",
+    faq_fr: [
+      {
+        question: "Où se trouve Eeyou Istchee Baie-James ?",
+        answer: "La région couvre une grande partie du Nord-du-Québec, au sud du 55e parallèle. Chibougamau, l'une de ses principales villes, se trouve à environ 7 heures de route de Montréal.",
+      },
+      {
+        question: "Que faire en Eeyou Istchee Baie-James ?",
+        answer: "La pêche et la chasse, le canot-camping sur les lacs et rivières, la découverte du lac Mistassini, la route de la Baie-James et l'observation des aurores boréales sont les grands attraits de la région.",
+      },
+    ],
+    faq_en: [
+      {
+        question: "Where is Eeyou Istchee James Bay?",
+        answer: "The region covers much of northern Quebec, south of the 55th parallel. Chibougamau, one of its main towns, is about a 7-hour drive from Montreal.",
+      },
+      {
+        question: "What is there to do in Eeyou Istchee James Bay?",
+        answer: "Fishing and hunting, canoe camping on lakes and rivers, discovering Lake Mistassini, driving the James Bay Road and watching the northern lights are the region's main draws.",
+      },
+    ],
+  },
+  {
+    slug: "nunavik",
+    region_fr: "le Nunavik",
+    region_en: "Nunavik",
+    locative_en: "in Nunavik",
+    description_en: [
+      "Nunavik is Quebec's northernmost region, beyond the 55th parallel. Home to the Inuit, it has 14 northern villages, including Kuujjuaq, the largest, and can only be reached by plane.",
+      "Endless tundra, fjords, caribou herds and northern lights make Nunavik a one-of-a-kind destination. Pingualuit National Park, with its famous crater, along with Kuururjuaq and Tursujuq national parks, protect spectacular landscapes.",
+      "Staying in Nunavik means discovering Inuit culture and an extraordinary Arctic landscape. It is a trip to plan well ahead, ideally with people from the region.",
+    ],
+    highlights_fr: [
+      "Toundra, fjords et aurores boréales",
+      "Parc national des Pingualuit et son cratère",
+      "Culture inuite des 14 villages nordiques",
+      "Kuujjuaq, porte d'entrée du Nunavik",
+      "Accessible par avion seulement",
+    ],
+    highlights_en: [
+      "Tundra, fjords and northern lights",
+      "Pingualuit National Park and its crater",
+      "Inuit culture in 14 northern villages",
+      "Kuujjuaq, gateway to Nunavik",
+      "Reachable by plane only",
+    ],
+    meta_title_fr: "Chalets et hébergements à louer au Nunavik",
+    meta_title_en: "Cabin and Lodging Rentals in Nunavik, Quebec",
+    meta_description_fr: "Louez un chalet ou un hébergement au Nunavik : toundra, aurores boréales, parc national des Pingualuit et culture inuite, de Kuujjuaq aux villages nordiques. Contact direct avec les propriétaires, aucun frais de service.",
+    meta_description_en: "Rent a cabin or lodging in Nunavik: tundra, northern lights, Pingualuit National Park and Inuit culture, from Kuujjuaq to the northern villages. Direct contact with owners, no service fees.",
+    faq_fr: [
+      {
+        question: "Comment se rendre au Nunavik ?",
+        answer: "Le Nunavik n'est relié au sud du Québec par aucune route : on s'y rend par avion, principalement via Kuujjuaq et Kuujjuarapik, à partir de Montréal.",
+      },
+      {
+        question: "Que voir au Nunavik ?",
+        answer: "Les parcs nationaux des Pingualuit, de Kuururjuaq et de Tursujuq, la toundra et ses caribous, les aurores boréales et la culture inuite des 14 villages nordiques.",
+      },
+    ],
+    faq_en: [
+      {
+        question: "How do you get to Nunavik?",
+        answer: "No road links Nunavik to southern Quebec: you get there by plane, mainly through Kuujjuaq and Kuujjuarapik, from Montreal.",
+      },
+      {
+        question: "What is there to see in Nunavik?",
+        answer: "Pingualuit, Kuururjuaq and Tursujuq national parks, the tundra and its caribou, the northern lights and the Inuit culture of the 14 northern villages.",
+      },
+    ],
+  },
 ];
 
 export function getRegionContent(slug: string): RegionContent | undefined {

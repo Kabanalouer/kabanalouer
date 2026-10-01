@@ -233,6 +233,65 @@ export const REGIONS: RegionConfig[] = [
       "Drummondville, Victoriaville et Bécancour sont les principaux pôles de la région, mais la campagne environnante — rangs agricoles, villages tranquilles, rivières et forêts — reste l'attrait principal pour une escapade en chalet, à moins de deux heures de Montréal comme de Québec.",
     ],
   },
+  // Régions ajoutées le 2026-10-01 : plus aucune municipalité du répertoire
+  // MAMH n'est exclue (Montréal, Laval, et Nord-du-Québec scindé selon les
+  // régions touristiques officielles). Photos Unsplash provisoires.
+  {
+    slug: "montreal",
+    name: "Montréal",
+    slugEn: "montreal",
+    nameEn: "Montreal",
+    dbValue: "Montréal",
+    locative: "à Montréal",
+    heroImage: "https://images.unsplash.com/photo-1787332020479-84fc176add36?w=1920&q=80",
+    seoText: [
+      "Montréal, la plus grande ville du Québec, se découvre aussi côté nature : le parc du Mont-Royal au cœur de la ville, les parcs-nature de l'Ouest-de-l'Île comme le Cap-Saint-Jacques et le Bois-de-l'Île-Bizard, et les berges du fleuve et de la rivière des Prairies.",
+      "Louer une maison ou un chalet à Montréal, c'est profiter d'un pied-à-terre près des festivals, des quartiers animés du Plateau et du Vieux-Montréal, et des grandes tables de la ville, tout en gardant un accès rapide aux régions de chalets voisines comme les Laurentides et les Cantons-de-l'Est.",
+      "Les propriétés à louer y sont surtout des maisons, des lofts et des résidences au bord de l'eau dans l'Ouest-de-l'Île. Une bonne option pour une escapade urbaine en groupe ou en famille.",
+    ],
+  },
+  {
+    slug: "laval",
+    name: "Laval",
+    slugEn: "laval",
+    nameEn: "Laval",
+    dbValue: "Laval",
+    locative: "à Laval",
+    heroImage: "https://images.unsplash.com/photo-1709080489991-aea5e2ddba10?w=1920&q=80",
+    seoText: [
+      "Laval est une île située entre la rivière des Prairies et la rivière des Mille Îles, juste au nord de Montréal. Malgré sa proximité avec la métropole, elle compte de nombreux espaces verts et un accès privilégié à l'eau.",
+      "Le parc de la Rivière-des-Mille-Îles est l'un des attraits phares de la région : canot, kayak et planche à pagaie l'été, patin et ski de fond l'hiver. Le Centre de la nature et les berges aménagées complètent l'offre de plein air.",
+      "Louer une maison à Laval, c'est séjourner près de Montréal tout en profitant d'un cadre plus calme, à la porte des Laurentides.",
+    ],
+  },
+  {
+    slug: "eeyou-istchee-baie-james",
+    name: "Eeyou Istchee Baie-James",
+    slugEn: "eeyou-istchee-james-bay",
+    nameEn: "Eeyou Istchee James Bay",
+    dbValue: "Eeyou Istchee Baie-James",
+    locative: "en Eeyou Istchee Baie-James",
+    heroImage: "https://images.unsplash.com/photo-1784948553875-89c6f6b57684?w=1920&q=80",
+    seoText: [
+      "Eeyou Istchee Baie-James est un immense territoire du Nord québécois, partagé entre les communautés cries d'Eeyou Istchee et les villes de la Jamésie comme Chibougamau, Chapais, Matagami et Lebel-sur-Quévillon. Forêt boréale, rivières puissantes et milliers de lacs dominent le paysage.",
+      "La région abrite le lac Mistassini, le plus grand lac naturel d'eau douce du Québec, et la route de la Baie-James, qui mène jusqu'à Radisson et aux grandes centrales hydroélectriques. Pêche, chasse, canot-camping et observation des aurores boréales y attirent les amateurs de grands espaces.",
+      "Louer un chalet en Eeyou Istchee Baie-James, c'est vivre la nature nordique à son état le plus pur, loin de tout, avec la possibilité de découvrir la culture crie.",
+    ],
+  },
+  {
+    slug: "nunavik",
+    name: "Nunavik",
+    slugEn: "nunavik",
+    nameEn: "Nunavik",
+    dbValue: "Nunavik",
+    locative: "au Nunavik",
+    heroImage: "https://images.unsplash.com/photo-1516590583741-3bf6636e8418?w=1920&q=80",
+    seoText: [
+      "Le Nunavik est la région la plus au nord du Québec, au-delà du 55e parallèle. Territoire des Inuits, il compte 14 villages nordiques, dont Kuujjuaq, le plus grand, et n'est accessible que par avion.",
+      "Toundra à perte de vue, fjords, troupeaux de caribous et aurores boréales font du Nunavik une destination unique. Les parcs nationaux des Pingualuit, avec son célèbre cratère, de Kuururjuaq et de Tursujuq protègent des paysages spectaculaires.",
+      "Séjourner au Nunavik, c'est découvrir la culture inuite et une nature arctique hors du commun. Un voyage qui se planifie à l'avance, idéalement avec les gens de la région.",
+    ],
+  },
 ];
 
 export function getRegionBySlug(slug: string): RegionConfig | undefined {
