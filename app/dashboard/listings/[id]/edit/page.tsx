@@ -123,7 +123,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         <ImportedListingBanner
           title={imported === "duplicate"
             ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
-            : (isEn ? "Review your listing and publish" : "Vérifiez votre annonce et publiez")}
+            : (isEn ? "Listing imported successfully!" : "Annonce importée avec succès !")}
           body={isEn
             ? "Check the information copied from Airbnb, fill in what’s missing (for example, the bedrooms and your CITQ number), then publish it with the “Publish my listing” button."
             : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple, les chambres, votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
