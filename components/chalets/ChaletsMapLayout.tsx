@@ -155,6 +155,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         hoveredId={hoveredId}
         onHoverChange={setHoveredId}
         onBoundsChange={handleBoundsChange}
+        destination={{ city: filters.city, region: filters.region }}
         isExpanded={isExpanded}
         onToggleExpand={() => setIsExpanded((v) => !v)}
       />
@@ -241,6 +242,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
               hoveredId={hoveredId}
               onHoverChange={setHoveredId}
               onBoundsChange={handleBoundsChange}
+              destination={{ city: filters.city, region: filters.region }}
               isExpanded={false}
               onToggleExpand={() => {}}
             />

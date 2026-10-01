@@ -1,17 +1,25 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 import type { ListingForMap } from "./ChaletsMapLayout";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { getRegionByDbValue } from "@/lib/regions";
+import { REGION_BOUNDS, SOUTHERN_QUEBEC_BOUNDS, type GeoBounds } from "@/lib/regionBounds";
 
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
 
 export type MapBounds = { minLat: number; maxLat: number; minLng: number; maxLng: number };
+
+// Recherche : ville et/ou région choisies, pour cadrer la carte.
+export type MapDestination = { city?: string; region?: string };
+
+// Jamais plus près que ce zoom au cadrage initial : même avec un seul chalet,
+// on voit le village et ses environs, pas la rue.
+const MAX_FIT_ZOOM = 12;
 
 // ── Scale bar ─────────────────────────────────────────────────────────────────
 
@@ -47,6 +55,7 @@ function MapContent({
   onPendingBoundsChange,
   onMapReady,
   onMapStateChange,
+  destination,
 }: {
   listings: ListingForMap[];
   hoveredId: string | null;
@@ -54,12 +63,18 @@ function MapContent({
   onPendingBoundsChange: (b: MapBounds) => void;
   onMapReady: (m: google.maps.Map) => void;
   onMapStateChange: (s: { zoom: number; lat: number }) => void;
+  destination: MapDestination;
 }) {
   const tMap = useTranslations("chaletsMap");
   const locale = useLocale();
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isFirstIdle = useRef(true);
+  // Déplacement fait par le code (cadrage initial) : ne doit pas afficher
+  // « Rechercher dans cette zone ».
+  const programmaticMove = useRef(false);
+  const hasFitted = useRef(false);
+  const geocodingLib = useMapsLibrary("geocoding");
 
   useEffect(() => {
     if (map) onMapReady(map);
@@ -70,6 +85,7 @@ function MapContent({
     const listener = map.addListener("idle", () => {
       onMapStateChange({ zoom: map.getZoom() ?? 9, lat: map.getCenter()?.lat() ?? 46.8 });
       if (isFirstIdle.current) { isFirstIdle.current = false; return; }
+      if (programmaticMove.current) { programmaticMove.current = false; return; }
       const bounds = map.getBounds();
       if (!bounds) return;
       const ne = bounds.getNorthEast();
@@ -84,6 +100,53 @@ function MapContent({
     const listener = map.addListener("click", () => setSelectedId(null));
     return () => window.google.maps.event.removeListener(listener);
   }, [map]);
+
+  // Cadrage initial, une seule fois par recherche : les chalets trouvés s'il y
+  // en a ; sinon la ville (géocodage Google), la région, ou le sud du Québec.
+  useEffect(() => {
+    if (!map || hasFitted.current) return;
+    const points = listings.filter((l) => l.lat != null && l.lng != null);
+    const fit = (b: google.maps.LatLngBounds | GeoBounds) => {
+      programmaticMove.current = true;
+      map.fitBounds(b, 48);
+      window.google.maps.event.addListenerOnce(map, "idle", () => {
+        if ((map.getZoom() ?? 0) > MAX_FIT_ZOOM) {
+          programmaticMove.current = true;
+          map.setZoom(MAX_FIT_ZOOM);
+        }
+      });
+    };
+    const regionFallback = () => fit((destination.region && REGION_BOUNDS[destination.region]) || SOUTHERN_QUEBEC_BOUNDS);
+
+    if (points.length > 0) {
+      hasFitted.current = true;
+      if (points.length === 1) {
+        programmaticMove.current = true;
+        map.setCenter({ lat: points[0].lat!, lng: points[0].lng! });
+        map.setZoom(MAX_FIT_ZOOM);
+        return;
+      }
+      const b = new window.google.maps.LatLngBounds();
+      points.forEach((p) => b.extend({ lat: p.lat!, lng: p.lng! }));
+      fit(b);
+      return;
+    }
+    if (destination.city) {
+      if (!geocodingLib) return; // attend le chargement de la bibliothèque
+      hasFitted.current = true;
+      new geocodingLib.Geocoder()
+        .geocode({ address: `${destination.city}, Québec, Canada`, componentRestrictions: { country: "CA" } })
+        .then(({ results }) => {
+          const vp = results[0]?.geometry?.viewport;
+          if (vp) fit(vp);
+          else regionFallback();
+        })
+        .catch(() => regionFallback());
+      return;
+    }
+    hasFitted.current = true;
+    regionFallback();
+  }, [map, listings, destination.city, destination.region, geocodingLib]);
 
   const withCoords = listings.filter((l) => l.lat != null && l.lng != null);
   const selected = selectedId ? withCoords.find((l) => l.id === selectedId) ?? null : null;
@@ -187,6 +250,7 @@ export default function ChaletsMap({
   onBoundsChange,
   isExpanded,
   onToggleExpand,
+  destination = {},
 }: {
   listings: ListingForMap[];
   hoveredId: string | null;
@@ -194,6 +258,7 @@ export default function ChaletsMap({
   onBoundsChange: (b: MapBounds) => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
+  destination?: MapDestination;
 }) {
   const tMap = useTranslations("chaletsMap");
   const isEn = useLocale() === "en";
@@ -248,6 +313,7 @@ export default function ChaletsMap({
             onPendingBoundsChange={handlePendingBoundsChange}
             onMapReady={handleMapReady}
             onMapStateChange={handleMapStateChange}
+            destination={destination}
           />
         </Map>
 
