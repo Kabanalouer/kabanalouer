@@ -342,6 +342,8 @@
       "apifyItemsFetchFailed": "Unable to retrieve the extracted data."
     },
     "publish": {
+      "nowLiveBodyNoBoost": "Travelers can already find it and write to you.",
+      "viewLiveListing": "View my listing",
       "launchOffer": "Launch offer",
       "adminReviewHeading": "Review and publish",
       "adminReviewBadge": "Admin review",

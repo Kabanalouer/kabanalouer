@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
 
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
       .single();
     if (!user?.email) continue;
 
-    const needBoost = !user.boost_invite_email_sent_at;
+    const needBoost = BOOSTS_ENABLED && !user.boost_invite_email_sent_at;
     const needInstall = age >= H96 && !user.install_app_email_sent_at;
     if (!needBoost && !needInstall) continue;
 

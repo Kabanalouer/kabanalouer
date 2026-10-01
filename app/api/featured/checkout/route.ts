@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/siteUrl";
 import {
+  BOOSTS_ENABLED,
   MAX_FEATURED_HOME,
   MAX_FEATURED_REGION,
   MAX_MONTHS_AHEAD,
@@ -25,6 +26,9 @@ function allowedMonths(): string[] {
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const locale = getRequestLocale(request);
+  if (!BOOSTS_ENABLED) {
+    return NextResponse.json({ error: t2(locale, "Les boosts ne sont pas offerts pour le moment.", "Boosts are not available at the moment.") }, { status: 403 });
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

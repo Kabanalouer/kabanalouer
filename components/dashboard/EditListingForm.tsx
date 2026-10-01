@@ -17,6 +17,8 @@ import ICalSync, { UnlinkIcalButton } from "./ICalSync";
 import type { PhotoItem } from "@/lib/photo";
 import PromotionsSection from "./PromotionsSection";
 import FeaturedListingSection from "./FeaturedListingSection";
+import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
+import { buildListingPath } from "@/lib/listingUrl";
 import AnalyseSection from "./AnalyseSection";
 import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
@@ -258,7 +260,7 @@ export default function EditListingForm({
 
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<SectionId>(
-    searchParams.get("section") === "vedette" ? "vedette"
+    BOOSTS_ENABLED && searchParams.get("section") === "vedette" ? "vedette"
       : searchParams.get("section") === "calendrier" ? "calendrier"
       : searchParams.get("section") === "publier" ? "publier"
       : "titre"
@@ -601,7 +603,7 @@ export default function EditListingForm({
     setSubExpiresAt(expires.toISOString());
     setPublishLoading(false);
     setJustPublished(true);
-    setActiveSection("vedette");
+    setActiveSection(BOOSTS_ENABLED ? "vedette" : "publier");
     // Met à jour l'en-tête de la page (pastille « En ligne ») sans perdre l'état du formulaire.
     router.refresh();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -947,6 +949,7 @@ export default function EditListingForm({
                 {tEdit("publishButton")}
               </button>
             )}
+            {BOOSTS_ENABLED && (
             <div>
               <button
                 type="button"
@@ -962,6 +965,7 @@ export default function EditListingForm({
                 </p>
               )}
             </div>
+            )}
             {/* pt-4 seul (pas de mt) : le conteneur parent applique déjà
                 space-y-2, dont la marge de séparation entre enfants a une
                 spécificité CSS plus forte qu'un mt-* posé ici et l'écraserait. */}
@@ -1828,6 +1832,36 @@ export default function EditListingForm({
               return (
                 <SectionShell title={t("publish.headingActive")}>
                   <div className="space-y-5 max-w-md">
+                    {justPublished && (() => {
+                      const publicPath = buildListingPath(
+                        { region: form.region, city: initialCity, listing_number: listingNumber, custom_slug: initialCustomSlug },
+                        locale === "en" ? "en" : "fr"
+                      );
+                      return (
+                        <div role="status" className="rounded-2xl border border-success-200 bg-success-50 px-5 py-4">
+                          <p className="font-semibold text-success-700">{t("publish.nowLiveTitle")}</p>
+                          <p className="mt-1 text-sm text-charcoal-600">{t("publish.nowLiveBodyNoBoost")}</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {publicPath && (
+                              <a
+                                href={publicPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center bg-primary text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-primary/90 transition-colors"
+                              >
+                                {t("publish.viewLiveListing")}
+                              </a>
+                            )}
+                            <Link
+                              href={localePath("/dashboard/listings", locale)}
+                              className="inline-flex items-center justify-center border border-[#ebebeb] bg-white text-charcoal-700 text-sm font-semibold px-4 py-2 rounded-full hover:border-charcoal-300 transition-colors"
+                            >
+                              {t("publish.backToListings")}
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="bg-success-50 border border-success-200 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center gap-2">
                         <svg className="w-5 h-5 text-success-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1973,7 +2007,7 @@ export default function EditListingForm({
           })()}
 
           {/* Section: Vedette */}
-          {activeSection === "vedette" && (
+          {BOOSTS_ENABLED && activeSection === "vedette" && (
             <SectionShell title={tEdit("featuredSectionTitle")}>
               {justPublished && (
                 <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl border border-success-200 bg-success-50 px-5 py-4">
@@ -2093,6 +2127,7 @@ export default function EditListingForm({
               {tEdit("publishButton")}
             </button>
           )}
+          {BOOSTS_ENABLED && (
           <div>
             <button
               type="button"
@@ -2108,6 +2143,7 @@ export default function EditListingForm({
               </p>
             )}
           </div>
+          )}
           <div className="mt-2 pt-4 border-t border-[#ebebeb] space-y-2">
             <button
               onClick={() => setPreviewOpen(true)}

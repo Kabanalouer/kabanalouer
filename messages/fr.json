@@ -342,6 +342,8 @@
       "apifyItemsFetchFailed": "Impossible de récupérer les données extraites."
     },
     "publish": {
+      "nowLiveBodyNoBoost": "Les voyageurs peuvent déjà la trouver et vous écrire.",
+      "viewLiveListing": "Voir ma fiche",
       "launchOffer": "Offre de lancement",
       "adminReviewHeading": "Réviser et publier",
       "adminReviewBadge": "Révision administrateur",

@@ -1,3 +1,8 @@
+// Boosts retirés pour le lancement (pas encore assez de trafic à livrer aux
+// acheteurs) : masque les boutons et la section Boost, bloque l'achat et le
+// courriel d'invitation. Remettre à true pour les réactiver.
+export const BOOSTS_ENABLED = false;
+
 export const MAX_FEATURED_HOME = 5;
 export const MAX_FEATURED_REGION = 5;
 export const PRIX_VEDETTE_HOME = 99;
