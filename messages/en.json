@@ -106,6 +106,9 @@
     }
   },
   "listings": {
+    "draftNotLive": "Draft · not live yet",
+    "live": "Live",
+    "finishAndPublish": "Finish and publish",
     "heading": "My cabins",
     "createListing": "Create a listing",
     "editHeading": "Edit my listing",

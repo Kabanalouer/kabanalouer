@@ -37,9 +37,14 @@ export default function ListingsClient({ listings, reviews, scores, translationP
   const locale = useLocale();
   const isEn = locale === "en";
 
+  // Brouillons d'abord (ordre d'origine conservé dans chaque groupe) : ce qui
+  // reste à publier ne doit pas se perdre dans la liste.
+  const sorted = [...listings].sort((a, b) => Number(!!a.is_published) - Number(!!b.is_published));
+
   return (
     <div className="space-y-3">
-      {listings.map((listing) => {
+      {sorted.map((listing) => {
+          const isDraft = !listing.is_published;
           const rev = reviews[listing.id];
           const photo = firstPhotoUrl(listing.photos);
           const title = (isEn && listing.title_en?.trim()) || listing.title || t("untitled");
@@ -60,7 +65,11 @@ export default function ListingsClient({ listings, reviews, scores, translationP
           return (
             <div
               key={listing.id}
-              className="relative bg-white rounded-2xl border border-[#ebebeb] p-3 sm:p-4 flex items-center gap-3 sm:gap-4 hover:border-charcoal-200 transition-colors"
+              className={`relative rounded-2xl border p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 transition-colors ${
+                isDraft
+                  ? "bg-warning-50/60 border-warning-200 hover:border-warning-500"
+                  : "bg-white border-[#ebebeb] hover:border-charcoal-200"
+              }`}
             >
               {/* Thumbnail */}
               <div className="w-[72px] h-[72px] rounded-xl bg-charcoal-100 overflow-hidden shrink-0">
@@ -85,11 +94,19 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                   {title}
                 </Link>
                 {regionLabel && <p className="text-sm text-charcoal-400 mt-0.5 truncate">{regionLabel}</p>}
-                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1 text-xs">
-                  <span className={`inline-flex items-center gap-1.5 font-semibold ${listing.is_published ? "text-success-700" : "text-charcoal-500"}`}>
-                    <span className={`w-2 h-2 rounded-full ${listing.is_published ? "bg-success-500" : "bg-charcoal-300"}`} aria-hidden="true" />
-                    {listing.is_published ? t("published") : t("draft")}
-                  </span>
+                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5 text-xs">
+                  {/* Même pastille que l'en-tête de la page d'édition */}
+                  {isDraft ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-warning-200 bg-warning-50 px-2.5 py-0.5 font-semibold text-warning-800">
+                      <span className="w-2 h-2 rounded-full bg-warning-500" aria-hidden="true" />
+                      {t("draftNotLive")}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-success-200 bg-success-50 px-2.5 py-0.5 font-semibold text-success-700">
+                      <span className="w-2 h-2 rounded-full bg-success-500" aria-hidden="true" />
+                      {t("live")}
+                    </span>
+                  )}
                   <span className="font-semibold" style={{ color: getScoreLevel(score).color }}>{t("score", { score })}</span>
                   {rev && (
                     <span className="text-charcoal-500 flex items-center gap-0.5">
@@ -105,8 +122,18 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                 </div>
               </div>
 
+              {/* Brouillon : bouton explicite vers la section Publier (sous le titre sur mobile) */}
+              {isDraft && (
+                <Link
+                  href={`${editHref}?section=publier`}
+                  className="relative z-10 order-last sm:order-none w-full sm:w-auto shrink-0 inline-flex items-center justify-center min-h-11 px-4 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  {t("finishAndPublish")}
+                </Link>
+              )}
+
               {/* Actions : voir la fiche (lien séparé, au-dessus du lien étiré) + chevron */}
-              <div className="flex items-center gap-1 shrink-0">
+              <div className={`items-center gap-1 shrink-0 ${isDraft ? "hidden" : "flex"}`}>
                 {publicHref && (
                   <Link
                     href={publicHref}

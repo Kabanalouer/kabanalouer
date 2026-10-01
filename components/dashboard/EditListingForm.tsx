@@ -260,6 +260,7 @@ export default function EditListingForm({
   const [activeSection, setActiveSection] = useState<SectionId>(
     searchParams.get("section") === "vedette" ? "vedette"
       : searchParams.get("section") === "calendrier" ? "calendrier"
+      : searchParams.get("section") === "publier" ? "publier"
       : "titre"
   );
   const [saving, setSaving] = useState(false);

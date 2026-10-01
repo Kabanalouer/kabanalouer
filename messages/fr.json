@@ -106,6 +106,9 @@
     }
   },
   "listings": {
+    "draftNotLive": "Brouillon · pas encore en ligne",
+    "live": "En ligne",
+    "finishAndPublish": "Terminer et publier",
     "heading": "Mes chalets",
     "createListing": "Créer une annonce",
     "editHeading": "Modifier mon annonce",
