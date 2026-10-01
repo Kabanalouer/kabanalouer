@@ -19,6 +19,10 @@ const LISTING_PRICE_IDS_PROD = {
 
 export const LISTING_PRICE_IDS = isProdEnv ? LISTING_PRICE_IDS_PROD : LISTING_PRICE_IDS_TEST;
 
+// Fin de l'offre de lancement affichée aux proprios (même date que la page
+// Devenir hôte). Affichage seulement : activate-free ne vérifie pas cette date.
+export const LAUNCH_OFFER_END = "2026-10-31";
+
 export type PriceTier = "tier1" | "tier2_3" | "tier4plus";
 
 const TIER_CENTS: Record<PriceTier, number> = {

@@ -47,13 +47,18 @@ export async function POST(request: Request) {
 
   const { data: listing } = await supabase
     .from("listings")
-    .select("id, region")
+    .select("id, region, is_published")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
 
   if (!listing) {
     return NextResponse.json({ error: t2(locale, "Accès refusé", "Access denied") }, { status: 403 });
+  }
+
+  // Un boost ne s'achète que pour une annonce en ligne (jamais payé pour rien).
+  if (!listing.is_published) {
+    return NextResponse.json({ error: t2(locale, "Publiez votre annonce avant d'acheter un boost.", "Publish your listing before buying a boost.") }, { status: 400 });
   }
 
   const monthDate = `${month}-01`;

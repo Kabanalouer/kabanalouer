@@ -366,7 +366,12 @@
       "activateFree": "Activate my listing for free",
       "payAndPublish": "Pay and publish — {price}/yr",
       "redirecting": "Redirecting to payment…",
-      "securePayment": "Secure payment by Stripe · Cancel anytime"
+      "securePayment": "Secure payment by Stripe · Cancel anytime",
+      "launchOfferTitle": "Free for 1 year",
+      "launchOfferDeadline": "Offer valid for every listing published before {date}.",
+      "launchOfferDaysLeft": "{days, plural, one {Only # day left} other {Only # days left}}",
+      "boostTitle": "Boost your visibility",
+      "boostDesc": "Put your cabin at the top of its region or on the home page, by the month."
     },
     "availability": {
       "breadcrumbListings": "My cabins",
@@ -553,7 +558,9 @@
       "ctaButton": "Boost my listing — ${price}",
       "processing": "Redirecting…",
       "genericError": "Something went wrong. Please try again later.",
-      "networkError": "Network error. Check your connection."
+      "networkError": "Network error. Check your connection.",
+      "lockedNote": "Boosts can be purchased as soon as your listing is published.",
+      "lockedCta": "Available after publishing"
     },
     "calendar": {
       "jan": "January",

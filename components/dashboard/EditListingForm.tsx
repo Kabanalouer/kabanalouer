@@ -21,7 +21,7 @@ import AnalyseSection from "./AnalyseSection";
 import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
-import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import { formatPriceLabel, LAUNCH_OFFER_END } from "@/lib/subscriptionPricing";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
@@ -819,15 +819,6 @@ export default function EditListingForm({
   };
 
   const safeImportSourceUrl = safeHttpUrl(importSourceUrl);
-
-  const PUBLISH_FEATURES = [
-    t("publish.feature1"),
-    t("publish.feature2"),
-    t("publish.feature3"),
-    t("publish.feature4"),
-    t("publish.feature5"),
-    t("publish.feature6"),
-  ];
 
   return (
     <>
@@ -1779,6 +1770,16 @@ export default function EditListingForm({
             const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
             const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
             const referencePriceLabel = formatPriceLabel(29900, lang); // tier1 — valeur de référence affichée barrée pour l'offre gratuite
+            const offerEnd = new Date(`${LAUNCH_OFFER_END}T23:59:59`);
+            const offerDaysLeft = Math.ceil((offerEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const offerEndLabel = offerEnd.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" });
+            const boostBlock = (
+              <div className="pt-8 mt-8 border-t border-[#ebebeb]">
+                <h3 className="text-heading-3 font-bold text-charcoal-800 mb-1">{t("publish.boostTitle")}</h3>
+                <p className="text-base text-charcoal-500 mb-5">{t("publish.boostDesc")}</p>
+                <FeaturedListingSection listingId={listingId} region={form.region} locked={!isPublished} />
+              </div>
+            );
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -1885,12 +1886,13 @@ export default function EditListingForm({
                     )}
 
                   </div>
+                  <div className="max-w-2xl">{boostBlock}</div>
                 </SectionShell>
               );
             }
 
             return (
-              <SectionShell title={isFree ? t("publish.headingFree") : t("publish.headingPaid")}>
+              <SectionShell title={t("publish.headingPaid")}>
                 <div className="max-w-md space-y-5">
                   {showPublishErrors && !canPublish && (
                     <PublishErrorBox
@@ -1902,41 +1904,30 @@ export default function EditListingForm({
                   )}
 
                   {isFree ? (
-                    <div className="inline-flex items-center gap-1.5 bg-warning-50 text-warning-700 border border-warning-200 rounded-full px-3 py-1 text-xs font-semibold">
-                      {t("publish.launchOffer")}
+                    // Offre de lancement mise en évidence (date de fin : LAUNCH_OFFER_END)
+                    <div className="rounded-2xl bg-primary text-white p-6">
+                      <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+                        {t("publish.launchOffer")}
+                      </span>
+                      <p className="mt-4 text-3xl font-extrabold leading-tight">{t("publish.launchOfferTitle")}</p>
+                      <p className="mt-1 text-sm text-white/70 line-through">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
+                      {offerDaysLeft > 0 && (
+                        <div className="mt-5 pt-4 border-t border-white/20 flex flex-wrap items-center gap-x-3 gap-y-2">
+                          <p className="text-base font-semibold">{t("publish.launchOfferDeadline", { date: offerEndLabel })}</p>
+                          {offerDaysLeft <= 31 && (
+                            <span className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold">
+                              {t("publish.launchOfferDaysLeft", { days: offerDaysLeft })}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  ) : null}
-
-                  <div>
-                    <h3 className="text-heading-3 font-bold text-charcoal-800 mb-1">
-                      {isFree ? t("publish.headingFree") : t("publish.headingPaid")}
-                    </h3>
-                  </div>
-
-                  <ul className="space-y-1.5">
-                    {PUBLISH_FEATURES.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-base text-charcoal-700">
-                        <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div>
-                    {isFree ? (
-                      <>
-                        <p className="text-sm text-charcoal-400 line-through mb-0.5">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
-                        <p className="text-2xl font-extrabold text-primary mb-1">{t("publish.free")}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice", { price: nextPaidPriceLabel })}</p>
-                        <p className="text-sm text-charcoal-400 mb-1">{t("publish.perYear")}</p>
-                      </>
-                    )}
-                  </div>
+                  ) : (
+                    <div>
+                      <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice", { price: nextPaidPriceLabel })}</p>
+                      <p className="text-sm text-charcoal-400 mb-1">{t("publish.perYear")}</p>
+                    </div>
+                  )}
 
                   {publishError && (
                     <p className="text-sm text-error-600 bg-error-50 rounded-xl px-4 py-3">{publishError}</p>
@@ -1976,6 +1967,7 @@ export default function EditListingForm({
                     </>
                   )}
                 </div>
+                <div className="max-w-2xl">{boostBlock}</div>
               </SectionShell>
             );
           })()}
@@ -1983,7 +1975,7 @@ export default function EditListingForm({
           {/* Section: Vedette */}
           {activeSection === "vedette" && (
             <SectionShell title={tEdit("featuredSectionTitle")}>
-              <FeaturedListingSection listingId={listingId} region={form.region} />
+              <FeaturedListingSection listingId={listingId} region={form.region} locked={!isPublished} />
             </SectionShell>
           )}
 

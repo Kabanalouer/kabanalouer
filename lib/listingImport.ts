@@ -262,6 +262,9 @@ export async function importAirbnbListing(
       latitude: mapped.latitude,
       longitude: mapped.longitude,
       price_low: mapped.priceLow,
+      // Tarif « Sur demande » par défaut, comme une création manuelle (la
+      // colonne vaut false par défaut en base) : section Tarifs complète d'emblée.
+      price_on_request: true,
       is_published: false,
       import_source: platform,
       import_source_url: rawUrl,

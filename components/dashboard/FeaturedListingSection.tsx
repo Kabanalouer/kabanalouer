@@ -100,6 +100,7 @@ function FeaturedCard({
   listingId,
   months,
   ownMonths,
+  locked,
   t,
 }: {
   title: string;
@@ -110,6 +111,7 @@ function FeaturedCard({
   listingId: string;
   months: MonthOption[];
   ownMonths: Set<string>;
+  locked: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
   const supabase = createClient();
@@ -208,10 +210,10 @@ function FeaturedCard({
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={checkoutLoading}
-            className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            disabled={checkoutLoading || locked}
+            className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {checkoutLoading ? t("processing") : t("ctaButton", { price })}
+            {locked ? t("lockedCta") : checkoutLoading ? t("processing") : t("ctaButton", { price })}
           </button>
           {checkoutMessage && (
             <p className="text-xs text-charcoal-500 text-center mt-2 leading-snug">{checkoutMessage}</p>
@@ -225,9 +227,13 @@ function FeaturedCard({
 export default function FeaturedListingSection({
   listingId,
   region,
+  locked = false,
 }: {
   listingId: string;
   region: string;
+  // Annonce pas encore publiée : mois et prix visibles, achat désactivé
+  // (le serveur refuse aussi, voir /api/featured/checkout).
+  locked?: boolean;
 }) {
   const t = useTranslations("listings.featured");
   const locale = useLocale();
@@ -269,6 +275,11 @@ export default function FeaturedListingSection({
 
   return (
     <div>
+      {locked && (
+        <p className="mb-4 text-sm text-charcoal-500 bg-charcoal-50 border border-[#ebebeb] rounded-xl px-4 py-3">
+          {t("lockedNote")}
+        </p>
+      )}
       {existing.length > 0 && (
         <div className="mb-6 bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-1">
           {existing.map((f) => (
@@ -291,6 +302,7 @@ export default function FeaturedListingSection({
           listingId={listingId}
           months={MONTHS}
           ownMonths={regionOwnMonths}
+          locked={locked}
           t={t}
         />
         <FeaturedCard
@@ -301,6 +313,7 @@ export default function FeaturedListingSection({
           listingId={listingId}
           months={MONTHS}
           ownMonths={homeOwnMonths}
+          locked={locked}
           t={t}
         />
       </div>

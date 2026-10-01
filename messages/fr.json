@@ -366,7 +366,12 @@
       "activateFree": "Activer mon annonce gratuitement",
       "payAndPublish": "Payer et publier — {price}/an",
       "redirecting": "Redirection vers le paiement…",
-      "securePayment": "Paiement sécurisé par Stripe · Annulable à tout moment"
+      "securePayment": "Paiement sécurisé par Stripe · Annulable à tout moment",
+      "launchOfferTitle": "Gratuit pendant 1 an",
+      "launchOfferDeadline": "Offre valable pour toute annonce publiée avant le {date}.",
+      "launchOfferDaysLeft": "{days, plural, one {Plus que # jour} other {Plus que # jours}}",
+      "boostTitle": "Boostez votre visibilité",
+      "boostDesc": "Placez votre chalet en tête de sa région ou sur la page d'accueil, au mois."
     },
     "availability": {
       "breadcrumbListings": "Mes chalets",
@@ -553,7 +558,9 @@
       "ctaButton": "Booster mon annonce — {price} $",
       "processing": "Redirection…",
       "genericError": "Une erreur est survenue. Réessayez plus tard.",
-      "networkError": "Erreur réseau. Vérifiez votre connexion."
+      "networkError": "Erreur réseau. Vérifiez votre connexion.",
+      "lockedNote": "Les boosts s'achètent dès que votre annonce est publiée.",
+      "lockedCta": "Disponible après la publication"
     },
     "calendar": {
       "jan": "Janvier",
