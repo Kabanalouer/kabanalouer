@@ -385,7 +385,7 @@ Remplace l'ancien système (traduction à la demande via Claude Haiku, toggle pa
 - **Favoris**
 
 ### SEO / public
-- 14 pages région statiques + pages villes dynamiques
+- 19 pages région (15 d'origine + Montréal, Laval, Eeyou Istchee Baie-James et Nunavik ajoutées le 2026-10-01, photos Unsplash provisoires) + pages villes dynamiques. `lib/municipalities.json` (1 240 municipalités MAMH, aucune région exclue) se régénère avec `node scripts/generate-municipalities.js`
 - Sitemap XML automatique (`app/sitemap.ts`) — déjà dynamique, inclut automatiquement les fiches de chalets publiés (requête Supabase `is_published = true`) et les villes distinctes, pas seulement les pages statiques
 - Métadonnées Open Graph + Twitter sur toutes les pages clés
 - **Google Search Console** configuré pour `kabanalouer.ca` (vérification par enregistrement DNS TXT), sitemap soumis (2026-09-04)
