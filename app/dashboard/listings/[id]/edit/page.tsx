@@ -138,9 +138,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
           <p className="font-semibold text-charcoal-800">
             {imported === "duplicate"
               ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
-              : imported
-                ? (isEn ? "Listing imported successfully!" : "Annonce importée avec succès !")
-                : (isEn ? "Your imported listing isn't live yet" : "Votre annonce importée n'est pas encore en ligne")}
+              : (isEn ? "Airbnb listing imported successfully!" : "Annonce Airbnb importée avec succès !")}
           </p>
           <p className="mt-1 text-sm font-semibold text-warning-800">
             {isEn ? "It is not visible to travelers yet." : "Elle n'est pas encore visible des voyageurs."}
