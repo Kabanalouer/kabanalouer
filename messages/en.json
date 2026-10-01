@@ -363,15 +363,15 @@
       "perYear": "per year",
       "cancelledMessage": "Payment was cancelled. Your listing has not been published.",
       "activating": "Activating…",
-      "activateFree": "Activate my listing for free",
+      "activateFree": "Publish my listing",
       "payAndPublish": "Pay and publish — {price}/yr",
       "redirecting": "Redirecting to payment…",
       "securePayment": "Secure payment by Stripe · Cancel anytime",
+      "nowLiveTitle": "Your listing is now live!",
+      "nowLiveBody": "Travelers can already find it. Want more visibility? Boost it in its region or on the home page.",
       "launchOfferTitle": "Free for 1 year",
       "launchOfferDeadline": "Offer valid for every listing published before {date}.",
-      "launchOfferDaysLeft": "{days, plural, one {Only # day left} other {Only # days left}}",
-      "boostTitle": "Boost your visibility",
-      "boostDesc": "Put your cabin at the top of its region or on the home page, by the month."
+      "launchOfferDaysLeft": "{days, plural, one {Only # day left} other {Only # days left}}"
     },
     "availability": {
       "breadcrumbListings": "My cabins",

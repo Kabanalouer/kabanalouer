@@ -266,6 +266,9 @@ export default function EditListingForm({
   const [justSaved, setJustSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [isPublished, setIsPublished] = useState(initialPublished);
+  // Vient d'être publiée (offre gratuite) : on bascule sur la section Boost
+  // avec un message de succès au-dessus.
+  const [justPublished, setJustPublished] = useState(false);
   const [subStatus, setSubStatus] = useState<string | null>(initialSubStatus);
   const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
   const [publishLoading, setPublishLoading] = useState(false);
@@ -596,6 +599,9 @@ export default function EditListingForm({
     setSubStatus("active");
     setSubExpiresAt(expires.toISOString());
     setPublishLoading(false);
+    setJustPublished(true);
+    setActiveSection("vedette");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleAdminPublish = async () => {
@@ -1773,13 +1779,6 @@ export default function EditListingForm({
             const offerEnd = new Date(`${LAUNCH_OFFER_END}T23:59:59`);
             const offerDaysLeft = Math.ceil((offerEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
             const offerEndLabel = offerEnd.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" });
-            const boostBlock = (
-              <div className="pt-8 mt-8 border-t border-[#ebebeb]">
-                <h3 className="text-heading-3 font-bold text-charcoal-800 mb-1">{t("publish.boostTitle")}</h3>
-                <p className="text-base text-charcoal-500 mb-5">{t("publish.boostDesc")}</p>
-                <FeaturedListingSection listingId={listingId} region={form.region} locked={!isPublished} />
-              </div>
-            );
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -1886,7 +1885,6 @@ export default function EditListingForm({
                     )}
 
                   </div>
-                  <div className="max-w-2xl">{boostBlock}</div>
                 </SectionShell>
               );
             }
@@ -1905,17 +1903,17 @@ export default function EditListingForm({
 
                   {isFree ? (
                     // Offre de lancement mise en évidence (date de fin : LAUNCH_OFFER_END)
-                    <div className="rounded-2xl bg-primary text-white p-6">
-                      <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
+                    <div className="rounded-2xl bg-primary-50 border border-primary-100 p-6">
+                      <span className="inline-flex rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
                         {t("publish.launchOffer")}
                       </span>
-                      <p className="mt-4 text-3xl font-extrabold leading-tight">{t("publish.launchOfferTitle")}</p>
-                      <p className="mt-1 text-sm text-white/70 line-through">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
+                      <p className="mt-4 text-3xl font-extrabold leading-tight text-charcoal-800">{t("publish.launchOfferTitle")}</p>
+                      <p className="mt-1 text-sm text-charcoal-400 line-through">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
                       {offerDaysLeft > 0 && (
-                        <div className="mt-5 pt-4 border-t border-white/20 flex flex-wrap items-center gap-x-3 gap-y-2">
-                          <p className="text-base font-semibold">{t("publish.launchOfferDeadline", { date: offerEndLabel })}</p>
+                        <div className="mt-5 pt-4 border-t border-primary-100 flex flex-wrap items-center gap-x-3 gap-y-2">
+                          <p className="text-base font-semibold text-charcoal-700">{t("publish.launchOfferDeadline", { date: offerEndLabel })}</p>
                           {offerDaysLeft <= 31 && (
-                            <span className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold">
+                            <span className="inline-flex rounded-full bg-accent text-white px-3 py-1 text-xs font-bold">
                               {t("publish.launchOfferDaysLeft", { days: offerDaysLeft })}
                             </span>
                           )}
@@ -1943,7 +1941,7 @@ export default function EditListingForm({
                         disabled={publishLoading}
                         className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                       >
-                        {publishLoading ? t("publish.activating") : t("publish.activateFree")}
+                        {publishLoading ? t("publish.publishing") : t("publish.activateFree")}
                       </button>
                       <p className="text-xs text-charcoal-400">
                         {tEdit("validUntil", {
@@ -1967,7 +1965,6 @@ export default function EditListingForm({
                     </>
                   )}
                 </div>
-                <div className="max-w-2xl">{boostBlock}</div>
               </SectionShell>
             );
           })()}
@@ -1975,6 +1972,17 @@ export default function EditListingForm({
           {/* Section: Vedette */}
           {activeSection === "vedette" && (
             <SectionShell title={tEdit("featuredSectionTitle")}>
+              {justPublished && (
+                <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl border border-success-200 bg-success-50 px-5 py-4">
+                  <svg className="w-6 h-6 text-success-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-success-700">{t("publish.nowLiveTitle")}</p>
+                    <p className="mt-1 text-sm text-charcoal-600">{t("publish.nowLiveBody")}</p>
+                  </div>
+                </div>
+              )}
               <FeaturedListingSection listingId={listingId} region={form.region} locked={!isPublished} />
             </SectionShell>
           )}
