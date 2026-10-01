@@ -77,7 +77,12 @@ export default function MobileSearchSheet({
     form.pets > 0 ? `${form.pets} ${form.pets > 1 ? (isEn ? "dogs" : "chiens") : (isEn ? "dog" : "chien")}` : null,
   ].filter(Boolean).join(", ");
 
-  const submit = () => { onClose(); form.search(); };
+  // Destination inconnue : on reste dans la feuille, sur l'étape Destination.
+  const submit = async () => {
+    const ok = await form.search();
+    if (ok) onClose();
+    else setStep("dest");
+  };
 
   const collapsedRow = (s: SearchStep, label: string, value: string, placeholder: string) => (
     <button
@@ -142,7 +147,12 @@ export default function MobileSearchSheet({
                 placeholder={t("regionOrCity")}
                 value={form.destQuery}
                 onChange={(e) => form.typeDest(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setStep("dates"); } }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  // Entrée choisit la première suggestion ; sans suggestion, on reste ici.
+                  if (!form.destQuery.trim() || form.destSelected || form.pickHighlighted()) setStep("dates");
+                }}
                 className="flex-1 min-w-0 bg-transparent text-base outline-none text-charcoal-800 placeholder-charcoal-400"
               />
               {form.destQuery && (

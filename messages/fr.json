@@ -980,6 +980,8 @@
     "exploreCta": "Explorer les chalets"
   },
   "searchBar": {
+    "chooseDestination": "Choisissez une destination dans la liste.",
+    "didYouMean": "Vouliez-vous dire ?",
     "destinationPlaceholder": "Destination",
     "datesLabel": "Dates",
     "guestsPlaceholder": "Voyageurs",

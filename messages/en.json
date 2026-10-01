@@ -980,6 +980,8 @@
     "exploreCta": "Explore cabins"
   },
   "searchBar": {
+    "chooseDestination": "Choose a destination from the list.",
+    "didYouMean": "Did you mean?",
     "destinationPlaceholder": "Destination",
     "datesLabel": "Dates",
     "guestsPlaceholder": "Travelers",

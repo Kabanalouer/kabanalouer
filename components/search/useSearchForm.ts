@@ -8,6 +8,7 @@ import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
 import { loadMunicipalities } from "@/lib/loadMunicipalities";
 import type { Municipality } from "@/lib/municipalities";
+import { rankDestinations, resolveDestination, type DestCandidate, type DestItem } from "@/lib/destinationSearch";
 
 // État et logique de la barre de recherche (destination, dates, voyageurs,
 // URL de recherche), partagés entre la barre en ligne (SearchBar.tsx, tablette
@@ -21,7 +22,7 @@ const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
 
-export type DestItem = { label: string; type: "region" | "city"; value: string };
+export type { DestItem };
 
 const RECENT_KEY = "kbl_recent_dest";
 
@@ -143,20 +144,30 @@ export function useSearchForm({
       .catch(() => {});
   }, []);
 
-  const suggestions = useMemo<DestItem[]>(() => {
-    const q = destQuery.trim().toLowerCase();
-    if (!q) return [];
-    const regionHits = REGION_NAMES
-      .filter((r) => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q))
-      .slice(0, 4)
-      .map((r) => ({ label: regionLabel(r), type: "region" as const, value: r }));
-    const cityHits = (municipalities ?? [])
-      .filter((m) => m.name.toLowerCase().includes(q))
-      .slice(0, 6)
-      .map((m) => ({ label: m.name, type: "city" as const, value: m.name }));
-    return [...regionHits, ...cityHits];
+  // Correspondance tolérante (accents, tirets, « st » = « saint », fautes de
+  // frappe) : voir lib/destinationSearch.ts.
+  const regionCandidates = useMemo<DestCandidate[]>(
+    () => REGIONS.map((r) => ({ item: { label: regionLabel(r.dbValue), type: "region", value: r.dbValue }, names: [r.dbValue, r.nameEn] })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destQuery, locale, municipalities]);
+    [locale]
+  );
+  const toCityCandidates = (list: Municipality[]): DestCandidate[] =>
+    list.map((m) => ({ item: { label: m.name, type: "city", value: m.name }, names: [m.name] }));
+  const cityCandidates = useMemo(() => toCityCandidates(municipalities ?? []), [municipalities]);
+  const ranked = useMemo(
+    () => rankDestinations(destQuery, regionCandidates, cityCandidates),
+    [destQuery, regionCandidates, cityCandidates]
+  );
+  const suggestions = ranked.items;
+  const suggestionsFuzzy = ranked.fuzzy;
+
+  // Erreur affichée quand on lance la recherche sur une saisie qui ne
+  // correspond à aucune destination connue (la recherche ne part pas).
+  const [destError, setDestError] = useState(false);
+  // Suggestion surlignée (flèches du clavier ; Entrée la choisit).
+  const [highlight, setHighlight] = useState(0);
+  const moveHighlight = (delta: number) =>
+    setHighlight((h) => (suggestions.length ? (h + delta + suggestions.length) % suggestions.length : 0));
 
   // Régions populaires pour l'état sans saisie (aucune recherche récente)
   const popularRegions: DestItem[] = REGION_NAMES.slice(0, 5).map((r) => ({ label: regionLabel(r), type: "region", value: r }));
@@ -164,17 +175,30 @@ export function useSearchForm({
   const selectDest = (item: DestItem) => {
     setDestSelected(item);
     setDestQuery(displayLabel(item));
+    setDestError(false);
     saveRecent(item);
   };
 
   const typeDest = (q: string) => {
     setDestQuery(q);
     setDestSelected(null);
+    setDestError(false);
+    setHighlight(0);
+  };
+
+  // Entrée dans le champ : choisit la suggestion surlignée. Retourne l'élément
+  // choisi (ou null s'il n'y avait aucune suggestion).
+  const pickHighlighted = (): DestItem | null => {
+    const item = suggestions[highlight] ?? suggestions[0];
+    if (!item) return null;
+    selectDest(item);
+    return item;
   };
 
   const clearDest = () => {
     setDestSelected(null);
     setDestQuery("");
+    setDestError(false);
   };
 
   // Retourne vrai quand la plage est complète (départ choisi).
@@ -217,15 +241,21 @@ export function useSearchForm({
       decrDis: pets === 0, incrDis: pets >= DOGS_MAX_LIMIT },
   ];
 
-  const search = async () => {
-    // Destination : saisie sans clic sur une suggestion → on tente une correspondance
-    const active = destSelected ?? (() => {
-      const q = destQuery.trim();
-      if (!q) return null;
-      const regionMatch = REGION_NAMES.find((r) => r.toLowerCase() === q.toLowerCase() || regionLabel(r).toLowerCase() === q.toLowerCase());
-      if (regionMatch) return { label: regionLabel(regionMatch), type: "region" as const, value: regionMatch };
-      return { label: q, type: "city" as const, value: q };
-    })();
+  // Retourne false quand la recherche est bloquée (destination inconnue) :
+  // l'appelant rouvre alors la liste des destinations.
+  const search = async (): Promise<boolean> => {
+    // Destination tapée sans clic sur une suggestion : correspondance exacte ou
+    // sans ambiguïté seulement ; sinon on bloque au lieu de chercher un lieu inconnu.
+    let active: DestItem | null = destSelected;
+    if (!active && destQuery.trim()) {
+      const list = municipalities ?? (await loadMunicipalities().catch(() => [] as Municipality[]));
+      active = resolveDestination(rankDestinations(destQuery, regionCandidates, toCityCandidates(list)));
+      if (!active) {
+        setDestError(true);
+        return false;
+      }
+      selectDest(active);
+    }
 
     const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
     const isEn = locale === "en";
@@ -235,7 +265,7 @@ export function useSearchForm({
       const slug = isEn ? REGION_EN_SLUG_BY_NAME.get(active.value) : REGION_SLUG_BY_NAME.get(active.value);
       if (slug) {
         router.push(isEn ? `/en/cabins/${slug}` : `/chalets/${slug}`);
-        return;
+        return true;
       }
     }
 
@@ -253,7 +283,7 @@ export function useSearchForm({
           } else {
             router.push(isEn ? `/en/cabins/${regionSlug}` : `/chalets/${regionSlug}`);
           }
-          return;
+          return true;
         }
       }
     }
@@ -274,13 +304,15 @@ export function useSearchForm({
       }
     }
     router.push(localePath(`/chalets${params.toString() ? `?${params.toString()}` : ""}`, locale));
+    return true;
   };
 
   return {
     t, locale, intlLocale,
     displayLabel,
     destQuery, destSelected, typeDest, selectDest, clearDest,
-    recentSearches, suggestions, popularRegions,
+    destError, highlight, moveHighlight, pickHighlighted,
+    recentSearches, suggestions, suggestionsFuzzy, popularRegions,
     checkin, checkout, pickDay, clearDates,
     guestRows, guestTotal, pets, clearGuests,
     datesLabel, guestsLabel,

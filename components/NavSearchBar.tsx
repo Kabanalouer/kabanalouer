@@ -9,6 +9,7 @@ import { DOGS_MAX_LIMIT } from "@/lib/dogPolicy";
 import { REGIONS } from "@/lib/regions";
 import { loadMunicipalities } from "@/lib/loadMunicipalities";
 import type { Municipality } from "@/lib/municipalities";
+import { rankDestinations, resolveDestination, type DestCandidate, type DestItem } from "@/lib/destinationSearch";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 // Avant : même liste de 14 régions codée en dur que l'ex-SearchBar.tsx
@@ -21,7 +22,6 @@ const REGION_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slug]));
 const REGION_EN_SLUG_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.slugEn]));
 const REGION_EN_NAME_BY_NAME = new Map(REGIONS.map((r) => [r.dbValue, r.nameEn]));
 
-type DestItem = { label: string; type: "region" | "city"; value: string };
 const RECENT_KEY = "kbl_recent_dest";
 
 function loadRecent(): DestItem[] {
@@ -131,7 +131,6 @@ function NavSearchBarInner() {
   // la requête reste toujours le dbValue français.
   const regionLabel = (dbValue: string) => locale === "en" ? REGION_EN_NAME_BY_NAME.get(dbValue) ?? dbValue : dbValue;
   const displayLabel = (item: DestItem) => item.type === "region" ? regionLabel(item.value) : item.label;
-  const matchRegion = (q: string) => REGION_NAMES.find(r => r.toLowerCase() === q.toLowerCase() || regionLabel(r).toLowerCase() === q.toLowerCase());
   const router = useRouter();
   const searchParams = useSearchParams();
   const now = new Date();
@@ -191,17 +190,26 @@ function NavSearchBarInner() {
     return () => document.removeEventListener("mousedown", h);
   }, [activeField]);
 
-  const suggestions = useMemo<DestItem[]>(() => {
-    const q = destInput.trim().toLowerCase();
-    if (!q) return [];
-    const regionHits = REGION_NAMES.filter(r => r.toLowerCase().includes(q) || regionLabel(r).toLowerCase().includes(q)).slice(0, 4).map(r => ({ label: regionLabel(r), type: "region" as const, value: r }));
-    const cityHits = (municipalities ?? []).filter(m => m.name.toLowerCase().includes(q)).slice(0, 4).map(m => ({ label: m.name, type: "city" as const, value: m.name }));
-    return [...regionHits, ...cityHits];
+  // Correspondance tolérante partagée avec la barre de l'accueil (lib/destinationSearch.ts).
+  const regionCandidates = useMemo<DestCandidate[]>(
+    () => REGIONS.map((r) => ({ item: { label: regionLabel(r.dbValue), type: "region", value: r.dbValue }, names: [r.dbValue, r.nameEn] })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destInput, locale, municipalities]);
+    [locale]
+  );
+  const toCityCandidates = (list: Municipality[]): DestCandidate[] =>
+    list.map((m) => ({ item: { label: m.name, type: "city", value: m.name }, names: [m.name] }));
+  const cityCandidates = useMemo(() => toCityCandidates(municipalities ?? []), [municipalities]);
+  const ranked = useMemo(
+    () => rankDestinations(destInput, regionCandidates, cityCandidates, { regions: 4, cities: 4 }),
+    [destInput, regionCandidates, cityCandidates]
+  );
+  const suggestions = ranked.items;
+  const [destError, setDestError] = useState(false);
+  const [highlight, setHighlight] = useState(0);
 
   const handleDestSelect = (item: DestItem) => {
     setDestSelected(item);
+    setDestError(false);
     setDestInput(displayLabel(item));
     saveRecent(item);
     setRecentSearches(loadRecent());
@@ -209,14 +217,21 @@ function NavSearchBarInner() {
   };
 
   const handleSearch = async () => {
+    // Destination tapée sans choisir de suggestion : correspondance exacte ou
+    // sans ambiguïté seulement ; sinon on bloque et on rouvre la liste.
+    let active: DestItem | null = destSelected;
+    if (!active && destInput.trim()) {
+      const list = municipalities ?? (await loadMunicipalities().catch(() => [] as Municipality[]));
+      active = resolveDestination(rankDestinations(destInput, regionCandidates, toCityCandidates(list), { regions: 4, cities: 4 }));
+      if (!active) {
+        setDestError(true);
+        setActiveField("dest");
+        return;
+      }
+      setDestSelected(active);
+      setDestInput(displayLabel(active));
+    }
     setActiveField(null);
-    const active = destSelected ?? (() => {
-      const q = destInput.trim();
-      if (!q) return null;
-      const regionMatch = matchRegion(q);
-      if (regionMatch) return { label: regionLabel(regionMatch), type: "region" as const, value: regionMatch };
-      return { label: q, type: "city" as const, value: q };
-    })();
 
     const noFilters = !checkin && !checkout && adults === 0 && children === 0 && babies === 0 && pets === 0;
 
@@ -312,13 +327,35 @@ function NavSearchBarInner() {
                 <input
                   type="text"
                   value={destInput}
-                  onChange={(e) => { setDestInput(e.target.value); setDestSelected(null); }}
+                  onChange={(e) => { setDestInput(e.target.value); setDestSelected(null); setDestError(false); setHighlight(0); }}
+                  onKeyDown={(e) => {
+                    if ((e.key === "ArrowDown" || e.key === "ArrowUp") && suggestions.length) {
+                      e.preventDefault();
+                      const d = e.key === "ArrowDown" ? 1 : -1;
+                      setHighlight((h) => (h + d + suggestions.length) % suggestions.length);
+                    } else if (e.key === "Enter") {
+                      e.preventDefault();
+                      const item = suggestions[highlight] ?? suggestions[0];
+                      if (destInput.trim() && !destSelected && item) handleDestSelect(item);
+                      else if (!destInput.trim() || destSelected) void handleSearch();
+                    }
+                  }}
                   placeholder={t("regionOrCity")}
                   autoFocus
                   className="w-full text-base outline-none text-charcoal-700 placeholder-charcoal-400"
                 />
               </div>
               <div className="max-h-[220px] overflow-y-auto">
+                {destError && (
+                  <p role="alert" className="mx-4 mt-3 mb-1 rounded-lg bg-warning-50 border border-warning-200 px-3 py-2 text-sm font-medium text-warning-800">
+                    {t("chooseDestination")}
+                  </p>
+                )}
+                {destInput.trim() && ranked.fuzzy && (
+                  <div className="px-4 pt-3 pb-1">
+                    <p className="text-xs font-semibold text-charcoal-400 uppercase tracking-wide">{t("didYouMean")}</p>
+                  </div>
+                )}
                 {!destInput.trim() ? (
                   <>
                     <div className="px-4 pt-3 pb-1">
@@ -350,7 +387,7 @@ function NavSearchBarInner() {
                     <button
                       key={i}
                       onMouseDown={(e) => { e.preventDefault(); handleDestSelect(item); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors"
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors${i === highlight ? " bg-charcoal-50" : ""}`}
                     >
                       <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

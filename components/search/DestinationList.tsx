@@ -35,7 +35,7 @@ export default function DestinationList({
   // sheet : sélection au clic, lignes d'au moins 48px pour le doigt.
   variant: "popover" | "sheet";
 }) {
-  const { t, destQuery, recentSearches, popularRegions, suggestions, displayLabel } = form;
+  const { t, destQuery, recentSearches, popularRegions, suggestions, suggestionsFuzzy, destError, highlight, displayLabel } = form;
   const rowClass = variant === "sheet"
     ? "w-full flex items-center gap-3 px-4 min-h-[52px] py-2 hover:bg-charcoal-50 active:bg-charcoal-50 text-left transition-colors rounded-xl"
     : "w-full flex items-center gap-3 px-4 py-2.5 hover:bg-charcoal-50 text-left transition-colors";
@@ -79,19 +79,48 @@ export default function DestinationList({
     );
   }
 
+  // Recherche lancée sur une saisie inconnue : on explique pourquoi elle n'est pas partie.
+  const errorBanner = destError && (
+    <p role="alert" className="mx-4 mt-3 mb-1 rounded-lg bg-warning-50 border border-warning-200 px-3 py-2 text-sm font-medium text-warning-800">
+      {t("chooseDestination")}
+    </p>
+  );
+  const hl = (i: number) => (i === highlight ? " bg-charcoal-50" : "");
+
   if (suggestions.length === 0) {
-    return <div className="px-4 py-5 text-center text-sm text-charcoal-400">{t("noDestination")}</div>;
+    return (
+      <>
+        {errorBanner}
+        <div className="px-4 py-5 text-center text-sm text-charcoal-400">{t("noDestination")}</div>
+      </>
+    );
+  }
+
+  if (suggestionsFuzzy) {
+    return (
+      <>
+        {errorBanner}
+        {heading(t("didYouMean"))}
+        {suggestions.map((item, i) => (
+          <button key={`${item.type}-${item.value}`} {...pickProps(item)} className={rowClass + hl(i)}>
+            {item.type === "region" ? <MapIcon /> : <PinIcon />}
+            <span className={textClass}>{item.label}</span>
+          </button>
+        ))}
+      </>
+    );
   }
 
   const regions = suggestions.filter((s) => s.type === "region");
   const cities = suggestions.filter((s) => s.type === "city");
   return (
     <>
+      {errorBanner}
       {regions.length > 0 && (
         <>
           {heading(t("regionsGroup"))}
-          {regions.map((item) => (
-            <button key={item.value} {...pickProps(item)} className={rowClass}>
+          {regions.map((item, i) => (
+            <button key={item.value} {...pickProps(item)} className={rowClass + hl(i)}>
               <MapIcon />
               <span className={textClass}>{item.label}</span>
             </button>
@@ -101,8 +130,8 @@ export default function DestinationList({
       {cities.length > 0 && (
         <>
           {heading(t("citiesGroup"))}
-          {cities.map((item) => (
-            <button key={item.value} {...pickProps(item)} className={rowClass}>
+          {cities.map((item, i) => (
+            <button key={item.value} {...pickProps(item)} className={rowClass + hl(regions.length + i)}>
               <PinIcon />
               <span className={textClass}>{item.label}</span>
             </button>

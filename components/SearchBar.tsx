@@ -191,7 +191,15 @@ export default function SearchBar({
     setDestOpen(false);
   };
 
-  const handleSearch = form.search;
+  // Destination inconnue : la recherche ne part pas, on rouvre la liste
+  // (menu déroulant sur ordinateur, feuille sur téléphone).
+  const handleSearch = async () => {
+    const ok = await form.search();
+    if (ok) return;
+    setCalendarOpen(false);
+    if (window.matchMedia("(min-width: 768px)").matches) setDestOpen(true);
+    else setSheetStep("dest");
+  };
 
   const showDropdown = destOpen && !calendarOpen;
 
@@ -261,6 +269,23 @@ export default function SearchBar({
               form.typeDest(e.target.value);
               setDestOpen(true);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault();
+                setDestOpen(true);
+                form.moveHighlight(e.key === "ArrowDown" ? 1 : -1);
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (form.destQuery.trim() && !form.destSelected) {
+                  if (form.pickHighlighted()) setDestOpen(false);
+                  else setDestOpen(true);
+                } else void handleSearch();
+              } else if (e.key === "Escape") setDestOpen(false);
+            }}
+            role="combobox"
+            aria-controls="dest-suggestions"
+            aria-expanded={showDropdown}
+            aria-autocomplete="list"
             className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-300 min-w-0"
           />
           {destQuery && (
@@ -274,7 +299,7 @@ export default function SearchBar({
 
         {/* Dropdown */}
         {showDropdown && (
-          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-charcoal-100 z-[9999] w-full min-w-[280px] max-h-[220px] overflow-y-auto">
+          <div id="dest-suggestions" className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-charcoal-100 z-[9999] w-full min-w-[280px] max-h-[220px] overflow-y-auto">
             <DestinationList form={form} variant="popover" onPick={handleDestSelect} />
           </div>
         )}
