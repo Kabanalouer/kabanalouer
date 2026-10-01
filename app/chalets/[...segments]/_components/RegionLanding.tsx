@@ -105,7 +105,11 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
   const regionCities = [...cityCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "fr"));
   const regionBasePath = isEn ? `/en/cabins/${regionConfig.slugEn}` : `/chalets/${regionConfig.slug}`;
 
-  const otherRegions = REGIONS.filter((r) => r.slug !== regionConfig.slug);
+  // Autres régions : seulement celles qui ont au moins un chalet publié
+  // (jamais de lien vers une page vide).
+  const { data: activeRegionRows } = await supabase.from("listings").select("region").eq("is_published", true);
+  const activeRegions = new Set((activeRegionRows ?? []).map((r) => r.region as string | null).filter(Boolean));
+  const otherRegions = REGIONS.filter((r) => r.slug !== regionConfig.slug && activeRegions.has(r.dbValue));
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -404,6 +408,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       )}
 
       {/* ── Other regions ── */}
+      {otherRegions.length > 0 && (
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
         <h2 className="text-heading-2 font-bold text-charcoal-900 mb-6">{isEn ? "Explore other regions" : "Explorer d'autres régions"}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -418,6 +423,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           ))}
         </div>
       </section>
+      )}
 
       </main>
 
