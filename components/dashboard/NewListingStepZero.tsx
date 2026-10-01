@@ -147,10 +147,6 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
               <CheckIcon />
               <span>{t("importFeature2")}</span>
             </li>
-            <li className="flex items-start gap-2">
-              <CheckIcon />
-              <span>{t("importFeature3")}</span>
-            </li>
           </ul>
           <form action={importAction} className="space-y-3 mt-auto">
             <div>
