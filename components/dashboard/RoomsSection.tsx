@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RoomPhotoManager from "./RoomPhotoManager";
-import TranslateButton from "./TranslateButton";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { PhotoItem } from "@/lib/photo";
 
@@ -26,6 +25,14 @@ type RoomLocal = {
   beds: BedEntry[];
   photos: string[];
 };
+
+// Noms standard (jamais saisis par le proprio) : « Chambre 1 », « Salon 1 »…
+// selon l'ordre dans chaque type. Même règle sur la fiche publique.
+function standardRoomName(type: RoomLocal["type"], n: number) {
+  return type === "living_room"
+    ? { fr: `Salon ${n}`, en: `Living room ${n}` }
+    : { fr: `Chambre ${n}`, en: `Bedroom ${n}` };
+}
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -170,14 +177,17 @@ export default function RoomsSection({
     }
 
     const newServerIds: Record<string, string> = {};
+    const typeCounter = { bedroom: 0, living_room: 0 };
     for (let i = 0; i < rooms.length; i++) {
       const room = rooms[i];
+      typeCounter[room.type] += 1;
+      const standardName = standardRoomName(room.type, typeCounter[room.type]);
 
       const payload = {
         listing_id: listingId,
         type: room.type,
-        name: room.name,
-        name_en: room.name_en ?? null,
+        name: standardName.fr,
+        name_en: standardName.en,
         capacity: room.capacity,
         beds: room.beds,
         photos: room.photos,
@@ -249,9 +259,10 @@ export default function RoomsSection({
         )}
 
         <div className="space-y-4">
-          {bedrooms.map((room) => (
+          {bedrooms.map((room, i) => (
             <BedroomCard
               key={room.localId}
+              label={t("bedroomDefault", { n: i + 1 })}
               room={room}
               userId={userId}
               listingPhotos={listingPhotos}
@@ -286,9 +297,10 @@ export default function RoomsSection({
         )}
 
         <div className="space-y-4">
-          {livingRooms.map((room) => (
+          {livingRooms.map((room, i) => (
             <LivingRoomCard
               key={room.localId}
+              label={t("livingroomDefault", { n: i + 1 })}
               room={room}
               userId={userId}
               listingPhotos={listingPhotos}
@@ -428,24 +440,17 @@ function BedsEditor({
 // ── Room header (partagé chambres + salons) ─────────────────────────────────
 
 function RoomHeader({
-  room, onUpdate, onRemove, t, locale,
+  label, room, onRemove, t, locale,
 }: {
+  label: string;
   room: RoomLocal;
-  onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   t: TRooms;
   locale: string;
 }) {
-  const [showEn, setShowEn] = useState(false);
-  const nameEn = room.name_en ?? "";
-
-  const nameRow = (
+  return (
     <div className="flex items-center gap-3">
-      <input
-        value={room.name}
-        onChange={(e) => onUpdate({ name: e.target.value })}
-        className="flex-1 font-semibold text-charcoal-800 bg-transparent border-b border-transparent hover:border-[#ebebeb] focus:border-primary focus:outline-none py-0.5 text-base"
-      />
+      <p className="flex-1 font-semibold text-charcoal-800 text-base">{label}</p>
       {room.photos.length === 0 && (
         <span className="text-xs font-medium text-warning-600 bg-warning-50 border border-warning-200 rounded-full px-2 py-0.5 shrink-0">
           {t("noPhotos")}
@@ -462,49 +467,15 @@ function RoomHeader({
       </button>
     </div>
   );
-
-  const enNameRow = (
-    <div className="flex items-center gap-1.5 mt-1.5">
-      <input
-        value={nameEn}
-        onChange={(e) => onUpdate({ name_en: e.target.value })}
-        placeholder={t("nameEnPlaceholder")}
-        className="flex-1 text-base border border-[#ebebeb] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-charcoal-300"
-      />
-      <TranslateButton
-        sourceText={room.name}
-        sourceLang="fr"
-        targetLang="en"
-        fieldType="roomName"
-        variant="icon"
-        disabled={!room.name.trim()}
-        onTranslated={(en) => onUpdate({ name_en: en })}
-      />
-    </div>
-  );
-
-  return (
-    <div>
-      {showEn && locale === "en" && enNameRow}
-      {nameRow}
-      <button
-        type="button"
-        onClick={() => setShowEn((s) => !s)}
-        className="mt-1 text-xs font-medium text-primary hover:underline"
-      >
-        {showEn ? t("nameEnHide") : (nameEn ? t("nameEnEdit") : t("nameEnAdd"))}
-      </button>
-      {showEn && locale !== "en" && enNameRow}
-    </div>
-  );
 }
 
 // ── Bedroom card ─────────────────────────────────────────────────────────────
 
 function BedroomCard({
-  room, userId, listingPhotos, t, locale,
+  label, room, userId, listingPhotos, t, locale,
   onUpdate, onRemove, onAddBed, onQuickAddBed, onUpdateBed, onRemoveBed,
 }: {
+  label: string;
   room: RoomLocal;
   userId: string;
   listingPhotos: PhotoItem[];
@@ -519,7 +490,7 @@ function BedroomCard({
 }) {
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} locale={locale} />
+      <RoomHeader label={label} room={room} onRemove={onRemove} t={t} locale={locale} />
 
       {/* Capacity */}
       <div className="flex items-center gap-3">
@@ -551,9 +522,10 @@ function BedroomCard({
 // ── Living room card ──────────────────────────────────────────────────────────
 
 function LivingRoomCard({
-  room, userId, listingPhotos, t, locale,
+  label, room, userId, listingPhotos, t, locale,
   onUpdate, onRemove, onAddBed, onQuickAddBed, onUpdateBed, onRemoveBed,
 }: {
+  label: string;
   room: RoomLocal;
   userId: string;
   listingPhotos: PhotoItem[];
@@ -568,7 +540,7 @@ function LivingRoomCard({
 }) {
   return (
     <div className="border border-[#ebebeb] rounded-2xl p-5 space-y-4">
-      <RoomHeader room={room} onUpdate={onUpdate} onRemove={onRemove} t={t} locale={locale} />
+      <RoomHeader label={label} room={room} onRemove={onRemove} t={t} locale={locale} />
 
       {/* Capacity */}
       <div className="flex items-center gap-3">

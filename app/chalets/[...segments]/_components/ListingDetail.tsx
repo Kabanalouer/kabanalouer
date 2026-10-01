@@ -406,15 +406,19 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 <div>
                   <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-4">{t("roomsTitle")}</h2>
                   <RoomsCarousel
-                    rooms={rooms.map((r) => ({
+                    rooms={rooms.map((r, i) => {
+                      // Noms standard selon l'ordre dans chaque type (jamais le nom saisi)
+                      const n = rooms.slice(0, i + 1).filter((x) => x.type === r.type).length;
+                      return {
                       id: r.id,
                       type: r.type,
-                      name: r.name,
-                      name_en: (r.name_en as string | null) ?? null,
+                      name: r.type === "living_room" ? t("roomLivingRoomName", { n }) : t("roomBedroomName", { n }),
+                      name_en: null,
                       capacity: r.capacity,
                       beds: Array.isArray(r.beds) ? r.beds as { type: string; quantity: number }[] : [],
                       photos: Array.isArray(r.photos) ? r.photos as string[] : [],
-                    }))}
+                    };
+                    })}
                   />
                 </div>
               </>

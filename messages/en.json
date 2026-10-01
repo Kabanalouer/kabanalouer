@@ -858,6 +858,8 @@
     "ogDesc": "Find your ideal cabin in Quebec. Filter by region, dates and amenities. Real-time availability."
   },
   "listing": {
+    "roomBedroomName": "Bedroom {n}",
+    "roomLivingRoomName": "Living room {n}",
     "draftPreviewBanner": "Preview — this listing isn't published yet. Only you can see it.",
     "breadcrumbCabins": "Cabins",
     "descriptionTitle": "Cabin description",
