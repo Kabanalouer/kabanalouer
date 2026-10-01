@@ -1411,7 +1411,7 @@ export default function EditListingForm({
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-5">
                 {tEdit("roomsAtLeastOne")} <Req />
               </p>
-              <RoomsSection userId={userId} listingId={listingId} listingPhotos={form.photos} />
+              <RoomsSection userId={userId} listingId={listingId} listingPhotos={form.photos} bedroomCount={form.bedrooms} />
             </SectionShell>
           )}
 

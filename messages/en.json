@@ -410,6 +410,16 @@
       "unlinkError": "Error removing the iCal link."
     },
     "rooms": {
+      "quickCreateTitle": "{count, plural, one {Your cabin has # bedroom.} other {Your cabin has # bedrooms.}}",
+      "quickCreateBody": "Set them up in one click, then add the beds in each one.",
+      "quickCreateCta": "{count, plural, one {Create my bedroom} other {Create my # bedrooms}}",
+      "quickBedKing": "King",
+      "quickBedQueen": "Queen",
+      "quickBedDouble": "Double",
+      "quickBedSingle": "Single",
+      "quickBedSofa": "Sofa bed",
+      "bedRequired": "Add at least one bed",
+      "roomsMissingBeds": "{count, plural, one {# bedroom still has no bed} other {# bedrooms still have no bed}}",
       "proTip": "Cabins with bedroom photos receive 3× more traveler inquiries.",
       "bedroomsTitle": "Bedrooms",
       "bedroomsEmpty": "No bedrooms added.",

@@ -410,6 +410,16 @@
       "unlinkError": "Erreur lors du retrait du lien iCal."
     },
     "rooms": {
+      "quickCreateTitle": "{count, plural, one {Votre chalet compte # chambre.} other {Votre chalet compte # chambres.}}",
+      "quickCreateBody": "Préparez-les en un clic, puis ajoutez les lits de chacune.",
+      "quickCreateCta": "{count, plural, one {Créer ma chambre} other {Créer mes # chambres}}",
+      "quickBedKing": "King",
+      "quickBedQueen": "Queen",
+      "quickBedDouble": "Double",
+      "quickBedSingle": "Simple",
+      "quickBedSofa": "Divan-lit",
+      "bedRequired": "Ajoutez au moins un lit",
+      "roomsMissingBeds": "{count, plural, one {Encore # chambre sans lit} other {Encore # chambres sans lit}}",
       "proTip": "Les chalets avec photos de chambres reçoivent 3× plus de demandes de la part des voyageurs.",
       "bedroomsTitle": "Chambres",
       "bedroomsEmpty": "Aucune chambre ajoutée.",

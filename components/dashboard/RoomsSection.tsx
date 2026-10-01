@@ -49,9 +49,13 @@ export default function RoomsSection({
   userId,
   listingId,
   listingPhotos = [],
+  bedroomCount = 0,
 }: {
   userId: string;
   listingId: string;
+  /** Nombre de chambres déclaré (section Nombre de voyageurs, ou import
+   * Airbnb) — sert au bouton « Créer mes N chambres ». */
+  bedroomCount?: number;
   /** Photos déjà présentes dans la galerie générale de l'annonce, pour les
    * réutiliser dans une chambre sans réupload. */
   listingPhotos?: PhotoItem[];
@@ -99,6 +103,30 @@ export default function RoomsSection({
       { localId: uid(), serverId: null, type: "living_room",
         name: t("livingroomDefault", { n: livingRooms.length + 1 }), capacity: 2, beds: [], photos: [] },
     ]);
+
+  // Prépare d'un coup les chambres déclarées, sans lits : le proprio choisit
+  // les lits lui-même (jamais d'information inventée).
+  const createDeclaredBedrooms = () =>
+    setRooms((prev) => [
+      ...prev,
+      ...Array.from({ length: bedroomCount }, (_, i) => ({
+        localId: uid(), serverId: null, type: "bedroom" as const,
+        name: t("bedroomDefault", { n: i + 1 }), capacity: 2, beds: [], photos: [],
+      })),
+    ]);
+
+  // Ajout rapide : un clic = un lit de plus de ce type (regroupé s'il existe déjà).
+  const quickAddBed = (roomId: string, type: BedType) =>
+    setRooms((prev) =>
+      prev.map((r) => {
+        if (r.localId !== roomId) return r;
+        const idx = r.beds.findIndex((b) => b.type === type);
+        if (idx === -1) return { ...r, beds: [...r.beds, { type, quantity: 1 }] };
+        return { ...r, beds: r.beds.map((b, i) => (i === idx ? { ...b, quantity: b.quantity + 1 } : b)) };
+      })
+    );
+
+  const bedroomsWithoutBeds = bedrooms.filter((r) => !r.beds.some((b) => b.quantity > 0)).length;
 
   const removeRoom   = (id: string) => setRooms((prev) => prev.filter((r) => r.localId !== id));
   const updateRoom   = (id: string, patch: Partial<RoomLocal>) =>
@@ -201,7 +229,22 @@ export default function RoomsSection({
       <div>
         <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{t("bedroomsTitle")}</h3>
 
-        {bedrooms.length === 0 && (
+        {bedrooms.length === 0 && bedroomCount > 0 && (
+          <div className="mb-4 rounded-2xl border border-primary-100 bg-primary-50 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <p className="font-semibold text-charcoal-800">{t("quickCreateTitle", { count: bedroomCount })}</p>
+              <p className="mt-1 text-sm text-charcoal-600">{t("quickCreateBody")}</p>
+            </div>
+            <button
+              type="button"
+              onClick={createDeclaredBedrooms}
+              className="shrink-0 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              {t("quickCreateCta", { count: bedroomCount })}
+            </button>
+          </div>
+        )}
+        {bedrooms.length === 0 && bedroomCount === 0 && (
           <p className="text-base text-charcoal-400 mb-4">{t("bedroomsEmpty")}</p>
         )}
 
@@ -217,6 +260,7 @@ export default function RoomsSection({
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
               onAddBed={() => addBed(room.localId)}
+              onQuickAddBed={(type) => quickAddBed(room.localId, type)}
               onUpdateBed={(i, p) => updateBed(room.localId, i, p)}
               onRemoveBed={(i) => removeBed(room.localId, i)}
             />
@@ -253,6 +297,7 @@ export default function RoomsSection({
               onUpdate={(p) => updateRoom(room.localId, p)}
               onRemove={() => removeRoom(room.localId)}
               onAddBed={() => addBed(room.localId)}
+              onQuickAddBed={(type) => quickAddBed(room.localId, type)}
               onUpdateBed={(i, p) => updateBed(room.localId, i, p)}
               onRemoveBed={(i) => removeBed(room.localId, i)}
             />
@@ -277,6 +322,9 @@ export default function RoomsSection({
         >
           {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>
+        {bedroomsWithoutBeds > 0 && (
+          <p className="text-sm font-medium text-warning-700">{t("roomsMissingBeds", { count: bedroomsWithoutBeds })}</p>
+        )}
         {error && <p className="text-sm text-error-500">{error}</p>}
       </div>
     </div>
@@ -287,12 +335,17 @@ type TRooms = ReturnType<typeof useTranslations>;
 
 // ── Beds editor (partagé chambres + salons) ─────────────────────────────────
 
+const QUICK_BED_TYPES: BedType[] = ["king", "queen", "double", "simple", "sofa_bed"];
+
 function BedsEditor({
-  beds, t, onAddBed, onUpdateBed, onRemoveBed,
+  beds, t, required = false, onAddBed, onQuickAddBed, onUpdateBed, onRemoveBed,
 }: {
   beds: BedEntry[];
   t: TRooms;
+  /** Chambre : au moins un lit requis pour publier (pas pour un salon). */
+  required?: boolean;
   onAddBed: () => void;
+  onQuickAddBed: (type: BedType) => void;
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
@@ -304,11 +357,34 @@ function BedsEditor({
     sofa_bed: t("bedSofa"),
   };
 
+  const QUICK_LABELS: Record<BedType, string> = {
+    king: t("quickBedKing"),
+    queen: t("quickBedQueen"),
+    double: t("quickBedDouble"),
+    simple: t("quickBedSingle"),
+    sofa_bed: t("quickBedSofa"),
+  };
+  const hasBeds = beds.some((b) => b.quantity > 0);
+
   return (
     <div>
       <span className="text-sm text-charcoal-500 block mb-2">{t("beds")}</span>
-      {beds.length === 0 && (
-        <p className="text-xs text-charcoal-300 mb-2">{t("bedsEmpty")}</p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {QUICK_BED_TYPES.map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => onQuickAddBed(type)}
+            className="min-h-10 px-3.5 rounded-full border border-[#dddddd] bg-white text-sm font-medium text-charcoal-700 hover:border-charcoal-400 transition-colors"
+          >
+            + {QUICK_LABELS[type]}
+          </button>
+        ))}
+      </div>
+      {!hasBeds && (
+        <p className={`text-xs mb-2 ${required ? "font-medium text-warning-700" : "text-charcoal-300"}`}>
+          {required ? t("bedRequired") : t("bedsEmpty")}
+        </p>
       )}
       <div className="space-y-2">
         {beds.map((bed, i) => (
@@ -323,7 +399,7 @@ function BedsEditor({
               ))}
             </select>
             <input
-              type="number" min={1} max={4}
+              type="number" min={1} max={10}
               value={bed.quantity}
               onChange={(e) => onUpdateBed(i, { quantity: parseInt(e.target.value) || 1 })}
               className="w-16 border border-[#ebebeb] rounded-lg px-2 py-1.5 text-base text-center focus:outline-none focus:ring-2 focus:ring-primary"
@@ -427,7 +503,7 @@ function RoomHeader({
 
 function BedroomCard({
   room, userId, listingPhotos, t, locale,
-  onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
+  onUpdate, onRemove, onAddBed, onQuickAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
@@ -437,6 +513,7 @@ function BedroomCard({
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   onAddBed: () => void;
+  onQuickAddBed: (type: BedType) => void;
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
@@ -455,7 +532,7 @@ function BedroomCard({
         />
       </div>
 
-      <BedsEditor beds={room.beds} t={t} onAddBed={onAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
+      <BedsEditor beds={room.beds} t={t} required onAddBed={onAddBed} onQuickAddBed={onQuickAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
 
       {/* Photos */}
       <div>
@@ -475,7 +552,7 @@ function BedroomCard({
 
 function LivingRoomCard({
   room, userId, listingPhotos, t, locale,
-  onUpdate, onRemove, onAddBed, onUpdateBed, onRemoveBed,
+  onUpdate, onRemove, onAddBed, onQuickAddBed, onUpdateBed, onRemoveBed,
 }: {
   room: RoomLocal;
   userId: string;
@@ -485,6 +562,7 @@ function LivingRoomCard({
   onUpdate: (patch: Partial<RoomLocal>) => void;
   onRemove: () => void;
   onAddBed: () => void;
+  onQuickAddBed: (type: BedType) => void;
   onUpdateBed: (idx: number, patch: Partial<BedEntry>) => void;
   onRemoveBed: (idx: number) => void;
 }) {
@@ -503,7 +581,7 @@ function LivingRoomCard({
         />
       </div>
 
-      <BedsEditor beds={room.beds} t={t} onAddBed={onAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
+      <BedsEditor beds={room.beds} t={t} onAddBed={onAddBed} onQuickAddBed={onQuickAddBed} onUpdateBed={onUpdateBed} onRemoveBed={onRemoveBed} />
 
       {/* Photos */}
       <div>
