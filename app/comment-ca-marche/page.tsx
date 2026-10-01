@@ -2,6 +2,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
+import ExploreCabinsCta from "@/components/ExploreCabinsCta";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -116,18 +117,7 @@ export default async function CommentCaMarchePage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="bg-primary py-20">
-        <div className="max-w-2xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">{t("ctaTitle")}</h2>
-          <p className="text-white/80 text-lg mb-10">{t("ctaSubtitle")}</p>
-          <Link
-            href={localePath("/chalets", locale)}
-            className="inline-block bg-white text-primary font-bold px-10 py-4 rounded-full hover:bg-charcoal-50 transition-colors text-lg"
-          >
-            {t("ctaBtn")}
-          </Link>
-        </div>
-      </section>
+      <ExploreCabinsCta />
 
       </main>
 

@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
+import ExploreCabinsCta from "@/components/ExploreCabinsCta";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -101,6 +102,9 @@ export default async function AProposPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Bandeau final — même que Comment ça marche ── */}
+      <ExploreCabinsCta />
 
       </main>
 
