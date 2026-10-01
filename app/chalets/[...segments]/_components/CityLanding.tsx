@@ -200,7 +200,7 @@ export default async function CityLanding({
 
       {/* ── Hero ── */}
       <section className="bg-[#F8FAF9] border-b border-charcoal-100 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
             <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
               {isEn ? "Cabins" : "Chalets"}
@@ -227,7 +227,7 @@ export default async function CityLanding({
       </section>
 
       {/* ── Listings ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 w-full">
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-heading-2 font-bold text-charcoal-900">
@@ -259,7 +259,8 @@ export default async function CityLanding({
       </section>
 
       {/* ── À propos + FAQ (contenu calculé sur les annonces) ── */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16 w-full">
+      <section className="bg-charcoal-50 border-y border-[#ebebeb] py-16 w-full">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
           {isEn ? `Cabin rentals in ${cityName}` : `Location de chalet à ${cityName}`}
         </h2>
@@ -271,17 +272,18 @@ export default async function CityLanding({
         </h2>
         <div className="space-y-3">
           {faq.map((f) => (
-            <div key={f.q} className="border border-[#ebebeb] rounded-2xl p-5">
+            <div key={f.q} className="border border-[#ebebeb] bg-white rounded-2xl p-5">
               <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-1">{f.q}</h3>
               <p className="text-base text-charcoal-600 leading-relaxed">{f.a}</p>
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* ── Other cities in region ── */}
       {otherCities.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
           <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
             {isEn ? `Other cities in ${displayRegionName}` : `Autres villes ${regionConfig.locative}`}
           </h2>
