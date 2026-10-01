@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import PriceComparison from "@/components/PriceComparison";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -76,22 +77,27 @@ export default async function AProposPage() {
         </div>
       </section>
 
-      {/* ── Histoire et modèle ── */}
+      {/* ── D'où vient Kabanalouer ── */}
       <section className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-16">
-          <div>
-            <h2 className="text-3xl font-bold text-charcoal-800 mb-6">{t("originTitle")}</h2>
-            <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
-              <p>{t("origin1")}</p>
-              <p>{t("origin2")}</p>
-            </div>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-bold text-charcoal-800 mb-6">{t("originTitle")}</h2>
+          <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
+            <p>{t("origin1")}</p>
+            <p>{t("origin2")}</p>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold text-charcoal-800 mb-6">{t("modelTitle")}</h2>
-            <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
-              <p>{t("model1")}</p>
-              <p>{t("model2")}</p>
-            </div>
+        </div>
+      </section>
+
+      {/* ── Notre différence — même section que la page d'accueil ── */}
+      <PriceComparison />
+
+      {/* ── Le modèle ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-bold text-charcoal-800 mb-6">{t("modelTitle")}</h2>
+          <div className="space-y-4 text-charcoal-600 leading-relaxed text-lg">
+            <p>{t("model1")}</p>
+            <p>{t("model2")}</p>
           </div>
         </div>
       </section>
