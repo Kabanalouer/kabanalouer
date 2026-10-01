@@ -63,6 +63,9 @@
     "typeBoostRegion": "Region boost"
   },
   "dashboard": {
+    "draftBannerTitle": "{count, plural, one {You have # draft listing.} other {You have # draft listings.}}",
+    "draftBannerBody": "{count, plural, one {It is not visible to travelers yet.} other {They are not visible to travelers yet.}}",
+    "draftBannerCta": "Finish and publish",
     "greeting": "Hello, {firstName}!",
     "myListings": "My listings",
     "createListing": "Create a listing",

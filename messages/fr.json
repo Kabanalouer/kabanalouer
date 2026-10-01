@@ -63,6 +63,9 @@
     "typeBoostRegion": "Boost région"
   },
   "dashboard": {
+    "draftBannerTitle": "{count, plural, one {Vous avez # annonce en brouillon.} other {Vous avez # annonces en brouillon.}}",
+    "draftBannerBody": "{count, plural, one {Elle n'est pas encore visible des voyageurs.} other {Elles ne sont pas encore visibles des voyageurs.}}",
+    "draftBannerCta": "Terminer et publier",
     "greeting": "Bonjour {firstName} !",
     "myListings": "Mes annonces",
     "createListing": "Créer une annonce",

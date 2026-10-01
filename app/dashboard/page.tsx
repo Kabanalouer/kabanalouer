@@ -34,6 +34,7 @@ export default async function DashboardPage() {
   ]);
 
   const listingIds = (listings ?? []).map((l) => l.id as string);
+  const drafts = (listings ?? []).filter((l) => !l.is_published);
   const today = new Date().toISOString().slice(0, 10);
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -106,6 +107,22 @@ export default async function DashboardPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t("greeting", { firstName })}</h1>
         <p className="text-charcoal-400 mt-1 text-sm">{dateDisplay}</p>
       </div>
+
+      {/* ── Brouillons : rappel qu'ils sont invisibles pour les voyageurs ── */}
+      {drafts.length > 0 && (
+        <div role="status" className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-warning-200 bg-warning-50 px-5 py-4">
+          <p className="flex-1 text-base text-charcoal-800">
+            <span className="font-semibold">{t("draftBannerTitle", { count: drafts.length })}</span>{" "}
+            {t("draftBannerBody", { count: drafts.length })}
+          </p>
+          <Link
+            href={localePath(drafts.length === 1 ? `/dashboard/listings/${drafts[0].id}/edit` : "/dashboard/listings", locale)}
+            className="shrink-0 inline-flex items-center justify-center bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-primary-dark transition-colors"
+          >
+            {t("draftBannerCta")}
+          </Link>
+        </div>
+      )}
 
       {/* ── Stats (client component with period filter) ──────────────────── */}
       {/* Masquée tant qu'aucune annonce n'existe — évite un mur de "0"/tirets

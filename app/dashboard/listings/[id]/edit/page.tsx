@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
-import ImportedListingBanner from "@/components/dashboard/ImportedListingBanner";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
@@ -95,9 +94,24 @@ export default async function EditListingPage({ params, searchParams }: Props) {
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-charcoal-900">{listing.title
-          ? (isEn ? "Edit my listing" : "Modifier mon annonce")
-          : (isEn ? "Create my listing" : "Créer mon annonce")}</h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 className="text-2xl font-bold text-charcoal-900">{listing.title
+            ? (isEn ? "Edit my listing" : "Modifier mon annonce")
+            : (isEn ? "Create my listing" : "Créer mon annonce")}</h1>
+          {/* Statut toujours visible : un brouillon (souvent importé d'Airbnb)
+              ne doit jamais passer pour une annonce en ligne. */}
+          {listing.is_published ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-success-200 bg-success-50 px-3 py-1 text-xs font-semibold text-success-700">
+              <span className="w-2 h-2 rounded-full bg-success-500" aria-hidden="true" />
+              {isEn ? "Live" : "En ligne"}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-warning-200 bg-warning-50 px-3 py-1 text-xs font-semibold text-warning-800">
+              <span className="w-2 h-2 rounded-full bg-warning-500" aria-hidden="true" />
+              {isEn ? "Draft · not live yet" : "Brouillon · pas encore en ligne"}
+            </span>
+          )}
+        </div>
         <p className="text-charcoal-500 text-sm mt-1 flex items-center gap-1.5">
           <span className="line-clamp-1">{(isEn && (listing.title_en as string | null)) || listing.title}</span>
           {listing.title && (
@@ -117,18 +131,26 @@ export default async function EditListingPage({ params, searchParams }: Props) {
           )}
         </p>
       </div>
-      {/* Arrivée juste après un import Airbnb (NewListingStepZero) : le proprio
-          complète et publie lui-même, sans intervention de l'admin. */}
-      {imported && isOwner && !listing.is_published && (
-        <ImportedListingBanner
-          title={imported === "duplicate"
-            ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
-            : (isEn ? "Listing imported successfully!" : "Annonce importée avec succès !")}
-          body={isEn
-            ? "Check the information copied from Airbnb, fill in what’s missing (for example, the bedrooms and your CITQ number), then publish it with the “Publish my listing” button."
-            : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple, les chambres, votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
-          closeLabel={isEn ? "Close" : "Fermer"}
-        />
+      {/* Annonce importée d'Airbnb pas encore publiée : rappel affiché à chaque
+          visite (pas seulement juste après l'import), sans bouton pour le fermer. */}
+      {isOwner && !listing.is_published && (imported || listing.import_source) && (
+        <div role="status" className="mb-6 rounded-2xl border border-warning-200 bg-warning-50 px-5 py-4">
+          <p className="font-semibold text-charcoal-800">
+            {imported === "duplicate"
+              ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
+              : imported
+                ? (isEn ? "Listing imported successfully!" : "Annonce importée avec succès !")
+                : (isEn ? "Your imported listing isn't live yet" : "Votre annonce importée n'est pas encore en ligne")}
+          </p>
+          <p className="mt-1 text-sm font-semibold text-warning-800">
+            {isEn ? "It is not visible to travelers yet." : "Elle n'est pas encore visible des voyageurs."}
+          </p>
+          <p className="mt-1 text-sm text-charcoal-600">
+            {isEn
+              ? "Check the information copied from Airbnb, fill in what’s missing (for example, the bedrooms and your CITQ number), then publish it with the “Publish my listing” button."
+              : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple, les chambres, votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
+          </p>
+        </div>
       )}
       <EditListingForm
         userId={hostId}

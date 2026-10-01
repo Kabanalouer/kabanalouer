@@ -601,6 +601,8 @@ export default function EditListingForm({
     setPublishLoading(false);
     setJustPublished(true);
     setActiveSection("vedette");
+    // Met à jour l'en-tête de la page (pastille « En ligne ») sans perdre l'état du formulaire.
+    router.refresh();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
