@@ -948,9 +948,42 @@ Tout en ligne (commits `66541bc` → `9c0e349`). Détails techniques en sections
 - Scripts ponctuels sur la base : `.tmp-*.mts` à la racine (alias `@/` résolus par `npx tsx`), `set -a; source .env.local`, jamais d'`await` au premier niveau dans un `.ts`. `CRON_SECRET` n'est pas dans `.env.local`.
 - Aperçu d'un courriel sans l'envoyer : remplacer `globalThis.fetch` dans un script tsx pour capturer le HTML que Resend aurait reçu.
 
+### Session du 2026-09-30 → 2026-10-01 — Contenu, navigation, SEO local, régions, recherche
+
+Très longue session, tout en ligne (≈ 60 commits). Détails techniques dans le code ; règles durables résumées ici.
+
+1. **Pied de page** : liens thématiques et régions affichés seulement quand leur page a au moins un chalet (`lib/themeLinks.ts`, cache 10 min, aussi `/api/nav/theme-links` pour le menu mobile). Colonnes Voyageurs (Parcourir, Comment ça marche) / Proprios (Inscrire mon chalet, FAQ) / Kabanalouer (À propos, Contact) ; conditions et confidentialité dans la barre du bas ; sous-pied de page **« Par région »** et **« Par type »** (chiens, accessible, spa, bord de l'eau, billard, borne de recharge, télétravail, pas cher). Cœur orange brûlé.
+2. **Page Tarifs supprimée** : `/tarifs` → `/devenir-hote`, `/en/pricing` et `/en/tarifs` → `/en/become-a-host` (redirections 308 dans `next.config.ts`), retirée du sitemap et de `llms.txt`.
+3. **Pages de contenu refaites** : Comment ça marche (comparatif en haut, étapes, FAQ, bandeau final `ExploreCabinsCta`, fonds alternés), À propos (nouveau texte de Simon, comparatif, bandeau final, « Fait avec ♥ au Québec »), FAQ proprios (tarif dégressif sans prix, coordonnées des voyageurs non partagées, bouton Contactez-nous), Contact (sans FAQ, sujet ni réseaux sociaux — sujet enregistré « Formulaire de contact », colonne NOT NULL). Les JSON-LD FAQPage de ces pages reprennent désormais le texte visible (plus de copie FR codée en dur).
+4. **Comparatif de prix** (`PriceComparison.tsx`) : 957 $ pour 3 nuits, Vrbo +12 %, Booking +10 %, Airbnb +15,5 %, taux jamais affichés. Section réutilisée sur l'accueil, Comment ça marche et À propos.
+5. **Création d'annonce** : import Airbnb en « Sur demande » par défaut ; bandeau d'import orange permanent tant que non publié (« Annonce Airbnb importée avec succès ! ») ; pastille « Brouillon · pas encore en ligne » / « En ligne » dans l'en-tête de l'annonce et dans « Mes chalets » (cartes brouillon teintées, en tête de liste, bouton « Terminer et publier » → `?section=publier`) ; bandeau brouillons sur le tableau de bord ; plus de brouillons vides en double (réutilisation du dernier brouillon intact + bouton désactivé pendant l'envoi). Carte d'import : « J'ai déjà une annonce Airbnb », bouton « Importer l'annonce ».
+6. **Publier** : offre de lancement sur fond pâle avec date de fin (`LAUNCH_OFFER_END` = 2026-10-31) et compte à rebours, bouton « Publier mon annonce », puis message « Votre annonce est maintenant en ligne ! » + « Voir ma fiche ». Boosts désactivés (voir section 14).
+7. **Chambres** : bouton « Créer mes N chambres » (N = nombre déclaré), ajout de lits en un clic (King, Queen, Double, Simple, Divan-lit), rappels des chambres sans lit ; **noms standard non modifiables** (« Chambre N » / « Salon N », aussi sur la fiche publique) ; « Choisir parmi les photos de l'annonce » avant la zone de dépôt. Règle de publication inchangée (au moins une chambre avec un lit).
+8. **Recherche** : filtres en pastilles (Bord de l'eau, Spa, Sauna, Chiens, Mobilité réduite, Billard, Borne VE, Télétravail) + liste complète repliable dans l'ordre `AMENITY_PRIORITY_ORDER` ; bouton Filtres blanc avec compteur orange brûlé ; pastilles Chiens/Mobilité retirées des résultats ; champ Destination tolérant et strict (`lib/destinationSearch.ts` : accents/tirets/« st » = « saint », « Vouliez-vous dire », choix automatique si exact ou seul préfixe, sinon recherche bloquée) ; encart « Affichez votre chalet ici » quand aucun résultat ; **carte cadrée sur la destination** (chalets trouvés, zoom max 12 ; ville sans résultat via Google **Geocoding API, activée par Simon le 2026-10-01** ; région via `lib/regionBounds.ts` ; sinon sud du Québec).
+9. **Régions** : 19 régions (Montréal, Laval, Eeyou Istchee Baie-James, Nunavik ajoutées ; Nord-du-Québec scindé selon les régions touristiques) ; `lib/municipalities.json` régénéré sans aucune exclusion (1 240 municipalités) ; photos d'en-tête choisies par Simon, hébergées en WebP dans `public/images/regions/`.
+10. **SEO / maillage interne** : page ville créée dès 1 chalet publié (`/chalets/[région]/[ville]`), avec texte + FAQ calculés sur les vraies annonces ; villes listées sur la page région ; « Autres chalets à [ville] » sur les fiches (`RelatedListings`) ; « Explorer par région » sur l'accueil (`RegionsExplorer`) ; « Explorer d'autres régions » limité aux régions avec chalets ; 5 pages par équipement (`AmenityLanding` + `lib/amenityLandings.ts` : `/chalets/avec-spa`, `bord-de-l-eau`, `table-de-billard`, `borne-de-recharge`, `teletravail` + EN) avec noindex/sitemap selon le nombre de chalets. Accueil : section « Tout juste arrivés », 3 chalets triés par date de première publication (`NEW_LISTINGS_COUNT`). Bandeau proprios au bas des pages de résultats.
+
+**Leçons de la session**
+- Vercel n'a pas déclenché un déploiement automatique une fois : vérifier `npx vercel ls` après chaque push ; `npx vercel --prod` exige l'accord de Simon (refusé par le classifieur).
+- Les captures Playwright lancées depuis le dossier du projet écrivent dans le dépôt : toujours `cd` dans le scratchpad avant.
+- `networkidle` n'aboutit jamais sur kabanalouer.ca (GA, cartes) : utiliser `waitUntil: "load"` pour les tests en production.
+- Photos d'AuthentikCanada.com nommées `shutterstock-…` = licence Shutterstock d'Authentik Canada, non utilisables pour Kabanalouer.
+- Les sous-agents peuvent atteindre la limite d'utilisation : leur faire écrire leurs résultats dans un fichier au fur et à mesure.
+
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### À vérifier / à décider après la session du 2026-09-30 → 2026-10-01
+
+- **Offre de lancement après le 31 octobre 2026** (`LAUNCH_OFFER_END`, `lib/subscriptionPricing.ts`) : la date et le compte à rebours disparaissent tout seuls, mais `activate-free` ne vérifie aucune date — l'année gratuite continuera d'être accordée tant que rien n'est décidé.
+- **Boosts désactivés pour le lancement** (`BOOSTS_ENABLED = false`, `lib/featuredConfig.ts`) : refonte prévue avant de les réactiver — durées 7/15/30 jours depuis l'achat, 3 produits (Surbrillance, En vedette ville/région, Page d'accueil), pas de plafond de places (rotation aléatoire), bilan de vues/clics pour le proprio, prix à fixer. Bug connu à corriger à ce moment-là : 5 places vendues par mois mais seulement 3 affichées (`limit(3)` dans `app/page.tsx` et `RegionLanding.tsx`).
+- **Photos des régions** : Centre-du-Québec garde une photo Unsplash générique (aucune photo gratuite trouvée). Mauricie = Chutes Waber d'AuthentikCanada.com (créditée Alizée Balangue), choisie par Simon. Photos Shutterstock d'AuthentikCanada.com **exclues** (licence non transférable). Nunavik = photo du Nunavut (aucune photo gratuite du Nunavik).
+- **Textes des 4 nouvelles régions** (Montréal, Laval, Eeyou Istchee Baie-James, Nunavik) à relire par Simon.
+- **Prix de `/devenir-hote`** (« 199 $ à 399 $ ») : ne pas toucher, Simon fixera bientôt les vrais prix. Aussi encore 299 $ affiché à l'inscription proprio et sur la page abonnement.
+- **Brouillons vides de test** sur `info@chaletauthentik.com` (3, créés le 2026-10-01 à 9 h 37–38) : à supprimer depuis « Mes chalets » si inutiles.
+- **Page bord de l'eau** : inclut `bord-eau` + `acces-lac`, mais le bouton « Rechercher » et les liens par région filtrent sur `bord-eau` seulement. Page EN « hot-tub » : le résumé sous les cartes affiche encore « Spa ».
+- **Google Search Console** : demander l'indexation des nouvelles pages (ville Mille-Isles, Laurentides, types `/chalets/avec-spa` etc.).
 
 ### À vérifier après la session du 2026-09-29
 
@@ -978,9 +1011,9 @@ Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien l
 
 Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kabanalouer / Booking.com / Airbnb avec des frais estimés par Simon le 2026-09-30 (Vrbo 12 %, Booking.com 10 %, Airbnb 15,5 %, sur 957 $ pour 3 nuits ; seuls les prix et montants de frais sont affichés, jamais les taux) et la mention « Exemple fictif ». Publiée telle quelle par décision de Simon, malgré le risque de publicité comparative signalé. À remplacer par un relevé réel dès que possible (tableau `PLATFORMS` en haut du fichier).
 
-### Section « Pour les propriétaires » de l'accueil — affirmations à corriger (2026-09-29)
+### Bandeau « Pour les propriétaires » (`components/OwnersSection.tsx`)
 
-`components/OwnersSection.tsx` : publiée telle quelle par décision de Simon malgré 3 écarts signalés avec le fonctionnement réel — « C'est gratuit » / « 0 $ pour s'afficher » (gratuit la 1ʳᵉ année seulement), « importés automatiquement » (vrai depuis le 2026-09-29 : `/devenir-hote` mène au vrai import), « 5 min pour être en ligne » (délai non garanti). « 0 % de commission » est exact.
+Simplifié le 2026-10-01 : titre « Affichez votre chalet. C'est gratuit. » + une phrase sur l'offre de lancement (date tirée de `LAUNCH_OFFER_END`) + bouton. Les anciens chiffres (« 0 $ », « 5 min ») et le texte sur l'import sont retirés. Affiché sur l'accueil, la recherche `/chalets`, les pages région, ville et par type.
 
 ### Page `/devenir-hote` — publiée telle quelle malgré 3 écarts (2026-09-29)
 
