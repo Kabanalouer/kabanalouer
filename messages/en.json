@@ -297,7 +297,7 @@
       "importLabel": "Your listing URL",
       "importPlaceholder": "https://www.airbnb.ca/rooms/...",
       "sending": "Sending…",
-      "send": "Send →",
+      "send": "Import listing →",
       "duplicateTitle": "Already imported",
       "duplicateMessage": "You've already imported this listing. Opening your listing…",
       "manualBadge": "Full control",
