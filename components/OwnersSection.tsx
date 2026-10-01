@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
-
-const STATS = [
-  { value: "ownersStat1Value", label: "ownersStat1Label" },
-  { value: "ownersStat2Value", label: "ownersStat2Label" },
-  { value: "ownersStat3Value", label: "ownersStat3Label" },
-] as const;
+import { LAUNCH_OFFER_END } from "@/lib/subscriptionPricing";
 
 // Section « Pour les propriétaires » de la page d'accueil, juste avant le pied
-// de page. Aucun prix d'abonnement ici (choix de Simon, 2026-09-29).
+// de page. Aucun prix d'abonnement ici (choix de Simon, 2026-09-29) ; seulement
+// l'offre de lancement depuis le 2026-10-01.
 export default async function OwnersSection() {
   const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
 
@@ -26,16 +22,10 @@ export default async function OwnersSection() {
             {t("ownersTitleLine2")} <span className="text-[#dce7a8]">{t("ownersTitleAccent")}</span>
           </h2>
           <p className="text-[17px] leading-[1.6] text-primary-50 text-pretty">
-            {t("ownersDesc")}
+            {t("ownersDesc", {
+              date: new Date(`${LAUNCH_OFFER_END}T12:00:00`).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" }),
+            })}
           </p>
-          <div className="flex flex-wrap justify-center gap-5 sm:gap-12 pt-2">
-            {STATS.map((s) => (
-              <div key={s.value} className="flex flex-col gap-0.5">
-                <span className="text-[26px] sm:text-[32px] font-extrabold tracking-[-0.03em]">{t(s.value)}</span>
-                <span className="text-[13px] text-primary-100">{t(s.label)}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <Link
