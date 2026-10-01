@@ -9,6 +9,7 @@ import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
+import RegionsExplorer from "@/components/RegionsExplorer";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { normalizePhotos } from "@/lib/photo";
@@ -315,6 +316,9 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* ── Explorer par région (seulement les régions avec chalets) ── */}
+      <RegionsExplorer />
 
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />

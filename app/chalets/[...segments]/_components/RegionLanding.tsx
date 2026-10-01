@@ -17,6 +17,8 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
+import { isKnownMunicipality } from "@/lib/municipalities";
+import { slugify } from "@/lib/slugify";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
@@ -86,6 +88,22 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
     isFeatured: true,
   }));
+
+  // Villes de la région qui ont une page dédiée (au moins un chalet publié) :
+  // maillage interne région → villes pour le SEO/GEO.
+  const { data: cityRows } = await supabase
+    .from("listings")
+    .select("city")
+    .eq("is_published", true)
+    .eq("region", regionConfig.dbValue)
+    .not("city", "is", null);
+  const cityCounts = new Map<string, number>();
+  for (const row of cityRows ?? []) {
+    const c = row.city as string | null;
+    if (c && isKnownMunicipality(c)) cityCounts.set(c, (cityCounts.get(c) ?? 0) + 1);
+  }
+  const regionCities = [...cityCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "fr"));
+  const regionBasePath = isEn ? `/en/cabins/${regionConfig.slugEn}` : `/chalets/${regionConfig.slug}`;
 
   const otherRegions = REGIONS.filter((r) => r.slug !== regionConfig.slug);
 
@@ -360,6 +378,27 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Villes de la région ── */}
+      {regionCities.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4 w-full">
+          <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
+            {isEn ? `Cities in ${displayRegionName}` : `Villes ${regionConfig.locative}`}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {regionCities.map(([city, n]) => (
+              <Link
+                key={city}
+                href={`${regionBasePath}/${slugify(city)}`}
+                className="px-4 py-2 rounded-full border border-charcoal-100 text-sm text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+              >
+                {isEn ? `Cabin rentals in ${city}` : `Location de chalet à ${city}`}
+                <span className="text-charcoal-400"> · {n}</span>
+              </Link>
+            ))}
           </div>
         </section>
       )}

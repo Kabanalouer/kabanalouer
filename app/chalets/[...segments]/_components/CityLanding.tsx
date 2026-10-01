@@ -6,7 +6,8 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
-import { isKnownMunicipality } from "@/lib/municipalities";
+import { isKnownMunicipality, getMunicipalityByName } from "@/lib/municipalities";
+import { formatPrice } from "@/lib/formatPrice";
 import { slugify } from "@/lib/slugify";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
@@ -23,6 +24,10 @@ import type { RegionConfig } from "@/lib/regions";
 // l'ancienne page ville non rattachée à une région (/chalets/ville/[slug]) —
 // voir app/chalets/[...segments]/page.tsx pour la redirection des anciens
 // liens vers le chemin canonique /chalets/région/ville.
+// Espaces insécables du français (règle OQLF, voir CLAUDE.md).
+const NB = "\u00a0";
+const NNB = "\u202f";
+
 export default async function CityLanding({
   regionConfig,
   cityName,
@@ -44,7 +49,7 @@ export default async function CityLanding({
   const { data: rawListings } = await supabase
     .from("listings")
     .select(
-      "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug"
+      "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug, dogs_allowed"
     )
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
@@ -85,6 +90,67 @@ export default async function CityLanding({
 
   const count = listings.length;
 
+  // Texte et FAQ calculés sur les vraies annonces de la ville (jamais de
+  // chiffre inventé) : contenu unique par ville pour le SEO et les IA.
+  const raw = rawListings ?? [];
+  const hasAmenity = (l: (typeof raw)[number], id: string) =>
+    Array.isArray(l.amenities) && (l.amenities as AmenityValue[]).some((a) => a.id === id);
+  const maxCapacity = Math.max(0, ...raw.map((l) => (l.capacity as number) ?? 0));
+  const prices = raw.filter((l) => !l.price_on_request && ((l.price_low as number) ?? 0) > 0).map((l) => l.price_low as number);
+  const minPrice = prices.length ? Math.min(...prices) : null;
+  const spaCount = raw.filter((l) => hasAmenity(l, "spa")).length;
+  const waterCount = raw.filter((l) => hasAmenity(l, "bord-eau") || hasAmenity(l, "acces-lac")).length;
+  const dogCount = raw.filter((l) => l.dogs_allowed).length;
+  const mrc = getMunicipalityByName(cityName)?.mrc;
+  const money = (n: number) => formatPrice(Math.round(n).toLocaleString(isEn ? "en-CA" : "fr-CA"), locale);
+  const chalets = (n: number) => (isEn ? `${n} cabin${n > 1 ? "s" : ""}` : `${n} chalet${n > 1 ? "s" : ""}`);
+
+  const aboutFr = [
+    `${cityName} est une municipalité ${regionConfig.locative}${mrc ? `, dans la ${mrc}` : ""}. Kabanalouer y compte ${chalets(count)} à louer, pouvant accueillir jusqu'à ${maxCapacity} personnes.`,
+    [
+      spaCount > 0 ? `${chalets(spaCount)} avec spa` : null,
+      waterCount > 0 ? `${chalets(waterCount)} au bord de l'eau ou avec accès à un lac` : null,
+      dogCount > 0 ? `${chalets(dogCount)} où les chiens sont acceptés` : null,
+    ].filter(Boolean).length > 0
+      ? `On y trouve notamment ${[
+          spaCount > 0 ? `${chalets(spaCount)} avec spa` : null,
+          waterCount > 0 ? `${chalets(waterCount)} au bord de l'eau ou avec accès à un lac` : null,
+          dogCount > 0 ? `${chalets(dogCount)} où les chiens sont acceptés` : null,
+        ].filter(Boolean).join(", ")}.`
+      : null,
+    `Vous contactez directement le propriétaire, sans frais de service.`,
+  ].filter(Boolean) as string[];
+  const aboutEn = [
+    `${cityName} is a municipality in ${displayRegionName}${mrc ? ` (${mrc})` : ""}. Kabanalouer has ${chalets(count)} for rent there, sleeping up to ${maxCapacity} guests.`,
+    [spaCount, waterCount, dogCount].some((n) => n > 0)
+      ? `Among them: ${[
+          spaCount > 0 ? `${chalets(spaCount)} with a hot tub` : null,
+          waterCount > 0 ? `${chalets(waterCount)} on the water or with lake access` : null,
+          dogCount > 0 ? `${chalets(dogCount)} that welcome dogs` : null,
+        ].filter(Boolean).join(", ")}.`
+      : null,
+    `You contact the owner directly, with no service fees.`,
+  ].filter(Boolean) as string[];
+
+  const faq = isEn
+    ? [
+        { q: `How many cabins are for rent in ${cityName}?`, a: `Kabanalouer currently has ${chalets(count)} for rent in ${cityName}, sleeping up to ${maxCapacity} guests.` },
+        { q: `How much does a cabin rental in ${cityName} cost?`, a: minPrice !== null ? `Listed prices start at ${money(minPrice)} per night. Some owners quote on request: you get a price for your dates, with no service fees.` : `Owners in ${cityName} quote on request: send your dates and you get a price, with no service fees.` },
+        ...(spaCount > 0 ? [{ q: `Are there cabins with a hot tub in ${cityName}?`, a: `Yes, ${chalets(spaCount)} in ${cityName} ${spaCount > 1 ? "have" : "has"} a hot tub.` }] : []),
+        { q: `Can I rent a cabin with my dog in ${cityName}?`, a: dogCount > 0 ? `Yes, ${chalets(dogCount)} in ${cityName} ${dogCount > 1 ? "welcome" : "welcomes"} dogs. Each listing shows the maximum number of dogs, size limits and any fees.` : `Not at the moment: no cabin in ${cityName} currently accepts dogs on Kabanalouer.` },
+      ]
+    : [
+        { q: `Combien de chalets sont à louer à ${cityName}${NNB}?`, a: `Kabanalouer compte actuellement ${chalets(count)} à louer à ${cityName}, pouvant accueillir jusqu'à ${maxCapacity} personnes.` },
+        { q: `Combien coûte la location d'un chalet à ${cityName}${NNB}?`, a: minPrice !== null ? `Les prix affichés commencent à ${money(minPrice)} par nuit. Certains propriétaires indiquent un prix sur demande${NB}: vous recevez alors un prix selon vos dates, sans frais de service.` : `Les propriétaires de ${cityName} indiquent un prix sur demande${NB}: envoyez vos dates et vous recevez un prix, sans frais de service.` },
+        ...(spaCount > 0 ? [{ q: `Y a-t-il des chalets avec spa à ${cityName}${NNB}?`, a: `Oui, ${chalets(spaCount)} à ${cityName} ${spaCount > 1 ? "offrent" : "offre"} un spa.` }] : []),
+        { q: `Peut-on louer un chalet avec son chien à ${cityName}${NNB}?`, a: dogCount > 0 ? `Oui, ${chalets(dogCount)} à ${cityName} ${dogCount > 1 ? "acceptent" : "accepte"} les chiens. Chaque fiche précise le nombre maximum de chiens, les restrictions de taille et les frais.` : `Pas pour le moment${NB}: aucun chalet de ${cityName} n'accepte les chiens sur Kabanalouer.` },
+      ];
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
+
   // JSON-LD
   const crumbs = [
     { "@type": "ListItem", position: 1, name: isEn ? "Home" : "Accueil", item: isEn ? `${SITE_URL}/en` : `${SITE_URL}/` },
@@ -124,6 +190,10 @@ export default async function CityLanding({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
       />
       <Navbar />
       <main className="flex flex-1 flex-col">
@@ -184,6 +254,27 @@ export default async function CityLanding({
               listing={listing}
               currentUserId={user?.id ?? null}
             />
+          ))}
+        </div>
+      </section>
+
+      {/* ── À propos + FAQ (contenu calculé sur les annonces) ── */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16 w-full">
+        <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
+          {isEn ? `Cabin rentals in ${cityName}` : `Location de chalet à ${cityName}`}
+        </h2>
+        <div className="space-y-3 text-base text-charcoal-600 leading-relaxed">
+          {(isEn ? aboutEn : aboutFr).map((para) => <p key={para}>{para}</p>)}
+        </div>
+        <h2 className="text-heading-2 font-bold text-charcoal-900 mt-10 mb-4">
+          {isEn ? "Frequently asked questions" : "Questions fréquentes"}
+        </h2>
+        <div className="space-y-3">
+          {faq.map((f) => (
+            <div key={f.q} className="border border-[#ebebeb] rounded-2xl p-5">
+              <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-1">{f.q}</h3>
+              <p className="text-base text-charcoal-600 leading-relaxed">{f.a}</p>
+            </div>
           ))}
         </div>
       </section>

@@ -17,6 +17,7 @@ import ShareButton from "@/components/chalets/ShareButton";
 import ReviewsList from "@/components/chalets/ReviewsList";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import RelatedListings from "@/components/chalets/RelatedListings";
 import { normalizePhotos } from "@/lib/photo";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -714,6 +715,19 @@ export default async function ListingDetail({ listing, user, searchParams, local
             />
           </div>
         )}
+      {/* Maillage interne : autres chalets de la ville (ou région) */}
+      {!isPreviewFrame && !isDraftPreview && (
+        <RelatedListings
+          listingId={listing.id as string}
+          city={(listing.city as string | null) ?? null}
+          region={(listing.region as string | null) ?? null}
+          cityPath={cityBasePath}
+          regionPath={regionBasePath}
+          regionName={regionDisplayName}
+          locale={locale}
+          currentUserId={user?.id ?? null}
+        />
+      )}
       </main>
 
       {!isPreviewFrame && <Footer />}
