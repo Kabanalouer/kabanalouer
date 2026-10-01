@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { localePath } from "@/lib/localePath";
@@ -8,6 +9,20 @@ import { createBlankListing, submitImportRequest, type ImportState } from "@/app
 import { clearPendingAirbnbImport, readPendingAirbnbImport } from "@/lib/pendingAirbnbImport";
 
 const initialState: ImportState = { status: "idle" };
+
+// Désactivé pendant l'envoi : un double-clic ne lance qu'une seule création.
+function ManualSubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+      {pending ? pendingLabel : label}
+    </button>
+  );
+}
 
 const inputCls =
   "w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
@@ -118,12 +133,7 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
             </li>
           </ul>
           <form action={createBlankListing}>
-            <button
-              type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm"
-            >
-              {t("manualCta")}
-            </button>
+            <ManualSubmitButton label={t("manualCta")} pendingLabel={t("manualPending")} />
           </form>
         </div>
 

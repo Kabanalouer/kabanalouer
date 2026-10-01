@@ -295,6 +295,7 @@
       "manualTitle": "Créer mon annonce manuellement",
       "manualDesc": "Remplissez le formulaire en 12 étapes guidées. Photos, description, disponibilités — tout en un seul endroit.",
       "manualCta": "Commencer →",
+      "manualPending": "Création…",
       "importTitle": "J'ai déjà une annonce Airbnb",
       "importDesc": "Collez le lien de votre annonce existante : photos, description et équipements sont importés automatiquement. Vous n'avez plus qu'à vérifier et publier.",
       "importLabel": "Lien de votre annonce",

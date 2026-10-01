@@ -14,6 +14,23 @@ export async function createBlankListing() {
 
   if (!user) redirect(localePath("/login", locale));
 
+  // Anti-doublon : un double-clic, un retour arrière ou un rechargement ne
+  // doit pas empiler des brouillons vides — on rouvre le dernier encore
+  // intact (jamais touché, pas importé) au lieu d'en créer un nouveau.
+  const { data: untouched } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("host_id", user.id)
+    .eq("is_published", false)
+    .is("import_source", null)
+    .eq("title", "")
+    .eq("description", "")
+    .eq("photos", "[]")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (untouched) redirect(localePath(`/dashboard/listings/${untouched.id}/edit`, locale));
+
   const listingNumber = await generateUniqueListingNumber(supabase);
 
   const { data, error } = await supabase

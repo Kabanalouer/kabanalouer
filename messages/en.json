@@ -295,6 +295,7 @@
       "manualTitle": "Create my listing manually",
       "manualDesc": "Fill out the form in 12 guided steps. Photos, description, availability — everything in one place.",
       "manualCta": "Get started →",
+      "manualPending": "Creating…",
       "importTitle": "I already have an Airbnb listing",
       "importDesc": "Paste the link to your existing listing: photos, description and amenities are imported automatically. All that's left is to review and publish.",
       "importLabel": "Your listing URL",
