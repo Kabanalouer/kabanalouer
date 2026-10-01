@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
+import ImportedListingBanner from "@/components/dashboard/ImportedListingBanner";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
@@ -119,18 +120,15 @@ export default async function EditListingPage({ params, searchParams }: Props) {
       {/* Arrivée juste après un import Airbnb (NewListingStepZero) : le proprio
           complète et publie lui-même, sans intervention de l'admin. */}
       {imported && isOwner && !listing.is_published && (
-        <div role="status" className="mb-6 rounded-2xl border border-primary-100 bg-primary-50 px-5 py-4">
-          <p className="font-semibold text-charcoal-800">
-            {imported === "duplicate"
-              ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
-              : (isEn ? "Your listing has been imported" : "Votre annonce est importée")}
-          </p>
-          <p className="mt-1 text-sm text-charcoal-600">
-            {isEn
-              ? "Check the information copied from Airbnb, fill in what’s missing (like your CITQ number), then publish it with the “Publish my listing” button."
-              : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
-          </p>
-        </div>
+        <ImportedListingBanner
+          title={imported === "duplicate"
+            ? (isEn ? "You already imported this listing" : "Vous avez déjà importé cette annonce")
+            : (isEn ? "Review your listing and publish" : "Vérifiez votre annonce et publiez")}
+          body={isEn
+            ? "Check the information copied from Airbnb, fill in what’s missing (for example, the bedrooms and your CITQ number), then publish it with the “Publish my listing” button."
+            : "Vérifiez les informations reprises d’Airbnb, complétez ce qui manque (par exemple, les chambres, votre numéro CITQ), puis publiez-la avec le bouton « Publier mon annonce »."}
+          closeLabel={isEn ? "Close" : "Fermer"}
+        />
       )}
       <EditListingForm
         userId={hostId}
