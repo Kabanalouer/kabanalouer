@@ -3,10 +3,6 @@
 import ListYourCabinPromo from "@/components/ListYourCabinPromo";
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import PawIcon from "@/components/PawIcon";
-import AccessibilityIcon from "@/components/AccessibilityIcon";
-import { localePath } from "@/lib/localePath";
 import { getRegionByDbValue } from "@/lib/regions";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
@@ -98,37 +94,6 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     }
   }, [filters]);
 
-  const router = useRouter();
-  const toggleParam = (key: "dogs" | "accessible", active: boolean) => {
-    const params = new URLSearchParams(window.location.search);
-    if (active) params.delete(key);
-    else params.set(key, "1");
-    const qs = params.toString();
-    router.push(localePath(`/chalets${qs ? `?${qs}` : ""}`, locale));
-  };
-
-  const pill = (key: "dogs" | "accessible", active: boolean, icon: React.ReactNode, label: string) => (
-    <button
-      type="button"
-      onClick={() => toggleParam(key, active)}
-      aria-pressed={active}
-      className={`inline-flex items-center gap-2 px-4 min-h-11 rounded-full border text-sm font-medium transition-colors ${
-        active
-          ? "border-charcoal-800 bg-charcoal-800 text-white"
-          : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-
-  const quickFilters = (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {pill("dogs", !!filters.dogs, <PawIcon className="w-4 h-4" />, t("dogsFilter"))}
-      {pill("accessible", !!filters.accessible, <AccessibilityIcon className="w-4 h-4" />, t("accessibleFilter"))}
-    </div>
-  );
 
   const EmptyState = () => (
     <div className="col-span-2 py-24 text-center">
@@ -225,7 +190,6 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 {t("resultCount", { count: listings.length })}
               </span>
             )}
-            {quickFilters}
           </div>
           {listGrid("grid-cols-2")}
         </div>
@@ -249,7 +213,6 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 {t("resultCount", { count: listings.length })}
               </span>
             )}
-            {quickFilters}
           </div>
           {listGrid("grid-cols-1 sm:grid-cols-2")}
         </div>

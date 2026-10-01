@@ -110,11 +110,7 @@ export default function FiltersModal({
           setAccessibleOnly(!!currentParams.accessible);
           setIsOpen(true);
         }}
-        className={`relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border text-sm font-medium transition-colors shrink-0 ${
-          activeCount > 0
-            ? "border-charcoal-800 bg-charcoal-800 text-white"
-            : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
-        }`}
+        className="relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400 text-sm font-medium transition-colors shrink-0"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round"
@@ -122,7 +118,7 @@ export default function FiltersModal({
         </svg>
         <span className="lg:hidden xl:inline">{t("button")}</span>
         {activeCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}
           </span>
         )}
