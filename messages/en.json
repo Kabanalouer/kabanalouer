@@ -1310,7 +1310,8 @@
     "ctaBtn": "Explore cabins →"
   },
   "aPropos": {
-    "badge": "Made in Quebec",
+    "badgeMadeWith": "Made with",
+    "badgeInQuebec": "in Quebec",
     "h1": "We removed the middleman. The rest is between you and the owner.",
     "originTitle": "Where does Kabanalouer come from?",
     "origin1": "Kabanalouer was born from something many cabin owners in Quebec have noticed. The big platforms take a lot along the way: service fees added to travelers' bills, a commission withheld on every stay, and filtered exchanges that keep people from really talking before they reach an agreement. In the end, everyone pays more for a service whose main value is putting two people in touch.",

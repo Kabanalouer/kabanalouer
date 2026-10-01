@@ -1310,7 +1310,8 @@
     "ctaBtn": "Explorer les chalets →"
   },
   "aPropos": {
-    "badge": "Fait au Québec",
+    "badgeMadeWith": "Fait avec",
+    "badgeInQuebec": "au Québec",
     "h1": "On a retiré l'intermédiaire. Le reste se règle entre vous et le proprio.",
     "originTitle": "D'où vient Kabanalouer ?",
     "origin1": "Kabanalouer est né d'un constat que partagent bien des propriétaires de chalets au Québec. Les grandes plateformes prélèvent beaucoup au passage : des frais de service ajoutés à la facture des voyageurs, une commission retenue sur chaque séjour, et des échanges filtrés qui empêchent les gens de vraiment se parler avant de s'entendre. Au bout du compte, tout le monde paie plus cher pour un service dont la valeur principale est de mettre deux personnes en contact.",
