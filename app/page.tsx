@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
@@ -78,12 +79,31 @@ export default async function HomePage() {
     }
   }
 
-  const { data: rawListings } = await supabase
-    .from("listings")
-    .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
-    .eq("is_published", true)
+  // « Nouveautés » : les 6 chalets publiés le plus récemment. Pas de colonne
+  // de date de publication : la ligne subscriptions d'une annonce est créée à
+  // sa première publication (gratuite ou payante), on trie donc par sa date.
+  // Lecture serveur seulement (subscriptions n'est pas lisible par les visiteurs).
+  const LISTING_CARD_COLUMNS = "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug";
+  const { data: recentSubs } = await createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  )
+    .from("subscriptions")
+    .select("listing_id, created_at")
     .order("created_at", { ascending: false })
-    .limit(6);
+    .limit(30);
+  const publishedOrder = (recentSubs ?? []).map((r) => r.listing_id as string);
+  const { data: candidateListings } = publishedOrder.length > 0
+    ? await supabase
+        .from("listings")
+        .select(LISTING_CARD_COLUMNS)
+        .eq("is_published", true)
+        .in("id", publishedOrder)
+    : { data: [] };
+  const rawListings = (candidateListings ?? [])
+    .sort((a, b) => publishedOrder.indexOf(a.id as string) - publishedOrder.indexOf(b.id as string))
+    .slice(0, 6);
 
   // Vedette listings for current month
   const now = new Date();
