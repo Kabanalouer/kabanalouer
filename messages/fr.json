@@ -1602,5 +1602,11 @@
     "notConfigured": "Les notifications sur l’appareil ne sont pas encore disponibles.",
     "error": "Impossible d’activer les notifications. Réessayez.",
     "disableError": "Impossible de désactiver les notifications. Réessayez."
+  },
+  "listYourCabinPromo": {
+    "eyebrow": "Vous avez un chalet dans ce secteur ?",
+    "title": "Affichez votre chalet ici. C'est gratuit !",
+    "body": "Les voyageurs cherchent des chalets dans ce secteur. Votre première année est gratuite, sans aucune commission sur vos réservations.",
+    "cta": "Inscrire mon chalet →"
   }
 }

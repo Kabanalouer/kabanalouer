@@ -1,3 +1,5 @@
+import ListYourCabinPromo from "@/components/ListYourCabinPromo";
+import OwnersSection from "@/components/OwnersSection";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -283,6 +285,9 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             >
               {isEn ? "Explore all regions →" : "Explorer toutes les régions →"}
             </Link>
+            <div className="mt-10 px-4">
+              <ListYourCabinPromo />
+            </div>
           </div>
         )}
       </section>
@@ -377,6 +382,8 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
       </main>
 
+      {/* Bandeau vert de l'accueil, aussi sur les pages de résultats */}
+      <OwnersSection />
       <Footer />
     </div>
   );

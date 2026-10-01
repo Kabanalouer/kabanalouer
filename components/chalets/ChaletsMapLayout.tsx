@@ -1,5 +1,6 @@
 "use client";
 
+import ListYourCabinPromo from "@/components/ListYourCabinPromo";
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -138,6 +139,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       </div>
       <p className="font-semibold text-charcoal-800 mb-1">{t("noResults")}</p>
       <p className="text-charcoal-400 text-base">{t("noResultsHint")}</p>
+      <div className="mt-10 px-2">
+        <ListYourCabinPromo />
+      </div>
     </div>
   );
 

@@ -1,3 +1,4 @@
+import OwnersSection from "@/components/OwnersSection";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -215,6 +216,8 @@ export default async function CityLanding({
 
       </main>
 
+      {/* Bandeau vert de l'accueil, aussi sur les pages de résultats */}
+      <OwnersSection />
       <Footer />
     </div>
   );
