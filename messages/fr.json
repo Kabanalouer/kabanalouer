@@ -1029,7 +1029,17 @@
     "accessibleToggleSub": "Seulement les chalets adaptés, avec le détail sur chaque fiche",
     "any": "Tout",
     "clearAll": "Tout effacer",
-    "showResults": "Afficher les résultats"
+    "showResults": "Afficher les résultats",
+    "popularTitle": "Filtres populaires",
+    "popularWaterfront": "Bord de l'eau",
+    "popularSpa": "Spa",
+    "popularSauna": "Sauna",
+    "popularDogs": "Chiens acceptés",
+    "popularAccessible": "Mobilité réduite",
+    "popularPoolTable": "Table de billard",
+    "popularEvCharger": "Borne de recharge VE",
+    "popularRemoteWork": "Télétravail",
+    "allAmenities": "Toutes les caractéristiques"
   },
   "auth": {
     "login": {

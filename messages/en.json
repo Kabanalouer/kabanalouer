@@ -1029,7 +1029,17 @@
     "accessibleToggleSub": "Only adapted cabins, with details on each listing",
     "any": "Any",
     "clearAll": "Clear all",
-    "showResults": "Show results"
+    "showResults": "Show results",
+    "popularTitle": "Popular filters",
+    "popularWaterfront": "Waterfront",
+    "popularSpa": "Spa",
+    "popularSauna": "Sauna",
+    "popularDogs": "Dogs allowed",
+    "popularAccessible": "Reduced mobility",
+    "popularPoolTable": "Pool table",
+    "popularEvCharger": "EV charger",
+    "popularRemoteWork": "Remote work",
+    "allAmenities": "All amenities"
   },
   "auth": {
     "login": {

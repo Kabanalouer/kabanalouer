@@ -4,8 +4,9 @@
 // (next/dynamic dans FiltersModal) : le catalogue d'équipements et ces
 // composants ne pèsent plus sur le chargement de chaque page (Navbar).
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
-import { AMENITY_CATALOG } from "@/lib/amenities-catalog";
+import { AMENITY_CATALOG, AMENITY_PRIORITY_ORDER } from "@/lib/amenities-catalog";
 import { useTranslations, useLocale } from "next-intl";
 
 function CounterRow({ label, value, onChange, max = 8, anyLabel, decreaseLabel, increaseLabel }: {
@@ -62,32 +63,42 @@ function CounterRow({ label, value, onChange, max = 8, anyLabel, decreaseLabel, 
   );
 }
 
-function SwitchRow({ label, sub, checked, onChange }: {
-  label: string;
-  sub: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
+// Filtres populaires en pastilles, sous « Chambres et lits ». Les ids sont ceux
+// du catalogue ; « dogs » et « accessible » sont les deux filtres spéciaux.
+const POPULAR_FILTERS = [
+  { id: "bord-eau", key: "popularWaterfront" },
+  { id: "spa", key: "popularSpa" },
+  { id: "sauna", key: "popularSauna" },
+  { id: "dogs", key: "popularDogs" },
+  { id: "accessible", key: "popularAccessible" },
+  { id: "table-billard", key: "popularPoolTable" },
+  { id: "borne-recharge-vr", key: "popularEvCharger" },
+  { id: "espace-travail", key: "popularRemoteWork" },
+] as const;
+const POPULAR_AMENITY_IDS = new Set<string>(POPULAR_FILTERS.map((f) => f.id));
+
+// Liste complète dans l'ordre d'importance des « Points forts » (fiche publique).
+const priorityRank = (id: string) => {
+  const i = AMENITY_PRIORITY_ORDER.indexOf(id);
+  return i === -1 ? AMENITY_PRIORITY_ORDER.length : i;
+};
+const AMENITIES_BY_PRIORITY = [...AMENITY_CATALOG].sort((x, y) => priorityRank(x.id) - priorityRank(y.id));
+
+function Pill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <label className="flex items-center justify-between gap-4 cursor-pointer">
-      <span>
-        <span className="block text-sm text-charcoal-800">{label}</span>
-        <span className="block text-xs text-charcoal-400 mt-0.5">{sub}</span>
-      </span>
-      <input
-        type="checkbox"
-        role="switch"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="sr-only peer"
-      />
-      <span
-        aria-hidden="true"
-        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 ${checked ? "bg-primary" : "bg-charcoal-200"}`}
-      >
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : ""}`} />
-      </span>
-    </label>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      // Même style que les pastilles au-dessus des résultats (ChaletsMapLayout)
+      className={`px-4 min-h-11 rounded-full border text-sm font-medium transition-colors ${
+        active
+          ? "border-charcoal-800 bg-charcoal-800 text-white"
+          : "border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -129,6 +140,16 @@ export default function FiltersPanel({
   const t = useTranslations("filtersModal");
   const locale = useLocale();
   const isEn = locale === "en";
+  // Liste complète repliée, sauf si une caractéristique hors pastilles est déjà cochée.
+  const hiddenSelectedCount = selectedAmenities.filter((id) => !POPULAR_AMENITY_IDS.has(id)).length;
+  const [showAllAmenities, setShowAllAmenities] = useState(hiddenSelectedCount > 0);
+  const isPopularActive = (id: string) =>
+    id === "dogs" ? dogsAllowed : id === "accessible" ? accessibleOnly : selectedAmenities.includes(id);
+  const togglePopular = (id: string) => {
+    if (id === "dogs") setDogsAllowed(!dogsAllowed);
+    else if (id === "accessible") setAccessibleOnly(!accessibleOnly);
+    else toggleAmenity(id);
+  };
   const counterLabels = (label: string) => ({
     decreaseLabel: `${label}, ${isEn ? "decrease" : "diminuer"}`,
     increaseLabel: `${label}, ${isEn ? "increase" : "augmenter"}`,
@@ -176,19 +197,43 @@ export default function FiltersPanel({
 
           <div className="h-px bg-[#ebebeb]" />
 
-          {/* Chiens et accessibilité */}
-          <div className="space-y-4">
-            <SwitchRow label={t("dogsToggle")} sub={t("dogsToggleSub")} checked={dogsAllowed} onChange={setDogsAllowed} />
-            <SwitchRow label={t("accessibleToggle")} sub={t("accessibleToggleSub")} checked={accessibleOnly} onChange={setAccessibleOnly} />
+          {/* Filtres populaires */}
+          <div>
+            <h3 className="text-base font-bold text-charcoal-800 mb-4">{t("popularTitle")}</h3>
+            <div className="flex flex-wrap gap-2">
+              {POPULAR_FILTERS.map((f) => (
+                <Pill key={f.id} label={t(f.key)} active={isPopularActive(f.id)} onClick={() => togglePopular(f.id)} />
+              ))}
+            </div>
           </div>
 
           <div className="h-px bg-[#ebebeb]" />
 
-          {/* Caractéristiques */}
+          {/* Toutes les caractéristiques (repliable) */}
           <div>
-            <h3 className="text-base font-bold text-charcoal-800 mb-4">{t("amenities")}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {AMENITY_CATALOG.map((entry) => {
+            <button
+              type="button"
+              onClick={() => setShowAllAmenities((v) => !v)}
+              aria-expanded={showAllAmenities}
+              aria-controls="filters-all-amenities"
+              className="w-full flex items-center justify-between gap-3 min-h-11 text-left"
+            >
+              <span className="text-base font-bold text-charcoal-800">
+                {t("allAmenities")}
+                {hiddenSelectedCount > 0 && (
+                  <span className="ml-2 text-sm font-medium text-charcoal-400">({hiddenSelectedCount})</span>
+                )}
+              </span>
+              <svg
+                className={`w-5 h-5 text-charcoal-600 shrink-0 transition-transform ${showAllAmenities ? "rotate-180" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showAllAmenities && (
+            <div id="filters-all-amenities" className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+              {AMENITIES_BY_PRIORITY.map((entry) => {
                 const active = selectedAmenities.includes(entry.id);
                 return (
                   <label
@@ -223,6 +268,7 @@ export default function FiltersPanel({
                 );
               })}
             </div>
+            )}
           </div>
         </div>
 
