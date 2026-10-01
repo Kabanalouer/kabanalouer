@@ -1182,7 +1182,16 @@
     },
     "copyright": "© 2026 Kabanalouer · All rights reserved",
     "madeWith": "Made with",
-    "inQuebec": "in Québec."
+    "inQuebec": "in Québec.",
+    "byRegion": "By region",
+    "byType": "By type",
+    "types": {
+      "spa": "Cabins with a hot tub",
+      "waterfront": "Waterfront cabins",
+      "poolTable": "Cabins with a pool table",
+      "evCharger": "Cabins with an EV charger",
+      "remoteWork": "Cabins for remote work"
+    }
   },
   "ownerCta": {
     "title": "Are you a cabin owner?",

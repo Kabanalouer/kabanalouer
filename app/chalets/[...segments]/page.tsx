@@ -18,6 +18,8 @@ import AccessibleLanding, { buildAccessibleMeta } from "./_components/Accessible
 import DealsLanding, { buildDealsMeta, countDealListings } from "./_components/DealsLanding";
 import { DEALS_PATH_EN, DEALS_PATH_FR, DEALS_SLUG_EN, DEALS_SLUG_FR, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib/promoLabel";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR, ACCESSIBLE_SLUG_EN, ACCESSIBLE_SLUG_FR } from "@/lib/accessibility";
+import AmenityLanding, { buildAmenityLandingMeta } from "./_components/AmenityLanding";
+import { countAmenityLandingsWith, getAmenityLandingBySlug } from "@/lib/amenityLandings";
 import ListingDetail from "./_components/ListingDetail";
 import { getLocale } from "next-intl/server";
 
@@ -175,6 +177,28 @@ export async function generateMetadata({ params }: Props) {
         alternates: {
           canonical,
           languages: { fr: ACCESSIBLE_PATH_FR, en: ACCESSIBLE_PATH_EN, "x-default": ACCESSIBLE_PATH_FR },
+        },
+        openGraph: { title, description, url: canonical },
+        twitter: { title, description },
+      };
+    }
+
+    // Pages thématiques par équipement (spa, bord de l'eau… — lib/amenityLandings.ts)
+    const amenityLanding = getAmenityLandingBySlug(slug, isEn);
+    if (amenityLanding) {
+      const { title, description } = buildAmenityLandingMeta(amenityLanding, isEn);
+      const counts = await countAmenityLandingsWith(supabase);
+      const { pathFr, pathEn } = amenityLanding;
+      const canonical = isEn ? pathEn : pathFr;
+      return {
+        title,
+        description,
+        ...(counts[amenityLanding.key] < MIN_CHALETS_FOR_INDEX
+          ? { robots: { index: false, follow: true } }
+          : {}),
+        alternates: {
+          canonical,
+          languages: { fr: pathFr, en: pathEn, "x-default": pathFr },
         },
         openGraph: { title, description, url: canonical },
         twitter: { title, description },
@@ -350,6 +374,9 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   if (slug === (isEn ? DEALS_SLUG_EN : DEALS_SLUG_FR)) {
     return <DealsLanding filter={sp.type} />;
   }
+
+  const amenityLanding = getAmenityLandingBySlug(slug, isEn);
+  if (amenityLanding) return <AmenityLanding config={amenityLanding} />;
 
   // Region landing page — check before any DB query
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);

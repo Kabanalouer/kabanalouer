@@ -8,6 +8,7 @@ import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR } from "@/lib/accessibility";
 import { DEALS_PATH_EN, DEALS_PATH_FR, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib/promoLabel";
 import { countDealListings } from "@/app/chalets/[...segments]/_components/DealsLanding";
+import { AMENITY_LANDINGS, countAmenityLandingsWith } from "@/lib/amenityLandings";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE = SITE_URL;
@@ -150,6 +151,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       themePages.push(
         { url: `${BASE}${ACCESSIBLE_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
         { url: `${BASE}${ACCESSIBLE_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+      );
+    }
+
+    // Pages thématiques par équipement (spa, bord de l'eau, billard, borne de
+    // recharge, télétravail — lib/amenityLandings.ts) : même seuil.
+    const amenityCounts = await countAmenityLandingsWith(supabase);
+    for (const landing of AMENITY_LANDINGS) {
+      if (amenityCounts[landing.key] < MIN_CHALETS_FOR_INDEX) continue;
+      themePages.push(
+        { url: `${BASE}${landing.pathFr}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${landing.pathEn}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
       );
     }
 

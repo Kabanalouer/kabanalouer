@@ -6,6 +6,17 @@ import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR } from "@/lib/accessibility";
 import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
+import { REGIONS } from "@/lib/regions";
+import { AMENITY_LANDINGS, type AmenityLandingKey } from "@/lib/amenityLandings";
+
+// Clé de traduction (footer.types.*) de chaque page thématique par équipement
+const AMENITY_TYPE_MESSAGE_KEY: Record<AmenityLandingKey, string> = {
+  spa: "spa",
+  waterfront: "waterfront",
+  "pool-table": "poolTable",
+  "ev-charger": "evCharger",
+  "remote-work": "remoteWork",
+};
 
 function FooterLogo() {
   return (
@@ -26,6 +37,24 @@ export default async function Footer() {
     getLocale(),
     getThemeLinkVisibility(),
   ]);
+  const isEn = locale === "en";
+
+  // Sous-pied de page : liens vers les pages région et thématiques qui ont
+  // au moins un chalet publié (voir lib/themeLinks.ts). Rangée masquée si vide.
+  const regionLinks = REGIONS
+    .filter((r) => show.activeRegionSlugs.includes(r.slug))
+    .map((r) => ({
+      href: isEn ? `/en/cabins/${r.slugEn}` : `/chalets/${r.slug}`,
+      label: isEn ? r.nameEn : r.name,
+    }));
+  const typeLinks = [
+    ...(show.dogFriendly ? [{ href: isEn ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR, label: t("travelers.dogFriendly") }] : []),
+    ...(show.accessible ? [{ href: isEn ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR, label: t("travelers.accessible") }] : []),
+    ...AMENITY_LANDINGS
+      .filter((l) => show.amenities[l.key])
+      .map((l) => ({ href: isEn ? l.pathEn : l.pathFr, label: t(`types.${AMENITY_TYPE_MESSAGE_KEY[l.key]}`) })),
+    ...(show.deals ? [{ href: isEn ? DEALS_PATH_EN : DEALS_PATH_FR, label: t("travelers.deals") }] : []),
+  ];
 
   return (
     <footer className="w-full block bg-charcoal-50 border-t border-[#ebebeb]">
@@ -54,9 +83,6 @@ export default async function Footer() {
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
               {/* Liens thématiques masqués tant que la page a trop peu de chalets (voir lib/themeLinks.ts) */}
               {show.regions && <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />}
-              {show.deals && <FooterLink href={locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR} label={t("travelers.deals")} />}
-              {show.dogFriendly && <FooterLink href={locale === "en" ? DOG_FRIENDLY_PATH_EN : DOG_FRIENDLY_PATH_FR} label={t("travelers.dogFriendly")} />}
-              {show.accessible && <FooterLink href={locale === "en" ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR} label={t("travelers.accessible")} />}
               <FooterLink href={localePath("/comment-ca-marche", locale)} label={t("travelers.howItWorks")} />
             </ul>
           </div>
@@ -83,6 +109,14 @@ export default async function Footer() {
             </ul>
           </div>
         </div>
+
+        {/* ── Sub-footer : régions et types de chalets ── */}
+        {(regionLinks.length > 0 || typeLinks.length > 0) && (
+          <div className="border-t border-[#ebebeb] py-8 space-y-4">
+            {regionLinks.length > 0 && <SubFooterRow title={t("byRegion")} links={regionLinks} />}
+            {typeLinks.length > 0 && <SubFooterRow title={t("byType")} links={typeLinks} />}
+          </div>
+        )}
 
         {/* ── Bottom bar ── */}
         <div className="border-t border-[#ebebeb] pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -120,5 +154,28 @@ function FooterLink({ href, label }: { href: string; label: string }) {
         {label}
       </Link>
     </li>
+  );
+}
+
+function SubFooterRow({ title, links }: { title: string; links: { href: string; label: string }[] }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-baseline gap-x-4 gap-y-2">
+      <h2 className="shrink-0 sm:w-28 text-xs font-semibold text-charcoal-800 uppercase tracking-[0.08em]">
+        {title}
+      </h2>
+      {/* Séparateur « · » après chaque lien sur grand écran seulement : sur
+          mobile, les liens passent à la ligne et un point en début de ligne
+          aurait l'air d'une puce égarée. */}
+      <ul className="flex flex-wrap items-center gap-x-4 sm:gap-x-1 gap-y-1 text-sm">
+        {links.map((link, i) => (
+          <li key={link.href} className="inline-flex items-center">
+            <Link href={link.href} className="inline-block py-1 text-charcoal-500 hover:text-charcoal-800 transition-colors">
+              {link.label}
+            </Link>
+            {i < links.length - 1 && <span className="hidden sm:inline text-charcoal-400 ml-1" aria-hidden="true">·</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

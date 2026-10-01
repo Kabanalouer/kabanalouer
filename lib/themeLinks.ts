@@ -1,9 +1,12 @@
 import { unstable_cache } from "next/cache";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { visiblePromoFilter, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib/promoLabel";
+import { REGIONS } from "@/lib/regions";
+import { AMENITY_LANDINGS, listingMatchesLanding, type AmenityLandingKey } from "@/lib/amenityLandings";
 
 // Liens du pied de page et du menu mobile vers les pages thématiques (pas cher,
-// chiens, accessible) et la page des régions : affichés seulement quand la page
+// chiens, accessible, équipements de lib/amenityLandings.ts), les pages région
+// et la page des régions : affichés seulement quand la page
 // a assez de contenu. Mêmes seuils que le noindex / sitemap (voir app/sitemap.ts
 // et generateMetadata dans app/chalets/[...segments]/page.tsx). Les pages
 // elles-mêmes restent en ligne : seuls les liens sont masqués.
@@ -19,6 +22,11 @@ export type ThemeLinkVisibility = {
   dogFriendly: boolean;
   accessible: boolean;
   regions: boolean;
+  // Slugs FR (lib/regions.ts) des régions qui ont au moins un chalet publié,
+  // dans l'ordre de REGIONS — rangée « Par région » du pied de page.
+  activeRegionSlugs: string[];
+  // Pages thématiques par équipement (lib/amenityLandings.ts) à afficher
+  amenities: Record<AmenityLandingKey, boolean>;
 };
 
 // Nombre de chalets publiés avec une promo visible aujourd'hui (seuil d'indexation)
@@ -53,7 +61,7 @@ async function computeThemeLinkVisibility(): Promise<ThemeLinkVisibility> {
       .eq("is_published", true).eq("dogs_allowed", true),
     supabase.from("listings").select("id", { count: "exact", head: true })
       .eq("is_published", true).eq("reduced_mobility", true),
-    supabase.from("listings").select("region").eq("is_published", true),
+    supabase.from("listings").select("region, amenities").eq("is_published", true),
     countDealListingsWith(supabase),
   ]);
 
@@ -61,11 +69,21 @@ async function computeThemeLinkVisibility(): Promise<ThemeLinkVisibility> {
     (regionRows.data ?? []).map((r) => r.region as string | null).filter(Boolean)
   );
 
+  const publishedRows = regionRows.data ?? [];
+  const amenities = Object.fromEntries(
+    AMENITY_LANDINGS.map((l) => [
+      l.key,
+      publishedRows.filter((r) => listingMatchesLanding(r.amenities, l)).length >= MIN_CHALETS_FOR_LINK,
+    ])
+  ) as Record<AmenityLandingKey, boolean>;
+
   return {
     deals: dealCount >= MIN_DEAL_LISTINGS_FOR_INDEX,
     dogFriendly: (dogs.count ?? 0) >= MIN_CHALETS_FOR_LINK,
     accessible: (accessible.count ?? 0) >= MIN_CHALETS_FOR_LINK,
     regions: activeRegions.size >= MIN_REGIONS_FOR_LINK,
+    activeRegionSlugs: REGIONS.filter((r) => activeRegions.has(r.dbValue)).map((r) => r.slug),
+    amenities,
   };
 }
 
@@ -73,6 +91,7 @@ async function computeThemeLinkVisibility(): Promise<ThemeLinkVisibility> {
 // de retard après la publication d'un chalet n'a aucune importance.
 export const getThemeLinkVisibility = unstable_cache(
   computeThemeLinkVisibility,
-  ["theme-link-visibility"],
+  // Clé versionnée : la forme du résultat a changé (régions + équipements)
+  ["theme-link-visibility-v2"],
   { revalidate: 600 }
 );

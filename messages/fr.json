@@ -1182,7 +1182,16 @@
     },
     "copyright": "© 2026 Kabanalouer · Tous droits réservés",
     "madeWith": "Fait avec",
-    "inQuebec": "au Québec."
+    "inQuebec": "au Québec.",
+    "byRegion": "Par région",
+    "byType": "Par type",
+    "types": {
+      "spa": "Chalets avec spa",
+      "waterfront": "Chalets au bord de l'eau",
+      "poolTable": "Chalets avec table de billard",
+      "evCharger": "Chalets avec borne de recharge",
+      "remoteWork": "Chalets pour le télétravail"
+    }
   },
   "ownerCta": {
     "title": "Vous êtes propriétaire ?",
