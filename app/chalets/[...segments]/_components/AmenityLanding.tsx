@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import LandingSearchCta from "./LandingSearchCta";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OwnersSection from "@/components/OwnersSection";
@@ -255,12 +257,21 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <h2 className="text-heading-2 font-bold text-charcoal-900">
-          {`${count} ${noun(count)}`}
-        </h2>
-        <p className="text-charcoal-500 mt-1 mb-8 text-sm">
-          {isEn ? "Direct contact · No service fees" : "Contact direct · Aucuns frais de service"}
-        </p>
+        <div className="flex items-end justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-heading-2 font-bold text-charcoal-900">
+              {`${count} ${noun(count)}`}
+            </h2>
+            <p className="text-charcoal-500 mt-1 text-sm">
+              {isEn ? "Direct contact · No service fees" : "Contact direct · Aucuns frais de service"}
+            </p>
+          </div>
+          {count > 0 && (
+            <Link href={searchPath()} className={`text-sm hidden md:block shrink-0 ${TEXT_LINK_CLASSNAME}`}>
+              {isEn ? `See all ${nounOther} →` : `Voir tous les ${nounOther} →`}
+            </Link>
+          )}
+        </div>
 
         {count === 0 ? (
           <div className="py-16 text-center">
@@ -348,14 +359,7 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
               </div>
             ))}
           </div>
-          <div className="mt-10">
-            <Link
-              href={searchPath()}
-              className="inline-flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
-            >
-              {isEn ? `Search ${nounOther}` : `Rechercher parmi les ${nounOther}`}
-            </Link>
-          </div>
+          {count > 0 && <LandingSearchCta href={searchPath()} isEn={isEn} />}
         </div>
         </div>
       </section>

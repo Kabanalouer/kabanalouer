@@ -25,8 +25,10 @@ export default async function OwnersSection() {
           <p className="text-[17px] leading-[1.6] text-primary-50 text-pretty">
             {t("ownersDesc")}
           </p>
-          <p className="text-lg font-bold text-white">
-            <span aria-hidden="true">⏳ </span>
+          <p className="inline-flex items-center gap-2 text-lg font-bold text-white">
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+            </svg>
             {t("ownersDeadline", { date: deadline })}
           </p>
         </div>

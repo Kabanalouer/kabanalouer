@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
+import LandingSearchCta from "./LandingSearchCta";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -83,8 +85,10 @@ export default async function AccessibleLanding() {
 
   const pagePath = isEn ? ACCESSIBLE_PATH_EN : ACCESSIBLE_PATH_FR;
   const regionName = (dbValue: string) => (isEn ? getRegionByDbValue(dbValue)?.nameEn ?? dbValue : dbValue);
-  const searchPath = (regionDbValue: string) => {
-    const params = new URLSearchParams({ accessible: "1", region: regionDbValue });
+  const nounOther = isEn ? "accessible cabins" : "chalets accessibles";
+  const searchPath = (regionDbValue?: string) => {
+    const params = new URLSearchParams({ accessible: "1" });
+    if (regionDbValue) params.set("region", regionDbValue);
     return localePath(`/chalets?${params.toString()}`, locale);
   };
 
@@ -240,14 +244,23 @@ export default async function AccessibleLanding() {
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <h2 className="text-heading-2 font-bold text-charcoal-900">
-          {isEn
-            ? `${count} accessible ${plural(count, "cabin", "cabins")}`
-            : `${count} ${plural(count, "chalet accessible", "chalets accessibles")}`}
-        </h2>
-        <p className="text-charcoal-500 mt-1 mb-8 text-sm">
-          {isEn ? "Direct contact · No service fees" : "Contact direct · Aucuns frais de service"}
-        </p>
+        <div className="flex items-end justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-heading-2 font-bold text-charcoal-900">
+              {isEn
+                ? `${count} accessible ${plural(count, "cabin", "cabins")}`
+                : `${count} ${plural(count, "chalet accessible", "chalets accessibles")}`}
+            </h2>
+            <p className="text-charcoal-500 mt-1 text-sm">
+              {isEn ? "Direct contact · No service fees" : "Contact direct · Aucuns frais de service"}
+            </p>
+          </div>
+          {count > 0 && (
+            <Link href={searchPath()} className={`text-sm hidden md:block shrink-0 ${TEXT_LINK_CLASSNAME}`}>
+              {isEn ? `See all ${nounOther} →` : `Voir tous les ${nounOther} →`}
+            </Link>
+          )}
+        </div>
 
         {count === 0 ? (
           <div className="py-16 text-center">
@@ -376,6 +389,7 @@ export default async function AccessibleLanding() {
               </div>
             ))}
           </div>
+          {count > 0 && <LandingSearchCta href={searchPath()} isEn={isEn} />}
         </div>
         </div>
       </section>
