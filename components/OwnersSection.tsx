@@ -8,12 +8,13 @@ import { LAUNCH_OFFER_END } from "@/lib/subscriptionPricing";
 // l'offre de lancement depuis le 2026-10-01.
 export default async function OwnersSection() {
   const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
+  const deadline = new Date(`${LAUNCH_OFFER_END}T12:00:00`).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" });
 
   return (
     <section className="bg-primary text-white py-24 px-6">
       <div className="max-w-[560px] mx-auto flex flex-col items-center gap-10">
         <div className="flex flex-col items-center gap-6 text-center">
-          <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary-100">
+          <p className="inline-flex items-center rounded-full bg-[#dce7a8] px-4 py-1.5 text-xs font-bold tracking-[0.08em] uppercase text-primary-dark">
             {t("ctaLabel")}
           </p>
           <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance">
@@ -22,9 +23,11 @@ export default async function OwnersSection() {
             {t("ownersTitleLine2")} <span className="text-[#dce7a8]">{t("ownersTitleAccent")}</span>
           </h2>
           <p className="text-[17px] leading-[1.6] text-primary-50 text-pretty">
-            {t("ownersDesc", {
-              date: new Date(`${LAUNCH_OFFER_END}T12:00:00`).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" }),
-            })}
+            {t("ownersDesc")}
+          </p>
+          <p className="text-lg font-bold text-white">
+            <span aria-hidden="true">⏳ </span>
+            {t("ownersDeadline", { date: deadline })}
           </p>
         </div>
 
@@ -34,6 +37,7 @@ export default async function OwnersSection() {
         >
           {t("ctaButton")}
         </Link>
+        <p className="-mt-6 text-sm text-primary-100">{t("ownersNoCard")}</p>
       </div>
     </section>
   );
