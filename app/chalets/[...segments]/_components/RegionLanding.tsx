@@ -230,7 +230,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             <br />
             {isEn
               ? "Direct contact with local owners. No service fees."
-              : "Contact direct avec les propriétaires québécois."}
+              : "Contact direct avec les propriétaires."}
           </p>
           <SearchBar initialRegion={regionConfig.dbValue} />
         </div>
@@ -317,13 +317,14 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {/* ── Highlights ── */}
       {content && (
         <section className="bg-charcoal-50 py-14">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Même conteneur que les autres sections (marge gauche alignée) ; la largeur de lecture est limitée à l'intérieur */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
               {isEn
                 ? `Why choose ${content.region_en}?`
                 : `Pourquoi louer un chalet ${regionConfig.locative} ?`}
             </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4">
+            <ul className="max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4">
               {(isEn ? content.highlights_en : content.highlights_fr).map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <svg
@@ -345,13 +346,13 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
 
       {/* ── Description ── */}
       <section className="bg-white py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-6">
             {isEn
               ? `Discover ${content?.region_en ?? displayRegionName}`
               : `Découvrez ${content?.region_fr ?? displayRegionName}`}
           </h2>
-          <div className="space-y-4">
+          <div className="max-w-3xl space-y-4">
             {(isEn
               ? content?.description_en ?? [
                   `${displayRegionName} is one of Quebec's regions to explore by cabin, with lakes, forests and small towns to discover in every season.`,
@@ -370,11 +371,11 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
       {/* ── FAQ ── */}
       {faqItems.length > 0 && (
         <section className="bg-charcoal-50 py-16">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
               {isEn ? "Frequently asked questions" : "Questions fréquentes"}
             </h2>
-            <div className="space-y-6">
+            <div className="max-w-3xl space-y-6">
               {faqItems.map((item, i) => (
                 <div key={i}>
                   <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-2">{item.question}</h3>
