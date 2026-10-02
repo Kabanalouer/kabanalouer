@@ -5,6 +5,7 @@ export interface RegionConfig {
   nameEn: string;
   dbValue: string;       // Exact value stored in Supabase listings.region
   locative: string;      // French locative phrase
+  genitive: string;      // Complément « de » : « des Laurentides », « de Charlevoix », « du Nunavik »
   seoText: string[];     // 2–3 SEO paragraphs
   heroImage: string;     // Photo d'en-tête, hébergée dans /images/regions/<slug>.webp (choix du 2026-10-01)
 }
@@ -17,6 +18,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Laurentians",
     dbValue: "Laurentides",
     locative: "dans les Laurentides",
+    genitive: "des Laurentides",
     heroImage: "/images/regions/laurentides.webp",
     seoText: [
       "Les Laurentides constituent la destination de chalet la plus populaire du Québec, et pour cause : ski alpin à Mont-Tremblant et Saint-Sauveur, randonnée pédestre, lacs cristallins et vélo de montagne rythment les quatre saisons. À moins de deux heures de Montréal, cette région enchante autant les familles en quête de calme que les groupes d'amis en mode aventure.",
@@ -30,11 +32,12 @@ export const REGIONS: RegionConfig[] = [
     slugEn: "charlevoix",
     nameEn: "Charlevoix",
     dbValue: "Charlevoix",
-    locative: "en Charlevoix",
+    locative: "dans Charlevoix",
+    genitive: "de Charlevoix",
     heroImage: "/images/regions/charlevoix.webp",
     seoText: [
       "Charlevoix est l'une des régions les plus spectaculaires du Québec, avec ses panoramas sur le fleuve Saint-Laurent, ses montagnes abruptes et ses villages de charme comme Baie-Saint-Paul et La Malbaie. Classé Réserve mondiale de la biosphère par l'UNESCO, Charlevoix attire les amateurs de nature, de gastronomie et d'art depuis des décennies.",
-      "Un chalet en Charlevoix, c'est le privilège de se réveiller face au fleuve ou en altitude, d'observer les bélugas depuis la rive, et de dîner dans des restaurants qui valorisent les produits locaux — agneau de l'île aux Coudres, fromages fins, bières artisanales. Le Massif de Charlevoix offre l'une des meilleures descentes à ski de l'est du Canada.",
+      "Un chalet dans Charlevoix, c'est le privilège de se réveiller face au fleuve ou en altitude, d'observer les bélugas depuis la rive, et de dîner dans des restaurants qui valorisent les produits locaux — agneau de l'île aux Coudres, fromages fins, bières artisanales. Le Massif de Charlevoix offre l'une des meilleures descentes à ski de l'est du Canada.",
       "Toutes saisons, Charlevoix séduira ceux qui cherchent l'authenticité québécoise : randonnée dans les parcs régionaux, kayak de mer, festival d'art, ou simplement se ressourcer dans un chalet face au fleuve avec un bon livre et un feu de foyer.",
     ],
   },
@@ -45,6 +48,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Eastern Townships",
     dbValue: "Estrie (Cantons-de-l'Est)",
     locative: "dans les Cantons-de-l'Est",
+    genitive: "des Cantons-de-l'Est",
     heroImage: "/images/regions/cantons-de-lest.webp",
     seoText: [
       "Les Cantons-de-l'Est (Estrie) sont une région de collines verdoyantes, de lacs pittoresques et de vignobles florissants, à moins d'une heure et demie de Montréal. Les chalets au bord du lac Memphrémagog, de l'Orford ou du Massawippi offrent un cadre bucolique en toute saison.",
@@ -59,6 +63,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Lanaudière",
     dbValue: "Lanaudière",
     locative: "en Lanaudière",
+    genitive: "de Lanaudière",
     heroImage: "/images/regions/lanaudiere.webp",
     seoText: [
       "La région de Lanaudière, juste au nord de Montréal, est un vaste territoire de lacs, de rivières et de forêts boréales idéal pour les amoureux de la nature sauvage. Du Bas-Lanaudière agricole aux montagnes du Haut-Lanaudière, la région offre une grande diversité de paysages et d'activités de plein air.",
@@ -73,6 +78,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Mauricie",
     dbValue: "Mauricie",
     locative: "en Mauricie",
+    genitive: "de la Mauricie",
     heroImage: "/images/regions/mauricie.webp",
     seoText: [
       "La Mauricie est une région de nature grandiose, dominée par le parc national de la Mauricie — 536 km² de forêts, de lacs et de rivières. Ce parc est l'un des plus beaux du Québec pour le canot-camping, la randonnée et l'observation de la faune. La rivière Saint-Maurice et ses paysages sauvages complètent le tableau.",
@@ -87,6 +93,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Outaouais",
     dbValue: "Outaouais",
     locative: "en Outaouais",
+    genitive: "de l'Outaouais",
     heroImage: "/images/regions/outaouais.webp",
     seoText: [
       "L'Outaouais est une région méconnue et pourtant magnifique, aux portes de Gatineau et d'Ottawa. Le parc de la Gatineau offre 361 km² de sentiers, de lacs et de panoramas sur la vallée. Plus au nord, la vallée de la Petite-Nation et la région de Montebello séduisent par leur nature préservée et leur atmosphère authentique.",
@@ -101,6 +108,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Saguenay–Lac-Saint-Jean",
     dbValue: "Saguenay–Lac-Saint-Jean",
     locative: "au Saguenay–Lac-Saint-Jean",
+    genitive: "du Saguenay–Lac-Saint-Jean",
     heroImage: "/images/regions/saguenay-lac-saint-jean.webp",
     seoText: [
       "Le Saguenay–Lac-Saint-Jean est une région de caractère, fière de son identité bleuette et de ses paysages spectaculaires. Le fjord du Saguenay, l'un des plus impressionnants en Amérique du Nord, contraste avec les grandes étendues plates et agricoles du Lac-Saint-Jean.",
@@ -115,6 +123,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Bas-Saint-Laurent",
     dbValue: "Bas-Saint-Laurent",
     locative: "dans le Bas-Saint-Laurent",
+    genitive: "du Bas-Saint-Laurent",
     heroImage: "/images/regions/bas-saint-laurent.webp",
     seoText: [
       "Le Bas-Saint-Laurent s'étend le long du fleuve Saint-Laurent, entre Rivière-du-Loup et Matane, offrant des paysages côtiers à couper le souffle. Le parc national du Bic, avec ses promontoires rocheux et ses phoques, est l'un des joyaux de la région.",
@@ -135,6 +144,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Gaspésie–Îles-de-la-Madeleine",
     dbValue: "Gaspésie–Îles-de-la-Madeleine",
     locative: "en Gaspésie",
+    genitive: "de la Gaspésie",
     heroImage: "/images/regions/gaspesie.webp",
     seoText: [
       "La Gaspésie, c'est le bout du monde québécois — et c'est précisément ce qui la rend inoubliable. Avec le rocher Percé et l'île Bonaventure, le parc national de la Gaspésie et ses sommets dépassant 1 000 mètres, les falaises de la côte sauvage et les villages de pêcheurs accrochés au bord du fleuve, la Gaspésie est une destination d'exception.",
@@ -149,6 +159,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Abitibi-Témiscamingue",
     dbValue: "Abitibi-Témiscamingue",
     locative: "en Abitibi-Témiscamingue",
+    genitive: "de l'Abitibi-Témiscamingue",
     heroImage: "/images/regions/abitibi-temiscamingue.webp",
     seoText: [
       "L'Abitibi-Témiscamingue est une région de forêt boréale, de lacs immenses et de ciel étoilé comme nulle part ailleurs au Québec. Éloignée des grands centres, elle attire les voyageurs en quête de nature sauvage intacte, de pêche sportive et d'authenticité. Les aurores boréales y sont visibles plusieurs nuits par hiver.",
@@ -163,6 +174,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Côte-Nord",
     dbValue: "Côte-Nord",
     locative: "sur la Côte-Nord",
+    genitive: "de la Côte-Nord",
     heroImage: "/images/regions/cote-nord.webp",
     seoText: [
       "La Côte-Nord est l'une des régions les plus sauvages du Québec, s'étirant sur plus de 1 300 km le long du fleuve Saint-Laurent. C'est ici que les bélugas et les baleines bleues fréquentent les eaux du fjord du Saguenay, offrant des spectacles d'observation de la faune marine incomparables.",
@@ -177,6 +189,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Montérégie",
     dbValue: "Montérégie",
     locative: "en Montérégie",
+    genitive: "de la Montérégie",
     heroImage: "/images/regions/monteregie.webp",
     seoText: [
       "La Montérégie est la région agricole par excellence du Québec, parsemée de vergers, de vignobles, de cidreries et de fromageries artisanales. À moins d'une heure de Montréal, elle offre un contraste saisissant avec la vie urbaine : champs à perte de vue, montérégiennes et le majestueux fleuve Saint-Laurent.",
@@ -191,6 +204,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Chaudière-Appalaches",
     dbValue: "Chaudière-Appalaches",
     locative: "en Chaudière-Appalaches",
+    genitive: "de Chaudière-Appalaches",
     heroImage: "/images/regions/chaudiere-appalaches.webp",
     seoText: [
       "Chaudière-Appalaches s'étend sur la rive sud du Saint-Laurent, face à Québec, entre les plaines du fleuve et les premiers contreforts des Appalaches. La région est une porte d'entrée vers les paysages des Appalaches québécoises, avec leurs vallées boisées, leurs rivières à truites et leurs sommets arrondis.",
@@ -209,6 +223,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Québec City Region",
     dbValue: "Québec (ville et région)",
     locative: "dans la Capitale-Nationale",
+    genitive: "de la Capitale-Nationale",
     heroImage: "/images/regions/quebec.webp",
     seoText: [
       "La région de la Capitale-Nationale englobe Québec, la vieille ville fortifiée, mais aussi les magnifiques campagnes de la Côte-de-Beaupré, de l'Île d'Orléans et du nord jusqu'à la réserve faunique des Laurentides. Louer un chalet dans cette région, c'est combiner culture urbaine et nature sauvage à quelques kilomètres de distance.",
@@ -226,6 +241,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Centre-du-Québec",
     dbValue: "Centre-du-Québec",
     locative: "au Centre-du-Québec",
+    genitive: "du Centre-du-Québec",
     heroImage: "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1920&q=80",
     seoText: [
       "Le Centre-du-Québec doit son nom à sa position géographique, à mi-chemin entre Montréal et Québec, sur la rive sud du Saint-Laurent. Région agricole et forestière, elle abrite la vaste plaine du lac Saint-Pierre — le plus grand lac fluvial du Saint-Laurent, reconnu Réserve mondiale de la biosphère par l'UNESCO — ainsi que les collines boisées des Bois-Francs, autour de Victoriaville.",
@@ -243,6 +259,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Montreal",
     dbValue: "Montréal",
     locative: "à Montréal",
+    genitive: "de Montréal",
     heroImage: "/images/regions/montreal.webp",
     seoText: [
       "Montréal, la plus grande ville du Québec, se découvre aussi côté nature : le parc du Mont-Royal au cœur de la ville, les parcs-nature de l'Ouest-de-l'Île comme le Cap-Saint-Jacques et le Bois-de-l'Île-Bizard, et les berges du fleuve et de la rivière des Prairies.",
@@ -257,6 +274,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Laval",
     dbValue: "Laval",
     locative: "à Laval",
+    genitive: "de Laval",
     heroImage: "/images/regions/laval.webp",
     seoText: [
       "Laval est une île située entre la rivière des Prairies et la rivière des Mille Îles, juste au nord de Montréal. Malgré sa proximité avec la métropole, elle compte de nombreux espaces verts et un accès privilégié à l'eau.",
@@ -271,6 +289,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Eeyou Istchee James Bay",
     dbValue: "Eeyou Istchee Baie-James",
     locative: "en Eeyou Istchee Baie-James",
+    genitive: "d'Eeyou Istchee Baie-James",
     heroImage: "/images/regions/eeyou-istchee-baie-james.webp",
     seoText: [
       "Eeyou Istchee Baie-James est un immense territoire du Nord québécois, partagé entre les communautés cries d'Eeyou Istchee et les villes de la Jamésie comme Chibougamau, Chapais, Matagami et Lebel-sur-Quévillon. Forêt boréale, rivières puissantes et milliers de lacs dominent le paysage.",
@@ -285,6 +304,7 @@ export const REGIONS: RegionConfig[] = [
     nameEn: "Nunavik",
     dbValue: "Nunavik",
     locative: "au Nunavik",
+    genitive: "du Nunavik",
     heroImage: "/images/regions/nunavik.webp",
     seoText: [
       "Le Nunavik est la région la plus au nord du Québec, au-delà du 55e parallèle. Territoire des Inuits, il compte 14 villages nordiques, dont Kuujjuaq, le plus grand, et n'est accessible que par avion.",

@@ -96,13 +96,13 @@ const REGIONS_CONTENT: RegionContent[] = [
       "Renowned local gastronomy",
       "UNESCO World Biosphere Reserve",
     ],
-    meta_title_fr: "Chalets à louer en Charlevoix, Québec",
+    meta_title_fr: "Chalets à louer dans Charlevoix, Québec",
     meta_title_en: "Cabin Rentals in Charlevoix, Quebec",
-    meta_description_fr: "Louez un chalet en Charlevoix avec vue sur le fleuve Saint-Laurent. Ski, gastronomie, nature. Contact direct avec les propriétaires. Aucun frais.",
+    meta_description_fr: "Louez un chalet dans Charlevoix avec vue sur le fleuve Saint-Laurent. Ski, gastronomie, nature. Contact direct avec les propriétaires. Aucun frais.",
     meta_description_en: "Rent a cabin in Charlevoix, Quebec. River views, skiing, gourmet food, whale watching — direct contact with local owners. No service fees.",
     faq_fr: [
       {
-        question: "Que faire en Charlevoix en été ?",
+        question: "Que faire dans Charlevoix en été ?",
         answer: "En été, Charlevoix offre le kayak de mer, la randonnée pédestre dans les parcs régionaux, l'observation des baleines au large de Tadoussac, le vélo et la visite des producteurs artisanaux locaux. Les festivals d'art animent les villages tout au long de la belle saison.",
       },
       {
@@ -110,7 +110,7 @@ const REGIONS_CONTENT: RegionContent[] = [
         answer: "Oui, Charlevoix est une destination hivernale de premier plan. Le Massif de Charlevoix est l'une des plus grandes stations de ski de l'est du Canada avec une dénivellation exceptionnelle. La raquette, le ski de fond et les séjours cocooning au chalet complètent l'offre hivernale.",
       },
       {
-        question: "Quelle est la meilleure façon de se rendre en Charlevoix ?",
+        question: "Quelle est la meilleure façon de se rendre dans Charlevoix ?",
         answer: "Charlevoix est accessible en voiture depuis Québec en environ 1h30 en suivant la route 138 le long du fleuve. Cette route panoramique fait elle-même partie de l'expérience. La région est aussi accessible via le traversier de Saint-Siméon depuis la rive sud.",
       },
     ],

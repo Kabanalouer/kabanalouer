@@ -269,11 +269,14 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
                 : "Contact direct avec les propriétaires · Aucun frais de service"}
             </p>
           </div>
+          {/* Vers la recherche filtrée sur la région (filtres, dates, carte ; la page région s'arrête à 24 chalets) */}
           <Link
-            href={localePath("/chalets", locale)}
+            href={`${localePath("/chalets", locale)}?region=${encodeURIComponent(regionConfig.dbValue)}`}
             className={`text-sm hidden md:block ${TEXT_LINK_CLASSNAME}`}
           >
-            {isEn ? "All regions →" : "Voir toutes les régions →"}
+            {isEn
+              ? `See all cabins ${content?.locative_en ?? `in ${displayRegionName}`} →`
+              : `Voir tous les chalets ${regionConfig.genitive} →`}
           </Link>
         </div>
 
