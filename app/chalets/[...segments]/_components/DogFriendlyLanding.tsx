@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import LandingSearchCta from "./LandingSearchCta";
+import ComboLinkChips from "./ComboLinkChips";
+import { activeCitiesForTheme, activeRegionsForTheme, comboPath, getComboIndex } from "@/lib/comboLandings";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -41,7 +43,7 @@ export function buildDogFriendlyMeta(isEn: boolean) {
 }
 
 export default async function DogFriendlyLanding() {
-  const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
+  const [supabase, locale, comboIndex] = await Promise.all([createClient(), getLocale(), getComboIndex()]);
   const isEn = locale === "en";
   const {
     data: { user },
@@ -209,6 +211,17 @@ export default async function DogFriendlyLanding() {
     })),
   };
 
+  // Maillage : page région × type quand elle existe (3 chalets et plus),
+  // sinon la recherche filtrée ; villes × type actives (lib/comboLandings.ts)
+  const regionComboPaths = new Map(
+    activeRegionsForTheme(comboIndex, "dogs").map((l) => [l.region.slug, comboPath(l.theme, l.region, null, isEn)])
+  );
+  const cityComboLinks = activeCitiesForTheme(comboIndex, "dogs").map((l) => ({
+    href: comboPath(l.theme, l.region, l.city, isEn),
+    label: l.city!,
+    count: l.count,
+  }));
+
   return (
     <div className="flex flex-col min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
@@ -309,13 +322,20 @@ export default async function DogFriendlyLanding() {
             {regionCounts.map(({ region, count: n }) => (
               <Link
                 key={region.slug}
-                href={searchPath(region.dbValue)}
+                href={regionComboPaths.get(region.slug) ?? searchPath(region.dbValue)}
                 className="px-4 py-2 rounded-full border border-charcoal-100 text-sm text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
               >
                 {isEn ? region.nameEn : region.name} ({n})
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* ── Par ville (pages ville × type actives) ── */}
+      {cityComboLinks.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
+          <ComboLinkChips title={isEn ? "Dog-friendly cabins by town" : "Chalets avec chien par ville"} links={cityComboLinks} />
         </section>
       )}
 

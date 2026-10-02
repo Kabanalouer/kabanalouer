@@ -21,6 +21,9 @@ import { ACCESSIBLE_PATH_EN, ACCESSIBLE_PATH_FR, ACCESSIBLE_SLUG_EN, ACCESSIBLE_
 import AmenityLanding, { buildAmenityLandingMeta } from "./_components/AmenityLanding";
 import { countAmenityLandingsWith, getAmenityLandingBySlug } from "@/lib/amenityLandings";
 import ListingDetail from "./_components/ListingDetail";
+import ComboLanding, { buildComboDescription, buildComboTitle } from "./_components/ComboLanding";
+import { MIN_LISTINGS_FOR_COMBO, comboPath, getComboIndex, getComboThemeBySlug, type ComboTheme } from "@/lib/comboLandings";
+import type { RegionConfig } from "@/lib/regions";
 import { getLocale } from "next-intl/server";
 
 // SEO : une région sans chalet actif publié est du contenu quasi vide/dupliqué
@@ -103,6 +106,46 @@ async function findListingByChaletSlug(
   if (publishedOnly) previousQuery = previousQuery.eq("is_published", true);
   const { data: viaPrevious } = await previousQuery.maybeSingle();
   return (viaPrevious as ListingRow) ?? null;
+}
+
+// Nom de ville réel (accents, majuscules) d'un segment d'URL, parmi les villes
+// qui ont au moins un chalet publié dans cette région — même règle que les
+// pages ville (renderTwoSegments).
+async function resolveCityName(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  regionConfig: RegionConfig,
+  citySlug: string
+): Promise<string | null> {
+  const { data: cityRows } = await supabase
+    .from("listings")
+    .select("city")
+    .eq("is_published", true)
+    .eq("region", regionConfig.dbValue)
+    .not("city", "is", null);
+  return [...new Set((cityRows ?? []).map((r) => r.city as string).filter(Boolean))]
+    .filter(isKnownMunicipality)
+    .find((c) => slugify(c) === citySlug) ?? null;
+}
+
+// Métadonnées d'une page région × type ou ville × type (lib/comboLandings.ts).
+// Sous le seuil, la page répond 404 : aucune métadonnée.
+async function buildComboMetadata(theme: ComboTheme, regionConfig: RegionConfig, cityName: string | null, isEn: boolean) {
+  const index = await getComboIndex();
+  const counts = cityName ? index.city[`${regionConfig.dbValue}|${cityName}`] : index.region[regionConfig.dbValue];
+  const count = counts?.[theme.key] ?? 0;
+  if (count < MIN_LISTINGS_FOR_COMBO) return {};
+  const title = buildComboTitle(theme, regionConfig, cityName, isEn);
+  const description = buildComboDescription(theme, regionConfig, cityName, count, isEn);
+  const pathFr = comboPath(theme, regionConfig, cityName, false);
+  const pathEn = comboPath(theme, regionConfig, cityName, true);
+  const canonical = isEn ? pathEn : pathFr;
+  return {
+    title,
+    description,
+    alternates: { canonical, languages: { fr: pathFr, en: pathEn, "x-default": pathFr } },
+    openGraph: { title, description, url: canonical },
+    twitter: { title, description },
+  };
 }
 
 export async function generateStaticParams() {
@@ -264,6 +307,10 @@ export async function generateMetadata({ params }: Props) {
     const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
     if (!regionConfig) return {};
 
+    // Région × type (/chalets/laurentides/avec-spa) — avant les villes
+    const comboTheme = getComboThemeBySlug(citySlug, isEn);
+    if (comboTheme) return buildComboMetadata(comboTheme, regionConfig, null, isEn);
+
     const { data: cityRows } = await supabase
       .from("listings")
       .select("city")
@@ -299,10 +346,18 @@ export async function generateMetadata({ params }: Props) {
   }
 
   if (segments.length === 3) {
-    const [slug, , chaletSlug] = segments;
+    const [slug, citySeg, chaletSlug] = segments;
 
     const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
     if (!regionConfig) return {};
+
+    // Ville × type (/chalets/laurentides/mille-isles/bord-de-l-eau) — ces
+    // slugs sont réservés, jamais un lien personnalisé de fiche (lib/comboLandings.ts)
+    const comboTheme = getComboThemeBySlug(chaletSlug, isEn);
+    if (comboTheme) {
+      const cityName = await resolveCityName(supabase, regionConfig, citySeg);
+      return cityName ? buildComboMetadata(comboTheme, regionConfig, cityName, isEn) : {};
+    }
 
     const data = await findListingByChaletSlug(supabase, chaletSlug, { publishedOnly: true });
 
@@ -484,6 +539,9 @@ async function renderTwoSegments([slug, citySlug]: [string, string], isEn: boole
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
   if (!regionConfig) notFound();
 
+  const comboTheme = getComboThemeBySlug(citySlug, isEn);
+  if (comboTheme) return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={null} />;
+
   const { data: cityRows } = await supabase
     .from("listings")
     .select("city")
@@ -506,6 +564,14 @@ async function renderThreeSegments([slug, city, chaletSlug]: [string, string, st
   if (!regionConfig) notFound();
 
   const supabase = await createClient();
+
+  const comboTheme = getComboThemeBySlug(chaletSlug, isEn);
+  if (comboTheme) {
+    const cityName = await resolveCityName(supabase, regionConfig, city);
+    if (!cityName) notFound();
+    return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={cityName} />;
+  }
+
   const [listing, { data: { user } }] = await Promise.all([
     findListingByChaletSlug(supabase, chaletSlug),
     supabase.auth.getUser(),

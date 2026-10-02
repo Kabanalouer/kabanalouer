@@ -10,6 +10,7 @@ import { DEALS_PATH_EN, DEALS_PATH_FR, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib
 import { countDealListings } from "@/app/chalets/[...segments]/_components/DealsLanding";
 import { AMENITY_LANDINGS, countAmenityLandingsWith } from "@/lib/amenityLandings";
 import { createClient } from "@supabase/supabase-js";
+import { allActiveCombos, comboPath, getComboIndex } from "@/lib/comboLandings";
 
 const BASE = SITE_URL;
 
@@ -58,6 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let listingPages: MetadataRoute.Sitemap = [];
   let themePages: MetadataRoute.Sitemap = [];
   let cityPages: MetadataRoute.Sitemap = [];
+  let comboPages: MetadataRoute.Sitemap = [];
 
   try {
     const supabase = createClient(
@@ -173,6 +175,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
     }
 
+    // Pages région × type et ville × type (lib/comboLandings.ts) : seulement
+    // celles qui existent (3 chalets et plus, sinon 404).
+    comboPages = allActiveCombos(await getComboIndex()).flatMap((l) => {
+      const priority = l.city ? 0.7 : 0.75;
+      return [
+        { url: `${BASE}${comboPath(l.theme, l.region, l.city, false)}`, lastModified: now, changeFrequency: "daily" as const, priority },
+        { url: `${BASE}${comboPath(l.theme, l.region, l.city, true)}`, lastModified: now, changeFrequency: "daily" as const, priority },
+      ];
+    });
+
     // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
     // (voir MIN_CHALETS_FOR_INDEX ci-dessus et dans app/chalets/[slug]/page.tsx).
     const activeCountByRegion = new Map<string, number>();
@@ -197,5 +209,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("sitemap: exception Supabase, repli sur les valeurs par défaut", err);
   }
 
-  return [...staticPages, ...themePages, ...regionPages, ...cityPages, ...listingPages];
+  return [...staticPages, ...themePages, ...regionPages, ...comboPages, ...cityPages, ...listingPages];
 }

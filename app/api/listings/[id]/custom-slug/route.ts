@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { validateCustomSlugFormat } from "@/lib/customSlug";
+import { RESERVED_COMBO_SLUGS } from "@/lib/comboLandings";
 
 // Enregistre ou retire le lien personnalisé d'une fiche (voir CLAUDE.md
 // section 9). Route dédiée plutôt qu'un simple update Supabase direct côté
@@ -55,6 +56,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const formatError = validateCustomSlugFormat(rawValue);
   if (formatError) {
     return NextResponse.json({ error: formatError }, { status: 400 });
+  }
+
+  // Réservé aux pages ville × type (/chalets/région/ville/avec-spa) : même
+  // position dans l'URL qu'un lien personnalisé de fiche.
+  if (RESERVED_COMBO_SLUGS.has(rawValue)) {
+    return NextResponse.json({ error: "taken" }, { status: 409 });
   }
 
   if (rawValue === listing.custom_slug) {

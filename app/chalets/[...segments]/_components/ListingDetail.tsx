@@ -18,6 +18,8 @@ import ReviewsList from "@/components/chalets/ReviewsList";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RelatedListings from "@/components/chalets/RelatedListings";
+import ComboLinkChips from "./ComboLinkChips";
+import { COMBO_THEMES, activeThemesInCity, activeThemesInRegion, comboLinkLabel, comboPath, getComboIndex } from "@/lib/comboLandings";
 import { normalizePhotos } from "@/lib/photo";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -83,6 +85,19 @@ export default async function ListingDetail({ listing, user, searchParams, local
     ? `${regionBasePath}/${slugify(listing.city as string)}`
     : undefined;
   const regionDisplayName = regionConfig ? (isEn ? regionConfig.nameEn : regionConfig.name) : "";
+
+  // Maillage : pages région × type et ville × type actives auxquelles ce
+  // chalet appartient (lib/comboLandings.ts)
+  const comboIndex = regionConfig && listing.is_published ? await getComboIndex() : null;
+  const listingThemeKeys = new Set(COMBO_THEMES.filter((t) => t.matches(listing)).map((t) => t.key));
+  const comboLinks = comboIndex && regionConfig
+    ? [
+        ...(typeof listing.city === "string" ? activeThemesInCity(comboIndex, regionConfig, listing.city) : []),
+        ...activeThemesInRegion(comboIndex, regionConfig),
+      ]
+        .filter((l) => listingThemeKeys.has(l.theme.key))
+        .map((l) => ({ href: comboPath(l.theme, l.region, l.city, isEn), label: comboLinkLabel(l, isEn), count: l.count }))
+    : [];
 
   // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
   // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
@@ -727,6 +742,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
           locale={locale}
           currentUserId={user?.id ?? null}
         />
+      )}
+      {/* Maillage interne : pages région/ville × type de ce chalet */}
+      {!isPreviewFrame && !isDraftPreview && comboLinks.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-[#ebebeb]">
+          <ComboLinkChips title={isEn ? "Explore similar cabins" : "Explorer des chalets semblables"} links={comboLinks} />
+        </section>
       )}
       </main>
 

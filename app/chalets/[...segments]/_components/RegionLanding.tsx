@@ -1,6 +1,8 @@
 import ListYourCabinPromo from "@/components/ListYourCabinPromo";
 import OwnersSection from "@/components/OwnersSection";
 import Link from "next/link";
+import ComboLinkChips from "./ComboLinkChips";
+import { activeThemesInCity, activeThemesInRegion, comboPath, comboPlace, getComboIndex } from "@/lib/comboLandings";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -21,7 +23,7 @@ import { isKnownMunicipality } from "@/lib/municipalities";
 import { slugify } from "@/lib/slugify";
 
 export default async function RegionLanding({ regionConfig }: { regionConfig: RegionConfig }) {
-  const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
+  const [supabase, locale, comboIndex] = await Promise.all([createClient(), getLocale(), getComboIndex()]);
   const isEn = locale === "en";
   const displayRegionName = isEn ? regionConfig.nameEn : regionConfig.name;
   const content = getRegionContent(regionConfig.slug);
@@ -316,6 +318,23 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
           </div>
         )}
       </section>
+
+      {/* ── Par type dans la région (pages région × type actives, lib/comboLandings.ts) ── */}
+      {(() => {
+        const typeLinks = activeThemesInRegion(comboIndex, regionConfig).map((l) => ({
+          href: comboPath(l.theme, l.region, null, isEn),
+          label: isEn ? l.theme.linkEn : l.theme.linkFr,
+          count: l.count,
+        }));
+        return typeLinks.length > 0 ? (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
+            <ComboLinkChips
+              title={isEn ? `Cabins by type ${comboPlace(regionConfig, null, true)}` : `Chalets par type ${regionConfig.locative}`}
+              links={typeLinks}
+            />
+          </section>
+        ) : null;
+      })()}
 
       {/* ── Highlights ── */}
       {content && (
