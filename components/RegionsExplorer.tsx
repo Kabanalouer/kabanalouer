@@ -7,6 +7,10 @@ import { REGIONS } from "@/lib/regions";
 // Accueil : « Explorer par région », seulement les régions qui ont au moins un
 // chalet publié (jamais de lien vers une page vide). Maillage interne vers les
 // pages région pour le SEO/GEO, en remplacement du lien de pied de page masqué.
+// Masquée tant qu'il y a moins de 4 régions (une rangée complète sur desktop),
+// choix de Simon, 2026-10-02.
+const MIN_REGIONS = 4;
+
 export default async function RegionsExplorer() {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const isEn = locale === "en";
@@ -20,7 +24,7 @@ export default async function RegionsExplorer() {
   const regions = REGIONS
     .filter((r) => (counts.get(r.dbValue) ?? 0) > 0)
     .sort((a, b) => (counts.get(b.dbValue) ?? 0) - (counts.get(a.dbValue) ?? 0));
-  if (regions.length === 0) return null;
+  if (regions.length < MIN_REGIONS) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
