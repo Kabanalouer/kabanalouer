@@ -532,7 +532,7 @@ Remplace l'ancien booléen « Animaux acceptés » (`pets_allowed`, colonne reno
 - **Fiche publique** : ligne « Chiens acceptés » + détails dans « Informations pratiques ». Compteur « Chiens » du formulaire « Contacter » plafonné à `dogs_max`, ne compte plus dans la capacité en personnes. `?dogs=N` dans l'URL préremplit le compteur.
 - **JSON-LD** : `petsAllowed` (booléen) + `additionalProperty` (chiens acceptés, maximum, poids, frais) ; question FAQ « Les chiens sont-ils acceptés… » avec les détails.
 - **Recherche** : paramètre unique `?dogs=N` (compteur « Chiens » des barres de recherche, ancien `?pets=`) → `dogs_allowed = true AND dogs_max >= N` (`app/chalets/page.tsx` + `/api/listings/geo`). Interrupteur dans `FiltersModal`, pastille « Chiens acceptés » au-dessus des résultats (`ChaletsMapLayout`). `ChaletsMapLayout` a maintenant un `key` basé sur les filtres dans `app/chalets/page.tsx` — sans lui, un changement de filtre gardait l'ancienne liste.
-- **Page SEO/GEO** `/chalets/chiens-acceptes` · `/en/cabins/dog-friendly` (`DogFriendlyLanding.tsx`, résolue avant les régions dans le catch-all) : H1 « Location de chalet avec chien au Québec », grille avec résumé chiens par carte, liens par région vers `/chalets?region=…&dogs=1`, conseils, FAQ calculée sur les vraies fiches (jamais de chiffre inventé), JSON-LD Breadcrumb + ItemList + FAQPage. Noindex et hors sitemap sous `MIN_CHALETS_FOR_INDEX`. Lien dans le pied de page et `public/llms.txt`.
+- **Page SEO/GEO** `/chalets/chiens-acceptes` · `/en/cabins/dog-friendly` (`DogFriendlyLanding.tsx`, résolue avant les régions dans le catch-all) : H1 « Location de chalet avec chien au Québec », grille avec résumé chiens par carte, liens par région vers `/chalets?region=…&dogs=1`, conseils, FAQ calculée sur les vraies fiches (jamais de chiffre inventé), JSON-LD Breadcrumb + ItemList + FAQPage. Noindex et hors sitemap sous `MIN_CHALETS_FOR_INDEX`. Lien dans le pied de page et `llms.txt` (généré, `app/llms.txt/route.ts`).
 
 ### « Accessible aux personnes à mobilité réduite » — détails, filtre et page SEO (2026-09-26)
 
@@ -971,9 +971,33 @@ Très longue session, tout en ligne (≈ 60 commits). Détails techniques dans l
 - Photos d'AuthentikCanada.com nommées `shutterstock-…` = licence Shutterstock d'Authentik Canada, non utilisables pour Kabanalouer.
 - Les sous-agents peuvent atteindre la limite d'utilisation : leur faire écrire leurs résultats dans un fichier au fur et à mesure.
 
+### Session du 2026-10-02 — Accueil, pages région/type, recherche, pages région × type
+
+Tout en ligne (commits `1fd3dd0` → `8a98b27`).
+
+1. **Accueil** : bandeau proprios avec l'offre de lancement mise en avant (voir section 14) ; « Explorer par région » masqué tant qu'il y a moins de 4 régions avec chalets (`MIN_REGIONS` dans `RegionsExplorer.tsx`).
+2. **Pages région** : sous-titre « Contact direct avec les propriétaires. » (sans « québécois ») ; lien « Voir tous les chalets des Laurentides → » vers `/chalets?region=…` (nouveau champ `genitive` dans `lib/regions.ts` : « des Laurentides », « de Charlevoix », « du Bas-Saint-Laurent »…) ; section Villes avant la FAQ ; **« dans Charlevoix »** partout (locative, textes, meta, FAQ — jamais « en Charlevoix », demande de Simon).
+3. **Alignement** : sous les chalets, toutes les sections (régions, villes, pages par type) utilisent le conteneur `max-w-7xl` de la grille, avec la largeur de lecture limitée à l'intérieur (`max-w-3xl` / `max-w-5xl` sans `mx-auto`) — avant, chaque section centrée à sa largeur commençait à une marge différente. Les en-têtes centrés restent centrés.
+4. **Pages par type** (équipements, chiens, mobilité réduite) : lien filtré à côté du titre des résultats (« Voir tous les chalets avec spa → ») et encadré « Prêt à réserver ? » après la FAQ (`LandingSearchCta.tsx`), affichés seulement s'il y a des chalets.
+5. **Recherche** : bug des filtres d'équipements corrigé — `supabase-js` `.contains()` avec un tableau d'objets envoie `{[object Object]}` ; il faut passer `JSON.stringify([...])` (`app/chalets/page.tsx` et `/api/listings/geo`). Tout filtre d'équipement renvoyait zéro résultat depuis le passage au format `{id, details}`.
+6. **Barre de recherche** (`SearchBar.tsx`) : largeurs minimales réduites (le bouton Rechercher débordait dans les en-têtes de 720 px des pages par type) ; `min-w-0` sur le champ Destination (le « × » d'effacement débordait dans Dates, bug préexistant) ; Destination un peu plus large (`flex-[1.3]`).
+7. **Pages région × type et ville × type** + maillage interne + `llms.txt` dynamique — voir section 9 (SEO / public).
+
+**Leçons de la session**
+- **Règles du design system** : un emoji (« ⏳ ») avait été publié dans le bandeau proprios avant que ce fichier soit relu — toujours relire les règles (pas d'emojis, espaces insécables U+202F avant ? ! ; et U+00A0 avant :) avant d'écrire un texte d'interface.
+- **Erreur « require is not defined » sur toutes les pages `/en` en local** (alors que la production fonctionne) : cache Turbopack corrompu → arrêter le serveur, `rm -rf .next/dev`, relancer `npx next dev -p 3123`.
+- **Capture d'écran** : `take_screenshot` de chrome-devtools reste bloqué sur ce projet ; utiliser Playwright depuis le scratchpad (`import pw from "/Users/simonlemay/kabanalouer/node_modules/playwright/index.js"`), y compris pour mesurer des positions (`getBoundingClientRect`).
+- **Aperçu d'une page sous un seuil** : abaisser temporairement la constante en local (marquée `// TEMP-PREVIEW`), capturer, puis la remettre et vérifier avec `grep` avant de committer.
+
 ## 14. Points en suspens
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
+
+### À vérifier après la session du 2026-10-02
+
+- **Pages région × type / ville × type jamais vues en production avec de vraies données** (seulement en local, seuil abaissé à 1) : à vérifier quand une combinaison atteindra 3 chalets (titre, FAQ, liens, présence dans le sitemap et `llms.txt`), puis demander l'indexation dans Google Search Console.
+- **Bord de l'eau** : la recherche filtrée des pages combinées utilise aussi `bord-eau` seulement (même limite que la page nationale, voir plus bas).
+- **Lien filtré des pages par type masqué sur mobile** (`hidden md:block`, comme les pages région) : l'encadré « Prêt à réserver ? » en bas de page sert de relais.
 
 ### À vérifier / à décider après la session du 2026-09-30 → 2026-10-01
 
@@ -1014,7 +1038,7 @@ Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kaba
 
 ### Bandeau « Pour les propriétaires » (`components/OwnersSection.tsx`)
 
-Simplifié le 2026-10-01 : titre « Affichez votre chalet. C'est gratuit. » + une phrase sur l'offre de lancement (date tirée de `LAUNCH_OFFER_END`) + bouton. Les anciens chiffres (« 0 $ », « 5 min ») et le texte sur l'import sont retirés. Affiché sur l'accueil, la recherche `/chalets`, les pages région, ville et par type.
+Simplifié le 2026-10-01, offre de lancement mise en avant le 2026-10-02 : pastille lime « Offre de lancement », titre « Affichez votre chalet. C'est gratuit. » (inchangé, choix de Simon), « Votre première année est gratuite pour toute annonce publiée avant la date limite. », ligne « Jusqu'au {date} » avec icône horloge SVG (date tirée de `LAUNCH_OFFER_END`), bouton « Profiter de l'offre gratuite → », « Aucune carte de crédit requise » (vrai : `activate-free` ne passe pas par Stripe). Affiché sur l'accueil, la recherche `/chalets`, les pages région, ville, par type et région/ville × type.
 
 ### Page `/devenir-hote` — publiée telle quelle malgré 3 écarts (2026-09-29)
 
