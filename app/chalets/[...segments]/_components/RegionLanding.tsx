@@ -368,6 +368,27 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
         </div>
       </section>
 
+      {/* ── Villes de la région ── */}
+      {regionCities.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+          <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
+            {isEn ? `Cities in ${displayRegionName}` : `Villes ${regionConfig.locative}`}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {regionCities.map(([city, n]) => (
+              <Link
+                key={city}
+                href={`${regionBasePath}/${slugify(city)}`}
+                className="px-4 py-2 rounded-full border border-charcoal-100 text-sm text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+              >
+                {isEn ? `Cabin rentals in ${city}` : `Location de chalet à ${city}`}
+                <span className="text-charcoal-400"> · {n}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── FAQ ── */}
       {faqItems.length > 0 && (
         <section className="bg-charcoal-50 py-16">
@@ -383,27 +404,6 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Villes de la région ── */}
-      {regionCities.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4 w-full">
-          <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
-            {isEn ? `Cities in ${displayRegionName}` : `Villes ${regionConfig.locative}`}
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {regionCities.map(([city, n]) => (
-              <Link
-                key={city}
-                href={`${regionBasePath}/${slugify(city)}`}
-                className="px-4 py-2 rounded-full border border-charcoal-100 text-sm text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
-              >
-                {isEn ? `Cabin rentals in ${city}` : `Location de chalet à ${city}`}
-                <span className="text-charcoal-400"> · {n}</span>
-              </Link>
-            ))}
           </div>
         </section>
       )}
