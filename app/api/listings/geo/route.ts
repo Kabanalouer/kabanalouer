@@ -61,7 +61,10 @@ export async function GET(req: Request) {
   if (capacity) query = query.gte("capacity", parseInt(capacity));
   if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
   if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
-  if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
+  if (amenityList.length > 0) {
+    // Chaîne JSON obligatoire : un tableau d'objets passé tel quel devient « {[object Object]} » dans l'URL PostgREST.
+    query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
+  }
   if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
   if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);

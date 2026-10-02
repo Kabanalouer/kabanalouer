@@ -126,7 +126,10 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
   if (amenities) {
     const amenityList = amenities.split(",").filter(Boolean);
-    if (amenityList.length > 0) query = query.contains("amenities", amenityList.map((id) => ({ id })));
+    if (amenityList.length > 0) {
+      // Chaîne JSON obligatoire : un tableau d'objets passé tel quel devient « {[object Object]} » dans l'URL PostgREST.
+      query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
+    }
   }
   if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
   if (accessibleOnly) query = query.eq("reduced_mobility", true);
