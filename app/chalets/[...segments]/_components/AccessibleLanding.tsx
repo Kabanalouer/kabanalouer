@@ -306,7 +306,8 @@ export default async function AccessibleLanding() {
 
       {/* ── Criteria ── */}
       <section className="bg-charcoal-50 py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-2">
             {isEn ? "What the owners specify" : "Ce que les propriétaires précisent"}
           </h2>
@@ -338,11 +339,13 @@ export default async function AccessibleLanding() {
             </p>
           )}
         </div>
+        </div>
       </section>
 
       {/* ── Tips ── */}
       <section className="bg-white py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Before booking an accessible cabin" : "Avant de réserver un chalet accessible"}
           </h2>
@@ -355,11 +358,13 @@ export default async function AccessibleLanding() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ── FAQ ── */}
       <section className="bg-charcoal-50 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Frequently asked questions" : "Questions fréquentes"}
           </h2>
@@ -371,6 +376,7 @@ export default async function AccessibleLanding() {
               </div>
             ))}
           </div>
+        </div>
         </div>
       </section>
 

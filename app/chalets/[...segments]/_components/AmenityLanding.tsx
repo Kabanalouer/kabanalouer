@@ -316,7 +316,8 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
 
       {/* ── Tips ── */}
       <section className="bg-charcoal-50 py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? config.tipsTitleEn : config.tipsTitleFr}
           </h2>
@@ -329,11 +330,13 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ── FAQ ── */}
       <section className="bg-white py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Frequently asked questions" : "Questions fréquentes"}
           </h2>
@@ -353,6 +356,7 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
               {isEn ? `Search ${nounOther}` : `Rechercher parmi les ${nounOther}`}
             </Link>
           </div>
+        </div>
         </div>
       </section>
 

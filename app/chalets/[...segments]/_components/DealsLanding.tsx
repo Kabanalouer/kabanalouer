@@ -401,7 +401,8 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
 
       {/* ── Tips ── */}
       <section className="bg-charcoal-50 py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "How to pay less for your cabin" : "Comment payer moins cher votre chalet"}
           </h2>
@@ -414,11 +415,13 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ── FAQ ── */}
       <section className="bg-white py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Frequently asked questions" : "Questions fréquentes"}
           </h2>
@@ -430,6 +433,7 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
               </div>
             ))}
           </div>
+        </div>
         </div>
       </section>
 
