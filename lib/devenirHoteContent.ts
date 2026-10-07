@@ -30,6 +30,7 @@ export type DevenirHoteContent = {
     error: string;
     noAirbnb: string;
     createFromScratch: string;
+    stepsTitle: string;
     steps: { title: string; text: string }[];
   };
   free: {
@@ -114,6 +115,7 @@ const fr: DevenirHoteContent = {
     error: "Collez un lien d’annonce Airbnb (ex. airbnb.ca/rooms/12345678).",
     noAirbnb: "Pas sur Airbnb ?",
     createFromScratch: "Créer une annonce de zéro",
+    stepsTitle: "3 étapes faciles",
     steps: [
       { title: "Collez votre lien", text: "Copiez l’adresse de votre annonce depuis Airbnb et collez-la ici." },
       { title: "Vérifiez votre fiche", text: "Complétez votre fiche avec les informations dupliquées." },
@@ -261,6 +263,7 @@ const en: DevenirHoteContent = {
     error: "Paste an Airbnb listing link (e.g. airbnb.ca/rooms/12345678).",
     noAirbnb: "Not on Airbnb?",
     createFromScratch: "Create a listing from scratch",
+    stepsTitle: "3 easy steps",
     steps: [
       { title: "Paste your link", text: "Copy your listing’s address from Airbnb and paste it here." },
       { title: "Review your listing", text: "Complete your listing with the copied information." },

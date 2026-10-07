@@ -168,17 +168,20 @@ export default async function DevenirHotePage() {
                   </p>
                 </div>
               </div>
-              <ol className="m-0 p-0 list-none grid gap-8 md:grid-cols-3">
-                {c.importSection.steps.map((step, i) => (
-                  <li key={step.title} className="border-t border-[#222] pt-5 flex flex-col gap-2.5">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-[13px] text-charcoal-400" aria-hidden="true">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <h3 className="m-0 text-lg font-semibold tracking-h3 text-charcoal-800">{step.title}</h3>
-                    <p className="m-0 text-[15px] leading-[1.55] text-charcoal-400">{step.text}</p>
-                  </li>
-                ))}
-              </ol>
+              <div className="flex flex-col gap-6">
+                <h3 className="m-0 text-heading-2 font-semibold tracking-h2 text-charcoal-800">{c.importSection.stepsTitle}</h3>
+                <ol className="m-0 p-0 list-none grid gap-8 md:grid-cols-3">
+                  {c.importSection.steps.map((step, i) => (
+                    <li key={step.title} className="border-t border-[#222] pt-5 flex flex-col gap-2.5">
+                      <span className="font-[family-name:var(--font-geist-mono)] text-[13px] text-charcoal-400" aria-hidden="true">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <h4 className="m-0 text-lg font-semibold tracking-h3 text-charcoal-800">{step.title}</h4>
+                      <p className="m-0 text-[15px] leading-[1.55] text-charcoal-400">{step.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </section>
 
