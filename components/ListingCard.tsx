@@ -252,7 +252,7 @@ export default function ListingCard({
         </h3>
 
         {/* Meta — location · capacity · bedrooms · beds */}
-        <p className="text-sm text-charcoal-400 mb-2">
+        <p className="text-sm text-charcoal-400 mb-1">
           {location}
           {" · "}
           {t("travelers", { count: listing.capacity })}
