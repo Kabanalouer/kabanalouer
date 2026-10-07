@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import AmenityRow from "./AmenityRow";
+import { pickHighlightAmenities } from "./ListingHighlights";
 import {
   AMENITY_PRIORITY_ORDER,
   groupAmenitiesByCategory,
@@ -74,8 +75,11 @@ export default function AmenitiesSection({ amenities }: { amenities: AmenityValu
 
   if (sorted.length === 0) return null;
 
-  const top10 = sorted.slice(0, TOP_COUNT);
-  const hasMore = sorted.length > TOP_COUNT;
+  // Aperçu : les équipements déjà montrés dans « Points forts » sont retirés
+  // (ils restent dans le modal complet), même nombre d'éléments qu'avant.
+  const highlights = new Set(pickHighlightAmenities(amenities));
+  const top10 = sorted.filter((a) => !highlights.has(a)).slice(0, TOP_COUNT);
+  const hasMore = sorted.length > TOP_COUNT || top10.length === 0;
   const title = t("fullTitle");
 
   return (

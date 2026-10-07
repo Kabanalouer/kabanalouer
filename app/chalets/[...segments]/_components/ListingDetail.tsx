@@ -28,7 +28,7 @@ import { localePath } from "@/lib/localePath";
 import { getRegionByDbValue } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay, PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
-import { NEARBY_BY_CATEGORY, getNearbyLabel } from "@/lib/nearbyActivities";
+import NearbyActivities from "@/components/chalets/NearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
 import { getTranslations } from "next-intl/server";
 import type { AmenityValue } from "@/lib/amenities-catalog";
@@ -174,13 +174,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const displayDescription = (isEn && (listing as { description_en?: string | null }).description_en)
     ? (listing as { description_en: string }).description_en
     : (listing.description as string | null);
-
-  // Nearby category labels mapped to translated keys
-  const NEARBY_CATEGORY_LABELS: Record<string, string> = {
-    "Été": t("nearbySummer"),
-    "Hiver": t("nearbyWinter"),
-    "4 saisons": t("nearbyAllSeason"),
-  };
 
   const avgRating =
     reviews && reviews.length > 0
@@ -463,29 +456,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
             {nearbyActivities.length > 0 && (
               <>
                 <hr className="border-[#ebebeb]" />
-                <div>
-                  <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-1">{t("nearbyTitle")}</h2>
-                  <p className="text-sm text-charcoal-400 mb-4">{t("nearbySubtitle")}</p>
-                  <div className="space-y-5">
-                    {Object.entries(NEARBY_BY_CATEGORY).map(([cat, items]) => {
-                      const catItems = items.filter((i) => nearbyActivities.includes(i));
-                      if (catItems.length === 0) return null;
-                      return (
-                        <div key={cat}>
-                          <h3 className="text-xs font-semibold text-charcoal-400 uppercase tracking-widest mb-2">{NEARBY_CATEGORY_LABELS[cat] ?? cat}</h3>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {catItems.map((a) => (
-                              <div key={a} className="flex items-center gap-2 text-base text-charcoal-700">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                                {getNearbyLabel(a, locale)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                <NearbyActivities activities={nearbyActivities} />
               </>
             )}
 
