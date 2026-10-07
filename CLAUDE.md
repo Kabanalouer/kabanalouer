@@ -433,7 +433,7 @@ Phase 1 de l'import d'annonces externes — **Airbnb seulement**, VRBO retiré (
 - **Messagerie en direct** : le fil ouvert **et** la liste des conversations (`MessagesClient.tsx`, abonnements Realtime filtrés sur `receiver_id` / `sender_id`) se mettent à jour sans recharger ; une nouvelle conversation apparaît en tête de liste.
 - **Phase 2a — notification "nouveau message"** : cron `/api/cron/new-message-notifications` (`* * * * *`, chaque minute depuis le 2026-09-24) — regroupe les messages non lus depuis 2+ minutes (délai total 2 à 3 min) par `listing_id`+`sender_id`+`receiver_id`, re-vérifie `is_read` juste avant l'envoi (évite une notification si lu entre-temps), un seul courriel par groupe (compte, expéditeur, annonce, aperçu tronqué à 150 caractères). Colonne `messages.notification_sent_at` (anti-doublon, posée même si aucun envoi parce que lu entre-temps). `lib/emails/newMessageNotification.ts` — FR/EN, échappement HTML de tout contenu utilisateur (`lib/escapeHtml.ts`).
   - **Bug trouvé et corrigé le jour même en testant en conditions réelles** : le gabarit entoure déjà l'aperçu de guillemets — un message se terminant lui-même par un guillemet produisait deux guillemets collés. Corrigé en retirant tout guillemet (droit ou courbe) en début/fin du contenu brut avant le gabarit.
-- **Phase 2b — réponse par courriel** : sous-domaine dédié `reply.kabanalouer.ca` (jamais la racine — le MX racine est déjà celui de Google Workspace), créé et vérifié dans Resend (réception activée). Table `email_reply_addresses` (une ligne par paire d'utilisateurs sur une annonce, `user_a_id`/`user_b_id` normalisés — le plus petit UUID en premier — pour toujours retomber sur la même ligne). Token court (16 octets/32 car. hex, `lib/emailReplyAddress.ts`) — volontairement plus court que `review_requests.token` (32 octets) : au-delà de ~59 caractères, `conv-{token}@reply.kabanalouer.ca` dépasserait la limite RFC 5321 de 64 caractères pour le local-part d'une adresse courriel.
+- **Phase 2b — réponse par courriel** : sous-domaine dédié `reply.kabanalouer.ca` (jamais la racine — le MX racine sert à la réception de `info@`, via ImprovMX depuis le 2026-10-07), créé et vérifié dans Resend (réception activée). Table `email_reply_addresses` (une ligne par paire d'utilisateurs sur une annonce, `user_a_id`/`user_b_id` normalisés — le plus petit UUID en premier — pour toujours retomber sur la même ligne). Token court (16 octets/32 car. hex, `lib/emailReplyAddress.ts`) — volontairement plus court que `review_requests.token` (32 octets) : au-delà de ~59 caractères, `conv-{token}@reply.kabanalouer.ca` dépasserait la limite RFC 5321 de 64 caractères pour le local-part d'une adresse courriel.
   - Le courriel de notification (Phase 2a) porte maintenant un `Reply-To: conv-{token}@reply.kabanalouer.ca` — répondre depuis Gmail/Outlook insère directement le message dans la conversation, sans connexion à l'app.
   - **Route `POST /api/webhooks/resend-inbound`** : vérifie la signature (`resend.webhooks.verify()`, Svix), ne traite que `email.received`, extrait le token de l'adresse "to", retrouve la paire, appelle `resend.emails.receiving.get()` pour le contenu complet (le webhook ne transporte que les métadonnées), détecte les réponses automatiques (en-têtes `Auto-Submitted`/`X-Autoreply` ou motifs de sujet courants), vérifie que l'adresse "from" correspond à un des deux participants légitimes, nettoie le texte via `email-reply-parser` (retire les citations du fil), puis insère via `insertMessageAndTranslate` (`lib/sendMessage.ts`) — message indiscernable d'un envoi normal, traduction automatique incluse gratuitement. Chaque cas d'exclusion est ignoré silencieusement (log seulement).
   - **Bug trouvé et corrigé en testant en conditions réelles** : `RESEND_API_KEY` (utilisée partout ailleurs pour l'envoi) a la permission "Sending access" seulement — l'appel à l'API de réception échouait avec 401 `restricted_api_key`. Corrigé en créant une clé séparée `RESEND_RECEIVING_API_KEY` ("Full access"), utilisée uniquement dans cette route — moindre privilège, la clé d'envoi reste inchangée partout ailleurs.
@@ -515,9 +515,9 @@ Anciennement "Caractéristiques" — renommé partout où le libellé désigne c
 
 #### Fiche publique — affichage des équipements (2026-09-19)
 
-- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`), plus de bouton "Voir caractéristiques".
-- **`components/chalets/AmenitiesSection.tsx`** : section "Ce que propose ce chalet" (repositionnée après "Où vous dormirez"), affiche les 10 équipements prioritaires + bouton "Afficher {X} équipements" (masqué si ≤ 10 au total) ouvrant une modale groupée par catégorie via `groupAmenitiesByCategory()`.
-- **`components/chalets/AmenityRow.tsx`** (partagé entre les deux composants ci-dessus) : icône + nom + résumé (`summarizeAmenityDetails()`), résumé toujours tronqué sur une seule ligne (`truncate` + `min-w-0` sur le parent flex) peu importe sa longueur.
+- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`, fonction exportée `pickHighlightAmenities()`), plus de bouton "Voir caractéristiques". **Depuis le 2026-10-07** : 3 colonnes (1 sur mobile), sans filets, icône 24px au-dessus, titre 16px 600, détail 14px `charcoal-400`, gap 28px — n'utilise plus `AmenityRow`.
+- **`components/chalets/AmenitiesSection.tsx`** : section "Ce que propose ce chalet" (repositionnée après "Où vous dormirez"), affiche 10 équipements prioritaires **en excluant les 3 points forts** (comparés par objet, depuis le 2026-10-07 — ils restent dans la modale) + bouton "Afficher {X} équipements" (X = total ; affiché si plus de 10 au total ou si l'aperçu est vide) ouvrant une modale groupée par catégorie via `groupAmenitiesByCategory()`.
+- **`components/chalets/AmenityRow.tsx`** (utilisé par l'aperçu et la modale de `AmenitiesSection`) : icône + nom + résumé (`summarizeAmenityDetails()`), résumé toujours tronqué sur une seule ligne (`truncate` + `min-w-0` sur le parent flex) peu importe sa longueur.
 
 #### JSON-LD / GEO (`lib/listing-schema.ts`) — description des équipements pour les agents IA (2026-09-19)
 
@@ -559,6 +559,9 @@ Une seule entrée de menu (choix de Simon, plutôt que de nouvelles entrées), d
 - **CSP** (`next.config.ts`, `connect-src`) : `*.gstatic.com *.google.com data: blob:` ajoutés — les cartes vectorielles téléchargent leur style depuis `www.gstatic.com` ; sans ça, fond de carte vide (régression causée puis corrigée le même jour).
 - La carte du dashboard (`LocationSection.tsx`, `mapId="kabanalouer-edit"`) n'a pas été touchée : elle garde les commerces, utiles au proprio pour placer son chalet.
 - En local, pas de clé `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` dans `.env.local` → « Carte non disponible » : une modification de carte se vérifie en production.
+- **Style sobre et désaturé (2026-10-07)**, réglé par Simon dans la console (style « Kabanalouer - Carte publique », Map ID ci-dessus) : terrain `#f4f2ee`, végétation et parcs `#e8e9df`, eau `#cfdbe0`, routes locales `#ffffff` contour `#e3e0d9`, autoroutes `#ece7dd`, libellés texte `#8a8a8a` contour blanc ; commerces et transports masqués ; villes, villages et lacs gardés. **Pièges rencontrés** : (1) le crayon du « Mode clair » sur la page du Map ID sert seulement à *choisir* le style associé — l'édition se fait dans le menu **Styles de carte** → le style → Personnaliser ; (2) mettre `8a8a8a` dans le **Polygone/Polyligne** d'un élément parent (au lieu de ses **Libellés**) colore toutes ses géométries : limites de municipalités foncées (Politique) puis routes plus foncées que les autoroutes (Route) ; (3) pas d'élément « limites » : ce sont le Polygone de **Politique** et le sous-élément **Frontière** ; (4) toujours **Enregistrer puis Publier**. Les cases « Contrôles » de l'éditeur ne s'appliquent qu'à l'aperçu.
+- **Contrôles de la carte /chalets** : interface Google désactivée (`disableDefaultUI`) ; boutons maison « Agrandir la carte », +/− et barre d'échelle `ScaleBar` (gardée, décision de Simon le 2026-10-07). Mini-carte de la fiche : figée, sans contrôle (adresse approximative).
+- **Marqueurs /chalets (`ChaletsMap.tsx`, `AdvancedMarker`)** : vignette photo ronde 56px, bordure blanche 3px, ombre `0 2px 8px rgba(35,30,22,.22)` ; actif (survol de la vignette ou de la carte de la liste, ou sélection) = anneau olive `0 0 0 2px #636e40` + `scale-110`, transition 140ms ; sans photo = cercle `charcoal-50` + icône maison. `InfoWindow` avec `pixelOffset={[0, -58]}` (au-dessus de la vignette). Des **pastilles de prix** ont été essayées le 2026-10-07 puis retirées le même jour (Simon ne les aimait pas) — ne pas les reproposer.
 
 ### "Aperçu de mon annonce" pour un brouillon — CSP et accès RLS corrigés (2026-09-16)
 
@@ -989,10 +992,34 @@ Tout en ligne (commits `1fd3dd0` → `8a98b27`).
 **Leçons de la session**
 - **Règles du design system** : un emoji (« ⏳ ») avait été publié dans le bandeau proprios avant que ce fichier soit relu — toujours relire les règles (pas d'emojis, espaces insécables U+202F avant ? ! ; et U+00A0 avant :) avant d'écrire un texte d'interface.
 - **Erreur « require is not defined » sur toutes les pages `/en` en local** (alors que la production fonctionne) : cache Turbopack corrompu → arrêter le serveur, `rm -rf .next/dev`, relancer `npx next dev -p 3123`.
-- **Capture d'écran** : `take_screenshot` de chrome-devtools reste bloqué sur ce projet ; utiliser Playwright depuis le scratchpad (`import pw from "/Users/simonlemay/kabanalouer/node_modules/playwright/index.js"`), y compris pour mesurer des positions (`getBoundingClientRect`).
+- **Capture d'écran** : `take_screenshot` de chrome-devtools reste bloqué sur ce projet (**fonctionnait de nouveau le 2026-10-07**, sans `filePath` : le chemin du scratchpad est refusé) ; sinon, utiliser Playwright depuis le scratchpad (`import pw from "/Users/simonlemay/kabanalouer/node_modules/playwright/index.js"`), y compris pour mesurer des positions (`getBoundingClientRect`).
 - **Aperçu d'une page sous un seuil** : abaisser temporairement la constante en local (marquée `// TEMP-PREVIEW`), capturer, puis la remettre et vérifier avec `grep` avant de committer.
 
+### Session du 2026-10-07 — Design system, réseaux sociaux, courriel, cartes, fiche chalet, Devenir hôte
+
+Tout en ligne (commits `887b12e` → `62065b2`).
+
+1. **Design system** : page « Kabanalouer Design System » publiée (artifact, voir section 14) ; vieux dossier `Design System/` supprimé ; accent corrigé en orange brûlé en tête de ce fichier.
+2. **Espacement des lettres des titres** : tokens `tracking-display` / `tracking-h2` / `tracking-h3` (section 3), 20 valeurs en dur remplacées. Les H1 de page restent non resserrés (Simon croyait qu'ils étaient à -0,035em — ils étaient à 0).
+3. **Cartes chalet** : points de photos style Airbnb, fenêtre glissante de 5 (section 3).
+4. **Offre de lancement** (`OwnersSection.tsx`) : carte sur photo assombrie au lieu du fond vert (section 3).
+5. **Cartes Google** : style sobre réglé dans la console, marqueurs photo affinés (section 9, « Cartes Google publiques »). Pastilles de prix essayées puis retirées.
+6. **Fiche chalet** : points forts en 3 colonnes et retirés de l'aperçu « Ce que propose ce chalet » (section 9, catalogue d'équipements) ; « Quoi faire à proximité ? » = contrôle segmenté Été · Hiver · 4 saisons (`components/chalets/NearbyActivities.tsx`, Été par défaut, onglets vides masqués, toutes les activités en chips — **pas** de « Voir plus », Simon trouve qu'il y en a trop peu) ; zone proprio (`HostCard.tsx`) dans un bloc `bg-charcoal-50` arrondi avec carte profil blanche, filets au-dessus et en dessous (`RelatedListings`) retirés.
+7. **Devenir hôte** : 3 étapes sans cartes ni pastilles — filet 1px `#222`, numéro « 01 » en Geist Mono 13px (`font-[family-name:var(--font-geist-mono)]` : next/font n'enregistre pas la famille sous le nom littéral « Geist Mono »), titre 18px 600 (`h4`), description 15px ; titre « 3 étapes faciles » (`importSection.stepsTitle`, FR/EN) au-dessus.
+8. **Hors code** : photo de profil Facebook (1080×1080, favicon plein cadre sans coins arrondis) et couverture (1640×856, photo du hero + logo + titre) générées sur le Bureau de Simon ; courriel `info@` (section 14, Infrastructure email).
+
+**Leçons de la session**
+- **`rounded-2xl` vaut 20px** dans ce projet (`--radius-2xl`) : pour 16px exacts, `rounded-[16px]`.
+- **GitHub a renvoyé « Internal Server Error »** au push pendant ~4 minutes : le commit reste local, réessayer (boucle de 10 essais espacés d'une minute) plutôt que de modifier quoi que ce soit.
+- **Garde-fou Claude Code** : la suppression d'un dossier entier (`git rm -r`) a été bloquée par le classificateur ; Simon l'a lancée lui-même avec `! git rm -r -q "…"` (attention au point final tapé par erreur).
+
 ## 14. Points en suspens
+
+### À faire / à vérifier après la session du 2026-10-07
+
+- **Résilier les abonnements Google Workspace avant le 20 octobre 2026** : celui payé par Simon sur son compte Google personnel (membre d'un groupe familial — adresse personnalisée impossible, essai jusqu'au 20 oct.) et celui créé via Squarespace s'il est facturé. La réception passe maintenant par ImprovMX.
+- **Envoi « en tant que » `info@` depuis Gmail** : méthode choisie par Simon inconnue (SMTP ImprovMX ou Resend) — si ImprovMX, corriger le SPF racine (voir Infrastructure email plus bas). Pas de DMARC sur la racine.
+- **Contrôles de carte** : rien à faire (échelle gardée par Simon).
 
 > ⚠️ **À lire avant de proposer un prompt basé sur cette liste (note du 2026-09-03)** : cette session, 3 items différents de ce genre de liste se sont révélés faux — déjà faits, ou périmés — alors que les notes affirmaient le contraire (Send Email Hook, confirmation d'achat boost, séquence win-back — voir section 13). Toujours vérifier l'état réel du code/de la base avant de faire confiance à un point noté ici comme "en attente" ou "à faire".
 
@@ -1031,9 +1058,9 @@ Tout en ligne (commits `1fd3dd0` → `8a98b27`).
 
 Toutes les variables d'environnement du projet Vercel sont ciblées **production seulement** : chaque déploiement de branche échoue au build (`new Resend(process.env.RESEND_API_KEY!)` → « Missing API key »). Pour les réactiver, il faudrait donner des clés à l'environnement Preview — mais elles pointeraient sur la vraie base Supabase et le vrai Stripe (base partagée dev/prod, section 2). Décision à prendre avec Simon ; en attendant, aperçus en local sur `localhost:3123`.
 
-### Dossier « Design System » pas à jour (2026-09-24)
+### Design system de référence — page artifact (dossier « Design System » supprimé)
 
-Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site. **Remplacé le 2026-10-07** par la page « Kabanalouer Design System » (artifact privé de Simon : https://claude.ai/artifact/Cg6VKQqTxKr5bbRYUxsd4f), tirée de `app/globals.css` et de la section 3 — c'est la référence pour le matériel externe (graphiste, imprimés, réseaux sociaux). Si le design system change, republier cette page. Suppression du dossier proposée à Simon (à faire par lui ou avec sa permission explicite).
+Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site. **Remplacé le 2026-10-07** par la page « Kabanalouer Design System » (artifact privé de Simon : https://claude.ai/artifact/Cg6VKQqTxKr5bbRYUxsd4f), tirée de `app/globals.css` et de la section 3 — c'est la référence pour le matériel externe (graphiste, imprimés, réseaux sociaux). Si le design system change, republier cette page (source locale de la page : scratchpad de la session du 2026-10-07, donc à reconstruire depuis l'artifact via `Artifact read` si besoin). **Dossier supprimé le 2026-10-07** par Simon (commit `62065b2`) — récupérable dans l'historique Git.
 
 ### Comparaison de prix fictive sur la page d'accueil (2026-09-29)
 
@@ -1041,7 +1068,7 @@ Section « Notre différence » (`components/PriceComparison.tsx`) : Vrbo / Kaba
 
 ### Bandeau « Pour les propriétaires » (`components/OwnersSection.tsx`)
 
-Simplifié le 2026-10-01, offre de lancement mise en avant le 2026-10-02 : pastille lime « Offre de lancement », titre « Affichez votre chalet. C'est gratuit. » (inchangé, choix de Simon), « Votre première année est gratuite pour toute annonce publiée avant la date limite. », ligne « Jusqu'au {date} » avec icône horloge SVG (date tirée de `LAUNCH_OFFER_END`), bouton « Profiter de l'offre gratuite → », « Aucune carte de crédit requise » (vrai : `activate-free` ne passe pas par Stripe). Affiché sur l'accueil, la recherche `/chalets`, les pages région, ville, par type et région/ville × type.
+Simplifié le 2026-10-01, offre de lancement mise en avant le 2026-10-02, **fond vert remplacé le 2026-10-07 par une carte sur photo assombrie** (voir section 3, « Carte d'appel à l'action sur photo » ; texte aligné à gauche) : pastille lime « Offre de lancement », titre « Affichez votre chalet. C'est gratuit. » (inchangé, choix de Simon), « Votre première année est gratuite pour toute annonce publiée avant la date limite. », ligne « Jusqu'au {date} » avec icône horloge SVG (date tirée de `LAUNCH_OFFER_END`), bouton « Profiter de l'offre gratuite → », « Aucune carte de crédit requise » (vrai : `activate-free` ne passe pas par Stripe). Affiché sur l'accueil, la recherche `/chalets`, les pages région, ville, par type et région/ville × type.
 
 ### Page `/devenir-hote` — publiée telle quelle malgré 3 écarts (2026-09-29)
 
@@ -1071,7 +1098,7 @@ Mais Stripe refuse d'envoyer un reçu à une vraie adresse cliente tant que le c
 ### Infrastructure email (Resend + Google Workspace) — Phase 1 terminée (2026-07-06)
 
 - **Domaine vérifié** : `kabanalouer.ca` vérifié dans Resend (DKIM + SPF + DMARC)
-- **Google Workspace** : configuré et fonctionnel — Gmail actif pour `slemay@kabanalouer.ca` et `info@kabanalouer.ca`
+- **Réception `@kabanalouer.ca` — ⚠️ corrigé le 2026-10-07** : l'ancienne note « Google Workspace configuré, Gmail actif pour `slemay@` et `info@` » était **fausse**. Le compte Workspace créé via Squarespace (admin inconnu) n'avait jamais été finalisé : le MX racine pointait vers `smtp.google.com` sans boîte active, les courriels à `info@` n'arrivaient nulle part. **Depuis le 2026-10-07, le MX racine pointe vers ImprovMX** (`mx1/mx2.improvmx.com`, redirection mise en place par Simon dans Squarespace) vers sa boîte Gmail. Le SPF racine est resté `include:_spf.google.com` (inutile) : si Simon envoie « en tant que » `info@` via le SMTP d'ImprovMX, le remplacer par `v=spf1 include:spf.improvmx.com ~all` ; via `smtp.resend.com`, rien à changer. Inchangés et vérifiés le même jour : envoi Resend (`send.kabanalouer.ca`, `resend._domainkey`) et `reply.kabanalouer.ca`. Voir section 14 pour les abonnements Workspace à résilier.
 - **SMTP custom Supabase Auth** : branché sur Resend (host `smtp.resend.com`, port `465`, username `resend`, expéditeur `no-reply@kabanalouer.ca`) — testé avec succès
 - **Code** : les 3 appels Resend (`app/devenir-hote/actions.ts`, `app/api/reviews/route.ts`, `app/api/reviews/[id]/reply/route.ts`) utilisent maintenant `Kabanalouer <no-reply@kabanalouer.ca>` au lieu de `onboarding@resend.dev` — commité et déployé (commit `445494b`)
 
