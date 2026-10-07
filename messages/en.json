@@ -869,8 +869,6 @@
     "nearbySummer": "Summer",
     "nearbyWinter": "Winter",
     "nearbyAllSeason": "Year-round",
-    "nearbyShowAll": "See all {count} activities",
-    "nearbyShowLess": "Show less",
     "reviewsTitle": "Traveler reviews",
     "aiSummaryBadge": "AI summary",
     "aiSummarySub": "Summary of {count} reviews",

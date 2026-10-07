@@ -48,12 +48,14 @@ export default async function HostCard({
   const displayBio = localizedBio(host, locale);
 
   return (
-    <div>
+    // Zone proprio mise en valeur sur fond gris pâle (2026-10-07) ; la carte
+    // profil à gauche passe en blanc pour ressortir sur ce fond.
+    <div className="bg-charcoal-50 rounded-2xl p-5 sm:p-8">
       <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-5">{t("heading")}</h2>
 
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Left: host card ── */}
-        <div className="bg-charcoal-50 rounded-2xl p-6 flex flex-col items-center text-center sm:w-56 shrink-0">
+        <div className="bg-white rounded-2xl p-6 flex flex-col items-center text-center sm:w-56 shrink-0 shadow-[0_1px_4px_rgba(35,30,22,0.08)]">
           <div className="w-24 h-24 rounded-full bg-charcoal-100 overflow-hidden flex items-center justify-center mb-3">
             {host.avatar_url ? (
               <Image
@@ -122,7 +124,7 @@ export default async function HostCard({
             )}
           </div>
           {isOwner ? (
-            <div className="rounded-xl bg-charcoal-50 border border-[#ebebeb] p-4 text-center">
+            <div className="rounded-xl bg-white border border-[#ebebeb] p-4 text-center">
               <p className="text-base font-semibold text-charcoal-800">{tListing("isYourCabin")}</p>
               <p className="text-sm text-charcoal-500 mt-1">{tListing("ownListingNote")}</p>
               <Link

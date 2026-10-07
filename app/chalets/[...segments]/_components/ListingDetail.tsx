@@ -582,7 +582,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
             {/* Host section */}
             {host && (
               <>
-                <hr className="border-[#ebebeb]" />
                 <HostCard
                   host={host}
                   reviewCount={hostReviewCount}

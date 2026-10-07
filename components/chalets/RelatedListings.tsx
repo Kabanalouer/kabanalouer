@@ -73,7 +73,7 @@ export default async function RelatedListings({
     : (isEn ? `Cabin rentals in ${regionName} →` : `Location de chalet ${regionName} →`);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-[#ebebeb]">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
       <div className="flex items-end justify-between gap-4 mb-6 flex-wrap">
         <h2 className="text-heading-2 font-semibold text-charcoal-800">{title}</h2>
         {moreHref && (
