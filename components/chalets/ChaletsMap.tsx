@@ -8,7 +8,6 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { getRegionByDbValue } from "@/lib/regions";
-import { formatPrice } from "@/lib/formatPrice";
 import { REGION_BOUNDS, SOUTHERN_QUEBEC_BOUNDS, type GeoBounds } from "@/lib/regionBounds";
 
 const QUEBEC_CENTER = { lat: 46.8, lng: -72.0 };
@@ -166,16 +165,29 @@ function MapContent({
             onClick={() => setSelectedId((prev) => (prev === listing.id ? null : listing.id))}
             zIndex={isActive ? 20 : 1}
           >
-            {/* Pastille de prix : prix par nuit, ou « Sur demande » */}
+            {/* Vignette photo ronde : bordure blanche, anneau olive à l'état actif */}
             <div
               onMouseEnter={() => onHoverChange(listing.id)}
               onMouseLeave={() => onHoverChange(null)}
-              className={`cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] leading-4 font-bold transition-[background-color,color,transform] duration-[140ms] ease-out ${
-                isActive ? "bg-[#222] text-white scale-[1.06]" : "bg-white text-[#222]"
+              className={`w-14 h-14 rounded-full overflow-hidden border-[3px] border-white bg-white cursor-pointer transition-[transform,box-shadow] duration-[140ms] ease-out ${
+                isActive ? "scale-110" : ""
               }`}
-              style={{ boxShadow: "0 2px 8px rgba(35,30,22,.22)" }}
+              style={{
+                boxShadow: isActive
+                  ? "0 0 0 2px #636e40, 0 6px 16px rgba(35,30,22,.3)"
+                  : "0 2px 8px rgba(35,30,22,.22)",
+              }}
             >
-              {listing.priceOnRequest || !(listing.price > 0) ? tMap("priceOnRequest") : formatPrice(listing.price, locale)}
+              {listing.photos[0] ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={listing.photos[0]} alt="" className="w-full h-full object-cover" width={56} height={56} loading="lazy" draggable={false} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-charcoal-50">
+                  <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                  </svg>
+                </div>
+              )}
             </div>
           </AdvancedMarker>
         );
@@ -184,7 +196,7 @@ function MapContent({
       {selected && selected.lat != null && selected.lng != null && (
         <InfoWindow
           position={{ lat: selected.lat, lng: selected.lng }}
-          pixelOffset={[0, -32]} // au-dessus de la pastille
+          pixelOffset={[0, -58]} // au-dessus de la vignette
           onCloseClick={() => setSelectedId(null)}
         >
           <div className="w-52 font-sans text-left">
