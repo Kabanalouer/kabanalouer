@@ -175,19 +175,43 @@ export default function ListingCard({
           </button>
         )}
 
-        {/* Dot indicators */}
-        {photos.length > 1 && (
-          <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
-            {photos.map((_, i) => (
-              <span
-                key={i}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-150 ${
-                  i === idx ? "bg-white scale-110" : "bg-white/55"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+        {/* Dot indicators — fenêtre glissante de 5 points max (style Airbnb) */}
+        {photos.length > 1 && (() => {
+          const SLOT = 7;
+          const GAP = 5;
+          const VISIBLE = Math.min(photos.length, 5);
+          const start = Math.max(0, Math.min(idx - 2, photos.length - VISIBLE));
+          const end = start + VISIBLE - 1;
+          return (
+            <div
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none z-10"
+              style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,.3))" }}
+            >
+              <div className="overflow-hidden" style={{ width: VISIBLE * SLOT + (VISIBLE - 1) * GAP, height: SLOT }}>
+                <div
+                  className="flex h-full transition-transform duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                  style={{ gap: GAP, transform: `translateX(-${start * (SLOT + GAP)}px)` }}
+                >
+                  {photos.map((_, i) => {
+                    // Actif 7px/100 %, voisins 6px/60 %, bords de fenêtre (s'il reste des photos au-delà) 4,5px/40 %
+                    const atEdge = (i === start && start > 0) || (i === end && end < photos.length - 1);
+                    const outside = i < start || i > end;
+                    const size = i === idx ? 7 : outside ? 4 : atEdge ? 4.5 : 6;
+                    const opacity = i === idx ? 1 : outside ? 0 : atEdge ? 0.4 : 0.6;
+                    return (
+                      <span key={i} className="flex items-center justify-center shrink-0" style={{ width: SLOT, height: SLOT }}>
+                        <span
+                          className="rounded-full bg-white transition-[width,height,opacity] duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                          style={{ width: size, height: size, opacity }}
+                        />
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
