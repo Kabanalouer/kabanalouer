@@ -54,6 +54,12 @@
   --text-heading-3: 1.125rem;              /* 18px — sous-titres (H3) */
   --text-heading-3--line-height: 1.625rem;
 
+  /* Espacement des lettres des titres (voir CLAUDE.md § Typographie) — tracking-display / tracking-h2 / tracking-h3.
+     Toujours passer par ces tokens, jamais de tracking-[-0.0Xem] en dur dans les composants. */
+  --tracking-display: -0.02em;   /* grands titres d'accroche, gros chiffres */
+  --tracking-h2:      -0.015em;  /* titres de section */
+  --tracking-h3:      -0.01em;   /* sous-titres, titres de carte */
+
   /* Primary brand — olive */
   --color-primary:        #636e40;
   --color-primary-dark:   #4d5631;
@@ -116,7 +122,7 @@
   --lh-normal:  1.45;
   --lh-relaxed: 1.6;
 
-  --tracking-tight:  -0.035em;
+  --tracking-tight:  var(--tracking-display); /* alias historique, aligné sur le display */
   --tracking-normal: -0.01em;
   --tracking-wide:   0.04em;
   --tracking-caps:   0.08em;

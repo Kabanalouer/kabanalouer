@@ -3,7 +3,7 @@
 ## Design system prioritaire — ne pas dévier
 
 - **Couleur primaire :** olive `#636e40` (variantes : 600 `#4d5631`, 700 `#3a4124`, 100 `#e8ebdc`, 50 `#f5f6ec`)
-- **Couleur accent :** coral `#f04e45`
+- **Couleur accent :** orange brûlé `#C2410C` (survol `#9A3412`) — signaux seulement (promo, favoris, non lus), jamais sur le bouton principal. L'ancien corail `#f04e45` est retiré depuis le 2026-09-24.
 - **Typographie :** Plus Jakarta Sans uniquement
 - **Boutons CTA :** toujours `rounded-full`
 - **Pas d'emojis** dans l'UI (dashboard, boutons, pages publiques), **sentence case** partout, **prix en format québécois** (ex. `120 $/nuit`). Exception (2026-07-10) : un emoji ponctuel est toléré dans la phrase de clôture chaleureuse d'un email transactionnel de confirmation (ex. "Merci pour ta confiance 🙏"), jamais dans un titre, un sujet, un bouton ou l'UI du site elle-même.
@@ -89,7 +89,8 @@ Contexte complet du projet pour Claude Code. À lire en entier au démarrage.
 | Minimum | `text-xs` | 12px | badges, légendes, mentions |
 
 - **Jamais sous 12px** — pas de `text-[10px]` / `text-[11px]`.
-- **H1 : espace entre les mots +0,08em** appliqué globalement (`h1` dans `@layer base`, `app/globals.css`) — Plus Jakarta Sans a des espaces étroites. Ne pas resserrer les lettres des H1 (pas de `tracking-tight` ni `tracking-[-0.0Xem]`, pas de `font-extrabold`). Attention : `--tracking-normal` est redéfini à -0,01em et `--tracking-tight` à -0,035em dans `:root`.
+- **H1 : espace entre les mots +0,08em** appliqué globalement (`h1` dans `@layer base`, `app/globals.css`) — Plus Jakarta Sans a des espaces étroites. Les H1 de page n'ont aucune classe d'espacement des lettres (pas de `tracking-tight`, pas de `font-extrabold`). Attention : `--tracking-normal` est redéfini à -0,01em dans `:root`, et `--tracking-tight` est un alias de `--tracking-display`.
+- **Espacement des lettres des titres — tokens (2026-10-07)**, définis dans `@theme` (`app/globals.css`) : `tracking-display` **-0,02em** (grands titres d'accroche, gros chiffres ; était -0,035em), `tracking-h2` **-0,015em** (titres de section ; était -0,03em), `tracking-h3` **-0,01em** (sous-titres, titres de carte ; était -0,02em). **Jamais de `tracking-[-0.0Xem]` en dur** dans un composant : toujours un de ces tokens (ou `tracking-normal` pour -0,01em sur du texte courant).
 - Un titre de section doit toujours être nettement plus gros que le texte qui le suit (jamais un H2 sans classe de taille, qui retombe à 16px).
 
 ### Règles UI strictes
@@ -1030,7 +1031,7 @@ Toutes les variables d'environnement du projet Vercel sont ciblées **production
 
 ### Dossier « Design System » pas à jour (2026-09-24)
 
-Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site — à mettre à jour si Simon s'en sert pour du matériel externe.
+Les maquettes et la doc de marque de `Design System/` montrent encore l'ancien logo et l'ancienne palette (corail). Non utilisé par le site. **Remplacé le 2026-10-07** par la page « Kabanalouer Design System » (artifact privé de Simon : https://claude.ai/artifact/Cg6VKQqTxKr5bbRYUxsd4f), tirée de `app/globals.css` et de la section 3 — c'est la référence pour le matériel externe (graphiste, imprimés, réseaux sociaux). Si le design system change, republier cette page. Suppression du dossier proposée à Simon (à faire par lui ou avec sa permission explicite).
 
 ### Comparaison de prix fictive sur la page d'accueil (2026-09-29)
 

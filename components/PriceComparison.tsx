@@ -33,7 +33,7 @@ export default async function PriceComparison() {
         <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary">
           {t("whyLabel")}
         </p>
-        <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-[-0.03em] text-charcoal-800 text-balance">
+        <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-h2 text-charcoal-800 text-balance">
           {t("compareTitle")}{" "}
           <span className="text-primary">{t("compareTitleAccent")}</span>
         </h2>
@@ -57,7 +57,7 @@ export default async function PriceComparison() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/logo-wordmark-light.svg" alt="Kabanalouer" className="h-7 sm:h-9 w-auto shrink-0" />
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className="text-2xl sm:text-[28px] font-extrabold tracking-[-0.03em]">{money(base)}</span>
+                    <span className="text-2xl sm:text-[28px] font-extrabold tracking-h2">{money(base)}</span>
                     <span className="text-xs opacity-90 whitespace-nowrap">{t("compareNoFees")}</span>
                   </div>
                 </div>
@@ -68,7 +68,7 @@ export default async function PriceComparison() {
                 >
                   <span className="min-w-[120px] text-[17px] font-bold text-charcoal-800">{p.name}</span>
                   <div className="flex flex-col items-end gap-0.5 text-charcoal-400">
-                    <span className="text-[22px] font-bold tracking-[-0.02em]">{money(base * (1 + p.feeRate))}</span>
+                    <span className="text-[22px] font-bold tracking-h3">{money(base * (1 + p.feeRate))}</span>
                     <span className="text-xs whitespace-nowrap">{t("compareFeeIncluded", { fee: money(base * p.feeRate) })}</span>
                   </div>
                 </div>

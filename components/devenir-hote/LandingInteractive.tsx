@@ -150,7 +150,7 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
   return (
     <div className="bg-white border border-charcoal-100 rounded-2xl shadow-[var(--shadow-lg)] p-[clamp(24px,3vw,36px)] flex flex-col gap-[26px]">
       <div className="flex flex-col gap-1">
-        <h3 className="m-0 text-xl font-bold tracking-[-0.02em] text-charcoal-800">{c.title}</h3>
+        <h3 className="m-0 text-xl font-bold tracking-h3 text-charcoal-800">{c.title}</h3>
         <p className="m-0 text-sm text-charcoal-400">{c.subtitle}</p>
       </div>
       <div className="flex flex-col gap-2.5">
@@ -190,12 +190,12 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
       <div className="grid grid-cols-2 gap-3" aria-live="polite">
         <div className="bg-charcoal-50 rounded-lg p-[18px] flex flex-col gap-1.5">
           <span className="text-[13px] font-semibold text-charcoal-400">{c.commissionLabel}</span>
-          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-[-0.03em] text-error-700">{feesLabel}</span>
+          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-h2 text-error-700">{feesLabel}</span>
           <span className="text-xs text-charcoal-400">{c.commissionNote}</span>
         </div>
         <div className="bg-primary-50 border-[1.5px] border-primary-200 rounded-lg p-[18px] flex flex-col gap-1.5">
           <span className="text-[13px] font-bold text-primary-700">{c.kabanalouerLabel}</span>
-          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-[-0.03em] text-primary-700">{money(0, locale)}</span>
+          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-h2 text-primary-700">{money(0, locale)}</span>
           <span className="text-xs text-primary-600">{c.kabanalouerNote}</span>
         </div>
       </div>
@@ -234,7 +234,7 @@ export function FaqAccordion({ items }: { items: Faq[] }) {
                   setOpen(isOpen ? -1 : i);
                   if (!isOpen) trackEvent("lp_hote_faq_ouverte", { question: item.q, position: i + 1 });
                 }}
-                className="w-full flex justify-between items-center gap-4 py-[22px] text-left text-[17px] font-bold tracking-[-0.01em] text-charcoal-800 bg-transparent border-0 cursor-pointer focus-visible:outline-none focus-visible:underline"
+                className="w-full flex justify-between items-center gap-4 py-[22px] text-left text-[17px] font-bold tracking-normal text-charcoal-800 bg-transparent border-0 cursor-pointer focus-visible:outline-none focus-visible:underline"
               >
                 <span>{item.q}</span>
                 <span className="shrink-0 text-2xl font-normal leading-none text-charcoal-400" aria-hidden="true">

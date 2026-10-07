@@ -17,7 +17,7 @@ export default async function OwnersSection() {
           <p className="inline-flex items-center rounded-full bg-[#dce7a8] px-4 py-1.5 text-xs font-bold tracking-[0.08em] uppercase text-primary-dark">
             {t("ctaLabel")}
           </p>
-          <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance">
+          <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-h2 text-balance">
             {t("ownersTitleLine1")}
             <br />
             {t("ownersTitleLine2")} <span className="text-[#dce7a8]">{t("ownersTitleAccent")}</span>

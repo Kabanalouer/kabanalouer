@@ -68,7 +68,7 @@ const HERO_LISTING = {
 
 const EYEBROW = "text-xs font-bold tracking-[0.08em] uppercase text-primary";
 const H2 =
-  "m-0 text-[clamp(32px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-charcoal-800 text-balance";
+  "m-0 text-[clamp(32px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-h2 text-charcoal-800 text-balance";
 const SECTION_X = "px-[clamp(20px,4vw,48px)]";
 const SECTION_Y = "py-[clamp(72px,9vw,128px)]";
 const BTN_MOTION =
@@ -174,7 +174,7 @@ export default async function DevenirHotePage() {
                     <span className="w-11 h-11 rounded-xl bg-primary text-white text-lg font-extrabold flex items-center justify-center" aria-hidden="true">
                       {i + 1}
                     </span>
-                    <h3 className="m-0 text-xl font-bold tracking-[-0.02em] text-charcoal-800">{step.title}</h3>
+                    <h3 className="m-0 text-xl font-bold tracking-h3 text-charcoal-800">{step.title}</h3>
                     <p className="m-0 text-[15px] leading-[1.55] text-charcoal-600">{step.text}</p>
                   </li>
                 ))}
@@ -199,7 +199,7 @@ export default async function DevenirHotePage() {
                   </svg>
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[13px] font-bold text-primary-700">{c.free.offerLabel}</span>
-                    <span className="text-[26px] font-extrabold tracking-[-0.03em] leading-[1.1] text-primary-700">
+                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">
                       {c.free.offerPricePre}
                       <sup>{c.free.offerPriceSup}</sup>
                       {c.free.offerPricePost}
@@ -227,7 +227,7 @@ export default async function DevenirHotePage() {
               <div className="flex flex-col gap-4">
                 <p className={`m-0 ${EYEBROW}`}>{c.features.eyebrow}</p>
                 {/* Taille réduite sur mobile pour tenir sur une seule ligne */}
-                <h2 className="m-0 text-[clamp(22px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-charcoal-800 whitespace-nowrap">
+                <h2 className="m-0 text-[clamp(22px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-h2 text-charcoal-800 whitespace-nowrap">
                   {c.features.h2}
                 </h2>
               </div>
@@ -238,7 +238,7 @@ export default async function DevenirHotePage() {
                     <span className="self-start text-xs font-bold tracking-[0.08em] uppercase text-primary-800 bg-primary-200 px-2.5 py-[5px] rounded-full">
                       {c.features.badge}
                     </span>
-                    <h3 className="m-0 text-[clamp(26px,2.8vw,34px)] leading-[1.12] font-extrabold tracking-[-0.03em] text-white text-balance">
+                    <h3 className="m-0 text-[clamp(26px,2.8vw,34px)] leading-[1.12] font-extrabold tracking-h2 text-white text-balance">
                       {c.features.aiTitle}
                     </h3>
                     <p className="m-0 text-[17px] leading-[1.6] text-primary-100 text-pretty">{c.features.aiText}</p>
@@ -276,7 +276,7 @@ export default async function DevenirHotePage() {
                           <path d={FEATURE_ICONS[i]} />
                         </svg>
                       </span>
-                      <h3 className="m-0 text-[19px] font-bold tracking-[-0.02em] text-charcoal-800">{f.title}</h3>
+                      <h3 className="m-0 text-[19px] font-bold tracking-h3 text-charcoal-800">{f.title}</h3>
                     </div>
                     <p className="m-0 flex-[1_1_320px] text-[15px] leading-[1.6] text-charcoal-600 text-pretty">{f.text}</p>
                   </div>
@@ -288,7 +288,7 @@ export default async function DevenirHotePage() {
           {/* ── 05 Comparaison ── */}
           <section className={`${SECTION_X} pb-[clamp(72px,9vw,128px)]`}>
             <div className="mx-auto max-w-[880px] flex flex-col gap-8">
-              <h2 className="m-0 text-center text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-charcoal-800 text-balance">
+              <h2 className="m-0 text-center text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-h2 text-charcoal-800 text-balance">
                 {c.compare.h2}
               </h2>
               <div className="border border-charcoal-100 rounded-2xl overflow-hidden">
@@ -322,7 +322,7 @@ export default async function DevenirHotePage() {
           {/* ── 06 FAQ ── */}
           <section id="faq" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50 scroll-mt-24`}>
             <div className="mx-auto max-w-[820px] flex flex-col gap-8">
-              <h2 className="m-0 text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-charcoal-800">
+              <h2 className="m-0 text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-h2 text-charcoal-800">
                 {c.faq.h2}
               </h2>
               <FaqAccordion items={c.faq.items} />
@@ -342,7 +342,7 @@ export default async function DevenirHotePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[rgba(21,24,13,0.85)] via-[rgba(21,24,13,0.55)] via-60% to-[rgba(21,24,13,0.3)]" />
               <div className="relative p-[clamp(40px,6vw,88px)] flex flex-col gap-[22px] max-w-[680px]">
-                <h2 className="m-0 text-[clamp(34px,4.4vw,56px)] leading-[1.04] font-extrabold tracking-[-0.035em] text-white text-balance">
+                <h2 className="m-0 text-[clamp(34px,4.4vw,56px)] leading-[1.04] font-extrabold tracking-display text-white text-balance">
                   {c.finalCta.h2}
                 </h2>
                 <p className="m-0 text-lg leading-[1.55] text-white/90">{c.finalCta.subtitle}</p>
