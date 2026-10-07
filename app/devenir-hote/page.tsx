@@ -135,7 +135,6 @@ export default async function DevenirHotePage() {
                       {c.hero.ctaDuplicate}
                     </ScrollToImportButton>
                   </div>
-                  <p className="m-0 text-sm font-semibold text-charcoal-400">{c.hero.note}</p>
                 </div>
               </div>
 
@@ -363,7 +362,6 @@ export default async function DevenirHotePage() {
                     {c.finalCta.createBtn}
                   </CreateListingLink>
                 </div>
-                <p className="m-0 text-sm text-white/80">{c.finalCta.reassurance}</p>
               </div>
             </div>
           </section>

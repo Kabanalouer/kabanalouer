@@ -17,7 +17,6 @@ export type DevenirHoteContent = {
     subtitle: string;
     ctaCreate: string;
     ctaDuplicate: string;
-    note: string;
     cardPill: string;
   };
   importSection: {
@@ -84,7 +83,6 @@ export type DevenirHoteContent = {
     subtitle: string;
     importBtn: string;
     createBtn: string;
-    reassurance: string;
   };
   sticky: { title: string; subtitle: string; cta: string };
 };
@@ -101,7 +99,6 @@ const fr: DevenirHoteContent = {
       "C’est gratuit la première année et sans engagement. Aucune commission sur vos réservations. Aucuns frais de transaction. Ce que vos voyageurs paient, vous le gardez en entier.",
     ctaCreate: "Créer mon annonce",
     ctaDuplicate: "Dupliquer depuis Airbnb",
-    note: "12 mois gratuits pour toute inscription avant le 31 octobre 2026.",
     cardPill: "Sur Kabanalouer",
   },
   importSection: {
@@ -231,7 +228,6 @@ const fr: DevenirHoteContent = {
     subtitle: "Offre de lancement valable pour toute inscription avant le 31 octobre 2026.",
     importBtn: "Importer mon annonce Airbnb",
     createBtn: "Créer une annonce à partir de 0",
-    reassurance: "Aucune carte de crédit · Aucune commission · Aucun engagement",
   },
   sticky: { title: "Gratuit 12 mois", subtitle: "Avant le 31 oct. 2026", cta: "Publier mon chalet" },
 };
@@ -249,7 +245,6 @@ const en: DevenirHoteContent = {
       "Free for the first year, no commitment. No commission on your bookings. No transaction fees. What your guests pay, you keep in full.",
     ctaCreate: "Create my listing",
     ctaDuplicate: "Copy from Airbnb",
-    note: "12 months free for every sign-up before October 31, 2026.",
     cardPill: "On Kabanalouer",
   },
   importSection: {
@@ -379,7 +374,6 @@ const en: DevenirHoteContent = {
     subtitle: "Launch offer valid for every sign-up before October 31, 2026.",
     importBtn: "Import my Airbnb listing",
     createBtn: "Create a listing from scratch",
-    reassurance: "No credit card · No commission · No commitment",
   },
   sticky: { title: "Free for 12 months", subtitle: "Before Oct. 31, 2026", cta: "List my cabin" },
 };

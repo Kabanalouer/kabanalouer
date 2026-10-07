@@ -54,7 +54,6 @@ export default async function OwnersSection() {
             >
               {t("ctaButton")}
             </Link>
-            <p className="-mt-6 text-sm text-white/80">{t("ownersNoCard")}</p>
           </div>
         </div>
       </div>
