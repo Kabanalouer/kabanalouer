@@ -265,9 +265,9 @@ export default function ListingCard({
 
         {/* Price */}
         {listing.priceOnRequest ? (
-          <p className="text-sm text-charcoal-800 font-semibold">{t("priceOnRequest")}</p>
+          <p className="text-sm text-charcoal-800">{t("priceOnRequest")}</p>
         ) : listing.price > 0 ? (
-          <p className="text-sm font-semibold text-charcoal-800">
+          <p className="text-sm text-charcoal-800">
             {formatPrice(listing.price, locale)} <span className="text-charcoal-400">{t("perNight")}</span>
           </p>
         ) : null}
