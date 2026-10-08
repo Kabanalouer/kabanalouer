@@ -122,7 +122,7 @@ export default async function Footer() {
         <div className="border-t border-[#ebebeb] pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 text-xs text-charcoal-400">
             <p>{t("copyright")}</p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <Link href={localePath("/conditions", locale)} className="hover:text-charcoal-800 transition-colors">
                 {t("legal.terms")}
               </Link>
