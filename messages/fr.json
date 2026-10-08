@@ -127,6 +127,7 @@
       "stepOf": "Étape {current} sur {total}",
       "previousStep": "Précédent",
       "nextStep": "Suivant : {section}",
+      "nextShort": "Suivant",
       "aiGenerating": "Génération en cours…",
       "aiGenerate": "Générer avec l'IA",
       "aiContextWarning": "Pour un meilleur résultat, complétez d'abord les sections Équipements, Région et Capacité, puis revenez ici.",

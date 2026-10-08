@@ -830,6 +830,23 @@ export default function EditListingForm({
     return map[id] ?? id;
   };
 
+  // Mobile et tablette : « Suivant » dans la barre collée en bas, nom de la
+  // section suivante en petit dessous (« Suivant : Infos générales » ne tient
+  // pas sur une ligne à côté d'Enregistrer).
+  const mobileNextButton = nextSection ? (
+    <button
+      type="button"
+      onClick={() => goToSection(nextSection.id)}
+      className="lg:hidden ml-auto shrink-0 min-h-[44px] pl-5 pr-4 py-1 rounded-full border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5"
+    >
+      <span className="flex flex-col items-end leading-tight">
+        <span className="text-sm font-semibold">{tEdit("nextShort")}</span>
+        <span className="text-xs text-primary/80">{getSectionLabel(nextSection.id)}</span>
+      </span>
+      <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+    </button>
+  ) : null;
+
   const safeImportSourceUrl = safeHttpUrl(importSourceUrl);
 
   return (
@@ -2075,7 +2092,8 @@ export default function EditListingForm({
                     tCommon("save")
                   )}
                 </button>
-                {saveError && <p className="text-sm text-error-500">{saveError}</p>}
+                {saveError && <p className="min-w-0 text-sm text-error-500">{saveError}</p>}
+                {mobileNextButton}
               </div>
               {descBelowMin && (
                 <p className="text-sm text-error-500">
@@ -2085,9 +2103,16 @@ export default function EditListingForm({
             </div>
           )}
 
-          {/* Précédent / Suivant — parcours section par section */}
+          {/* Mobile, section sans bouton Enregistrer : Suivant seul dans la barre du bas */}
+          {!hasSaveButton && mobileNextButton && (
+            <div className="lg:hidden mt-6 flex sticky bottom-0 max-md:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 bg-white -mx-4 px-4 sm:-mx-6 sm:px-6 py-3 border-t border-[#ebebeb] shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+              {mobileNextButton}
+            </div>
+          )}
+
+          {/* Précédent / Suivant — parcours section par section (mobile : Précédent seul, Suivant est dans la barre du bas) */}
           {sectionIndex >= 0 && (
-            <div className="mt-6 pt-5 border-t border-[#ebebeb] flex items-center justify-between gap-3">
+            <div className={`mt-6 pt-5 border-t border-[#ebebeb] flex items-center justify-between gap-3 ${prevSection ? "" : "max-lg:hidden"}`}>
               {prevSection ? (
                 <button
                   type="button"
@@ -2102,7 +2127,7 @@ export default function EditListingForm({
                 <button
                   type="button"
                   onClick={() => goToSection(nextSection.id)}
-                  className="min-h-[44px] px-4 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5 text-right"
+                  className="max-lg:hidden min-h-[44px] px-4 rounded-full text-sm font-semibold border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5 text-right"
                 >
                   <span>{tEdit("nextStep", { section: getSectionLabel(nextSection.id) })}</span>
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>

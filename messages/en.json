@@ -127,6 +127,7 @@
       "stepOf": "Step {current} of {total}",
       "previousStep": "Previous",
       "nextStep": "Next: {section}",
+      "nextShort": "Next",
       "aiGenerating": "Generating…",
       "aiGenerate": "Generate with AI",
       "aiContextWarning": "For better results, fill in the Amenities, Region, and Capacity sections first, then come back here.",
