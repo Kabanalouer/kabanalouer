@@ -1150,6 +1150,7 @@
       "termsLink": "terms of use",
       "checkEmailTitle": "Check your email!",
       "checkEmailDesc": "We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.",
+      "checkEmailNextListing": "The link will take you straight to creating your listing.",
       "backToListing": "← Back to the cabin",
       "backToHome": "← Back to home",
       "firstNamePlaceholder": "Jane",

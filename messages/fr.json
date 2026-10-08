@@ -1150,6 +1150,7 @@
       "termsLink": "conditions d'utilisation",
       "checkEmailTitle": "Vérifiez vos courriels !",
       "checkEmailDesc": "On a envoyé un lien de confirmation à <strong>{email}</strong>. Cliquez dessus pour activer votre compte.",
+      "checkEmailNextListing": "Le lien vous mènera directement à la création de votre annonce.",
       "backToListing": "← Retourner à la fiche du chalet",
       "backToHome": "← Retour à l'accueil",
       "firstNamePlaceholder": "Marie",

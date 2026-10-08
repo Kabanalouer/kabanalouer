@@ -42,6 +42,17 @@ function SignupForm() {
   // Voyageur retourne plutôt à l'accueil.
   const effectiveNext = roleParam === "host" && role === "traveler" ? defaultHome : next;
 
+  // Retour après Google ou après le lien de confirmation par courriel.
+  const callbackUrl = () => {
+    const params = new URLSearchParams();
+    if (effectiveNext !== defaultHome) params.set("next", effectiveNext);
+    if (locale !== "fr") params.set("locale", locale);
+    // queryParams go to Google's OAuth endpoint and are never returned — pass role in the callback URL instead
+    if (role === "host") params.set("role", "host");
+    const qs = params.toString();
+    return `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!turnstileToken) return;
@@ -63,14 +74,11 @@ function SignupForm() {
           role,
           preferred_language: locale,
         },
-        // Le lien de confirmation atterrit sur l'accueil (AuthCodeWelcomeTrigger y
-        // échange le ?code=) — accueil anglais pour un visiteur anglais. Sans
-        // emailRedirectTo, Supabase utilise son Site URL (accueil français). Une
-        // URL absente de la liste « Redirect URLs » de Supabase retombe sur ce
-        // même Site URL : jamais de lien cassé.
-        ...(locale === "en"
-          ? { emailRedirectTo: `${window.location.origin}/en` }
-          : {}),
+        // Le lien de confirmation passe par /auth/callback, comme Google : la
+        // route échange le ?code=, envoie le courriel de bienvenue voyageur et
+        // redirige vers `next` (ex. création d'annonce avec le lien Airbnb
+        // prérempli), sinon le tableau de bord d'un proprio ou l'accueil.
+        emailRedirectTo: callbackUrl(),
       },
     });
     if (error) {
@@ -93,16 +101,9 @@ function SignupForm() {
   };
 
   const handleGoogleSignup = async () => {
-    const params = new URLSearchParams();
-    if (effectiveNext !== defaultHome) params.set("next", effectiveNext);
-    if (locale !== "fr") params.set("locale", locale);
-    // queryParams go to Google's OAuth endpoint and are never returned — pass role in the callback URL instead
-    if (role === "host") params.set("role", "host");
-    const qs = params.toString();
-    const callbackUrl = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: callbackUrl },
+      options: { redirectTo: callbackUrl() },
     });
   };
 
@@ -126,7 +127,10 @@ function SignupForm() {
               ),
             })}
           </p>
-          {effectiveNext !== defaultHome ? (
+          {effectiveNext.includes("/dashboard/listings/new") && (
+            <p className="mt-3 text-charcoal-500 text-base leading-relaxed">{t("checkEmailNextListing")}</p>
+          )}
+          {/^\/(chalets|en\/cabins)\//.test(effectiveNext) ? (
             <Link href={effectiveNext} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
               {t("backToListing")}
             </Link>
