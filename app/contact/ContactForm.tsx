@@ -35,6 +35,11 @@ export default function ContactForm() {
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="locale" value={locale} />
+      {/* Piège à robots : invisible pour les humains, rempli par les robots */}
+      <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+        <label htmlFor="website">Website</label>
+        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
       {/* First name + Last name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

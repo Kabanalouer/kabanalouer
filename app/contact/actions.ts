@@ -22,6 +22,13 @@ export async function submitContactForm(
   // Champ caché posé par ContactForm (langue de la page).
   const isEn = formData.get("locale") === "en";
 
+  // Piège à robots rempli : on fait comme si tout allait bien, sans rien enregistrer
+  if ((formData.get("website") as string | null)?.trim()) return { status: "success" };
+
+  if (firstName.length > 80 || lastName.length > 80 || email.length > 254) {
+    return { status: "error", message: isEn ? "One of the fields is too long." : "Un des champs est trop long." };
+  }
+
   if (!firstName || !lastName || !email || !message) {
     return { status: "error", message: isEn ? "All fields are required." : "Tous les champs sont obligatoires." };
   }
@@ -39,6 +46,17 @@ export async function submitContactForm(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  // Limites anti-inondation : même adresse 3 fois par heure, 30 messages par
+  // heure au total (au-delà, c'est un robot — la boîte de Simon reste lisible).
+  const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+  const [{ count: sameEmail }, { count: total }] = await Promise.all([
+    supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("email", email).gte("created_at", hourAgo),
+    supabase.from("contact_messages").select("id", { count: "exact", head: true }).gte("created_at", hourAgo),
+  ]);
+  if ((sameEmail ?? 0) >= 3 || (total ?? 0) >= 30) {
+    return { status: "error", message: isEn ? "Too many messages sent. Please try again later." : "Trop de messages envoyés. Réessayez plus tard." };
+  }
 
   const { error } = await supabase
     .from("contact_messages")

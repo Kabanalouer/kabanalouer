@@ -3,6 +3,7 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { localePath } from "@/lib/localePath";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase } from "@/lib/sendMessage";
 import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 
 export async function POST(request: Request) {
@@ -68,7 +69,9 @@ export async function POST(request: Request) {
     });
     customerId = customer.id;
 
-    await supabase
+    // Client service : stripe_customer_id n'est plus modifiable par la session
+    // de l'utilisateur (trigger protect_users_sensitive_columns).
+    await adminSupabase()
       .from("users")
       .update({ stripe_customer_id: customerId })
       .eq("id", user.id);
