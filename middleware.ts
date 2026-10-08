@@ -100,38 +100,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (!user && isPublicCacheable(request) && finalResponse.cookies.getAll().length === 0) {
-    // La clé de cache inclut l'en-tête Cookie (Vary: Cookie, next.config.ts) :
-    // un visiteur connecté ne reçoit jamais la version anonyme mise en cache.
-    finalResponse.headers.set("Vercel-CDN-Cache-Control", PUBLIC_CDN_CACHE);
-  }
-
   return finalResponse;
-}
-
-// Mise en cache des pages publiques par le CDN de Vercel, pour les visiteurs
-// non connectés seulement (Googlebot, premières visites). Les pages sont
-// toujours rendues à la demande : seule la réponse HTML anonyme est gardée
-// 5 minutes (puis resservie pendant qu'une version fraîche se calcule en
-// arrière-plan). Une modification d'annonce est donc visible des visiteurs
-// anonymes en 5 minutes au plus ; chaque déploiement vide le cache. Les
-// réponses avec un Set-Cookie ne sont jamais mises en cache par Vercel.
-const PUBLIC_CDN_CACHE = "max-age=300, stale-while-revalidate=3600";
-
-const PRIVATE_PREFIXES = [
-  "/dashboard", "/admin", "/messages", "/favoris", "/login", "/signup",
-  "/forgot-password", "/reset-password", "/avis", "/auth",
-];
-
-function isPublicCacheable(request: NextRequest): boolean {
-  if (request.method !== "GET") return false;
-  // Navigations internes de Next (charges RSC) : propres à l'état du routeur
-  if (request.nextUrl.searchParams.has("_rsc")) return false;
-  if (request.nextUrl.searchParams.has("preview")) return false;
-  const hasSession = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
-  if (hasSession) return false;
-  const path = request.nextUrl.pathname.replace(/^\/en(?=\/|$)/, "") || "/";
-  return !PRIVATE_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
 export const config = {
