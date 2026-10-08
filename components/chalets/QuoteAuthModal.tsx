@@ -42,10 +42,12 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
     // backdrop click here would otherwise bubble up and trigger that Link's
     // navigation. stopPropagation keeps this self-contained regardless of caller.
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+      // overflow-y-auto + my-auto (plutôt que items-center) : sur un petit écran, le formulaire
+      // d'inscription dépasse la hauteur et doit défiler sans que son haut soit coupé.
+      className="fixed inset-0 bg-black/50 flex justify-center z-[9999] p-4 overflow-y-auto overscroll-contain"
       onClick={(e) => { e.stopPropagation(); onClose(); }}
     >
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl my-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <h3 className="font-bold text-charcoal-800 text-heading-3 pr-4">{mode === "login" ? t("authModalLoginTitle") : t("authModalSignupTitle")}</h3>
           <button onClick={onClose} aria-label={tc("close")} className="text-charcoal-400 hover:text-charcoal-700 transition-colors shrink-0">
