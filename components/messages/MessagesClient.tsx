@@ -749,18 +749,18 @@ export default function MessagesClient({
                               )}
                             </div>
                           ) : (
-                            <div className="flex flex-nowrap gap-2">
+                            <div className="inline-flex flex-col sm:flex-row sm:flex-nowrap gap-2">
                               <button
                                 type="button"
                                 onClick={() => setActiveQuickReply({ messageId: msg.id, type: "quote" })}
-                                className="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                                className="max-sm:w-full flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
                               >
                                 {tq("sendQuoteCta")}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setActiveQuickReply({ messageId: msg.id, type: "no_availability" })}
-                                className="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50 transition-colors"
+                                className="max-sm:w-full flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-white border border-[#ebebeb] text-charcoal-600 hover:bg-charcoal-50 transition-colors"
                               >
                                 {tq("sendNoAvailabilityCta")}
                               </button>
