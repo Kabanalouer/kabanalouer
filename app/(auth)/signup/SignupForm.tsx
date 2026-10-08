@@ -37,6 +37,10 @@ function SignupForm() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const supabase = createClient();
+  // Arrivé par « Inscrire mon chalet » (?role=host), `next` mène à la
+  // création d'annonce : un visiteur qui choisit finalement la carte
+  // Voyageur retourne plutôt à l'accueil.
+  const effectiveNext = roleParam === "host" && role === "traveler" ? defaultHome : next;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +94,7 @@ function SignupForm() {
 
   const handleGoogleSignup = async () => {
     const params = new URLSearchParams();
-    if (next !== defaultHome) params.set("next", next);
+    if (effectiveNext !== defaultHome) params.set("next", effectiveNext);
     if (locale !== "fr") params.set("locale", locale);
     // queryParams go to Google's OAuth endpoint and are never returned — pass role in the callback URL instead
     if (role === "host") params.set("role", "host");
@@ -102,7 +106,7 @@ function SignupForm() {
     });
   };
 
-  const loginHref = `${localePath("/login", locale)}${next !== defaultHome ? `?next=${encodeURIComponent(next)}` : ""}`;
+  const loginHref = `${localePath("/login", locale)}${effectiveNext !== defaultHome ? `?next=${encodeURIComponent(effectiveNext)}` : ""}`;
 
   if (success) {
     return (
@@ -122,8 +126,8 @@ function SignupForm() {
               ),
             })}
           </p>
-          {next !== defaultHome ? (
-            <Link href={next} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
+          {effectiveNext !== defaultHome ? (
+            <Link href={effectiveNext} className={`mt-6 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
               {t("backToListing")}
             </Link>
           ) : (
@@ -150,31 +154,30 @@ function SignupForm() {
 
         <h1 className="text-2xl font-bold text-charcoal-800 mb-1">{t("title")}</h1>
         <p className="text-charcoal-500 text-base mb-6">
-          {roleParam === "host" ? t("subtitleHost") : t("subtitleDefault")}
+          {role === "host" ? t("subtitleHost") : t("subtitleDefault")}
         </p>
 
-        {/* Role selection */}
-        {!roleParam && (
-          <div className="mb-6 mt-6">
-            <p className="text-sm font-medium text-charcoal-700 mb-3">{t("iAm")}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <RoleButton
-                selected={role === "traveler"}
-                onClick={() => setRole("traveler")}
-                icon={<LuggageIcon />}
-                title={t("travelerTitle")}
-                subtitle={t("travelerSubtitle")}
-              />
-              <RoleButton
-                selected={role === "host"}
-                onClick={() => setRole("host")}
-                icon={<HomeIcon />}
-                title={t("ownerTitle")}
-                subtitle={t("ownerSubtitle")}
-              />
-            </div>
+        {/* Choix du rôle — toujours visible ; Proprio présélectionné quand on
+            arrive par « Inscrire mon chalet » (?role=host). */}
+        <div className="mb-6 mt-6">
+          <p className="text-sm font-medium text-charcoal-700 mb-3">{t("iAm")}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <RoleButton
+              selected={role === "traveler"}
+              onClick={() => setRole("traveler")}
+              icon={<LuggageIcon />}
+              title={t("travelerTitle")}
+              subtitle={t("travelerSubtitle")}
+            />
+            <RoleButton
+              selected={role === "host"}
+              onClick={() => setRole("host")}
+              icon={<HomeIcon />}
+              title={t("ownerTitle")}
+              subtitle={t("ownerSubtitle")}
+            />
           </div>
-        )}
+        </div>
 
         {/* Google */}
         <button
