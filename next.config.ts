@@ -49,7 +49,14 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      // Pages : la clé du cache CDN inclut les cookies, pour qu'un visiteur
+      // connecté ne reçoive jamais une page anonyme mise en cache (voir
+      // isPublicCacheable dans middleware.ts). Next ajoute ses propres
+      // valeurs à la suite (appendHeader), sans écraser celle-ci.
+      { source: "/((?!_next/|api/).*)", headers: [{ key: "Vary", value: "Cookie" }] },
+    ];
   },
   // Contourne un comportement de routage confirmé où une route dynamique
   // imbriquée/catch-all déclarée directement à la racine de app/ (sans
