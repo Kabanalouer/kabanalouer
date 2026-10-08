@@ -5,6 +5,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations("terms"), getLocale()]);
@@ -21,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: t("metaDesc"),
       url: canonical,
       locale: locale === "en" ? "en_CA" : "fr_CA",
+      images: [{ url: `${SITE_URL}/images/og-default.jpg`, width: 1200, height: 630 }],
     },
   };
 }

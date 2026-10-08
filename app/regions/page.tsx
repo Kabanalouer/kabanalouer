@@ -8,6 +8,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
 import { localePath } from "@/lib/localePath";
+import { getThemeLinkVisibility } from "@/lib/themeLinks";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -19,9 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const description = isEn
     ? "Explore cabin rentals across all Quebec regions. Laurentians, Charlevoix, Eastern Townships and more. Direct contact with owners."
     : "Explorez nos chalets à louer dans toutes les régions du Québec. Laurentides, Charlevoix, Cantons-de-l'Est et plus. Contact direct avec les propriétaires.";
+  // Même règle que le lien du pied de page et du menu (lib/themeLinks.ts) :
+  // tant que trop peu de régions ont des chalets, la page n'est liée nulle part
+  // et reste hors de l'index et du sitemap (page orpheline, surtout vide).
+  const { regions: hasEnoughRegions } = await getThemeLinkVisibility();
   return {
     title,
     description,
+    ...(hasEnoughRegions ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical,
       languages: { fr: "/regions", en: "/en/regions", "x-default": "/regions" },

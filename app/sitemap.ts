@@ -10,6 +10,7 @@ import { DEALS_PATH_EN, DEALS_PATH_FR, MIN_DEAL_LISTINGS_FOR_INDEX } from "@/lib
 import { countDealListings } from "@/app/chalets/[...segments]/_components/DealsLanding";
 import { AMENITY_LANDINGS, countAmenityLandingsWith } from "@/lib/amenityLandings";
 import { createClient } from "@supabase/supabase-js";
+import { getThemeLinkVisibility } from "@/lib/themeLinks";
 import { allActiveCombos, comboPath, getComboIndex } from "@/lib/comboLandings";
 
 const BASE = SITE_URL;
@@ -29,8 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/en`,                lastModified: now, changeFrequency: "daily",   priority: 1.0 },
     { url: `${BASE}/chalets`,           lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
     { url: `${BASE}/en/cabins`,         lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE}/regions`,           lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
-    { url: `${BASE}/en/regions`,        lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
     { url: `${BASE}/devenir-hote`,      lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/en/become-a-host`,  lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/comment-ca-marche`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
@@ -207,6 +206,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // réseau/auth) — regionPages garde son défaut optimiste (toutes les
     // régions) défini plus haut.
     console.error("sitemap: exception Supabase, repli sur les valeurs par défaut", err);
+  }
+
+  // /regions : seulement quand la page est liée et indexable (lib/themeLinks.ts)
+  try {
+    if ((await getThemeLinkVisibility()).regions) {
+      staticPages.push(
+        { url: `${BASE}/regions`,    lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+        { url: `${BASE}/en/regions`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+      );
+    }
+  } catch (e) {
+    console.error("sitemap: visibilité de /regions indisponible", e);
   }
 
   return [...staticPages, ...themePages, ...regionPages, ...comboPages, ...cityPages, ...listingPages];

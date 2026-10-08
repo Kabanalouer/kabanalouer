@@ -1,5 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // cookies() is used via createClient() → force dynamic to avoid DYNAMIC_SERVER_USAGE in production
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { normalizePhotos } from "@/lib/photo";
 import { slugify } from "@/lib/slugify";
 import { isKnownMunicipality } from "@/lib/municipalities";
+import { metaDescription, metaTitle } from "@/lib/metaText";
 import RegionLanding from "./_components/RegionLanding";
 import CityLanding from "./_components/CityLanding";
 import DogFriendlyLanding, { buildDogFriendlyMeta } from "./_components/DogFriendlyLanding";
@@ -22,7 +24,7 @@ import AmenityLanding, { buildAmenityLandingMeta } from "./_components/AmenityLa
 import { countAmenityLandingsWith, getAmenityLandingBySlug } from "@/lib/amenityLandings";
 import ListingDetail from "./_components/ListingDetail";
 import ComboLanding, { buildComboDescription, buildComboTitle } from "./_components/ComboLanding";
-import { MIN_LISTINGS_FOR_COMBO, comboPath, getComboIndex, getComboThemeBySlug, type ComboTheme } from "@/lib/comboLandings";
+import { MIN_LISTINGS_FOR_COMBO, comboPath, getComboIndex, getComboThemeBySlug, isRedundantCityCombo, type ComboTheme } from "@/lib/comboLandings";
 import type { RegionConfig } from "@/lib/regions";
 import { getLocale } from "next-intl/server";
 
@@ -31,6 +33,11 @@ import { getLocale } from "next-intl/server";
 // tant que ce seuil n'est pas atteint. Garder ce nombre synchronisé avec le
 // seuil équivalent dans app/sitemap.ts (régions exclues du sitemap).
 const MIN_CHALETS_FOR_INDEX = 1;
+
+// Image de partage des pages par type (chiens, spa, promos…), qui n'ont pas
+// de photo propre — sans elle, l'openGraph de la page remplace celui du site
+// et le lien partagé s'affiche sans image.
+const DEFAULT_OG_IMAGE = { url: `${SITE_URL}/images/og-default.jpg`, width: 1200, height: 630 };
 
 const DEFAULT_PHOTO =
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
@@ -139,12 +146,14 @@ async function buildComboMetadata(theme: ComboTheme, regionConfig: RegionConfig,
   const pathFr = comboPath(theme, regionConfig, cityName, false);
   const pathEn = comboPath(theme, regionConfig, cityName, true);
   const canonical = isEn ? pathEn : pathFr;
+  const redundant = cityName !== null && isRedundantCityCombo(index, theme, regionConfig, cityName);
   return {
     title,
     description,
+    ...(redundant ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical, languages: { fr: pathFr, en: pathEn, "x-default": pathFr } },
-    openGraph: { title, description, url: canonical },
-    twitter: { title, description },
+    openGraph: { title, description, url: canonical, images: [{ url: regionConfig.heroImage, width: 1920, height: 1080 }] },
+    twitter: { title, description, images: [regionConfig.heroImage] },
   };
 }
 
@@ -179,8 +188,8 @@ export async function generateMetadata({ params }: Props) {
           canonical,
           languages: { fr: DOG_FRIENDLY_PATH_FR, en: DOG_FRIENDLY_PATH_EN, "x-default": DOG_FRIENDLY_PATH_FR },
         },
-        openGraph: { title, description, url: canonical },
-        twitter: { title, description },
+        openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
+        twitter: { title, description, images: [DEFAULT_OG_IMAGE.url] },
       };
     }
 
@@ -198,8 +207,8 @@ export async function generateMetadata({ params }: Props) {
           canonical,
           languages: { fr: DEALS_PATH_FR, en: DEALS_PATH_EN, "x-default": DEALS_PATH_FR },
         },
-        openGraph: { title, description, url: canonical },
-        twitter: { title, description },
+        openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
+        twitter: { title, description, images: [DEFAULT_OG_IMAGE.url] },
       };
     }
 
@@ -221,8 +230,8 @@ export async function generateMetadata({ params }: Props) {
           canonical,
           languages: { fr: ACCESSIBLE_PATH_FR, en: ACCESSIBLE_PATH_EN, "x-default": ACCESSIBLE_PATH_FR },
         },
-        openGraph: { title, description, url: canonical },
-        twitter: { title, description },
+        openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
+        twitter: { title, description, images: [DEFAULT_OG_IMAGE.url] },
       };
     }
 
@@ -243,8 +252,8 @@ export async function generateMetadata({ params }: Props) {
           canonical,
           languages: { fr: pathFr, en: pathEn, "x-default": pathFr },
         },
-        openGraph: { title, description, url: canonical },
-        twitter: { title, description },
+        openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
+        twitter: { title, description, images: [DEFAULT_OG_IMAGE.url] },
       };
     }
 
@@ -340,8 +349,8 @@ export async function generateMetadata({ params }: Props) {
         canonical: canonicalPath,
         languages: { fr: pathFr, en: pathEn, "x-default": pathFr },
       },
-      openGraph: { title, description, url: canonicalPath },
-      twitter: { title, description },
+      openGraph: { title, description, url: canonicalPath, images: [{ url: regionConfig.heroImage, width: 1920, height: 1080 }] },
+      twitter: { title, description, images: [regionConfig.heroImage] },
     };
   }
 
@@ -368,9 +377,13 @@ export async function generateMetadata({ params }: Props) {
     const regionLabel = isEn && data.region
       ? getRegionByDbValue(data.region as string)?.nameEn ?? data.region
       : data.region;
-    const location = [data.city, regionLabel].filter(Boolean).join(", ");
-    const title = location ? `${rawTitle} | ${location}` : rawTitle;
-    const description = (rawDesc as string | null)?.slice(0, 160) ?? "";
+    const cleanTitle = metaTitle(rawTitle ?? "");
+    // Le gabarit ajoute « | Kabanalouer » : au-delà d'environ 60 caractères,
+    // Google coupe le titre — la région est retirée en premier.
+    const fullLocation = [data.city, regionLabel].filter(Boolean).join(", ");
+    const location = `${cleanTitle} | ${fullLocation}`.length <= 60 ? fullLocation : (data.city ?? fullLocation);
+    const title = location ? `${cleanTitle} | ${location}` : cleanTitle;
+    const description = metaDescription(rawDesc as string | null);
     const photos = normalizePhotos(data.photos);
     const ogImage = photos[0]?.url ?? DEFAULT_PHOTO;
 

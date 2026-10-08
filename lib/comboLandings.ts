@@ -219,10 +219,23 @@ export function activeCitiesForTheme(index: ComboIndex, key: ComboThemeKey, regi
   return links.sort((a, b) => b.count - a.count || a.city!.localeCompare(b.city!, "fr"));
 }
 
-// Toutes les combinaisons actives (sitemap, llms.txt)
+// Une page ville × type qui liste exactement les mêmes chalets que sa page
+// région × type (tous les chalets de ce type de la région sont dans cette
+// ville) est un quasi-doublon (87 % de texte identique mesuré à l'audit du
+// 2026-10-08) : elle reste accessible et liée, mais en noindex et hors du
+// sitemap, jusqu'à ce qu'une autre ville de la région ait des chalets de ce type.
+export function isRedundantCityCombo(index: ComboIndex, theme: ComboTheme, region: RegionConfig, city: string): boolean {
+  const cityCount = index.city[`${region.dbValue}|${city}`]?.[theme.key] ?? 0;
+  const regionCount = index.region[region.dbValue]?.[theme.key] ?? 0;
+  return cityCount > 0 && cityCount === regionCount;
+}
+
+// Toutes les combinaisons actives et indexables (sitemap, llms.txt)
 export function allActiveCombos(index: ComboIndex): ComboLink[] {
   const regionLinks = REGIONS.flatMap((region) => activeThemesInRegion(index, region));
-  const cityLinks = COMBO_THEMES.flatMap((theme) => activeCitiesForTheme(index, theme.key));
+  const cityLinks = COMBO_THEMES
+    .flatMap((theme) => activeCitiesForTheme(index, theme.key))
+    .filter((l) => !isRedundantCityCombo(index, l.theme, l.region, l.city!));
   return [...regionLinks, ...cityLinks];
 }
 

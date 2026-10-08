@@ -6,20 +6,19 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
+      // Connexion, inscription et mot de passe : crawlables exprès, pour que
+      // Google voie leur balise noindex (une URL bloquée ici peut quand même
+      // être indexée si un lien y mène).
       disallow: [
         "/dashboard",
         "/admin",
         "/api",
-        "/login",
-        "/signup",
         "/messages",
         "/favoris",
         "/en/dashboard",
         "/en/admin",
         "/en/messages",
         "/en/favoris",
-        "/en/login",
-        "/en/signup",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

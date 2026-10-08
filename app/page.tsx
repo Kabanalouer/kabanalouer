@@ -171,45 +171,8 @@ export default async function HomePage() {
     promoData: promoMap.get(l.id as string) ?? null,
   }));
 
-  const BASE_URL = SITE_URL;
-  const isEn = locale === "en";
-
-  const websiteJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Kabanalouer",
-    url: BASE_URL,
-    description: isEn ? "Cabin rental marketplace in Quebec" : "Marketplace de location de chalets au Québec",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${BASE_URL}${isEn ? "/en/cabins" : "/chalets"}?city={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
-  };
-
-  const organizationJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Kabanalouer",
-    url: BASE_URL,
-    logo: `${BASE_URL}/logo-wordmark.svg`,
-    description: isEn
-      ? "Cabin rental marketplace in Quebec — contact owners directly, no service fees."
-      : "Marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service.",
-    areaServed: "Québec, Canada",
-    sameAs: [],
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-      />
       <AuthCodeWelcomeTrigger />
       <Navbar />
       <main className="flex flex-1 flex-col">
@@ -228,6 +191,7 @@ export default async function HomePage() {
               fill
               priority
               fetchPriority="high"
+              quality={60}
               sizes="100vw"
               className="object-cover object-center"
             />

@@ -15,6 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
+    // Page de compte sans valeur dans les résultats de recherche
+    robots: { index: false, follow: false },
     alternates: {
       canonical,
       languages: { fr: "/login", en: "/en/login", "x-default": "/login" },

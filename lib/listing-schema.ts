@@ -7,6 +7,11 @@ import { getAmenityCatalogEntry, summarizeAmenityDetails, type AmenityValue } fr
 import { dogFeeLabel, dogPolicyDetails, dogSizeLabel, type DogPolicy } from "@/lib/dogPolicy";
 import { accessibilityFeatureLabel, accessibleLabel, type AccessibilityInfo } from "@/lib/accessibility";
 
+// Une note « 5,0 sur 1 avis » n'apporte rien et attire l'attention des
+// filtres anti-spam de Google : la note n'est déclarée dans le JSON-LD qu'à
+// partir de quelques avis (elle reste toujours affichée sur la fiche).
+const MIN_REVIEWS_FOR_RATING = 3;
+
 export interface ListingSchemaInput {
   title: string;
   description: string | null;
@@ -121,11 +126,11 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
       ? { identifier: { "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber } }
       : {}),
     ...(makesOffer ? { makesOffer } : {}),
-    ...(input.reviewCount > 0
+    ...(input.reviewCount >= MIN_REVIEWS_FOR_RATING
       ? {
           aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: input.avgRating.toFixed(1),
+            ratingValue: Math.round(input.avgRating * 10) / 10,
             reviewCount: input.reviewCount,
             bestRating: 5,
             worstRating: 1,

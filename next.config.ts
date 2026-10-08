@@ -34,6 +34,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
+    // AVIF d'abord (≈ 30 % plus léger que WebP à qualité égale), WebP en repli.
+    // 60 = photos d'en-tête (élément LCP), 75 = défaut de next/image.
+    formats: ["image/avif", "image/webp"],
+    qualities: [60, 75],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "fgdwhbemzmccchemtzog.supabase.co" },

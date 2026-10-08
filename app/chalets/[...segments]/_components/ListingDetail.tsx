@@ -285,6 +285,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
   const isOwner = !!(user && host && user.id === host.id);
 
+  // Note déclarée à Google : avis de tiers seulement (jamais ceux du compte
+  // du proprio sur sa propre annonce — règle Google contre les avis
+  // auto-servants). Le seuil minimal est appliqué dans buildListingJsonLd.
+  const schemaReviews = reviews.filter((r) => r.author_id !== listing.host_id);
   const schemaInput = {
     title: displayTitle,
     description: displayDescription ?? null,
@@ -308,8 +312,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
     accessibility,
     smokingAllowed: !!listing.smoking_allowed,
     citqNumber: (listing.citq_number as string | null) ?? null,
-    reviewCount: reviews ? reviews.length : 0,
-    avgRating,
+    reviewCount: schemaReviews.length,
+    avgRating: schemaReviews.length > 0
+      ? schemaReviews.reduce((sum, r) => sum + r.rating, 0) / schemaReviews.length
+      : 0,
   };
   const lodgingJsonLd = buildListingJsonLd(schemaInput);
   const faqJsonLd = buildListingFaqJsonLd(schemaInput);

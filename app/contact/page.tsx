@@ -4,6 +4,7 @@ import ContactForm from "./ContactForm";
 import { getTranslations, getLocale } from "next-intl/server";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -24,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: canonical,
+      images: [{ url: `${SITE_URL}/images/og-default.jpg`, width: 1200, height: 630 }],
     },
   };
 }

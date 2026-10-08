@@ -1,3 +1,4 @@
+import { ORGANIZATION_ID, WEBSITE_ID } from "@/lib/siteSchema";
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -70,28 +71,38 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function organizationJsonLd(isEn: boolean) {
+// Graphe unique Organization + WebSite, émis une seule fois pour tout le site
+// (@id dans lib/siteSchema.ts). Pas de potentialAction/SearchAction :
+// /chalets filtre par région/ville/capacité, il n'y a pas de recherche plein
+// texte à laquelle brancher un paramètre {search_term_string}.
+function siteGraphJsonLd(isEn: boolean) {
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Kabanalouer",
-    url: SITE_URL,
-    logo: `${SITE_URL}/logo-mark.svg`,
-    description: isEn
-      ? "Kabanalouer is a cabin rental marketplace in Quebec — contact owners directly, no service fees for travellers."
-      : "Kabanalouer est une marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service pour les voyageurs.",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": ORGANIZATION_ID,
+        name: "Kabanalouer",
+        url: SITE_URL,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/logo-mark.png`, width: 512, height: 512 },
+        description: isEn
+          ? "Kabanalouer is a cabin rental marketplace in Quebec — contact owners directly, no service fees for travellers."
+          : "Kabanalouer est une marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service pour les voyageurs.",
+        areaServed: { "@type": "AdministrativeArea", name: isEn ? "Quebec, Canada" : "Québec, Canada" },
+        foundingDate: "2026",
+        email: "info@kabanalouer.ca",
+      },
+      {
+        "@type": "WebSite",
+        "@id": WEBSITE_ID,
+        name: "Kabanalouer",
+        url: SITE_URL,
+        inLanguage: isEn ? "en-CA" : "fr-CA",
+        publisher: { "@id": ORGANIZATION_ID },
+      },
+    ],
   };
 }
-
-// Pas de potentialAction/SearchAction : /chalets filtre par région/ville/capacité,
-// il n'y a pas de recherche plein texte à laquelle brancher un paramètre {search_term_string}
-// (Google exige que l'action déclarée fonctionne réellement).
-const websiteJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Kabanalouer",
-  url: SITE_URL,
-};
 
 export default async function RootLayout({
   children,
@@ -108,11 +119,7 @@ export default async function RootLayout({
         {gaMeasurementId && <GoogleAnalytics measurementId={gaMeasurementId} />}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(locale === "en")) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraphJsonLd(locale === "en")) }}
         />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}

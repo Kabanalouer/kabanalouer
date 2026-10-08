@@ -5,6 +5,7 @@ import ExploreCabinsCta from "@/components/ExploreCabinsCta";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import { ORGANIZATION_ID, WEBSITE_ID } from "@/lib/siteSchema";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -41,16 +42,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function organizationJsonLd(isEn: boolean) {
+// L'Organization elle-même est déclarée une seule fois dans app/layout.tsx :
+// la page À propos s'y rattache par son @id.
+function aboutPageJsonLd(isEn: boolean) {
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Kabanalouer",
-    url: SITE_URL,
-    description: isEn ? "Cabin rental marketplace in Quebec" : "Marketplace de location de chalets au Québec",
-    areaServed: isEn ? "Quebec, Canada" : "Québec, Canada",
-    foundingDate: "2026",
-    slogan: isEn ? "The marketplace for Quebec cabins" : "La marketplace des chalets québécois",
+    "@type": "AboutPage",
+    url: `${SITE_URL}${isEn ? "/en/about" : "/a-propos"}`,
+    name: isEn ? "About Kabanalouer" : "À propos de Kabanalouer",
+    inLanguage: isEn ? "en-CA" : "fr-CA",
+    about: { "@id": ORGANIZATION_ID },
+    isPartOf: { "@id": WEBSITE_ID },
   };
 }
 
@@ -61,7 +63,7 @@ export default async function AProposPage() {
     <div className="flex flex-col min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(locale === "en")) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd(locale === "en")) }}
       />
       <Navbar />
       <main className="flex flex-1 flex-col">

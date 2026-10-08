@@ -11,19 +11,31 @@ import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
 import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { getRegionByDbValue } from "@/lib/regions";
+import { isKnownMunicipality } from "@/lib/municipalities";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const { city, region } = await searchParams;
+  const params = await searchParams;
+  const { city, region } = params;
   const [t, locale] = await Promise.all([getTranslations("chaletsPage"), getLocale()]);
   const isEn = locale === "en";
-  const regionLabel = region && isEn ? getRegionByDbValue(region)?.nameEn ?? region : region;
-  const destination = city || regionLabel || null;
+  // Seules une vraie région ou une vraie municipalité entrent dans le titre :
+  // un paramètre arbitraire (?city=n'importe quoi) ne doit jamais s'y retrouver.
+  const regionConfig = region ? getRegionByDbValue(region) : undefined;
+  const regionLabel = regionConfig ? (isEn ? regionConfig.nameEn : regionConfig.name) : null;
+  const cityLabel = city && isKnownMunicipality(city) ? city : null;
+  const destination = cityLabel || regionLabel || null;
   const basePath = isEn ? "/en/cabins" : "/chalets";
+  // Toute recherche filtrée est une variante de /chalets : explorée (liens
+  // suivis) mais jamais indexée — les pages région, ville et par type sont les
+  // versions indexables de ces recherches.
+  const isFiltered = Object.values(params).some((v) => v !== undefined && v !== "");
+  const robots = isFiltered ? { robots: { index: false, follow: true } } : {};
 
   const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
   if (destination) {
     return {
+      ...robots,
       title: t("metaTitleDestination", { destination }),
       description: t("metaDescDestination", { destination }),
       alternates: {
@@ -49,6 +61,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   }
 
   return {
+    ...robots,
     title: t("metaTitle"),
     description: t("metaDesc"),
     alternates: {
