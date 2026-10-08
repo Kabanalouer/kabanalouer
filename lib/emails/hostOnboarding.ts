@@ -120,10 +120,10 @@ export async function sendDraftReminderEmail({
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, lang);
   const pricing = fr
     ? offerEnd
-      ? `C’est gratuit la première année pour toute annonce publiée d’ici le ${offerEnd}, sans commission.`
+      ? `C’est gratuit la première année pour toute annonce publiée d’ici le ${offerEnd}.`
       : `L’abonnement est de ${regularPrice} par année, sans aucune commission sur tes réservations.`
     : offerEnd
-      ? `It’s free for the first year for any listing published by ${offerEnd}, with no commission.`
+      ? `It’s free for the first year for any listing published by ${offerEnd}.`
       : `The subscription is ${regularPrice} per year, with no commission on your bookings.`;
   const body = fr
     ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ». ${pricing}`
