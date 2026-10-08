@@ -300,6 +300,7 @@ export default function LocationSection({
   onRegionChange: (region: string) => void;
   onSaved?: (hasPosition: boolean) => void;
 }) {
+  const mapLanguage = useLocale() === "en" ? "en" : "fr";
   const t = useTranslations("listings.location");
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -317,7 +318,7 @@ export default function LocationSection({
   }
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <APIProvider apiKey={apiKey} language={mapLanguage} region="CA">
       <LocationForm
         listingId={listingId}
         userId={userId}

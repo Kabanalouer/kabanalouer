@@ -292,7 +292,8 @@ export default function ChaletsMap({
   }
 
   return (
-    <APIProvider apiKey={apiKey}>
+    // Langue de l'interface Google (infobulles, mentions) = langue de la page.
+    <APIProvider apiKey={apiKey} language={isEn ? "en" : "fr"} region="CA">
       <div className="relative w-full h-full">
         <Map
           defaultCenter={center}

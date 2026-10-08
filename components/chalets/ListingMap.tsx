@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 
@@ -45,6 +45,7 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
 
 export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
   const t = useTranslations("listing");
+  const locale = useLocale();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const containerRef = useRef<HTMLDivElement>(null);
   // La carte est loin sous la ligne de flottaison : on ne monte APIProvider
@@ -78,7 +79,7 @@ export default function ListingMap({ lat, lng }: { lat: number; lng: number }) {
         className="h-64 rounded-2xl overflow-hidden border border-charcoal-100 bg-charcoal-50"
       >
         {visible && (
-          <APIProvider apiKey={apiKey}>
+          <APIProvider apiKey={apiKey} language={locale === "en" ? "en" : "fr"} region="CA">
             <MapInner lat={lat} lng={lng} />
           </APIProvider>
         )}

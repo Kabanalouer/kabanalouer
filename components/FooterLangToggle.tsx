@@ -25,21 +25,21 @@ export default function FooterLangToggle() {
   return (
     <div
       className="relative flex rounded-full"
-      style={{ backgroundColor: "#e8ebdc", width: 80, height: 30, padding: 2 }}
+      style={{ backgroundColor: "#e8ebdc", width: 96, height: 36, padding: 2 }}
     >
       {/* Sliding thumb */}
-      {/* Zone tactile : chaque bouton déborde de 9 px en haut/bas (::after)
-          pour atteindre 44 px de haut sans changer le visuel de 30 px. */}
+      {/* Zone tactile : chaque bouton (46 px de large) déborde de 6 px en
+          haut/bas (::after) pour atteindre 44 px de haut, visuel de 36 px. */}
       <div
-        className={`absolute rounded-full transition-transform duration-200 ease ${isEn ? "translate-x-[38px]" : "translate-x-0"}`}
-        style={{ backgroundColor: "#636e40", width: 38, height: 26, top: 2, left: 2 }}
+        className={`absolute rounded-full transition-transform duration-200 ease ${isEn ? "translate-x-[46px]" : "translate-x-0"}`}
+        style={{ backgroundColor: "#636e40", width: 46, height: 32, top: 2, left: 2 }}
       />
       <button
         type="button"
         onClick={() => switchTo("fr")}
         aria-pressed={!isEn}
         lang="fr"
-        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[9px] after:content-[''] ${!isEn ? "text-white" : "text-charcoal-600"}`}
+        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-[''] ${!isEn ? "text-white" : "text-charcoal-600"}`}
       >
         FR
       </button>
@@ -48,7 +48,7 @@ export default function FooterLangToggle() {
         onClick={() => switchTo("en")}
         aria-pressed={isEn}
         lang="en"
-        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[9px] after:content-[''] ${isEn ? "text-white" : "text-charcoal-600"}`}
+        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-[''] ${isEn ? "text-white" : "text-charcoal-600"}`}
       >
         EN
       </button>
