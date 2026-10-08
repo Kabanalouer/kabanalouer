@@ -16,6 +16,11 @@ export default function PreviewModal({ listingId, onClose }: Props) {
   const locale = useLocale();
   const previewSrc = localePath(`/chalets/${listingId}?preview=1`, locale);
   const [viewMode, setViewMode] = useState<ViewMode>("desktop");
+  // Sur un téléphone, le cadre d'ordinateur et le faux téléphone de 414 px ne
+  // tiennent pas : la fiche s'affiche telle quelle en plein écran, sans sélecteur.
+  const [isPhone] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -39,6 +44,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
         </button>
 
         {/* Center: toggle */}
+        {!isPhone && (
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-charcoal-100 rounded-lg p-1">
           <button
             onClick={() => setViewMode("desktop")}
@@ -59,6 +65,7 @@ export default function PreviewModal({ listingId, onClose }: Props) {
             <span className="hidden sm:inline">Mobile</span>
           </button>
         </div>
+        )}
 
         {/* Right: spacer to balance the X */}
         <div className="w-9" />
@@ -66,7 +73,14 @@ export default function PreviewModal({ listingId, onClose }: Props) {
 
       {/* Content — dark background */}
       <div className="flex-1 overflow-hidden flex items-stretch" style={{ background: "#1a1a1a" }}>
-        {viewMode === "desktop" ? (
+        {isPhone ? (
+          <iframe
+            key="phone"
+            src={previewSrc}
+            className="flex-1 w-full h-full border-none block bg-white"
+            title={t("previewMobileFrameTitle")}
+          />
+        ) : viewMode === "desktop" ? (
           /* Desktop: white rounded card ~90% wide with visible dark margins */
           <div className="flex-1 flex items-stretch justify-center py-5 px-[5%]">
             <div className="flex-1 rounded-xl overflow-hidden shadow-2xl">
