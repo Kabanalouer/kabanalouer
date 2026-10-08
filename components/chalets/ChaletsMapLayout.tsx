@@ -185,7 +185,10 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         {/* Left: 55% — hidden when expanded */}
         <div className={`flex-[55] min-w-0 px-5 pt-5 pb-10 ${isExpanded ? "hidden" : ""}`}>
           <div className="mb-5">
-            <h1 className="text-2xl font-bold text-charcoal-800">{pageTitle}</h1>
+            {/* Un seul <h1> dans le HTML (celui de la version mobile) : la
+                version ordinateur garde un titre de niveau 1 pour les lecteurs
+                d'écran (l'autre est masqué), sans dupliquer la balise. */}
+            <div role="heading" aria-level={1} className="text-2xl font-bold text-charcoal-800">{pageTitle}</div>
             {!isLoading && (
               <span className="text-sm text-charcoal-400 mt-0.5 block">
                 {t("resultCount", { count: listings.length })}

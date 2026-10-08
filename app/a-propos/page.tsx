@@ -42,6 +42,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// Date de la dernière révision du texte de la page (à changer quand le texte change)
+const ABOUT_UPDATED_ON = "2026-10-08";
+
 // L'Organization elle-même est déclarée une seule fois dans app/layout.tsx :
 // la page À propos s'y rattache par son @id.
 function aboutPageJsonLd(isEn: boolean) {
@@ -52,6 +55,7 @@ function aboutPageJsonLd(isEn: boolean) {
     name: isEn ? "About Kabanalouer" : "À propos de Kabanalouer",
     inLanguage: isEn ? "en-CA" : "fr-CA",
     about: { "@id": ORGANIZATION_ID },
+    dateModified: ABOUT_UPDATED_ON,
     isPartOf: { "@id": WEBSITE_ID },
   };
 }
@@ -92,6 +96,10 @@ export default async function AProposPage() {
             <p>{t("origin1")}</p>
             <p>{t("origin2")}</p>
           </div>
+          <p className="mt-8 text-base font-semibold text-charcoal-800">{t("founderSignature")}</p>
+          <p className="mt-1 text-sm text-charcoal-400">
+            {t("updatedOn", { date: new Date(`${ABOUT_UPDATED_ON}T12:00:00`).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { day: "numeric", month: "long", year: "numeric" }) })}
+          </p>
         </div>
       </section>
 

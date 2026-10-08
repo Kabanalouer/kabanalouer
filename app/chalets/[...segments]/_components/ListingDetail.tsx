@@ -319,6 +319,17 @@ export default async function ListingDetail({ listing, user, searchParams, local
   };
   const lodgingJsonLd = buildListingJsonLd(schemaInput);
   const faqJsonLd = buildListingFaqJsonLd(schemaInput);
+  // Même fil que celui affiché au-dessus du titre : Chalets › Région › Ville › Chalet
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { name: t("breadcrumbCabins"), path: localePath("/chalets", locale) },
+      ...(regionBasePath ? [{ name: regionDisplayName, path: regionBasePath }] : []),
+      ...(cityBasePath && listing.city ? [{ name: listing.city as string, path: cityBasePath }] : []),
+      { name: displayTitle, path: canonicalPath },
+    ].map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: `${SITE_URL}${c.path}` })),
+  };
 
   const subtitleParts = [
     t("personCount", { count: listing.capacity as number }),
@@ -334,6 +345,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {faqJsonLd && (
         <script

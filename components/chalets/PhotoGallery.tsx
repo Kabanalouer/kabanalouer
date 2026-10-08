@@ -6,9 +6,17 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import type { PhotoItem } from "@/lib/photo";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { metaDescription } from "@/lib/metaText";
 
 function displayCaption(photo: PhotoItem, locale: string): string {
   return (locale === "en" && photo.caption_en) ? photo.caption_en : photo.caption;
+}
+
+// Texte alternatif : la légende, raccourcie (certaines légendes importées
+// d'Airbnb font plus de 200 caractères — un lecteur d'écran lit tout).
+function photoAlt(photo: PhotoItem, locale: string, fallback: string): string {
+  const caption = displayCaption(photo, locale);
+  return caption ? metaDescription(caption, 120) : fallback;
 }
 
 interface Props {
@@ -141,7 +149,7 @@ export default function PhotoGallery({ photos, title }: Props) {
                 {i <= heroMax + 1 && (
                   <Image
                     src={p.url}
-                    alt={displayCaption(p, locale) || (i === 0 ? title : `${locale === "en" ? "Cabin" : "Chalet"} ${title} – photo ${i + 1}`)}
+                    alt={photoAlt(p, locale, i === 0 ? title : `${title} – photo ${i + 1}`)}
                     fill
                     className="object-cover"
                     sizes="100vw"
@@ -178,12 +186,12 @@ export default function PhotoGallery({ photos, title }: Props) {
             <div className={`relative overflow-hidden group ${photos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"}`}>
               {/* Pas de priority ici : son préchargement partait aussi sur téléphone (grille
                   masquée), en double avec la photo du carrousel mobile. */}
-              <Image src={photos[0].url} alt={displayCaption(photos[0], locale) || title} fill className="object-cover" sizes="50vw" fetchPriority="high" />
+              <Image src={photos[0].url} alt={photoAlt(photos[0], locale, title)} fill className="object-cover" sizes="50vw" fetchPriority="high" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
             </div>
             {photos.slice(1, 5).map((p, i) => (
               <div key={i} className="relative overflow-hidden bg-charcoal-50 group">
-                <Image src={p.url} alt={displayCaption(p, locale) || `${locale === "en" ? "Cabin" : "Chalet"} ${title} – photo ${i + 2}`} fill className="object-cover" sizes="25vw" />
+                <Image src={p.url} alt={photoAlt(p, locale, `${title} – photo ${i + 2}`)} fill className="object-cover" sizes="25vw" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
               </div>
             ))}
@@ -247,7 +255,7 @@ export default function PhotoGallery({ photos, title }: Props) {
                       <div className="relative w-full h-full">
                         <Image
                           src={p.url}
-                          alt={displayCaption(p, locale) || `${locale === "en" ? "Cabin" : "Chalet"} ${title} – photo ${i + 1}`}
+                          alt={photoAlt(p, locale, `${title} – photo ${i + 1}`)}
                           fill
                           className="object-contain"
                           sizes="100vw"

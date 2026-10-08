@@ -850,9 +850,9 @@
     "ownersDescRegular": "{price} per year. No commission on your bookings, no transaction fees.",
     "ownersDeadline": "Until {date}",
     "metaTitle": "Quebec Cabin Rentals",
-    "metaDesc": "Discover hundreds of cabins for rent in Quebec. Direct contact with owners, no service fees. Laurentians, Charlevoix, Eastern Townships and more.",
+    "metaDesc": "Cabins for rent in Quebec: hot tub, waterfront, dog-friendly. Direct contact with owners, no service fees for travellers.",
     "ogTitle": "Kabanalouer — Quebec Cabin Rentals",
-    "ogDesc": "Discover hundreds of cabins for rent in Quebec. Direct contact with owners, no service fees."
+    "ogDesc": "Cabins for rent in Quebec, in direct contact with the owners. No service fees for travellers."
   },
   "chaletsPage": {
     "metaTitle": "Quebec Cabins — Search",
@@ -1203,7 +1203,7 @@
   },
   "ownerCta": {
     "title": "Are you a cabin owner?",
-    "subtitle": "List your cabin on Kabanalouer and join hundreds of Quebec cabin owners.",
+    "subtitle": "List your cabin on Kabanalouer and talk directly with travellers, commission-free.",
     "cta": "List my cabin →"
   },
   "regions": {
@@ -1374,7 +1374,9 @@
     "origin2": "So we kept what works (a great showcase, clear listings, simple messaging) and removed the rest.",
     "modelTitle": "A simple model, and we'll be upfront about it.",
     "model1": "Owners pay a fixed annual subscription to list their cabin. That's it. We take no commission on stays, and travelers pay no fees. You find a cabin, you write freely to the owner, and you agree together on the dates and the price.",
-    "model2": "Since our revenue doesn't depend on the amount of your booking, we have no interest in pushing it up."
+    "model2": "Since our revenue doesn't depend on the amount of your booking, we have no interest in pushing it up.",
+    "founderSignature": "Simon Lemay, founder of Kabanalouer",
+    "updatedOn": "Updated {date}"
   },
   "hostCard": {
     "heading": "Meet your owner",

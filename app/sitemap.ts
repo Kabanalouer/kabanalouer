@@ -22,28 +22,31 @@ const BASE = SITE_URL;
 const MIN_CHALETS_FOR_INDEX = 1;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+  // Pas de lastmod sur les pages au texte fixe (une date toujours égale à
+  // « maintenant » est ignorée par Google) ; les pages qui listent des chalets
+  // prennent la date de la fiche modifiée le plus récemment.
+  let latestListingChange: Date | undefined;
 
   // ── Static pages FR + EN ─────────────────────────────────────────────────────
   const staticPages: MetadataRoute.Sitemap = [
-    { url: `${BASE}/`,                  lastModified: now, changeFrequency: "daily",   priority: 1.0 },
-    { url: `${BASE}/en`,                lastModified: now, changeFrequency: "daily",   priority: 1.0 },
-    { url: `${BASE}/chalets`,           lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE}/en/cabins`,         lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE}/devenir-hote`,      lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/en/become-a-host`,  lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/comment-ca-marche`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/how-it-works`,   lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/faq-hotes`,         lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/owner-faq`,      lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/a-propos`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/en/about`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/contact`,           lastModified: now, changeFrequency: "yearly",  priority: 0.5 },
-    { url: `${BASE}/en/contact`,        lastModified: now, changeFrequency: "yearly",  priority: 0.5 },
-    { url: `${BASE}/conditions`,        lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
-    { url: `${BASE}/en/terms`,          lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
-    { url: `${BASE}/confidentialite`,   lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
-    { url: `${BASE}/en/privacy`,        lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/`,                  changeFrequency: "daily",   priority: 1.0 },
+    { url: `${BASE}/en`,                changeFrequency: "daily",   priority: 1.0 },
+    { url: `${BASE}/chalets`,           changeFrequency: "hourly",  priority: 0.9 },
+    { url: `${BASE}/en/cabins`,         changeFrequency: "hourly",  priority: 0.9 },
+    { url: `${BASE}/devenir-hote`,      changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/en/become-a-host`,  changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/comment-ca-marche`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/how-it-works`,   changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/faq-hotes`,         changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/owner-faq`,      changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/a-propos`,          changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/en/about`,          changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/contact`,           changeFrequency: "yearly",  priority: 0.5 },
+    { url: `${BASE}/en/contact`,        changeFrequency: "yearly",  priority: 0.5 },
+    { url: `${BASE}/conditions`,        changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/en/terms`,          changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/confidentialite`,   changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${BASE}/en/privacy`,        changeFrequency: "yearly",  priority: 0.3 },
   ];
 
   // ── Region pages FR + EN ─────────────────────────────────────────────────────
@@ -51,8 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // comptes actifs connus. Reste tel quel si Supabase est injoignable (ne pas
   // faire échouer le build, voir catch plus bas).
   let regionPages: MetadataRoute.Sitemap = REGIONS.flatMap((region) => [
-    { url: `${BASE}/chalets/${region.slug}`,        lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
-    { url: `${BASE}/en/cabins/${region.slugEn}`,    lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+    { url: `${BASE}/chalets/${region.slug}`,        lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 },
+    { url: `${BASE}/en/cabins/${region.slugEn}`,    lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 },
   ]);
 
   let listingPages: MetadataRoute.Sitemap = [];
@@ -66,11 +69,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: listings, error: listingsError } = await supabase
-      .from("listings")
-      .select("id, region, city, listing_number, custom_slug, created_at")
-      .eq("is_published", true)
-      .order("created_at", { ascending: false });
+    // content_updated_at (supabase/add-listings-content-updated-at.sql) =
+    // dernière modification réelle du contenu. Repli sur created_at si la
+    // migration n'est pas encore exécutée — jamais un sitemap vide.
+    const baseColumns = "id, region, city, listing_number, custom_slug, created_at";
+    type SitemapListingRow = {
+      id: string; region: string | null; city: string | null; listing_number: number | null;
+      custom_slug: string | null; created_at: string; content_updated_at?: string;
+    };
+    const fetchListings = (columns: string) =>
+      supabase.from("listings").select(columns).eq("is_published", true).order("created_at", { ascending: false })
+        .returns<SitemapListingRow[]>();
+    let { data: listings, error: listingsError } = await fetchListings(`${baseColumns}, content_updated_at`);
+    if (listingsError) ({ data: listings, error: listingsError } = await fetchListings(baseColumns));
 
     // Supabase ne lève jamais d'exception pour une erreur de requête (colonne
     // inconnue, etc.) — elle retourne { data: null, error } silencieusement,
@@ -80,8 +91,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // vidé tout le sitemap dynamique sans aucune trace nulle part).
     if (listingsError) console.error("sitemap: erreur Supabase sur la requête listings", listingsError);
 
+    // Pages qui listent des chalets (régions, villes, types, combinaisons) :
+    // elles changent quand une fiche change — date de la fiche la plus récente.
+    for (const l of listings ?? []) {
+      const d = new Date(l.content_updated_at ?? l.created_at);
+      if (!latestListingChange || d > latestListingChange) latestListingChange = d;
+    }
+
     listingPages = (listings ?? []).flatMap((l) => {
-      const lastMod = new Date(l.created_at as string);
+      const lastMod = new Date(l.content_updated_at ?? l.created_at);
       const listingRow = {
         region: l.region as string | null,
         city: l.city as string | null,
@@ -115,13 +133,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return [
         {
           url: `${BASE}/chalets/${regionConfig.slug}/${slugify(city)}`,
-          lastModified: now,
+          lastModified: latestListingChange,
           changeFrequency: "weekly" as const,
           priority: 0.75,
         },
         {
           url: `${BASE}/en/cabins/${regionConfig.slugEn}/${slugify(city)}`,
-          lastModified: now,
+          lastModified: latestListingChange,
           changeFrequency: "weekly" as const,
           priority: 0.75,
         },
@@ -138,8 +156,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq("dogs_allowed", true);
     if ((dogListingCount ?? 0) >= MIN_CHALETS_FOR_INDEX) {
       themePages = [
-        { url: `${BASE}${DOG_FRIENDLY_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
-        { url: `${BASE}${DOG_FRIENDLY_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${DOG_FRIENDLY_PATH_FR}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${DOG_FRIENDLY_PATH_EN}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
       ];
     }
 
@@ -150,8 +168,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq("reduced_mobility", true);
     if ((accessibleCount ?? 0) >= MIN_CHALETS_FOR_INDEX) {
       themePages.push(
-        { url: `${BASE}${ACCESSIBLE_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
-        { url: `${BASE}${ACCESSIBLE_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${ACCESSIBLE_PATH_FR}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${ACCESSIBLE_PATH_EN}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
       );
     }
 
@@ -161,16 +179,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const landing of AMENITY_LANDINGS) {
       if (amenityCounts[landing.key] < MIN_CHALETS_FOR_INDEX) continue;
       themePages.push(
-        { url: `${BASE}${landing.pathFr}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
-        { url: `${BASE}${landing.pathEn}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${landing.pathFr}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${landing.pathEn}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
       );
     }
 
     // Page « chalets pas chers » : dans le sitemap seulement si assez de chalets en promo
     if ((await countDealListings()) >= MIN_DEAL_LISTINGS_FOR_INDEX) {
       themePages.push(
-        { url: `${BASE}${DEALS_PATH_FR}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
-        { url: `${BASE}${DEALS_PATH_EN}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${DEALS_PATH_FR}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
+        { url: `${BASE}${DEALS_PATH_EN}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.8 },
       );
     }
 
@@ -179,8 +197,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     comboPages = allActiveCombos(await getComboIndex()).flatMap((l) => {
       const priority = l.city ? 0.7 : 0.75;
       return [
-        { url: `${BASE}${comboPath(l.theme, l.region, l.city, false)}`, lastModified: now, changeFrequency: "daily" as const, priority },
-        { url: `${BASE}${comboPath(l.theme, l.region, l.city, true)}`, lastModified: now, changeFrequency: "daily" as const, priority },
+        { url: `${BASE}${comboPath(l.theme, l.region, l.city, false)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority },
+        { url: `${BASE}${comboPath(l.theme, l.region, l.city, true)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority },
       ];
     });
 
@@ -197,8 +215,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const activeCount = regionConfig ? (activeCountByRegion.get(regionConfig.dbValue) ?? 0) : 0;
       if (activeCount < MIN_CHALETS_FOR_INDEX || !regionConfig) return [];
       return [
-        { url: `${BASE}/chalets/${regionConfig.slug}`,      lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
-        { url: `${BASE}/en/cabins/${regionConfig.slugEn}`,  lastModified: now, changeFrequency: "daily" as const, priority: 0.7 },
+        { url: `${BASE}/chalets/${regionConfig.slug}`,      lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 },
+        { url: `${BASE}/en/cabins/${regionConfig.slugEn}`,  lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 },
       ];
     });
   } catch (err) {
@@ -212,12 +230,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     if ((await getThemeLinkVisibility()).regions) {
       staticPages.push(
-        { url: `${BASE}/regions`,    lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-        { url: `${BASE}/en/regions`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+        { url: `${BASE}/regions`,    lastModified: latestListingChange, changeFrequency: "weekly", priority: 0.8 },
+        { url: `${BASE}/en/regions`, lastModified: latestListingChange, changeFrequency: "weekly", priority: 0.8 },
       );
     }
   } catch (e) {
     console.error("sitemap: visibilité de /regions indisponible", e);
+  }
+
+  for (const page of staticPages) {
+    if (/\/(en)?$|\/(chalets|en\/cabins)$/.test(page.url)) page.lastModified = latestListingChange;
   }
 
   return [...staticPages, ...themePages, ...regionPages, ...comboPages, ...cityPages, ...listingPages];

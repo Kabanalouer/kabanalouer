@@ -850,9 +850,9 @@
     "ownersDescRegular": "{price} par année. Aucune commission sur vos réservations, aucuns frais de transaction.",
     "ownersDeadline": "Jusqu’au {date}",
     "metaTitle": "Chalets à louer au Québec",
-    "metaDesc": "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service. Laurentides, Charlevoix, Estrie et plus.",
+    "metaDesc": "Chalets à louer au Québec : spa, bord de l'eau, chiens acceptés. Contact direct avec les propriétaires, aucuns frais de service pour les voyageurs.",
     "ogTitle": "Kabanalouer — Location de chalets au Québec",
-    "ogDesc": "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service."
+    "ogDesc": "Chalets à louer au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs."
   },
   "chaletsPage": {
     "metaTitle": "Chalets au Québec — Recherche",
@@ -1203,7 +1203,7 @@
   },
   "ownerCta": {
     "title": "Vous êtes propriétaire ?",
-    "subtitle": "Affichez votre chalet sur Kabanalouer et rejoignez des centaines de propriétaires québécois.",
+    "subtitle": "Affichez votre chalet sur Kabanalouer et parlez directement aux voyageurs, sans commission.",
     "cta": "Inscrire mon chalet →"
   },
   "regions": {
@@ -1374,7 +1374,9 @@
     "origin2": "Nous avons donc gardé ce qui fonctionne (une belle vitrine, des annonces claires, une messagerie simple) et enlevé le reste.",
     "modelTitle": "Un modèle simple, et on vous le dit franchement.",
     "model1": "Les propriétaires paient un abonnement annuel fixe pour afficher leur chalet. C'est tout. Nous ne prenons aucune commission sur les séjours, et les voyageurs n'ont aucuns frais à payer. Vous trouvez un chalet, vous écrivez librement au proprio, vous vous entendez ensemble sur les dates et le prix.",
-    "model2": "Comme notre revenu ne dépend pas du montant de votre réservation, nous n'avons aucun intérêt à le faire grimper."
+    "model2": "Comme notre revenu ne dépend pas du montant de votre réservation, nous n'avons aucun intérêt à le faire grimper.",
+    "founderSignature": "Simon Lemay, fondateur de Kabanalouer",
+    "updatedOn": "Mis à jour le {date}"
   },
   "hostCard": {
     "heading": "Faites connaissance avec votre propriétaire",

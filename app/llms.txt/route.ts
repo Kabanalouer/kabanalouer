@@ -1,7 +1,9 @@
 import { SITE_URL } from "@/lib/siteUrl";
 import { REGIONS } from "@/lib/regions";
 import { AMENITY_LANDINGS } from "@/lib/amenityLandings";
-import { DEALS_PATH_FR } from "@/lib/promoLabel";
+import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
+import { DOG_FRIENDLY_PATH_EN } from "@/lib/dogPolicy";
+import { ACCESSIBLE_PATH_EN } from "@/lib/accessibility";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
 import { allActiveCombos, comboLinkLabel, comboPath, getComboIndex } from "@/lib/comboLandings";
 
@@ -39,6 +41,19 @@ export async function GET() {
   const regionComboLines = combos.filter((l) => !l.city).map(comboLine);
   const cityComboLines = combos.filter((l) => l.city).map(comboLine);
 
+  // Mêmes pages en anglais (agents IA qui répondent en anglais)
+  const themeLinesEn: string[] = [];
+  if (visibility.dogFriendly) themeLinesEn.push(`- [Dog-friendly cabin rentals](${url(DOG_FRIENDLY_PATH_EN)}): cabins that accept dogs, with each cabin's maximum number of dogs, weight limits and fees`);
+  if (visibility.accessible) themeLinesEn.push(`- [Wheelchair-accessible cabin rentals](${url(ACCESSIBLE_PATH_EN)}): accessible cabins with entrance, bathroom, bedroom and circulation details`);
+  for (const l of AMENITY_LANDINGS) {
+    if (visibility.amenities[l.key]) themeLinesEn.push(`- [${l.h1En}](${url(l.pathEn)}): ${l.metaDescriptionEn}`);
+  }
+  if (visibility.deals) themeLinesEn.push(`- [Cabin deals](${url(DEALS_PATH_EN)}): cabins with a current discount`);
+  const regionLinesEn = REGIONS
+    .filter((r) => visibility.activeRegionSlugs.includes(r.slug))
+    .map((r) => `- [Cabin rentals in ${r.nameEn}](${url(`/en/cabins/${r.slugEn}`)})`);
+  const comboLinesEn = combos.map((l) => `- [${comboLinkLabel(l, true)}](${url(comboPath(l.theme, l.region, l.city, true))}): ${l.count} cabins`);
+
   const section = (title: string, lines: string[]) => (lines.length ? [`## ${title}`, "", ...lines, ""] : []);
 
   const body = [
@@ -64,6 +79,20 @@ export async function GET() {
     "",
     "Kabanalouer connecte directement les voyageurs et les propriétaires de chalets au Québec, sans frais de plateforme sur les réservations. Chaque fiche de chalet inclut les équipements, la capacité, les conditions (chiens acceptés avec nombre maximum, poids et frais, tabac, accessibilité aux personnes à mobilité réduite, arrivée/départ) et les coordonnées pour contacter le proprio directement. Les versions anglaises des pages sont sous /en/cabins.",
     "",
+    "## English",
+    "",
+    "Kabanalouer is a commission-free cabin rental marketplace in Quebec: travellers contact cabin owners directly, with no service fees.",
+    "",
+    `- [Home](${url("/en")}): search cabins by region`,
+    `- [Cabins](${url("/en/cabins")}): all available cabins`,
+    `- [List your cabin](${url("/en/become-a-host")}): for cabin owners`,
+    `- [How it works](${url("/en/how-it-works")}): for travellers and owners`,
+    `- [Owner FAQ](${url("/en/owner-faq")}): frequently asked questions for owners`,
+    `- [About](${url("/en/about")}): about Kabanalouer`,
+    "",
+    ...section("Cabins by type", themeLinesEn),
+    ...section("Cabins by region", regionLinesEn),
+    ...section("Cabins by region or town and type", comboLinesEn),
   ].join("\n");
 
   return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8" } });

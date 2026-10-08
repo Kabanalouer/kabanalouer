@@ -120,7 +120,9 @@ export default function ListingCard({
                 {i <= maxSeen + 1 && (
                   <Image
                     src={src}
-                    alt={`${listing.title} — photo ${i + 1}`}
+                    // Les photos suivantes sont décoratives : le lien de la carte porte
+                    // déjà le titre, et « photo 2, photo 3… » n'apprend rien.
+                    alt={i === 0 ? `${listing.title} – ${location}` : ""}
                     fill
                     {...(priority && i === 0 ? { priority: true } : { loading: "lazy" as const })}
                     className="object-cover"

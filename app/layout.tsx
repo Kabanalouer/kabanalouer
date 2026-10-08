@@ -43,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s | Kabanalouer",
     },
     description: isEn
-      ? "Discover hundreds of cabins for rent in Quebec. Contact owners directly, no service fees."
-      : "Découvrez des centaines de chalets à louer au Québec. Contact direct avec les propriétaires, aucun frais de service.",
+      ? "Cabins for rent in Quebec, in direct contact with the owners. No service fees for travellers."
+      : "Chalets à louer au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs.",
     keywords: isEn
       ? ["cabin", "Quebec", "rental", "vacation", "nature", "Laurentians", "Charlevoix", "Eastern Townships"]
       : ["chalet", "Québec", "location", "vacances", "nature", "Laurentides", "Charlevoix", "Estrie"],
@@ -90,6 +90,7 @@ function siteGraphJsonLd(isEn: boolean) {
           : "Kabanalouer est une marketplace de location de chalets au Québec — contact direct avec les propriétaires, aucun frais de service pour les voyageurs.",
         areaServed: { "@type": "AdministrativeArea", name: isEn ? "Quebec, Canada" : "Québec, Canada" },
         foundingDate: "2026",
+        founder: { "@type": "Person", name: "Simon Lemay" },
         email: "info@kabanalouer.ca",
       },
       {

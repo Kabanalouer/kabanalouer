@@ -1,10 +1,11 @@
 // JSON-LD pour la fiche publique d'un chalet — SEO (Google) et GEO (agents
 // IA). Deux blocs distincts générés à partir des mêmes données : le schéma
-// LodgingBusiness (buildListingJsonLd) et un FAQPage (buildListingFaqJsonLd)
+// VacationRental (buildListingJsonLd) et un FAQPage (buildListingFaqJsonLd)
 // limité aux faits connus avec certitude, jamais des questions inventées.
 
 import { getAmenityCatalogEntry, summarizeAmenityDetails, type AmenityValue } from "@/lib/amenities-catalog";
 import { dogFeeLabel, dogPolicyDetails, dogSizeLabel, type DogPolicy } from "@/lib/dogPolicy";
+import { metaDescription } from "@/lib/metaText";
 import { accessibilityFeatureLabel, accessibleLabel, type AccessibilityInfo } from "@/lib/accessibility";
 
 // Une note « 5,0 sur 1 avis » n'apporte rien et attire l'attention des
@@ -42,45 +43,35 @@ export interface ListingSchemaInput {
 export function buildListingJsonLd(input: ListingSchemaInput): Record<string, unknown> {
   const isEn = input.locale === "en";
 
-  const makesOffer = input.priceOnRequest
-    ? { "@type": "Offer", priceCurrency: "CAD", availability: "https://schema.org/InStock" }
-    : input.priceLow > 0
+  // « Prix sur demande » : aucune offre déclarée plutôt qu'une offre sans prix
+  const makesOffer = !input.priceOnRequest && input.priceLow > 0
     ? {
         "@type": "Offer",
         priceSpecification: {
-          "@type": "PriceSpecification",
-          minPrice: input.priceLow,
-          ...(input.priceHigh > input.priceLow ? { maxPrice: input.priceHigh } : {}),
+          "@type": "UnitPriceSpecification",
+          price: input.priceLow,
+          ...(input.priceHigh > input.priceLow ? { minPrice: input.priceLow, maxPrice: input.priceHigh } : {}),
           priceCurrency: "CAD",
+          unitCode: "DAY",
+          unitText: isEn ? "night" : "nuit",
         },
       }
     : null;
+  const priceRange = makesOffer
+    ? isEn
+      ? `$${input.priceLow}${input.priceHigh > input.priceLow ? `–$${input.priceHigh}` : "+"} CAD per night`
+      : `${input.priceLow}${input.priceHigh > input.priceLow ? `\u00a0$ – ${input.priceHigh}` : ""}\u00a0$ CAD par nuit`
+    : null;
 
-  return {
-    "@context": "https://schema.org",
-    "@type": "LodgingBusiness",
-    name: input.title,
-    description: input.description ?? "",
-    image: input.photoUrls,
-    url: input.url,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: input.city ?? input.region ?? "",
-      addressRegion: input.region ?? "",
-      addressCountry: "CA",
-    },
-    ...(input.latitude && input.longitude
-      ? { geo: { "@type": "GeoCoordinates", latitude: input.latitude, longitude: input.longitude } }
-      : {}),
-    ...(input.checkinTime ? { checkinTime: input.checkinTime } : {}),
-    ...(input.checkoutTime ? { checkoutTime: input.checkoutTime } : {}),
-    // Le nom seul suffit pour un lecteur humain qui voit déjà les détails
-    // dans le texte de la page — mais pour un agent IA qui ne lit que le
-    // JSON-LD, "description" expose le même résumé (accès, capacité,
-    // horaires...) que summarizeAmenityDetails() affiche déjà à l'écran.
-    // Accessibilité : un LocationFeatureSpecification par élément coché,
-    // seulement si le proprio a déclaré le chalet accessible — jamais un
-    // « non accessible » supposé quand il n'a rien indiqué.
+  // Le logement lui-même (chambres, capacité, équipements) : VacationRental
+  // le place dans containsPlace, pas à la racine.
+  const accommodation: Record<string, unknown> = {
+    "@type": "Accommodation",
+    additionalType: "EntirePlace",
+    numberOfBedrooms: input.bedroomCount,
+    numberOfBathroomsTotal: input.bathrooms,
+    occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" },
+    petsAllowed: input.dogPolicy.allowed,
     amenityFeature: [
       ...(input.accessibility.accessible
         ? [
@@ -104,10 +95,34 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
       };
     }),
     ],
-    numberOfBedrooms: input.bedroomCount,
-    numberOfBathroomsTotal: input.bathrooms,
-    occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" },
-    // petsAllowed reste booléen (format attendu par Google) ; seuls les
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "VacationRental",
+    "@id": `${input.url}#vacationrental`,
+    name: input.title,
+    // Résumé plutôt que le texte intégral (plusieurs milliers de caractères)
+    description: metaDescription(input.description, 500),
+    inLanguage: isEn ? "en-CA" : "fr-CA",
+    image: input.photoUrls,
+    url: input.url,
+    brand: { "@type": "Brand", name: "Kabanalouer" },
+    address: {
+      "@type": "PostalAddress",
+      ...(input.city ? { addressLocality: input.city } : {}),
+      addressRegion: "QC",
+      addressCountry: "CA",
+    },
+    // Région touristique (Laurentides…), distincte de la province
+    ...(input.region ? { containedInPlace: { "@type": "AdministrativeArea", name: input.region } } : {}),
+    ...(input.latitude && input.longitude
+      ? { latitude: input.latitude, longitude: input.longitude, geo: { "@type": "GeoCoordinates", latitude: input.latitude, longitude: input.longitude } }
+      : {}),
+    ...(input.checkinTime ? { checkinTime: input.checkinTime } : {}),
+    ...(input.checkoutTime ? { checkoutTime: input.checkoutTime } : {}),
+    containsPlace: accommodation,
+    // petsAllowed (aussi dans containsPlace) reste booléen ; seuls les
     // chiens sont acceptés sur Kabanalouer, précisé avec les détails dans
     // additionalProperty pour les agents IA qui ne lisent que le JSON-LD.
     petsAllowed: input.dogPolicy.allowed,
@@ -125,7 +140,7 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     ...(input.citqNumber
       ? { identifier: { "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber } }
       : {}),
-    ...(makesOffer ? { makesOffer } : {}),
+    ...(makesOffer ? { makesOffer, priceRange } : {}),
     ...(input.reviewCount >= MIN_REVIEWS_FOR_RATING
       ? {
           aggregateRating: {
