@@ -109,7 +109,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
           <select
             value={selectedListingId}
             onChange={(e) => setSelectedListingId(e.target.value)}
-            className="text-sm px-4 py-1.5 rounded-full font-medium border bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300 transition-colors appearance-none pr-8 cursor-pointer"
+            className="max-w-full truncate text-sm px-4 py-1.5 rounded-full font-medium border bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300 transition-colors appearance-none pr-8 cursor-pointer"
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.6rem center", backgroundSize: "1rem" }}
           >
             <option value="">{t("allListings")}</option>

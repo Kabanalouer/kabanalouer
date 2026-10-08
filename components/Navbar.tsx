@@ -273,7 +273,7 @@ export default function Navbar() {
     const tabCls = (pathPrefix: string, exact = false) => {
       const active = exact ? strippedPathname === pathPrefix : strippedPathname.startsWith(pathPrefix);
       return [
-        "flex items-center gap-2 px-5 h-full text-base font-semibold transition-colors border-b-2",
+        "flex items-center gap-2 px-3 lg:px-5 h-full text-sm lg:text-base font-semibold whitespace-nowrap transition-colors border-b-2",
         active
           ? "border-charcoal-800 text-charcoal-800"
           : "border-transparent text-charcoal-400 hover:text-charcoal-700 hover:border-charcoal-200",
@@ -284,9 +284,12 @@ export default function Navbar() {
       <nav className={navWrap}>
         <div className={`${navInner} h-20 flex items-stretch`}>
 
-          {/* Logo */}
-          <div className="flex items-center mr-8 shrink-0">
-            <Logo href={lp("/dashboard")} />
+          {/* Logo — icône seule sur tablette (768-1023 px) : les 4 onglets n'entrent pas avec le logo complet */}
+          <div className="flex items-center mr-4 lg:mr-8 shrink-0">
+            <span className="md:hidden lg:flex"><Logo href={lp("/dashboard")} /></span>
+            <Link href={lp("/dashboard")} className="hidden md:flex lg:hidden items-center shrink-0" aria-label="Kabanalouer">
+              <img src="/logo-mark.svg" alt="" width={40} height={40} className="h-10 w-10 pointer-events-none" />
+            </Link>
           </div>
 
           {/* Tabs — desktop only */}
@@ -311,7 +314,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 ml-auto">
             <button
               onClick={enterVoyageurMode}
-              className="hidden sm:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-base font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
+              className="hidden sm:flex md:hidden lg:flex items-center border border-[#dddddd] rounded-full py-2.5 px-5 text-base font-medium text-charcoal-600 hover:shadow-sm hover:border-charcoal-300 transition-all"
             >
               {t("travelerMode")}
             </button>
@@ -390,7 +393,7 @@ export default function Navbar() {
             {isHost && voyageurMode && (
               <button
                 onClick={exitVoyageurMode}
-                className="hidden sm:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-base font-medium hover:bg-primary/5 transition-all"
+                className="hidden sm:flex md:hidden lg:flex items-center border border-primary text-primary rounded-full py-2.5 px-5 text-base font-medium hover:bg-primary/5 transition-all"
               >
                 {t("ownerMode")}
               </button>

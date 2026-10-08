@@ -62,19 +62,20 @@ type Conversation = {
   unread_count: number;
 };
 
+// Heures et dates à l'heure du Québec, sur le serveur comme dans le navigateur :
+// sans fuseau fixe, le rendu serveur (UTC) diffère de celui du téléphone et
+// React signale une erreur d'hydratation.
+const TIME_ZONE = "America/Montreal";
+
 // Heure seule si le dernier message est d'aujourd'hui, sinon date courte —
 // même convention que les autres listes admin du projet (jour + mois abrégé).
 function formatConversationDate(iso: string, locale: string): string {
   const date = new Date(iso);
-  const now = new Date();
   const localeCode = locale === "en" ? "en-CA" : "fr-CA";
-  const isToday =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
-  return isToday
-    ? date.toLocaleTimeString(localeCode, { hour: "2-digit", minute: "2-digit" })
-    : date.toLocaleDateString(localeCode, { day: "numeric", month: "short" });
+  const day = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: TIME_ZONE });
+  return day(date) === day(new Date())
+    ? date.toLocaleTimeString(localeCode, { hour: "2-digit", minute: "2-digit", timeZone: TIME_ZONE })
+    : date.toLocaleDateString(localeCode, { day: "numeric", month: "short", timeZone: TIME_ZONE });
 }
 
 export default function MessagesClient({
@@ -695,6 +696,7 @@ export default function MessagesClient({
                             }`}
                           >
                             {new Date(msg.created_at).toLocaleTimeString(isEn ? "en-CA" : "fr-CA", {
+                              timeZone: TIME_ZONE,
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -876,7 +878,7 @@ function TravelerCard({ conv }: { conv: Conversation }) {
   const locale = useLocale();
   const firstName = conv.other_user_name.split(" ")[0];
   const memberSince = conv.other_user_created_at
-    ? new Date(conv.other_user_created_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { month: "long", year: "numeric" })
+    ? new Date(conv.other_user_created_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { month: "long", year: "numeric", timeZone: TIME_ZONE })
     : null;
 
   return (

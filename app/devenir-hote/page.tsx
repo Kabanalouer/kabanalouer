@@ -250,7 +250,7 @@ export default async function DevenirHotePage() {
               <div className="flex flex-col gap-4">
                 <p className={`m-0 ${EYEBROW}`}>{c.features.eyebrow}</p>
                 {/* Taille réduite sur mobile pour tenir sur une seule ligne */}
-                <h2 className="m-0 text-[clamp(22px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-h2 text-charcoal-800 whitespace-nowrap">
+                <h2 className="m-0 text-[clamp(22px,3.8vw,48px)] leading-[1.08] font-extrabold tracking-h2 text-charcoal-800 sm:whitespace-nowrap">
                   {c.features.h2}
                 </h2>
               </div>
