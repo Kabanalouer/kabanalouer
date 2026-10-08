@@ -240,7 +240,7 @@ const fr: BaseContent = {
     importBtn: "Importer mon annonce Airbnb",
     createBtn: "Créer une annonce à partir de 0",
   },
-  sticky: { title: "Gratuit 12 mois", subtitle: "Avant le {dateShort}", cta: "Publier mon chalet" },
+  sticky: { title: "Gratuite", subtitle: "Avant le {dateShort}", cta: "Publier mon chalet" },
 };
 
 // EN : traduction maison (non fournie par le client), à faire valider.
@@ -387,7 +387,7 @@ const en: BaseContent = {
     importBtn: "Import my Airbnb listing",
     createBtn: "Create a listing from scratch",
   },
-  sticky: { title: "Free for 12 months", subtitle: "Before {dateShort}", cta: "List my cabin" },
+  sticky: { title: "Free", subtitle: "Before {dateShort}", cta: "List my cabin" },
 };
 
 // Sans offre de lancement : mêmes textes, sauf les mentions « gratuit ».
