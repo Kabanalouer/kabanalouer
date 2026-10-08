@@ -350,6 +350,11 @@ export default function MessagesClient({
   }, [selectedListingId, selectedWithId]);
 
   useEffect(() => {
+    // Mobile : c'est la page entière qui défile (voir le conteneur plus bas).
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -399,11 +404,12 @@ export default function MessagesClient({
   };
 
   return (
-    // Mobile: 100dvh (hauteur réellement visible, suit les barres du navigateur) - navbar(80px) - bottom nav(64px). Desktop: 100dvh - navbar(80px).
-    // Colonne : le bandeau (hauteur naturelle) puis la ligne sidebar/thread en
-    // flex-1, pour que la hauteur totale reste calée sur le viewport que le
-    // bandeau soit affiché ou non.
-    <div className="flex flex-col h-[calc(100dvh-144px)] md:h-[calc(100dvh-80px)]">
+    // Ordinateur : hauteur fixe 100dvh - navbar(80px), la liste et le fil défilent à l'intérieur.
+    // Mobile : c'est la PAGE qui défile (en-tête du fil et zone d'écriture
+    // collants) — sinon la barre de Safari/Chrome iPhone ne se réduit jamais et
+    // laisse un trou blanc sous le menu du bas. Le padding du bas réserve la
+    // place du menu proprio (fixe, ~56px + zone de sécurité).
+    <div className={`flex flex-col min-h-[calc(100dvh-80px)] md:min-h-0 md:h-[calc(100dvh-80px)] ${isHost ? "max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]" : ""}`}>
       {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord ; dès
           qu'il est rempli ou que son bandeau est fermé, la photo prend la place. */}
       {!hasPhone && !phoneBannerHidden ? (
@@ -428,7 +434,7 @@ export default function MessagesClient({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 md:overflow-y-auto">
           {conversations.length === 0 ? (
             <div className="p-6 text-center">
               <p className="text-base text-charcoal-500">{t("emptyList")}</p>
@@ -523,7 +529,7 @@ export default function MessagesClient({
         ) : (
           <>
             {/* Thread header */}
-            <div className="bg-white border-b border-[#ebebeb] px-2 md:px-6 py-2 md:py-4 flex items-center gap-2 md:gap-3">
+            <div className="max-md:sticky max-md:top-20 max-md:z-10 bg-white border-b border-[#ebebeb] px-2 md:px-6 py-2 md:py-4 flex items-center gap-2 md:gap-3">
               {/* Retour — mobile seulement, icône seule */}
               <button
                 onClick={handleBack}
@@ -631,7 +637,7 @@ export default function MessagesClient({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
+            <div className="flex-1 md:overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
               {/* Fiche du voyageur, visible seulement par le proprio de l'annonce */}
               {isHostOfListing && activeConv && (
                 <div className="hidden md:block"><TravelerCard conv={activeConv} /></div>
@@ -838,7 +844,7 @@ export default function MessagesClient({
             {/* Input — toujours le message libre : l'action "Devis structuré"
                 vit maintenant en ligne, sous chaque message de demande de
                 devis précis (voir la boucle des messages ci-dessus). */}
-            <div id="message-composer" className="bg-white border-t border-[#ebebeb] px-3 sm:px-4 py-3">
+            <div id="message-composer" className={`max-md:sticky max-md:z-10 ${isHost ? "max-md:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]" : "max-md:bottom-0 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))]"} bg-white border-t border-[#ebebeb] px-3 sm:px-4 py-3`}>
               <div className="flex gap-2 sm:gap-3 items-end">
                 <AutoTextarea
                   value={newMessage}
