@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, insertMessageAndTranslate } from "@/lib/sendMessage";
-import type { QuoteData, QuoteReplyType } from "@/lib/quoteMessage";
+import { MAX_QUOTE_PRICE_CENTS, type QuoteData, type QuoteReplyType } from "@/lib/quoteMessage";
 
 // Devis structuré — le proprio édite le texte complet côté client
 // (QuoteWidget.tsx, gabarit + section de fermeture personnalisable) ; cette
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
-  const { type, listingId, receiverId, sourceMessageId, editedContent, saveAsTemplate, closingTemplateToSave } =
+  const { type, listingId, receiverId, sourceMessageId, editedContent, priceCents, saveAsTemplate, closingTemplateToSave } =
     await request.json().catch(() => ({}));
   if (!listingId || !receiverId || !sourceMessageId || !editedContent?.trim()) {
     return NextResponse.json({ error: t2(locale, "Paramètres manquants", "Missing parameters") }, { status: 400 });
@@ -67,9 +67,15 @@ export async function POST(request: NextRequest) {
     numChildren: (sourceMessage.num_children as number | null) ?? null,
     numBabies: (sourceMessage.num_babies as number | null) ?? null,
     numPets: (sourceMessage.num_pets as number | null) ?? null,
-    // Plus de champ prix numérique séparé côté client (Correction 2) — le
-    // prix fait partie du texte libre de `content`, conservé null ici.
-    priceCents: null,
+    // Champ « Prix total » de QuoteWidget — aussi inscrit dans `content`.
+    // Ignoré (null) s'il est absent ou hors bornes, jamais bloquant.
+    priceCents:
+      replyType === "quote" &&
+      Number.isInteger(priceCents) &&
+      priceCents > 0 &&
+      priceCents <= MAX_QUOTE_PRICE_CENTS
+        ? priceCents
+        : null,
     travelerFirstName,
   };
 

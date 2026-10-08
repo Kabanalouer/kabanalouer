@@ -9,6 +9,9 @@ import {
   TRAVELER_FIRST_NAME_TOKEN,
   LISTING_TITLE_TOKEN,
   DATES_GUESTS_TOKEN,
+  PRICE_TOKEN,
+  formatQuotePrice,
+  parseQuotePrice,
   detokenizeMessage,
   tokenizeMessage,
 } from "@/lib/quoteMessage";
@@ -78,9 +81,8 @@ function buildDefaultTemplate(t: Translate): string {
     t("quoteIntro", { title: LISTING_TITLE_TOKEN }),
     t("quoteComingUp"),
     DATES_GUESTS_TOKEN,
-    // "PRIX$" est un jeton littéral que le proprio remplace lui-même dans le
-    // textarea — texte brut, aucun champ numérique séparé (voir Correction 2).
-    [t("priceHeading"), t("priceLine")].join("\n"),
+    // Rempli depuis le champ « Prix total » au-dessus du texte.
+    [t("priceHeading"), t("priceLine", { price: PRICE_TOKEN })].join("\n"),
     `${t("reservationHeading")}\n${t("reservationParagraph")}`,
     t("defaultClosingBlock2"),
     t("defaultClosingBlock3"),
@@ -135,6 +137,23 @@ export default function QuoteWidget({
   const [editedText, setEditedText] = useState("");
   const hasEditedText = useRef(false);
 
+  // Champ « Prix total » : le prix tapé est recopié dans le texte, à la place
+  // de ce qui y est inscrit pour l'instant (le repère « ____ $ » au départ).
+  // Si le proprio a effacé cet endroit du texte, le prix reste quand même
+  // envoyé (priceCents) et affiché en gros sur la carte du voyageur.
+  const [priceInput, setPriceInput] = useState("");
+  const priceCents = parseQuotePrice(priceInput);
+  const priceInText = useRef(t("priceInTextPlaceholder"));
+
+  const handlePriceChange = (value: string) => {
+    setPriceInput(value);
+    const cents = parseQuotePrice(value);
+    const next = cents ? formatQuotePrice(cents, locale) : t("priceInTextPlaceholder");
+    const previous = priceInText.current;
+    priceInText.current = next;
+    setEditedText((text) => (text.includes(previous) ? text.replace(previous, next) : text));
+  };
+
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -180,6 +199,7 @@ export default function QuoteWidget({
             travelerFirstName,
             listingTitle,
             datesGuestsBlock,
+            priceDisplay: priceInText.current,
           })
         );
       }
@@ -188,7 +208,7 @@ export default function QuoteWidget({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canSend = !!editedText.trim();
+  const canSend = !!editedText.trim() && priceCents !== null;
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -202,6 +222,7 @@ export default function QuoteWidget({
           travelerFirstName,
           listingTitle,
           datesGuestsBlock,
+          priceDisplay: priceInText.current,
         })
       : undefined;
 
@@ -214,6 +235,7 @@ export default function QuoteWidget({
         receiverId,
         sourceMessageId,
         editedContent: editedText,
+        priceCents,
         saveAsTemplate,
         closingTemplateToSave,
       }),
@@ -236,6 +258,40 @@ export default function QuoteWidget({
 
   return (
     <div className="flex flex-col gap-2.5">
+      <div className="rounded-xl bg-[#f5f6ec] border border-primary/20 p-4">
+        <label htmlFor="quote-price" className="block text-sm font-semibold text-charcoal-800 mb-2">
+          {t("priceFieldLabel")}
+        </label>
+        <div className="flex items-center gap-3">
+          <div className="relative w-44">
+            {locale === "en" && (
+              <span className="absolute inset-y-0 left-4 flex items-center text-2xl font-semibold text-charcoal-400 pointer-events-none">$</span>
+            )}
+            <input
+              id="quote-price"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              autoFocus
+              value={priceInput}
+              onChange={(e) => handlePriceChange(e.target.value)}
+              placeholder={t("priceFieldPlaceholder")}
+              aria-invalid={priceInput.trim() !== "" && priceCents === null}
+              className={`w-full bg-white border border-[#ebebeb] rounded-xl py-2.5 text-2xl font-semibold text-charcoal-800 placeholder-charcoal-300 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                locale === "en" ? "pl-9 pr-4" : "pl-4 pr-9"
+              }`}
+            />
+            {locale !== "en" && (
+              <span className="absolute inset-y-0 right-4 flex items-center text-2xl font-semibold text-charcoal-400 pointer-events-none">$</span>
+            )}
+          </div>
+          <span className="text-sm text-charcoal-500">{t("priceFieldTaxes")}</span>
+        </div>
+        {priceInput.trim() !== "" && priceCents === null && (
+          <p className="mt-2 text-sm text-error-600">{t("priceInvalid")}</p>
+        )}
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-charcoal-500 mb-1">
           {t("quoteTextareaLabel")}
@@ -264,13 +320,25 @@ export default function QuoteWidget({
       {error && <p className="text-sm text-error-500">{error}</p>}
 
       <div className="flex gap-2">
-        <button
-          onClick={handleSend}
-          disabled={sending || !canSend}
-          className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
-        >
-          {sending ? t("sendingGeneric") : t("sendQuoteButton")}
-        </button>
+        {/* Bulle au survol sur le conteneur : un bouton désactivé ne reçoit
+            pas les événements de souris dans tous les navigateurs. */}
+        <span className="relative group inline-flex">
+          <button
+            onClick={handleSend}
+            disabled={sending || !canSend}
+            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          >
+            {sending ? t("sendingGeneric") : t("sendQuoteButton")}
+          </button>
+          {priceCents === null && (
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-0 mb-2 w-64 rounded-lg bg-charcoal-800 px-3 py-2 text-sm text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              {t("priceRequired")}
+            </span>
+          )}
+        </span>
         <button
           type="button"
           onClick={onCancel}
@@ -279,6 +347,10 @@ export default function QuoteWidget({
           {t("cancelButton")}
         </button>
       </div>
+      {/* Pas de survol sur un écran tactile : même consigne, en texte. */}
+      {priceCents === null && (
+        <p className="text-sm text-charcoal-400 md:hidden">{t("priceRequired")}</p>
+      )}
     </div>
   );
 }
