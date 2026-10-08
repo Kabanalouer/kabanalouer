@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { normalizeAirbnbInput, savePendingAirbnbImport } from "@/lib/pendingAirbnbImport";
 import type { DevenirHoteContent, Faq } from "@/lib/devenirHoteContent";
-import { NEW_LISTING_PATH, useOwnerAccess } from "./OwnerAccess";
+import { CreateListingLink, NEW_LISTING_PATH, useOwnerAccess } from "./OwnerAccess";
 
 const IMPORT_INPUT_ID = "airbnb-link";
 
@@ -278,12 +278,12 @@ export function StickyCta({ c }: { c: DevenirHoteContent["sticky"] }) {
         <span className="text-[15px] font-extrabold text-charcoal-800">{c.title}</span>
         <span className="text-xs text-charcoal-400">{c.subtitle}</span>
       </div>
-      <ScrollToImportButton
+      <CreateListingLink
         emplacement="barre_mobile"
-        className="h-12 px-[18px] rounded-full bg-primary text-white text-[15px] font-bold active:scale-[0.97] transition-transform"
+        className="inline-flex items-center h-12 px-[18px] rounded-full bg-primary text-white text-[15px] font-bold active:scale-[0.97] transition-transform"
       >
         {c.cta}
-      </ScrollToImportButton>
+      </CreateListingLink>
     </div>
   );
 }
