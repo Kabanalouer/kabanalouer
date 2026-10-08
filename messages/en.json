@@ -3,11 +3,8 @@
     "bannerMessage": "Add a profile photo so the people you talk to know who they're talking to.",
     "tipMessage": "Tip: add a profile photo. Owners find it easier to reply when they know who they're talking to.",
     "addPhotoCta": "Add a photo",
-    "uploading": "Uploading…",
-    "thanks": "Thanks! Your photo has been added.",
-    "dismiss": "Close",
-    "errorImageSize": "Image exceeds 5 MB.",
-    "errorUpload": "The photo upload failed. Please try again."
+    "tipCta": "Add a photo in my profile →",
+    "dismiss": "Close"
   },
   "common": {
     "save": "Save",

@@ -277,7 +277,7 @@ export default function ContactForm({
         <Link href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
           {t("viewMessagesArrow")}
         </Link>
-        {currentUserId && !senderHasAvatar && <PhotoTip userId={currentUserId} />}
+        {currentUserId && !senderHasAvatar && <PhotoTip />}
       </div>
     );
   }

@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import { localePath } from "@/lib/localePath";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
-import AvatarUploadButton from "@/components/AvatarUploadButton";
 
 // Même comportement que PhoneReminderBanner : sessionStorage, le bandeau
 // revient à la prochaine visite tant qu'aucune photo n'a été ajoutée.
 const DISMISS_KEY = "photoReminderDismissed";
 
-export default function PhotoReminderBanner({ userId }: { userId: string }) {
+export default function PhotoReminderBanner() {
   const t = useTranslations("photoReminder");
+  const locale = useLocale();
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -36,11 +38,12 @@ export default function PhotoReminderBanner({ userId }: { userId: string }) {
     <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
       <p className="text-sm text-charcoal-700">{t("bannerMessage")}</p>
       <div className="flex items-center gap-4 shrink-0">
-        <AvatarUploadButton
-          userId={userId}
-          onUploaded={() => setHidden(true)}
+        <Link
+          href={localePath("/dashboard/profile", locale)}
           className={`text-sm whitespace-nowrap ${TEXT_LINK_CLASSNAME}`}
-        />
+        >
+          {t("addPhotoCta")}
+        </Link>
         <button
           type="button"
           onClick={handleDismiss}
@@ -58,22 +61,18 @@ export default function PhotoReminderBanner({ userId }: { userId: string }) {
 
 // Rappel affiché juste après l'envoi d'un premier message ou d'une demande de
 // prix — jamais avant, pour ne pas freiner la demande elle-même.
-export function PhotoTip({ userId }: { userId: string }) {
+export function PhotoTip() {
   const t = useTranslations("photoReminder");
-  const [done, setDone] = useState(false);
+  const locale = useLocale();
 
-  if (done) {
-    return <p className="mt-5 text-sm text-success-700 font-medium">{t("thanks")}</p>;
-  }
-
+  // Lien vers « Mon profil » plutôt qu'un envoi de fichier sur place : le
+  // voyageur voit où se trouve sa photo et peut compléter le reste du profil.
   return (
     <div className="mt-5 rounded-xl bg-charcoal-50 border border-[#ebebeb] p-4 text-left">
       <p className="text-sm text-charcoal-700">{t("tipMessage")}</p>
-      <AvatarUploadButton
-        userId={userId}
-        onUploaded={() => setDone(true)}
-        className={`mt-2 text-sm ${TEXT_LINK_CLASSNAME}`}
-      />
+      <Link href={localePath("/dashboard/profile", locale)} className={`mt-2 inline-block text-sm ${TEXT_LINK_CLASSNAME}`}>
+        {t("tipCta")}
+      </Link>
     </div>
   );
 }

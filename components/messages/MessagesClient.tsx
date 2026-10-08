@@ -411,7 +411,7 @@ export default function MessagesClient({
         </div>
       ) : !hasAvatar ? (
         <div className={`px-4 pt-4 shrink-0 ${mobileView === "thread" ? "hidden md:block" : ""}`}>
-          <PhotoReminderBanner userId={currentUserId} />
+          <PhotoReminderBanner />
         </div>
       ) : null}
 

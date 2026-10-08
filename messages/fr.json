@@ -3,11 +3,8 @@
     "bannerMessage": "Ajoutez une photo de profil : vos interlocuteurs sauront à qui ils parlent.",
     "tipMessage": "Astuce : ajoutez une photo de profil. Les proprios répondent plus facilement quand ils savent à qui ils parlent.",
     "addPhotoCta": "Ajouter une photo",
-    "uploading": "Envoi…",
-    "thanks": "Merci ! Votre photo a été ajoutée.",
-    "dismiss": "Fermer",
-    "errorImageSize": "L'image dépasse 5 Mo.",
-    "errorUpload": "L'envoi de la photo a échoué. Réessayez."
+    "tipCta": "Ajouter une photo dans mon profil →",
+    "dismiss": "Fermer"
   },
   "common": {
     "save": "Enregistrer",

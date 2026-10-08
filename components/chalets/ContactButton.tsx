@@ -85,7 +85,6 @@ export default function ContactButton({
           hostId={hostId}
           hostName={hostName}
           listingTitle={listingTitle}
-          currentUserId={currentUserId}
           currentUserHasAvatar={currentUserHasAvatar}
           onClose={() => setOpen(false)}
         />
@@ -99,7 +98,6 @@ function ContactModal({
   hostId,
   hostName,
   listingTitle,
-  currentUserId,
   currentUserHasAvatar,
   onClose,
 }: {
@@ -107,7 +105,6 @@ function ContactModal({
   hostId: string;
   hostName: string;
   listingTitle: string;
-  currentUserId: string;
   currentUserHasAvatar: boolean;
   onClose: () => void;
 }) {
@@ -165,7 +162,7 @@ function ContactModal({
                 {tc("close")}
               </button>
             </div>
-            {!currentUserHasAvatar && <PhotoTip userId={currentUserId} />}
+            {!currentUserHasAvatar && <PhotoTip />}
           </div>
         ) : (
           <>
