@@ -106,8 +106,6 @@ export default function PhotoUpload({
   const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean; timer: number | null } | null>(null);
   const [ghost, setGhost] = useState<{ url: string; x: number; y: number } | null>(null);
   const [menuIdx, setMenuIdx] = useState<number | null>(null);
-  // Mobile : légendes repliées par défaut (elles doublaient la hauteur de la galerie).
-  const [showCaptions, setShowCaptions] = useState(false);
   const photosRef = useRef(photos);
   useEffect(() => { photosRef.current = photos; }, [photos]);
   const supabase = createClient();
@@ -543,22 +541,6 @@ export default function PhotoUpload({
         </div>
       )}
 
-      {photos.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setShowCaptions((v) => !v)}
-          aria-expanded={showCaptions}
-          className="lg:hidden inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-full border border-[#ebebeb] bg-white text-sm font-semibold text-charcoal-700"
-        >
-          {showCaptions
-            ? (isEn ? "Hide captions" : "Masquer les légendes")
-            : (isEn ? "Show captions" : "Afficher les légendes")}
-          <svg className={`w-4 h-4 transition-transform ${showCaptions ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-      )}
-
       {/* ── Section 1: Photo de couverture ───────────────────────────────── */}
       <div>
         <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-0.5">{isEn ? "Cover photo" : "Photo de couverture"}</h3>
@@ -581,7 +563,6 @@ export default function PhotoUpload({
         </div>
         {photos[0] && (
           <CaptionField
-            mobileHidden={!showCaptions}
             value={photos[0].caption}
             valueEn={photos[0].caption_en ?? ""}
             placeholder={tEdit("coverCaptionPlaceholder")}
@@ -622,7 +603,6 @@ export default function PhotoUpload({
               <div key={photo.url}>
                 {renderPhotoTile(photo, photoIdx, label, "aspect-square")}
                 <CaptionField
-                  mobileHidden={!showCaptions}
                   value={photo.caption}
                   valueEn={photo.caption_en ?? ""}
                   placeholder={isEn ? `Caption ${photoIdx}` : `Légende ${photoIdx}`}
@@ -658,7 +638,6 @@ export default function PhotoUpload({
                 <div key={item.url}>
                   {renderPhotoTile(item, i, `Photo ${i + 1}`, "aspect-square")}
                   <CaptionField
-                    mobileHidden={!showCaptions}
                     value={item.caption}
                     valueEn={item.caption_en ?? ""}
                     placeholder={tEdit("captionPlaceholder")}
@@ -788,7 +767,6 @@ function CaptionField({
   onBlur,
   onMouseDown,
   locale,
-  mobileHidden = false,
 }: {
   value: string;
   valueEn: string;
@@ -799,7 +777,6 @@ function CaptionField({
   onBlur: () => void;
   onMouseDown: (e: React.MouseEvent) => void;
   locale: string;
-  mobileHidden?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const refEn = useRef<HTMLTextAreaElement>(null);
@@ -876,7 +853,8 @@ function CaptionField({
   );
 
   return (
-    <div className={`mt-1.5 ${mobileHidden ? "max-lg:hidden" : ""}`}>
+    // Légendes : ordinateur seulement (trop encombrant sur mobile).
+    <div className="mt-1.5 max-lg:hidden">
       {locale === "en" ? (
         <>
           {enField}
