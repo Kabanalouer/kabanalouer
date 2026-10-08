@@ -837,11 +837,12 @@ export default function EditListingForm({
     <button
       type="button"
       onClick={() => goToSection(nextSection.id)}
-      className="lg:hidden ml-auto shrink-0 min-h-[44px] pl-5 pr-4 py-1 rounded-full border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5"
+      className="lg:hidden ml-auto min-w-0 min-h-[44px] pl-5 pr-4 py-1 rounded-full border border-primary text-primary bg-white hover:bg-primary/5 transition-colors flex items-center gap-1.5"
     >
-      <span className="flex flex-col items-end leading-tight">
+      {/* Nom de section trop long (« Nombre de voyageurs ») : coupé avec « … » */}
+      <span className="min-w-0 flex flex-col items-end leading-tight">
         <span className="text-sm font-semibold">{tEdit("nextShort")}</span>
-        <span className="text-xs text-primary/80">{getSectionLabel(nextSection.id)}</span>
+        <span className="max-w-full truncate text-xs text-primary/80">{getSectionLabel(nextSection.id)}</span>
       </span>
       <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
     </button>
@@ -2082,7 +2083,7 @@ export default function EditListingForm({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => void triggerSave(activeSection)}
                   disabled={saving || descBelowMin}
-                  className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="shrink-0 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {saving ? (
                     <><Spinner />{tCommon("saving")}</>
