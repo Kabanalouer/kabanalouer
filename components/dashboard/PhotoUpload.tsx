@@ -403,7 +403,7 @@ export default function PhotoUpload({
           }}
           onBlur={(e) => movePhotoToPosition(i, e.currentTarget.value)}
           aria-label={tEdit("movePhotoAria")}
-          className="absolute bottom-1.5 left-1.5 w-11 max-lg:w-14 max-lg:text-base max-lg:py-1.5 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="max-lg:hidden absolute bottom-1.5 left-1.5 w-11 max-lg:w-14 max-lg:text-base max-lg:py-1.5 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
       ) : (
         <button
@@ -411,7 +411,7 @@ export default function PhotoUpload({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); setPositionEditIdx(i); }}
           title={tEdit("movePhotoTitle")}
-          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 max-lg:text-sm max-lg:px-3 max-lg:py-1.5 max-lg:min-h-[32px] rounded-full cursor-pointer hover:bg-black/75 transition-colors"
+          className="max-lg:hidden absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 max-lg:text-sm max-lg:px-3 max-lg:py-1.5 max-lg:min-h-[32px] rounded-full cursor-pointer hover:bg-black/75 transition-colors"
         >
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
@@ -536,8 +536,8 @@ export default function PhotoUpload({
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
           </svg>
           <p>{isEn
-            ? "To change the order, press and hold a photo, then drag it. Or tap ⋯ on a photo."
-            : "Pour changer l’ordre, gardez le doigt sur une photo puis glissez-la. Ou touchez ⋯ sur une photo."}</p>
+            ? "To change the order, press and hold a photo, then drag it. Tap ⋯ to make it the cover or delete it."
+            : "Pour changer l’ordre, gardez le doigt sur une photo puis glissez-la. Touchez ⋯ pour la mettre en couverture ou la supprimer."}</p>
         </div>
       )}
 
@@ -730,21 +730,6 @@ export default function PhotoUpload({
             {menuIdx > 0 && (
               <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, 0))}>
                 {isEn ? "Make cover photo" : "Mettre en couverture"}
-              </MenuAction>
-            )}
-            {menuIdx > 0 && (
-              <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, menuIdx - 1))}>
-                {isEn ? "Move up one spot" : "Avancer d’une place"}
-              </MenuAction>
-            )}
-            {menuIdx < photos.length - 1 && (
-              <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, menuIdx + 1))}>
-                {isEn ? "Move down one spot" : "Reculer d’une place"}
-              </MenuAction>
-            )}
-            {photos.length > 2 && (
-              <MenuAction onClick={() => closeMenuAnd(() => setPositionEditIdx(menuIdx))}>
-                {isEn ? "Choose a position…" : "Choisir une position…"}
               </MenuAction>
             )}
             <MenuAction danger onClick={() => closeMenuAnd(() => void removePhoto(photos[menuIdx].url))}>
