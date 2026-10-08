@@ -58,5 +58,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
 
   // Interne
   { id: "contact-notification", category: "interne", name: "Nouveau message de contact", trigger: "Quand un visiteur envoie le formulaire /contact.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
+  { id: "launch-offer-ending", category: "interne", name: "Fin de l’offre de lancement dans 7 jours", trigger: "Cron quotidien, le jour où il reste 7 jours à l’offre de lancement (lib/launchOffer.ts).", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
   { id: "import-notification", category: "interne", name: "Import d’annonce (pour info)", trigger: "Quand un proprio importe une annonce Airbnb — il la complète et la publie lui-même.", testable: true, fixedRecipient: "simon.authentik@gmail.com" },
 ];

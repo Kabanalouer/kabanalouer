@@ -839,10 +839,14 @@
     "compareDisclaimer": "Fictional example for a {nights}-night stay in the Laurentians.",
     "ctaLabel": "Launch offer",
     "ctaButton": "Claim the free offer →",
+    "ctaButtonRegular": "List my cabin →",
     "ownersTitleLine1": "List your cabin.",
     "ownersTitleLine2": "It’s",
     "ownersTitleAccent": "free.",
+    "ownersTitleLine2Regular": "No",
+    "ownersTitleAccentRegular": "commission.",
     "ownersDesc": "Your first year is free for every listing published before the deadline.",
+    "ownersDescRegular": "{price} per year. No commission on your bookings, no transaction fees.",
     "ownersDeadline": "Until {date}",
     "metaTitle": "Quebec Cabin Rentals",
     "metaDesc": "Discover hundreds of cabins for rent in Quebec. Direct contact with owners, no service fees. Laurentians, Charlevoix, Eastern Townships and more.",
@@ -1619,6 +1623,8 @@
     "eyebrow": "Have a cabin in this area?",
     "title": "List your cabin here. It's free!",
     "body": "Travelers are looking for cabins in this area. Your first year is free, with no commission on your bookings.",
+    "titleRegular": "List your cabin here.",
+    "bodyRegular": "Travelers are looking for cabins in this area. No commission on your bookings.",
     "cta": "List my cabin →"
   }
 }

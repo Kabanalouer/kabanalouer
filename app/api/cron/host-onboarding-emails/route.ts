@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
+import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
+import { launchOfferDaysLeft } from "@/lib/launchOffer";
 
 // Cron quotidien — courriels d'accueil des nouveaux proprios, après leur
 // première publication. Une annonce ne peut être publiée qu'avec un
@@ -16,6 +18,8 @@ import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from
 // Aussi : rappel « complète ton annonce » pour chaque brouillon jamais publié
 // (aucune ligne subscriptions), créé il y a 48 h à 14 jours
 // (listings.draft_reminder_sent_at, un seul rappel par brouillon).
+// Et : avis à l'admin quand il reste exactement 7 jours à l'offre de
+// lancement (lib/launchOffer.ts) — cron quotidien, donc un seul envoi.
 
 const H48 = 48 * 60 * 60 * 1000;
 const H96 = 96 * 60 * 60 * 1000;
@@ -36,6 +40,13 @@ export async function GET(request: NextRequest) {
 
   const supabase = adminSupabase();
   const now = Date.now();
+
+  let launchOfferReminderSent = false;
+  if (launchOfferDaysLeft() === 7) {
+    const { error: offerError } = await sendLaunchOfferEndingNotification({ daysLeft: 7 });
+    if (offerError) console.error("[host-onboarding-emails] avis fin d'offre de lancement", offerError);
+    else launchOfferReminderSent = true;
+  }
 
   const { data: subs, error: subsError } = await supabase
     .from("subscriptions")
@@ -112,7 +123,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, draftRemindersSent, boostSent, installSent });
+  return NextResponse.json({ ok: true, draftRemindersSent, boostSent, installSent, launchOfferReminderSent });
 }
 
 async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, now: number): Promise<number> {

@@ -16,6 +16,7 @@ import { sendReviewRequestEmail, sendStayReviewRequestEmail } from "@/lib/emails
 import { sendReviewRepliedEmail } from "@/lib/emails/reviewReplied";
 import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotification";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
+import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
 
 // Envoi de test d'un courriel du catalogue (Admin → Séquences courriel), avec
 // des données d'exemple basées sur la fiche Chalet Authentik 50.
@@ -93,6 +94,7 @@ function senders(): Record<string, Sender> {
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", message: "Ceci est un message de test envoyé depuis l’admin.",
     }),
+    "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
   };
 }

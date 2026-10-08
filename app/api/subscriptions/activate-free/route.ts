@@ -3,6 +3,7 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
+import { isLaunchOfferActive } from "@/lib/launchOffer";
 
 function adminSupabase() {
   return createAdminClient(
@@ -18,6 +19,14 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
+  }
+
+  // Offre de lancement terminée (lib/launchOffer.ts) : publication par Stripe seulement.
+  if (!isLaunchOfferActive()) {
+    return NextResponse.json(
+      { error: t2(locale, "L'offre de lancement est terminée. Rechargez la page pour publier avec l'abonnement.", "The launch offer has ended. Reload the page to publish with a subscription.") },
+      { status: 409 }
+    );
   }
 
   const { listingId } = await request.json();

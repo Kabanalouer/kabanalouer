@@ -133,6 +133,8 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
   const [nights, setNights] = useState(90);
   const trackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fees = price * nights * 0.15;
+  // Économie nette : frais évités moins le coût Kabanalouer (0 pendant l'offre).
+  const saved = Math.max(0, fees - c.kabanalouerCost);
 
   // Un seul événement par réglage (après 1 s sans mouvement), pas un par cran du curseur.
   const scheduleTrack = (p: number, n: number) => {
@@ -146,6 +148,7 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
   const priceLabel = money(price, locale);
   const nightsLabel = `${nights} ${c.nightsUnit}`;
   const feesLabel = money(fees, locale);
+  const savedLabel = money(saved, locale);
 
   return (
     <div className="bg-white border border-charcoal-100 rounded-2xl shadow-[var(--shadow-lg)] p-[clamp(24px,3vw,36px)] flex flex-col gap-[26px]">
@@ -195,14 +198,14 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
         </div>
         <div className="bg-primary-50 border-[1.5px] border-primary-200 rounded-lg p-[18px] flex flex-col gap-1.5">
           <span className="text-[13px] font-bold text-primary-700">{c.kabanalouerLabel}</span>
-          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-h2 text-primary-700">{money(0, locale)}</span>
+          <span className="text-[clamp(22px,2.4vw,28px)] font-extrabold tracking-h2 text-primary-700">{money(c.kabanalouerCost, locale)}</span>
           <span className="text-xs text-primary-600">{c.kabanalouerNote}</span>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-charcoal-100 pt-5">
         <p className="m-0 text-[15px] text-charcoal-600">
           {c.pocketPre}
-          <strong className="text-lg text-charcoal-800">{feesLabel}{c.pocketPost}</strong>
+          <strong className="text-lg text-charcoal-800">{savedLabel}{c.pocketPost}</strong>
         </p>
         <ScrollToImportButton
           emplacement="calculatrice"

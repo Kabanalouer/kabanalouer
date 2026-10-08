@@ -23,7 +23,8 @@ import AnalyseSection from "./AnalyseSection";
 import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
-import { formatPriceLabel, LAUNCH_OFFER_END } from "@/lib/subscriptionPricing";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import { formatLaunchOfferEnd, isLaunchOfferActive, launchOfferDaysLeft } from "@/lib/launchOffer";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
@@ -1772,7 +1773,9 @@ export default function EditListingForm({
             // L'offre gratuite n'est proposée que si CETTE annonce n'a jamais
             // eu d'abonnement — par annonce, pas par proprio. Un proprio avec
             // plusieurs chalets a droit à l'offre séparément pour chacun.
-            const isFree = !hasExistingSubscription;
+            // Offre gratuite : annonce jamais abonnée ET offre de lancement en
+            // cours (lib/launchOffer.ts) — sinon paiement Stripe.
+            const isFree = !hasExistingSubscription && isLaunchOfferActive();
             const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate
@@ -1783,9 +1786,8 @@ export default function EditListingForm({
             const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
             const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
             const referencePriceLabel = formatPriceLabel(29900, lang); // tier1 — valeur de référence affichée barrée pour l'offre gratuite
-            const offerEnd = new Date(`${LAUNCH_OFFER_END}T23:59:59`);
-            const offerDaysLeft = Math.ceil((offerEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-            const offerEndLabel = offerEnd.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" });
+            const offerDaysLeft = launchOfferDaysLeft() ?? 0;
+            const offerEndLabel = formatLaunchOfferEnd(locale) ?? "";
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -1939,7 +1941,7 @@ export default function EditListingForm({
                   )}
 
                   {isFree ? (
-                    // Offre de lancement mise en évidence (date de fin : LAUNCH_OFFER_END)
+                    // Offre de lancement mise en évidence (date de fin : lib/launchOffer.ts)
                     <div className="rounded-2xl bg-primary-50 border border-primary-100 p-6">
                       <span className="inline-flex rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
                         {t("publish.launchOffer")}

@@ -18,6 +18,8 @@ import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { formatPrice } from "@/lib/formatPrice";
 import { SITE_URL } from "@/lib/siteUrl";
+import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
 
@@ -25,10 +27,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const isEn = (await getLocale()) === "en";
   const canonical = isEn ? "/en/become-a-host" : "/devenir-hote";
   // Le gabarit du layout racine ajoute « | Kabanalouer ».
-  const title = isEn ? "List your cabin for free" : "Devenir hôte — Publiez votre chalet gratuitement";
-  const description = isEn
-    ? "List your cabin on Kabanalouer: free for the first year, 0% commission, no transaction fees. Offer valid for sign-ups before October 31, 2026."
-    : "Publiez votre chalet sur Kabanalouer : gratuit la première année, 0 % commission, aucuns frais de transaction. Offre valable pour toute inscription avant le 31 octobre 2026.";
+  // Offre de lancement (lib/launchOffer.ts) : date de fin à jour, ou prix annuel sans offre.
+  const offerEnd = formatLaunchOfferEnd(isEn ? "en" : "fr");
+  const offerActive = isLaunchOfferActive();
+  const price = formatPriceLabel(REGULAR_PRICE_CENTS, isEn ? "en" : "fr");
+  const title = offerActive
+    ? isEn ? "List your cabin for free" : "Devenir hôte — Publiez votre chalet gratuitement"
+    : isEn ? "List your cabin, no commission" : "Devenir hôte — Publiez votre chalet sans commission";
+  const description = offerActive
+    ? isEn
+      ? `List your cabin on Kabanalouer: free for the first year, 0% commission, no transaction fees. Offer valid for sign-ups before ${offerEnd}.`
+      : `Publiez votre chalet sur Kabanalouer : gratuit la première année, 0 % commission, aucuns frais de transaction. Offre valable pour toute inscription avant le ${offerEnd}.`
+    : isEn
+      ? `List your cabin on Kabanalouer: ${price} per year, 0% commission, no transaction fees.`
+      : `Publiez votre chalet sur Kabanalouer : ${price} par année, 0 % commission, aucuns frais de transaction.`;
   return {
     title,
     description,
@@ -95,14 +107,16 @@ export default async function DevenirHotePage() {
         <Navbar />
 
         <main className="flex-1">
-          {/* ── 01 Hero : gratuité seulement ── */}
+          {/* ── 01 Hero : gratuité (offre de lancement) ou sans commission ── */}
           <section className={`${SECTION_X} pt-[clamp(24px,4.5vw,72px)] pb-[clamp(56px,7vw,96px)]`}>
             <div className="mx-auto max-w-[1240px] grid items-center gap-[clamp(40px,5vw,72px)] lg:grid-cols-2">
               <div className="flex flex-col gap-[clamp(18px,2vw,26px)]">
-                <p className="m-0 inline-flex self-start items-center gap-2 bg-primary-50 border border-primary-100 text-primary-700 text-[13px] font-bold px-3.5 py-[7px] rounded-full">
-                  <span className="w-2 h-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                  {c.hero.badge}
-                </p>
+                {c.hero.badge && (
+                  <p className="m-0 inline-flex self-start items-center gap-2 bg-primary-50 border border-primary-100 text-primary-700 text-[13px] font-bold px-3.5 py-[7px] rounded-full">
+                    <span className="w-2 h-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                    {c.hero.badge}
+                  </p>
+                )}
                 <h1 className="m-0 text-[clamp(40px,5.4vw,68px)] leading-[1.02] font-bold text-charcoal-800 text-balance">
                   {c.hero.h1Line1}
                   <br />
@@ -191,6 +205,7 @@ export default async function DevenirHotePage() {
                 <p className={`m-0 ${EYEBROW}`}>{c.free.eyebrow}</p>
                 <h2 className={H2}>{c.free.h2}</h2>
                 <p className="m-0 text-lg leading-[1.6] text-charcoal-600 text-pretty">{c.free.subtitle}</p>
+                {c.offerActive ? (
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[13px] font-semibold text-charcoal-500">{c.free.regularLabel}</span>
@@ -208,6 +223,12 @@ export default async function DevenirHotePage() {
                     </span>
                   </div>
                 </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
+                    <span className="text-[13px] font-bold text-primary-700">{c.free.regularLabel}</span>
+                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">{c.free.regularPrice}</span>
+                  </div>
+                )}
                 <ul className="m-0 p-0 pt-1 list-none flex flex-col gap-3">
                   {c.free.points.map((point) => (
                     <li key={point} className="flex items-start gap-3 text-base font-semibold text-charcoal-800">

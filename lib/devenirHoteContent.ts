@@ -3,10 +3,16 @@
 // landing-page-proprio/ — ne pas reformuler. Espaces insécables : U+202F
 // avant ? ! ; U+00A0 avant : et dans « 350 $ », « 31 octobre 2026 ».
 // La FAQ sert aussi au JSON-LD FAQPage (app/devenir-hote/page.tsx).
+// Offre de lancement (lib/launchOffer.ts) : {date}/{dateShort} = date de fin ;
+// sans offre, noOfferFr/noOfferEn remplacent les mentions « gratuit » par le
+// prix annuel ({price}).
+
+import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
 
 export type Faq = { q: string; a: string };
 
 export type DevenirHoteContent = {
+  offerActive: boolean;
   header: { questions: string; login: string; publish: string };
   hero: {
     badge: string;
@@ -54,6 +60,8 @@ export type DevenirHoteContent = {
     commissionNote: string;
     kabanalouerLabel: string;
     kabanalouerNote: string;
+    // Coût Kabanalouer affiché par la calculatrice ($/an) : 0 pendant l'offre.
+    kabanalouerCost: number;
     pocketPre: string;
     pocketPost: string;
     cta: string;
@@ -87,10 +95,12 @@ export type DevenirHoteContent = {
   sticky: { title: string; subtitle: string; cta: string };
 };
 
-const fr: DevenirHoteContent = {
+type BaseContent = Omit<DevenirHoteContent, "offerActive">;
+
+const fr: BaseContent = {
   header: { questions: "Questions", login: "Connexion", publish: "Publier gratuitement" },
   hero: {
-    badge: "Offre de lancement · Inscrivez-vous avant le 31 octobre 2026",
+    badge: "Offre de lancement · Inscrivez-vous avant le {date}",
     h1Line1: "Annoncez votre chalet.",
     h1Pre: "C’est ",
     h1Accent: "gratuit",
@@ -146,6 +156,7 @@ const fr: DevenirHoteContent = {
     commissionNote: "≈ 15 % de frais",
     kabanalouerLabel: "Kabanalouer",
     kabanalouerNote: "la première année",
+    kabanalouerCost: 0,
     pocketPre: "Dans vos poches : ",
     pocketPost: " de plus",
     cta: "Commencer gratuitement",
@@ -199,7 +210,7 @@ const fr: DevenirHoteContent = {
       },
       {
         q: "Jusqu’à quand puis-je profiter de l’offre ?",
-        a: "L’offre de lancement s’applique à toute inscription faite avant le 31 octobre 2026. Vos 12 mois gratuits commencent à votre inscription.",
+        a: "L’offre de lancement s’applique à toute inscription faite avant le {date}. Vos 12 mois gratuits commencent à votre inscription.",
       },
       {
         q: "Que se passe-t-il après la première année ?",
@@ -225,18 +236,18 @@ const fr: DevenirHoteContent = {
   },
   finalCta: {
     h2: "Votre chalet en ligne aujourd’hui. C’est gratuit pendant 1 an.",
-    subtitle: "Offre de lancement valable pour toute inscription avant le 31 octobre 2026.",
+    subtitle: "Offre de lancement valable pour toute inscription avant le {date}.",
     importBtn: "Importer mon annonce Airbnb",
     createBtn: "Créer une annonce à partir de 0",
   },
-  sticky: { title: "Gratuit 12 mois", subtitle: "Avant le 31 oct. 2026", cta: "Publier mon chalet" },
+  sticky: { title: "Gratuit 12 mois", subtitle: "Avant le {dateShort}", cta: "Publier mon chalet" },
 };
 
 // EN : traduction maison (non fournie par le client), à faire valider.
-const en: DevenirHoteContent = {
+const en: BaseContent = {
   header: { questions: "Questions", login: "Log in", publish: "List for free" },
   hero: {
-    badge: "Launch offer · Sign up before October 31, 2026",
+    badge: "Launch offer · Sign up before {date}",
     h1Line1: "List your cabin.",
     h1Pre: "It’s ",
     h1Accent: "free",
@@ -292,6 +303,7 @@ const en: DevenirHoteContent = {
     commissionNote: "≈ 15% in fees",
     kabanalouerLabel: "Kabanalouer",
     kabanalouerNote: "the first year",
+    kabanalouerCost: 0,
     pocketPre: "In your pocket: ",
     pocketPost: " more",
     cta: "Start for free",
@@ -345,7 +357,7 @@ const en: DevenirHoteContent = {
       },
       {
         q: "Until when can I take advantage of the offer?",
-        a: "The launch offer applies to every sign-up made before October 31, 2026. Your 12 free months start when you sign up.",
+        a: "The launch offer applies to every sign-up made before {date}. Your 12 free months start when you sign up.",
       },
       {
         q: "What happens after the first year?",
@@ -371,13 +383,138 @@ const en: DevenirHoteContent = {
   },
   finalCta: {
     h2: "Your cabin online today. Free for 1 year.",
-    subtitle: "Launch offer valid for every sign-up before October 31, 2026.",
+    subtitle: "Launch offer valid for every sign-up before {date}.",
     importBtn: "Import my Airbnb listing",
     createBtn: "Create a listing from scratch",
   },
-  sticky: { title: "Free for 12 months", subtitle: "Before Oct. 31, 2026", cta: "List my cabin" },
+  sticky: { title: "Free for 12 months", subtitle: "Before {dateShort}", cta: "List my cabin" },
 };
 
+// Sans offre de lancement : mêmes textes, sauf les mentions « gratuit ».
+function noOfferFr(c: BaseContent): BaseContent {
+  return {
+    ...c,
+    header: { ...c.header, publish: "Publier mon chalet" },
+    hero: {
+      ...c.hero,
+      badge: "",
+      h1Pre: "",
+      h1Accent: "Sans commission",
+      h1Post: ".",
+      subtitle:
+        "{price} par année, sans engagement. Aucune commission sur vos réservations. Aucuns frais de transaction. Ce que vos voyageurs paient, vous le gardez en entier.",
+    },
+    free: {
+      ...c.free,
+      eyebrow: "Sans commission",
+      subtitle:
+        "Un abonnement annuel, pas de commission, pas de frais de transaction. Les voyageurs vous contactent et vous paient directement.",
+      regularLabel: "Abonnement annuel",
+      regularPrice: "{price}/an",
+      points: [
+        "Abonnement annuel de {price}, sans engagement",
+        "Aucune commission sur vos réservations",
+        "Aucuns frais de transaction, ni pour vous ni pour vos voyageurs",
+      ],
+    },
+    calculator: { ...c.calculator, kabanalouerNote: "abonnement annuel", kabanalouerCost: REGULAR_PRICE_CENTS / 100, cta: "Commencer" },
+    compare: {
+      ...c.compare,
+      rows: [{ label: "Coût annuel", us: "{price}", them: "Frais sur chaque réservation" }, ...c.compare.rows.slice(1)],
+    },
+    faq: {
+      ...c.faq,
+      // Les 3 premières questions portent sur l'offre gratuite.
+      items: [
+        {
+          q: "Combien ça coûte ?",
+          a: "{price} par année pour votre chalet, sans engagement, avec un tarif dégressif à partir du 2e chalet. Aucune commission sur vos réservations et aucuns frais de transaction : ce que vos voyageurs paient, vous le gardez.",
+        },
+        ...c.faq.items.slice(3),
+      ],
+    },
+    finalCta: {
+      ...c.finalCta,
+      h2: "Votre chalet en ligne aujourd’hui. Sans commission.",
+      subtitle: "{price} par année, sans engagement et sans frais de transaction.",
+    },
+    sticky: { ...c.sticky, title: "Sans commission", subtitle: "{price}/an" },
+  };
+}
+
+function noOfferEn(c: BaseContent): BaseContent {
+  return {
+    ...c,
+    header: { ...c.header, publish: "List my cabin" },
+    hero: {
+      ...c.hero,
+      badge: "",
+      h1Pre: "",
+      h1Accent: "No commission",
+      h1Post: ".",
+      subtitle:
+        "{price} per year, no commitment. No commission on your bookings. No transaction fees. What your guests pay, you keep in full.",
+    },
+    free: {
+      ...c.free,
+      eyebrow: "No commission",
+      subtitle: "An annual subscription, no commission, no transaction fees. Travelers contact you and pay you directly.",
+      regularLabel: "Annual subscription",
+      regularPrice: "{price}/year",
+      points: [
+        "{price} annual subscription, no commitment",
+        "No commission on your bookings",
+        "No transaction fees, for you or your guests",
+      ],
+    },
+    calculator: { ...c.calculator, kabanalouerNote: "annual subscription", kabanalouerCost: REGULAR_PRICE_CENTS / 100, cta: "Get started" },
+    compare: {
+      ...c.compare,
+      rows: [{ label: "Annual cost", us: "{price}", them: "Fees on every booking" }, ...c.compare.rows.slice(1)],
+    },
+    faq: {
+      ...c.faq,
+      items: [
+        {
+          q: "How much does it cost?",
+          a: "{price} per year for your cabin, no commitment, with lower rates from your 2nd cabin. No commission on your bookings and no transaction fees: what your guests pay, you keep.",
+        },
+        ...c.faq.items.slice(3),
+      ],
+    },
+    finalCta: {
+      ...c.finalCta,
+      h2: "Your cabin online today. No commission.",
+      subtitle: "{price} per year, no commitment and no transaction fees.",
+    },
+    sticky: { ...c.sticky, title: "No commission", subtitle: "{price}/year" },
+  };
+}
+
+// Remplace {date}, {dateShort} et {price} dans tous les textes.
+function fillTokens<T>(value: T, tokens: Record<string, string>): T {
+  if (typeof value === "string") {
+    return value.replace(/\{(date|dateShort|price)\}/g, (m, k: string) => tokens[k] ?? m) as T;
+  }
+  if (Array.isArray(value)) return value.map((v) => fillTokens(v, tokens)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, fillTokens(v, tokens)])) as T;
+  }
+  return value;
+}
+
 export function getDevenirHoteContent(locale: string): DevenirHoteContent {
-  return locale === "en" ? en : fr;
+  const isEn = locale === "en";
+  const offerActive = isLaunchOfferActive();
+  const base = isEn ? en : fr;
+  const content = offerActive ? base : isEn ? noOfferEn(base) : noOfferFr(base);
+  const amount = (REGULAR_PRICE_CENTS / 100).toLocaleString(isEn ? "en-CA" : "fr-CA");
+  return {
+    offerActive,
+    ...fillTokens(content, {
+      date: formatLaunchOfferEnd(locale) ?? "",
+      dateShort: formatLaunchOfferEnd(locale, "short") ?? "",
+      price: isEn ? `$${amount}` : `${amount} $`,
+    }),
+  };
 }

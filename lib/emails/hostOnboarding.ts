@@ -3,6 +3,8 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { renderEmail } from "./renderEmail";
 import { PRIX_VEDETTE_HOME, PRIX_VEDETTE_REGION } from "@/lib/featuredConfig";
+import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 // Courriels d'accueil des proprios, envoyés par le cron host-onboarding-emails :
 // - 48 h après la création d'un brouillon jamais publié : rappel de le compléter
@@ -113,9 +115,19 @@ export async function sendDraftReminderEmail({
   const intro = fr
     ? `Ton annonce${title ? ` <strong>${escapeHtml(title)}</strong>` : ""} est commencée, mais pas encore publiée. Il ne reste que quelques informations à compléter avant que les voyageurs puissent la voir.`
     : `Your listing${title ? ` <strong>${escapeHtml(title)}</strong>` : ""} is started but not published yet. Just a few details are left before travelers can see it.`;
+  // Offre de lancement (lib/launchOffer.ts) : gratuité + date limite ; sinon prix annuel.
+  const offerEnd = isLaunchOfferActive() ? formatLaunchOfferEnd(lang) : null;
+  const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, lang);
+  const pricing = fr
+    ? offerEnd
+      ? `C’est gratuit la première année pour toute annonce publiée d’ici le ${offerEnd}, sans commission.`
+      : `L’abonnement est de ${regularPrice} par année, sans aucune commission sur tes réservations.`
+    : offerEnd
+      ? `It’s free for the first year for any listing published by ${offerEnd}, with no commission.`
+      : `The subscription is ${regularPrice} per year, with no commission on your bookings.`;
   const body = fr
-    ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ». C’est gratuit la première année, sans commission.`
-    : `${intro}<br/><br/>Once everything is filled in, click “Publish my listing”. It’s free for the first year, with no commission.`;
+    ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ». ${pricing}`
+    : `${intro}<br/><br/>Once everything is filled in, click “Publish my listing”. ${pricing}`;
 
   const html = renderEmail({
     lang,

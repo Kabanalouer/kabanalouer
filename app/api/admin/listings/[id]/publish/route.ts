@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
 import { buildListingPath } from "@/lib/listingUrl";
+import { isLaunchOfferActive } from "@/lib/launchOffer";
 
 function adminSupabase() {
   return createAdminClient(
@@ -60,6 +61,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .select("id")
     .eq("listing_id", id)
     .maybeSingle();
+
+  // Offre de lancement terminée (lib/launchOffer.ts) : pas d'abonnement gratuit
+  // à créer, et publier sans abonnement contournerait le paiement — le proprio
+  // publie lui-même avec l'abonnement Stripe.
+  if (!existingSub && !isLaunchOfferActive()) {
+    return NextResponse.json(
+      { error: "Offre de lancement terminée : le propriétaire doit publier lui-même avec l'abonnement." },
+      { status: 409 }
+    );
+  }
 
   const { error: publishError } = await admin
     .from("listings")
