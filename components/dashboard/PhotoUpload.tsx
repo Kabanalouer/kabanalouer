@@ -101,7 +101,11 @@ export default function PhotoUpload({
   const [positionEditIdx, setPositionEditIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean } | null>(null);
+  // Mobile : le glisser ne démarre qu'après un appui long (LONG_PRESS_MS sans
+  // bouger) — un simple glissement du doigt reste un défilement de page.
+  const touchState = useRef<{ idx: number; startX: number; startY: number; dragging: boolean; timer: number | null } | null>(null);
+  const [ghost, setGhost] = useState<{ url: string; x: number; y: number } | null>(null);
+  const [menuIdx, setMenuIdx] = useState<number | null>(null);
   const photosRef = useRef(photos);
   useEffect(() => { photosRef.current = photos; }, [photos]);
   const supabase = createClient();
@@ -163,6 +167,7 @@ export default function PhotoUpload({
       if (!touchState.current?.dragging) return;
       e.preventDefault();
       const touch = e.touches[0];
+      setGhost((g) => (g ? { ...g, x: touch.clientX, y: touch.clientY } : g));
       updateAutoScrollFromPointer(touch.clientY);
       const el = document.elementFromPoint(touch.clientX, touch.clientY);
       const item = el?.closest("[data-photo-idx]");
@@ -300,16 +305,28 @@ export default function PhotoUpload({
     onDragEnd();
   };
 
+  const LONG_PRESS_MS = 400;
+
   const onTouchStartDetect = (e: React.TouchEvent, i: number) => {
     const t = e.touches[0];
-    touchState.current = { idx: i, startX: t.clientX, startY: t.clientY, dragging: false };
+    const state: NonNullable<typeof touchState.current> = { idx: i, startX: t.clientX, startY: t.clientY, dragging: false, timer: null };
+    touchState.current = state;
+    // Doigt immobile assez longtemps → la photo « se soulève » et suit le doigt.
+    state.timer = window.setTimeout(() => {
+      if (touchState.current !== state) return;
+      state.dragging = true;
+      setDragIdx(i);
+      setGhost({ url: photosRef.current[i]?.url ?? "", x: state.startX, y: state.startY });
+      navigator.vibrate?.(15);
+    }, LONG_PRESS_MS);
     const onMove = (ev: TouchEvent) => {
-      if (!touchState.current) return;
-      const dx = ev.touches[0].clientX - touchState.current.startX;
-      const dy = ev.touches[0].clientY - touchState.current.startY;
-      if (!touchState.current.dragging && Math.hypot(dx, dy) > 8) {
-        touchState.current.dragging = true;
-        setDragIdx(i);
+      if (touchState.current !== state || state.dragging) return;
+      const dx = ev.touches[0].clientX - state.startX;
+      const dy = ev.touches[0].clientY - state.startY;
+      // Le doigt bouge avant la fin de l'appui long : c'est un défilement.
+      if (Math.hypot(dx, dy) > 10 && state.timer !== null) {
+        clearTimeout(state.timer);
+        state.timer = null;
       }
     };
     window.addEventListener("touchmove", onMove, { passive: true });
@@ -317,10 +334,18 @@ export default function PhotoUpload({
   };
 
   const onTouchEnd = () => {
-    if (touchState.current?.dragging && overIdx !== null) applyReorder(touchState.current.idx, overIdx);
+    const state = touchState.current;
+    if (state?.timer != null) clearTimeout(state.timer);
+    if (state?.dragging && overIdx !== null) applyReorder(state.idx, overIdx);
     touchState.current = null;
     setDragIdx(null);
     setOverIdx(null);
+    setGhost(null);
+  };
+
+  const closeMenuAnd = (action: () => void) => {
+    setMenuIdx(null);
+    action();
   };
 
   // ── Photo tile (inline render, not a subcomponent to avoid remount) ─────────
@@ -336,7 +361,10 @@ export default function PhotoUpload({
       onDrop={(e) => onDrop(e, i)}
       onTouchStart={(e) => onTouchStartDetect(e, i)}
       onTouchEnd={onTouchEnd}
-      className={`relative ${aspectClass} group rounded-xl transition-all duration-150 cursor-grab active:cursor-grabbing overflow-hidden ${
+      onTouchCancel={onTouchEnd}
+      // Appui long : pas de menu « Enregistrer l'image » du système.
+      onContextMenu={(e) => e.preventDefault()}
+      className={`relative ${aspectClass} group rounded-xl transition-all duration-150 cursor-grab active:cursor-grabbing overflow-hidden select-none [-webkit-touch-callout:none] ${
         dragIdx === i
           ? "opacity-40 scale-95"
           : overIdx === i && dragIdx !== null
@@ -397,11 +425,23 @@ export default function PhotoUpload({
           {formatDecimal(item.sizeMb, locale)} {isEn ? "MB" : "Mo"}
         </span>
       )}
-      {/* Delete */}
+      {/* Mobile : menu « ⋯ » toujours visible (couverture, avancer, reculer, supprimer) */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setMenuIdx(i); }}
+        onTouchStart={(e) => e.stopPropagation()}
+        className="lg:hidden absolute top-1.5 right-1.5 w-9 h-9 flex items-center justify-center bg-white/95 rounded-full shadow"
+        aria-label={isEn ? "Photo options" : "Options de la photo"}
+      >
+        <svg className="w-5 h-5 text-charcoal-700" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M4 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM19 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+        </svg>
+      </button>
+      {/* Delete (ordinateur, au survol) */}
       <button
         type="button"
         onClick={() => void removePhoto(item.url)}
-        className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
+        className="hidden lg:block absolute top-1.5 right-1.5 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error-50"
         aria-label={isEn ? "Delete" : "Supprimer"}
       >
         <svg className="w-3.5 h-3.5 text-error-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -489,16 +529,15 @@ export default function PhotoUpload({
 
       {saving && <span className="text-xs text-charcoal-400 animate-pulse">{isEn ? "Saving…" : "Sauvegarde…"}</span>}
 
-      {/* Sur mobile, le glisser-déposer est difficile au doigt : la saisie
-          d'une position via le numéro de la photo est mise en avant ici. */}
+      {/* Mobile : appui long pour glisser, ou menu « ⋯ » de la photo. */}
       {photos.length > 1 && (
         <div className="lg:hidden flex items-start gap-2.5 bg-[#f5f6ec] border border-[#e8ead8] rounded-xl px-3.5 py-3 mb-4 text-sm text-charcoal-700">
           <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
           </svg>
           <p>{isEn
-            ? "To change the order, tap a photo's number and type its new position."
-            : "Pour changer l’ordre, touchez le numéro d’une photo et entrez sa nouvelle position."}</p>
+            ? "To change the order, press and hold a photo, then drag it. Or tap ⋯ on a photo."
+            : "Pour changer l’ordre, gardez le doigt sur une photo puis glissez-la. Ou touchez ⋯ sur une photo."}</p>
         </div>
       )}
 
@@ -653,12 +692,83 @@ export default function PhotoUpload({
         <p><span className="font-semibold text-charcoal-500">{isEn ? "Minimum photos:" : "Minimum de photos :"}</span> {MIN_PHOTOS}</p>
         <p><span className="font-semibold text-charcoal-500">{isEn ? "Maximum photos:" : "Maximum de photos :"}</span> {MAX_PHOTOS}</p>
         {isEn ? (
-          <p><span className="font-semibold text-charcoal-500">Tip:</span> Drag and drop your photos to reorder them, or click a photo&apos;s number to type its new position directly.</p>
+          <p className="hidden lg:block"><span className="font-semibold text-charcoal-500">Tip:</span> Drag and drop your photos to reorder them, or click a photo&apos;s number to type its new position directly.</p>
         ) : (
-        <p><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage, ou cliquez sur le numéro d&apos;une photo pour saisir directement sa nouvelle position.</p>
+        <p className="hidden lg:block"><span className="font-semibold text-charcoal-500">Astuce :</span> Glissez et déposez vos photos pour réorganiser l&apos;ordre d&apos;affichage, ou cliquez sur le numéro d&apos;une photo pour saisir directement sa nouvelle position.</p>
         )}
       </div>
+
+      {/* Mobile : photo soulevée qui suit le doigt pendant l'appui long */}
+      {ghost && (
+        <div
+          className="fixed z-[80] w-24 h-24 rounded-xl overflow-hidden shadow-2xl ring-2 ring-white pointer-events-none scale-105"
+          style={{ left: ghost.x - 48, top: ghost.y - 48 }}
+          aria-hidden="true"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ghost.url} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
+
+      {/* Mobile : menu « ⋯ » d'une photo, en bas de l'écran */}
+      {menuIdx !== null && photos[menuIdx] && (
+        <div className="lg:hidden fixed inset-0 z-[70] bg-black/40 flex items-end" onClick={() => setMenuIdx(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full bg-white rounded-t-2xl p-2 pb-[calc(8px+env(safe-area-inset-bottom))] shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-[#ebebeb] mb-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photos[menuIdx].url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+              <p className="text-base font-semibold text-charcoal-800">
+                {menuIdx === 0 ? (isEn ? "Cover photo" : "Photo de couverture") : `Photo ${menuIdx + 1}`}
+                <span className="block text-sm font-normal text-charcoal-400">{isEn ? `of ${photos.length}` : `sur ${photos.length}`}</span>
+              </p>
+            </div>
+            {menuIdx > 0 && (
+              <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, 0))}>
+                {isEn ? "Make cover photo" : "Mettre en couverture"}
+              </MenuAction>
+            )}
+            {menuIdx > 0 && (
+              <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, menuIdx - 1))}>
+                {isEn ? "Move up one spot" : "Avancer d’une place"}
+              </MenuAction>
+            )}
+            {menuIdx < photos.length - 1 && (
+              <MenuAction onClick={() => closeMenuAnd(() => applyReorder(menuIdx, menuIdx + 1))}>
+                {isEn ? "Move down one spot" : "Reculer d’une place"}
+              </MenuAction>
+            )}
+            {photos.length > 2 && (
+              <MenuAction onClick={() => closeMenuAnd(() => setPositionEditIdx(menuIdx))}>
+                {isEn ? "Choose a position…" : "Choisir une position…"}
+              </MenuAction>
+            )}
+            <MenuAction danger onClick={() => closeMenuAnd(() => void removePhoto(photos[menuIdx].url))}>
+              {isEn ? "Delete photo" : "Supprimer la photo"}
+            </MenuAction>
+            <MenuAction onClick={() => setMenuIdx(null)}>
+              <span className="text-charcoal-500">{isEn ? "Cancel" : "Annuler"}</span>
+            </MenuAction>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function MenuAction({ onClick, danger = false, children }: { onClick: () => void; danger?: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full text-left px-3 min-h-[48px] rounded-xl text-base font-medium hover:bg-charcoal-50 active:bg-charcoal-50 transition-colors ${danger ? "text-error-600" : "text-charcoal-800"}`}
+    >
+      {children}
+    </button>
   );
 }
 

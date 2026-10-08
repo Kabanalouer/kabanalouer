@@ -804,8 +804,16 @@ export default function EditListingForm({
     setActiveSection(id);
     setSaveError("");
     setJustSaved(false);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  // Nouvelle section affichée → retour en haut, instantané et APRÈS le rendu :
+  // un scrollTo « smooth » lancé avant le changement de contenu était
+  // interrompu sur iPhone (la page restait au milieu de la section suivante).
+  const sectionChangedRef = useRef(false);
+  useEffect(() => {
+    if (!sectionChangedRef.current) { sectionChangedRef.current = true; return; }
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeSection]);
   const sectionIndex = SECTIONS.findIndex((s) => s.id === activeSection);
   const prevSection = sectionIndex > 0 ? SECTIONS[sectionIndex - 1] : null;
   const nextSection = sectionIndex >= 0 && sectionIndex < SECTIONS.length - 1 ? SECTIONS[sectionIndex + 1] : null;
