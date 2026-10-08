@@ -1,4 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation";
+import { LISTING_PUBLIC_COLUMNS } from "@/lib/listingColumns";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/siteUrl";
 
@@ -104,12 +105,12 @@ async function findListingByChaletSlug(
     ? `custom_slug.eq.${chaletSlug},listing_number.eq.${asNumber}`
     : `custom_slug.eq.${chaletSlug}`;
 
-  let primaryQuery = supabase.from("listings").select("*").or(orFilter);
+  let primaryQuery = supabase.from("listings").select(LISTING_PUBLIC_COLUMNS).or(orFilter);
   if (publishedOnly) primaryQuery = primaryQuery.eq("is_published", true);
   const { data: primary } = await primaryQuery.maybeSingle();
   if (primary) return primary as ListingRow;
 
-  let previousQuery = supabase.from("listings").select("*").eq("previous_custom_slug", chaletSlug);
+  let previousQuery = supabase.from("listings").select(LISTING_PUBLIC_COLUMNS).eq("previous_custom_slug", chaletSlug);
   if (publishedOnly) previousQuery = previousQuery.eq("is_published", true);
   const { data: viaPrevious } = await previousQuery.maybeSingle();
   return (viaPrevious as ListingRow) ?? null;
@@ -473,7 +474,7 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   if (!listing && SAFE_SEGMENT_PATTERN.test(slug)) {
     const { data: legacyBySlug } = await supabase
       .from("listings")
-      .select("*")
+      .select(LISTING_PUBLIC_COLUMNS)
       .or(`slug_fr.eq.${slug},slug_en.eq.${slug}`)
       .maybeSingle();
     listing = legacyBySlug as ListingRow | null;
@@ -482,7 +483,7 @@ async function renderSingleSegment(slug: string, locale: string, isEn: boolean, 
   if (!listing) {
     const { data: byId } = await supabase
       .from("listings")
-      .select("*")
+      .select(LISTING_PUBLIC_COLUMNS)
       .eq("id", slug)
       .maybeSingle();
     listing = byId;

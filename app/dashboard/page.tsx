@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { adminSupabase } from "@/lib/sendMessage";
+import { LISTING_PUBLIC_COLUMNS } from "@/lib/listingColumns";
 import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -28,11 +30,14 @@ export default async function DashboardPage() {
     getLocale(),
   ]);
 
-  const [{ data: profile }, { data: listings }] = await Promise.all([
+  const [{ data: profile }, { data: listings }, { data: icalRows }] = await Promise.all([
     supabase.from("users").select("name, bio, avatar_url").eq("id", userId).single(),
-    supabase.from("listings").select("*").eq("host_id", userId).order("created_at", { ascending: false }),
+    supabase.from("listings").select(LISTING_PUBLIC_COLUMNS).eq("host_id", userId).order("created_at", { ascending: false }),
+    // Lien iCal : colonne privée, lue avec le client service (voir lib/listingColumns.ts)
+    adminSupabase().from("listings").select("id, ical_url").eq("host_id", userId),
   ]);
 
+  const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
   const listingIds = (listings ?? []).map((l) => l.id as string);
   const drafts = (listings ?? []).filter((l) => !l.is_published);
   const today = new Date().toISOString().slice(0, 10);
@@ -80,7 +85,7 @@ export default async function DashboardPage() {
       amenities: Array.isArray(listing.amenities) ? listing.amenities as AmenityValue[] : [],
       nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
       citqNumber: (listing.citq_number as string) ?? "",
-      icalUrl: (listing.ical_url as string | null) ?? null,
+      icalUrl: icalById.get(listing.id as string) ?? null,
       hasFutureBlocked: futureAvailSet.has(id),
       roomsAllHavePhotos,
       bioFilled: !!profile?.bio?.trim(),

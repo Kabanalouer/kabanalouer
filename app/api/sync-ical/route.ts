@@ -127,8 +127,9 @@ export async function POST(request: NextRequest) {
 
   const { listingId } = (await request.json()) as { listingId: string };
 
-  // Verify ownership
-  const { data: listing } = await supabase
+  // Vérifie la propriété (filtre host_id) ; ical_url est une colonne privée,
+  // lue avec le client service (voir lib/listingColumns.ts)
+  const { data: listing } = await adminSupabase()
     .from("listings")
     .select("id, ical_url, host_id")
     .eq("id", listingId)

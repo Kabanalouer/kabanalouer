@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { safeHttpUrl } from "@/lib/safeUrl";
+import { requireAdminPage } from "@/lib/requireAdminPage";
 
 export const metadata = { title: "Imports en attente — Administration" };
 
@@ -12,6 +13,7 @@ function adminSupabase() {
 }
 
 export default async function AdminImportsPage() {
+  await requireAdminPage();
   const admin = adminSupabase();
 
   const { data: rows } = await admin

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { safeNextPath } from "@/lib/safeNextPath";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -20,10 +21,7 @@ function LoginForm() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const defaultHome = localePath("/", locale);
-  const next = (() => {
-    const n = searchParams.get("next") ?? defaultHome;
-    return n.startsWith("/") ? n : defaultHome;
-  })();
+  const next = safeNextPath(searchParams.get("next"), defaultHome);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

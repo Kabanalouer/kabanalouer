@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase } from "@/lib/sendMessage";
+import { LISTING_PUBLIC_COLUMNS } from "@/lib/listingColumns";
+import { requireAdminPage } from "@/lib/requireAdminPage";
 import { computeScore } from "@/lib/listingScore";
 import { firstPhotoUrl } from "@/lib/photo";
 import type { AmenityValue } from "@/lib/amenities-catalog";
@@ -12,21 +15,25 @@ export default async function AdminListingsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  await requireAdminPage();
   const supabase = await createClient();
 
   const today = new Date().toISOString().slice(0, 10);
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-  const [{ data: listings }, { data: rooms }, { data: futureAvail }, { data: reviews }] = await Promise.all([
+  const [{ data: listings }, { data: rooms }, { data: futureAvail }, { data: reviews }, { data: icalRows }] = await Promise.all([
     supabase
       .from("listings")
-      .select("*, host:host_id(id, name, bio, avatar_url)")
+      .select(`${LISTING_PUBLIC_COLUMNS}, host:host_id(id, name, bio, avatar_url)` as "*, host:host_id(id, name, bio, avatar_url)")
       .order("created_at", { ascending: false }),
     supabase.from("rooms").select("listing_id, photos"),
     supabase.from("availability").select("listing_id").gte("date", today).eq("source", "manual"),
     supabase.from("reviews").select("listing_id, created_at"),
+    // Lien iCal : colonne privée (lib/listingColumns.ts)
+    adminSupabase().from("listings").select("id, ical_url"),
   ]);
+  const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
 
   // Build lookup structures
   const roomsPerListing = new Map<string, { photos: unknown }[]>();
@@ -66,7 +73,7 @@ export default async function AdminListingsPage({
       amenities: Array.isArray(listing.amenities) ? listing.amenities as AmenityValue[] : [],
       nearbyActivities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
       citqNumber: (listing.citq_number as string) ?? "",
-      icalUrl: (listing.ical_url as string | null) ?? null,
+      icalUrl: icalById.get(id) ?? null,
       hasFutureBlocked: futureAvailSet.has(id),
       roomsAllHavePhotos,
       bioFilled: !!host?.bio?.trim(),

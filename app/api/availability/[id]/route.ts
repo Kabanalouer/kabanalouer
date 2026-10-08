@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase } from "@/lib/sendMessage";
 
 // POST /api/availability/[id]
 // Body: { dates: string[] }  — complete list of manually blocked dates (replaces existing)
@@ -16,7 +17,8 @@ export async function POST(
   if (!user) return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
 
   // Vérification explicite en plus de RLS (défense en profondeur — revue de sécurité 2026-07-10)
-  const { data: listing } = await supabase
+  // ical_url est une colonne privée : client service, propriété vérifiée par le filtre host_id
+  const { data: listing } = await adminSupabase()
     .from("listings")
     .select("id, ical_url")
     .eq("id", id)

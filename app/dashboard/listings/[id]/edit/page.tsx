@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { LISTING_PRIVATE_COLUMNS, LISTING_PUBLIC_COLUMNS } from "@/lib/listingColumns";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
@@ -43,16 +44,25 @@ export default async function EditListingPage({ params, searchParams }: Props) {
   // filtre par propriété reste vérifié explicitement juste en dessous : RLS
   // laisse aussi voir les annonces PUBLIÉES de n'importe qui (page publique),
   // ce qui ne doit jamais suffire à ouvrir ce formulaire d'édition.
-  const [{ data: listing }, { data: viewerProfile }] = await Promise.all([
-    supabase.from("listings").select("*").eq("id", id).maybeSingle(),
+  const [{ data: publicListing }, { data: viewerProfile }] = await Promise.all([
+    supabase.from("listings").select(LISTING_PUBLIC_COLUMNS).eq("id", id).maybeSingle(),
     supabase.from("users").select("role").eq("id", user.id).single(),
   ]);
 
-  if (!listing) notFound();
+  if (!publicListing) notFound();
 
-  const isOwner = listing.host_id === user.id;
+  const isOwner = publicListing.host_id === user.id;
   const isAdmin = viewerProfile?.role === "admin";
   if (!isOwner && !isAdmin) notFound();
+
+  // Colonnes privées (adresse, lien iCal, import) : lues avec le client service
+  // seulement après la vérification ci-dessus (voir lib/listingColumns.ts)
+  const { data: privateColumns } = await adminSupabase()
+    .from("listings")
+    .select(LISTING_PRIVATE_COLUMNS.join(", ") as "*")
+    .eq("id", id)
+    .single();
+  const listing = { ...publicListing, ...(privateColumns ?? {}) };
 
   const isAdminReview = isAdmin && !isOwner;
   const hostId = listing.host_id as string;
