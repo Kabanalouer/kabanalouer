@@ -23,7 +23,9 @@ interface Props {
 export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
   const t = useTranslations("listing");
   const tc = useTranslations("common");
-  const [mode, setMode] = useState<Mode>("login");
+  // Inscription par défaut : la plupart des visiteurs qui ouvrent cette
+  // fenêtre (demande de prix, contact, favori) n'ont pas encore de compte.
+  const [mode, setMode] = useState<Mode>("signup");
 
   // Portal — renders outside any stacking context. Without it, this modal is
   // nested inside ContactForm's ancestor `sticky top-24` wrapper (right sidebar,
@@ -45,7 +47,7 @@ export default function QuoteAuthModal({ onClose, onAuthenticated }: Props) {
     >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
-          <h3 className="font-bold text-charcoal-800 text-heading-3 pr-4">{t("authModalTitle")}</h3>
+          <h3 className="font-bold text-charcoal-800 text-heading-3 pr-4">{mode === "login" ? t("authModalLoginTitle") : t("authModalSignupTitle")}</h3>
           <button onClick={onClose} aria-label={tc("close")} className="text-charcoal-400 hover:text-charcoal-700 transition-colors shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -183,6 +185,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
 
 function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const t = useTranslations("auth.signup");
+  const tl = useTranslations("listing");
   const locale = useLocale();
   const supabase = createClient();
 
@@ -218,14 +221,12 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           role: "traveler",
           preferred_language: locale,
         },
-        // Le lien de confirmation atterrit sur l'accueil (AuthCodeWelcomeTrigger y
-        // échange le ?code=) — accueil anglais pour un visiteur anglais. Sans
-        // emailRedirectTo, Supabase utilise son Site URL (accueil français). Une
-        // URL absente de la liste « Redirect URLs » de Supabase retombe sur ce
-        // même Site URL : jamais de lien cassé.
-        ...(locale === "en"
-          ? { emailRedirectTo: `${window.location.origin}/en` }
-          : {}),
+        // Le lien de confirmation ramène sur la page d'où vient l'inscription
+        // (fiche chalet, déjà dans la bonne langue) : AuthCodeWelcomeTrigger y
+        // échange le ?code= et ContactForm y remet la demande gardée
+        // (lib/pendingQuoteDraft.ts). Une URL refusée par Supabase retombe sur
+        // son Site URL (accueil français) : jamais de lien cassé.
+        emailRedirectTo: `${window.location.origin}${window.location.pathname}`,
       },
     });
     if (error) {
@@ -259,7 +260,8 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           {t.rich("checkEmailDesc", {
             email,
             strong: (chunks) => <strong className="text-charcoal-800">{chunks}</strong>,
-          })}
+          })}{" "}
+          {tl("authModalCheckEmailReturn")}
         </p>
         <button type="button" onClick={onSwitchToLogin} className={`text-sm ${TEXT_LINK_CLASSNAME}`}>
           {t("loginLink")}
@@ -359,6 +361,13 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       >
         {loading ? t("submitting") : t("submit")}
       </button>
+
+      <p className="text-center text-sm text-charcoal-500">
+        {t("alreadyAccount")}{" "}
+        <button type="button" onClick={onSwitchToLogin} className={TEXT_LINK_CLASSNAME}>
+          {t("loginLink")}
+        </button>
+      </p>
 
       <p className="text-center text-sm text-charcoal-400">
         {t("termsNote")}{" "}

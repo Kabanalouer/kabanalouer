@@ -30,6 +30,7 @@ import { slugify } from "@/lib/slugify";
 import { formatPromoLines, isLastminuteVisible, type PromoDisplay, PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import NearbyActivities from "@/components/chalets/NearbyActivities";
 import ViewTracker from "@/components/chalets/ViewTracker";
+import AuthCodeWelcomeTrigger from "@/components/AuthCodeWelcomeTrigger";
 import { getTranslations } from "next-intl/server";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { buildListingJsonLd, buildListingFaqJsonLd } from "@/lib/listing-schema";
@@ -323,6 +324,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   return (
     <div className="flex flex-col min-h-screen">
       <ViewTracker listingId={id} isOwner={isOwner} />
+      {!user && <AuthCodeWelcomeTrigger />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(lodgingJsonLd) }}

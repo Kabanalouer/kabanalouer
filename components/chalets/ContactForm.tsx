@@ -17,6 +17,7 @@ import { CalendarMonth, formatShort } from "@/components/DateRangePicker";
 import { localePath } from "@/lib/localePath";
 import { formatPrice } from "@/lib/formatPrice";
 import AutoTextarea from "@/components/AutoTextarea";
+import { savePendingQuoteDraft, readPendingQuoteDraft, clearPendingQuoteDraft } from "@/lib/pendingQuoteDraft";
 
 // ── ContactForm ───────────────────────────────────────────────────────────────
 
@@ -106,6 +107,25 @@ export default function ContactForm({
   const [error, setError] = useState("");
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
+  // Demande gardée pendant l'inscription (voir lib/pendingQuoteDraft.ts) :
+  // le lien de confirmation rouvre la fiche, on remet ce que le voyageur
+  // avait rempli. Lu après le montage pour ne pas fausser l'hydratation.
+  /* eslint-disable react-hooks/set-state-in-effect -- lecture unique de localStorage au montage */
+  useEffect(() => {
+    const draft = readPendingQuoteDraft(listingId);
+    if (!draft) return;
+    if (draft.checkin && draft.checkin >= today) {
+      setCheckin(draft.checkin);
+      setCheckout(draft.checkout > draft.checkin ? draft.checkout : "");
+    }
+    setAdults(draft.adults);
+    setChildren(draft.children);
+    setBabies(draft.babies);
+    setPets(Math.min(draft.pets, dogsMax));
+    if (draft.message) setMessage(draft.message);
+  }, [listingId, today, dogsMax]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   // Close calendar on outside click
   useEffect(() => {
     if (!calendarOpen) return;
@@ -162,6 +182,7 @@ export default function ContactForm({
 
   const handleSubmitClick = () => {
     if (!currentUserId) {
+      savePendingQuoteDraft(listingId, { checkin, checkout, adults, children, babies, pets, message });
       setAuthModalOpen(true);
       return;
     }
@@ -236,6 +257,7 @@ export default function ContactForm({
       setSending(false);
       return;
     }
+    clearPendingQuoteDraft(listingId);
     setSent(true);
   };
 
