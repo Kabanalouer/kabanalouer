@@ -292,8 +292,8 @@ export default async function DevenirHotePage() {
                 </div>
 
                 {c.features.items.map((f, i) => (
-                  <div key={f.title} className="border border-charcoal-100 rounded-xl px-7 py-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <div className="flex-[0_0_260px] flex items-center gap-3.5">
+                  <div key={f.title} className="border border-charcoal-100 rounded-xl px-5 sm:px-7 py-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div className="flex-[1_1_100%] sm:flex-[0_0_260px] flex items-center gap-3.5">
                       <span className="w-11 h-11 shrink-0 rounded-xl bg-primary-50 flex items-center justify-center">
                         <svg className="w-[22px] h-[22px] text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d={FEATURE_ICONS[i]} />
@@ -364,7 +364,7 @@ export default async function DevenirHotePage() {
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[rgba(21,24,13,0.85)] via-[rgba(21,24,13,0.55)] via-60% to-[rgba(21,24,13,0.3)]" />
-              <div className="relative p-[clamp(40px,6vw,88px)] flex flex-col gap-[22px] max-w-[680px]">
+              <div className="relative px-6 py-10 sm:p-[clamp(40px,6vw,88px)] flex flex-col gap-[22px] max-w-[680px]">
                 <h2 className="m-0 text-[clamp(34px,4.4vw,56px)] leading-[1.04] font-extrabold tracking-display text-white text-balance">
                   {c.finalCta.h2}
                 </h2>
@@ -372,13 +372,13 @@ export default async function DevenirHotePage() {
                 <div className="flex flex-wrap gap-3">
                   <ScrollToImportButton
                     emplacement="cta_final"
-                    className={`inline-flex items-center justify-center h-14 px-[26px] rounded-full bg-white text-primary-800 text-base font-extrabold hover:bg-primary-50 ${BTN_MOTION}`}
+                    className={`inline-flex items-center justify-center min-h-14 py-3 px-[26px] rounded-full bg-white text-primary-800 text-base font-extrabold text-center hover:bg-primary-50 ${BTN_MOTION}`}
                   >
                     {c.finalCta.importBtn}
                   </ScrollToImportButton>
                   <CreateListingLink
                     emplacement="cta_final"
-                    className={`inline-flex items-center justify-center h-14 px-6 rounded-full border-[1.5px] border-white bg-[rgba(21,24,13,0.35)] text-white text-base font-bold whitespace-nowrap hover:bg-white/10 ${BTN_MOTION}`}
+                    className={`inline-flex items-center justify-center min-h-14 py-3 px-6 rounded-full border-[1.5px] border-white bg-[rgba(21,24,13,0.35)] text-white text-base font-bold text-center sm:whitespace-nowrap hover:bg-white/10 ${BTN_MOTION}`}
                   >
                     {c.finalCta.createBtn}
                   </CreateListingLink>

@@ -16,6 +16,7 @@ declare global {
           "error-callback"?: () => void;
           language?: string;
           theme?: "light" | "dark" | "auto";
+          size?: "normal" | "compact" | "flexible";
         }
       ) => string;
       remove: (widgetId: string) => void;
@@ -60,6 +61,8 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle, Props>(function Turnst
         "error-callback": () => onResetRef.current(),
         language: locale === "en" ? "en" : "fr",
         theme: "light",
+        // Format normal = 300 px fixes : dépasse la carte sur un écran de 320 px.
+        size: containerRef.current.clientWidth < 300 ? "compact" : "normal",
       });
     }
   }, [sitekey, locale]);
