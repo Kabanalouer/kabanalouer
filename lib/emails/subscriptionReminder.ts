@@ -1,83 +1,110 @@
-import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { renderEmail } from "./renderEmail";
+import { sendEmail } from "./send";
+import { resolveEmailText } from "@/lib/emailTemplates/resolve";
+import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* ci-dessous =
+// textes par défaut, lib/emailTemplates).
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
 export type ReminderThreshold = 30 | 10 | 3;
 
-const TEMPLATES: Record<ReminderThreshold, Record<"fr" | "en", {
-  subjectGeneric: string;
-  subjectNamed: (firstName: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (dateStr: string, listingTitle: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}>> = {
-  30: {
+const FOOTER_QUESTION_FR = "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.";
+const FOOTER_QUESTION_EN = "Got a question? Just reply to this email — we're happy to help.";
+
+const PLACEHOLDER_PRENOM = { key: "prenom", label: "Prénom du proprio" };
+const PLACEHOLDER_TITRE = { key: "titreChalet", label: "Titre du chalet" };
+
+// Sans prénom, l'objet « {prenom}, ton abonnement… » deviendrait
+// « , ton abonnement… » : on retire la virgule de tête et on remet la
+// majuscule (« Ton abonnement… »), comme l'ancien objet générique.
+function subjectWithoutMissingName(subject: string): string {
+  const stripped = subject.replace(/^[\s,]+/, "");
+  return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+}
+
+const REMINDER_PLACEHOLDERS = [
+  PLACEHOLDER_PRENOM,
+  PLACEHOLDER_TITRE,
+  { key: "dateFin", label: "Date de fin de l’abonnement (ou de l’accès gratuit)" },
+];
+
+export const TEMPLATE_REMINDER_30: EmailTemplateDef = {
+  id: "reminder-30",
+  placeholders: REMINDER_PLACEHOLDERS,
+  defaults: {
     fr: {
-      subjectGeneric: "Ton abonnement Kabanalouer expire dans 30 jours",
-      subjectNamed: (firstName) => `${firstName}, ton abonnement Kabanalouer expire dans 30 jours`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      subject: "{prenom}, ton abonnement Kabanalouer expire dans 30 jours",
+      greeting: "Bonjour {prenom} !",
       heading: "Ton abonnement expire dans 30 jours",
-      body: (dateStr, listingTitle) => `Un petit rappel amical : ton accès gratuit (offre de lancement) pour ${listingTitle} arrive à échéance le ${dateStr}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.`,
+      body: "Un petit rappel amical : ton accès gratuit (offre de lancement) pour {titreChalet} arrive à échéance le {dateFin}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.",
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: FOOTER_QUESTION_FR,
     },
     en: {
-      subjectGeneric: "Your Kabanalouer subscription expires in 30 days",
-      subjectNamed: (firstName) => `${firstName}, your Kabanalouer subscription expires in 30 days`,
-      greeting: (firstName) => `Hi ${firstName}!`,
+      subject: "{prenom}, your Kabanalouer subscription expires in 30 days",
+      greeting: "Hi {prenom}!",
       heading: "Your subscription expires in 30 days",
-      body: (dateStr, listingTitle) => `Just a friendly reminder: your free launch access for ${listingTitle} expires on ${dateStr}. Renew your subscription now so your listing stays visible without interruption.`,
+      body: "Just a friendly reminder: your free launch access for {titreChalet} expires on {dateFin}. Renew your subscription now so your listing stays visible without interruption.",
       buttonLabel: "Renew my listing",
-      footerNote: "Got a question? Just reply to this email — we're happy to help.",
+      footerNote: FOOTER_QUESTION_EN,
     },
   },
-  10: {
+};
+
+export const TEMPLATE_REMINDER_10: EmailTemplateDef = {
+  id: "reminder-10",
+  placeholders: REMINDER_PLACEHOLDERS,
+  defaults: {
     fr: {
-      subjectGeneric: "Il reste 10 jours avant l'expiration de ton abonnement",
-      subjectNamed: (firstName) => `${firstName}, il reste 10 jours avant l'expiration de ton abonnement`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      subject: "{prenom}, il reste 10 jours avant l'expiration de ton abonnement",
+      greeting: "Bonjour {prenom} !",
       heading: "Plus que 10 jours",
-      body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}, dans 10 jours. Renouvelle ton abonnement dès maintenant pour éviter toute interruption.`,
+      body: "Ton abonnement Kabanalouer pour {titreChalet} expire le {dateFin}, dans 10 jours. Renouvelle ton abonnement dès maintenant pour éviter toute interruption.",
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: FOOTER_QUESTION_FR,
     },
     en: {
-      subjectGeneric: "10 days left before your subscription expires",
-      subjectNamed: (firstName) => `${firstName}, 10 days left before your subscription expires`,
-      greeting: (firstName) => `Hi ${firstName}!`,
+      subject: "{prenom}, 10 days left before your subscription expires",
+      greeting: "Hi {prenom}!",
       heading: "Only 10 days left",
-      body: (dateStr, listingTitle) => `Your Kabanalouer subscription for ${listingTitle} expires on ${dateStr}, in 10 days. Renew your subscription now to avoid any interruption.`,
+      body: "Your Kabanalouer subscription for {titreChalet} expires on {dateFin}, in 10 days. Renew your subscription now to avoid any interruption.",
       buttonLabel: "Renew my listing",
-      footerNote: "Got a question? Just reply to this email — we're happy to help.",
+      footerNote: FOOTER_QUESTION_EN,
     },
   },
-  3: {
+};
+
+export const TEMPLATE_REMINDER_3: EmailTemplateDef = {
+  id: "reminder-3",
+  placeholders: REMINDER_PLACEHOLDERS,
+  defaults: {
     fr: {
-      subjectGeneric: "Ton abonnement expire dans 3 jours",
-      subjectNamed: (firstName) => `${firstName}, ton abonnement expire dans 3 jours`,
-      greeting: (firstName) => `Bonjour ${firstName} !`,
+      subject: "{prenom}, ton abonnement expire dans 3 jours",
+      greeting: "Bonjour {prenom} !",
       heading: "Dernier rappel : 3 jours",
-      body: (dateStr, listingTitle) => `Ton abonnement Kabanalouer pour ${listingTitle} expire le ${dateStr}. Si rien ne change avant cette date, ton annonce disparaîtra des résultats de recherche. Renouvelle ton abonnement dès aujourd'hui pour l'éviter.`,
+      body: "Ton abonnement Kabanalouer pour {titreChalet} expire le {dateFin}. Si rien ne change avant cette date, ton annonce disparaîtra des résultats de recherche. Renouvelle ton abonnement dès aujourd'hui pour l'éviter.",
       buttonLabel: "Renouveler mon annonce",
-      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+      footerNote: FOOTER_QUESTION_FR,
     },
     en: {
-      subjectGeneric: "Your subscription expires in 3 days",
-      subjectNamed: (firstName) => `${firstName}, your subscription expires in 3 days`,
-      greeting: (firstName) => `Hi ${firstName}!`,
+      subject: "{prenom}, your subscription expires in 3 days",
+      greeting: "Hi {prenom}!",
       heading: "Last reminder: 3 days left",
-      body: (dateStr, listingTitle) => `Your Kabanalouer subscription for ${listingTitle} expires on ${dateStr}. If nothing changes before then, your listing will disappear from search results. Renew your subscription today to avoid that.`,
+      body: "Your Kabanalouer subscription for {titreChalet} expires on {dateFin}. If nothing changes before then, your listing will disappear from search results. Renew your subscription today to avoid that.",
       buttonLabel: "Renew my listing",
-      footerNote: "Got a question? Just reply to this email — we're happy to help.",
+      footerNote: FOOTER_QUESTION_EN,
     },
   },
+};
+
+const REMINDER_TEMPLATES: Record<ReminderThreshold, EmailTemplateDef> = {
+  30: TEMPLATE_REMINDER_30,
+  10: TEMPLATE_REMINDER_10,
+  3: TEMPLATE_REMINDER_3,
 };
 
 function formatExpiryDate(expiresAt: Date, lang: "fr" | "en"): string {
@@ -103,25 +130,20 @@ export async function sendSubscriptionReminderEmail({
   expiresAt: Date;
   listingTitle: string;
 }): Promise<{ error: Error | null }> {
-  const template = TEMPLATES[threshold][preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const dateStr = formatExpiryDate(expiresAt, preferredLanguage);
+  const prenom = firstName?.trim() || undefined;
   const buttonPath = preferredLanguage === "en" ? "/en/dashboard/subscription" : "/dashboard/subscription";
 
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: template.body(dateStr, listingTitle),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${buttonPath}`,
-    footerNote: template.footerNote,
+  const text = await resolveEmailText(REMINDER_TEMPLATES[threshold], preferredLanguage, {
+    prenom,
+    titreChalet: listingTitle,
+    dateFin: formatExpiryDate(expiresAt, preferredLanguage),
   });
+  const html = renderEmail({ lang: preferredLanguage, ...text, buttonUrl: `${SITE_URL}${buttonPath}` });
 
-  const { error } = await resend.emails.send({
+  const { error } = await sendEmail({
     from: FROM,
     to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
+    subject: prenom ? text.subject : subjectWithoutMissingName(text.subject),
     html,
   });
 
@@ -131,32 +153,31 @@ export async function sendSubscriptionReminderEmail({
 // ── Renouvellement automatique (abonnements payants Stripe) ─────────────────
 // Rappel unique et informatif — contrairement au cas offre de lancement,
 // aucune action n'est requise : Stripe facture automatiquement.
-const AUTO_RENEWAL_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: (dateStr: string) => string;
-  subjectNamed: (firstName: string, dateStr: string) => string;
-  greeting: (firstName: string) => string;
-  heading: (dateStr: string) => string;
-  body: (dateStr: string, listingTitle: string, priceLabel: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: (dateStr) => `Ton abonnement Kabanalouer se renouvelle automatiquement le ${dateStr}`,
-    subjectNamed: (firstName, dateStr) => `${firstName}, ton abonnement Kabanalouer se renouvelle automatiquement le ${dateStr}`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: (dateStr) => `Renouvellement automatique le ${dateStr}`,
-    body: (dateStr, listingTitle, priceLabel) => `Ton abonnement annuel Kabanalouer pour ${listingTitle} (${priceLabel}) sera renouvelé automatiquement le ${dateStr} — tu n'as rien à faire. Si tu veux mettre à jour ta méthode de paiement ou annuler ton abonnement, tu peux le faire à tout moment.`,
-    buttonLabel: "Gérer mon abonnement",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: (dateStr) => `Your Kabanalouer subscription renews automatically on ${dateStr}`,
-    subjectNamed: (firstName, dateStr) => `${firstName}, your Kabanalouer subscription renews automatically on ${dateStr}`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: (dateStr) => `Automatic renewal on ${dateStr}`,
-    body: (dateStr, listingTitle, priceLabel) => `Your annual Kabanalouer subscription for ${listingTitle} (${priceLabel}) will renew automatically on ${dateStr} — no action needed on your part. If you'd like to update your payment method or cancel your subscription, you can do so anytime.`,
-    buttonLabel: "Manage my subscription",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_AUTO_RENEWAL: EmailTemplateDef = {
+  id: "auto-renewal",
+  placeholders: [
+    PLACEHOLDER_PRENOM,
+    PLACEHOLDER_TITRE,
+    { key: "dateRenouvellement", label: "Date du renouvellement automatique" },
+    { key: "prix", label: "Prix annuel de l’abonnement (ex. « 299 $ »)" },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, ton abonnement Kabanalouer se renouvelle automatiquement le {dateRenouvellement}",
+      greeting: "Bonjour {prenom} !",
+      heading: "Renouvellement automatique le {dateRenouvellement}",
+      body: "Ton abonnement annuel Kabanalouer pour {titreChalet} ({prix}) sera renouvelé automatiquement le {dateRenouvellement} — tu n'as rien à faire. Si tu veux mettre à jour ta méthode de paiement ou annuler ton abonnement, tu peux le faire à tout moment.",
+      buttonLabel: "Gérer mon abonnement",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, your Kabanalouer subscription renews automatically on {dateRenouvellement}",
+      greeting: "Hi {prenom}!",
+      heading: "Automatic renewal on {dateRenouvellement}",
+      body: "Your annual Kabanalouer subscription for {titreChalet} ({prix}) will renew automatically on {dateRenouvellement} — no action needed on your part. If you'd like to update your payment method or cancel your subscription, you can do so anytime.",
+      buttonLabel: "Manage my subscription",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
@@ -175,26 +196,21 @@ export async function sendAutoRenewalReminderEmail({
   listingTitle: string;
   priceCents: number;
 }): Promise<{ error: Error | null }> {
-  const template = AUTO_RENEWAL_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const dateStr = formatExpiryDate(expiresAt, preferredLanguage);
-  const priceLabel = formatPriceLabel(priceCents, preferredLanguage);
+  const prenom = firstName?.trim() || undefined;
   const buttonPath = preferredLanguage === "en" ? "/en/dashboard/subscription" : "/dashboard/subscription";
 
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading(dateStr),
-    body: template.body(dateStr, listingTitle, priceLabel),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${buttonPath}`,
-    footerNote: template.footerNote,
+  const text = await resolveEmailText(TEMPLATE_AUTO_RENEWAL, preferredLanguage, {
+    prenom,
+    titreChalet: listingTitle,
+    dateRenouvellement: formatExpiryDate(expiresAt, preferredLanguage),
+    prix: formatPriceLabel(priceCents, preferredLanguage),
   });
+  const html = renderEmail({ lang: preferredLanguage, ...text, buttonUrl: `${SITE_URL}${buttonPath}` });
 
-  const { error } = await resend.emails.send({
+  const { error } = await sendEmail({
     from: FROM,
     to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName, dateStr) : template.subjectGeneric(dateStr),
+    subject: prenom ? text.subject : subjectWithoutMissingName(text.subject),
     html,
   });
 
@@ -202,32 +218,30 @@ export async function sendAutoRenewalReminderEmail({
 }
 
 // ── Paiement échoué (abonnements payants, status = 'past_due') ──────────────
-const PAYMENT_FAILED_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: string;
-  subjectNamed: (firstName: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string, priceLabel: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: "Le paiement de ton abonnement Kabanalouer a échoué",
-    subjectNamed: (firstName) => `${firstName}, le paiement de ton abonnement Kabanalouer a échoué`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ton paiement n'a pas pu être traité",
-    body: (listingTitle, priceLabel) => `Le renouvellement automatique de ton abonnement annuel pour ${listingTitle} (${priceLabel}) n'a pas fonctionné — ta carte a probablement été refusée. Stripe va retenter automatiquement dans les prochains jours, mais tu peux aussi mettre à jour ta méthode de paiement dès maintenant pour éviter toute interruption.`,
-    buttonLabel: "Mettre à jour mon paiement",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: "Your Kabanalouer subscription payment failed",
-    subjectNamed: (firstName) => `${firstName}, your Kabanalouer subscription payment failed`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your payment couldn't be processed",
-    body: (listingTitle, priceLabel) => `The automatic renewal of your annual subscription for ${listingTitle} (${priceLabel}) didn't go through — your card was likely declined. Stripe will automatically retry over the next few days, but you can also update your payment method now to avoid any interruption.`,
-    buttonLabel: "Update my payment method",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_PAYMENT_FAILED: EmailTemplateDef = {
+  id: "payment-failed",
+  placeholders: [
+    PLACEHOLDER_PRENOM,
+    PLACEHOLDER_TITRE,
+    { key: "prix", label: "Prix annuel de l’abonnement (ex. « 299 $ »)" },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, le paiement de ton abonnement Kabanalouer a échoué",
+      greeting: "Bonjour {prenom} !",
+      heading: "Ton paiement n'a pas pu être traité",
+      body: "Le renouvellement automatique de ton abonnement annuel pour {titreChalet} ({prix}) n'a pas fonctionné — ta carte a probablement été refusée. Stripe va retenter automatiquement dans les prochains jours, mais tu peux aussi mettre à jour ta méthode de paiement dès maintenant pour éviter toute interruption.",
+      buttonLabel: "Mettre à jour mon paiement",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, your Kabanalouer subscription payment failed",
+      greeting: "Hi {prenom}!",
+      heading: "Your payment couldn't be processed",
+      body: "The automatic renewal of your annual subscription for {titreChalet} ({prix}) didn't go through — your card was likely declined. Stripe will automatically retry over the next few days, but you can also update your payment method now to avoid any interruption.",
+      buttonLabel: "Update my payment method",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
@@ -244,25 +258,20 @@ export async function sendPaymentFailedEmail({
   listingTitle: string;
   priceCents: number | null;
 }): Promise<{ error: Error | null }> {
-  const template = PAYMENT_FAILED_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const priceLabel = formatPriceLabel(priceCents ?? 0, preferredLanguage);
+  const prenom = firstName?.trim() || undefined;
   const buttonPath = preferredLanguage === "en" ? "/en/dashboard/subscription" : "/dashboard/subscription";
 
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: template.body(listingTitle, priceLabel),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${buttonPath}`,
-    footerNote: template.footerNote,
+  const text = await resolveEmailText(TEMPLATE_PAYMENT_FAILED, preferredLanguage, {
+    prenom,
+    titreChalet: listingTitle,
+    prix: formatPriceLabel(priceCents ?? 0, preferredLanguage),
   });
+  const html = renderEmail({ lang: preferredLanguage, ...text, buttonUrl: `${SITE_URL}${buttonPath}` });
 
-  const { error } = await resend.emails.send({
+  const { error } = await sendEmail({
     from: FROM,
     to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
+    subject: prenom ? text.subject : subjectWithoutMissingName(text.subject),
     html,
   });
 

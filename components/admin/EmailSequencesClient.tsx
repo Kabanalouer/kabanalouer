@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import EmailTemplateEditor from "@/components/admin/EmailTemplateEditor";
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
@@ -18,6 +19,21 @@ export default function EmailSequencesClient() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [statuses, setStatuses] = useState<Record<string, Status>>({});
   const [runningCategory, setRunningCategory] = useState<EmailCategory | null>(null);
+  // Courriels dont le texte est modifiable, et langues déjà modifiées (email_templates).
+  const [editable, setEditable] = useState<Set<string>>(new Set());
+  const [customized, setCustomized] = useState<Record<string, ("fr" | "en")[]>>({});
+  const [editing, setEditing] = useState<CatalogEmail | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/email-templates")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json: { editable: string[]; customized: Record<string, ("fr" | "en")[]> } | null) => {
+        if (!json) return;
+        setEditable(new Set(json.editable));
+        setCustomized(json.customized);
+      })
+      .catch(() => {});
+  }, []);
 
   async function sendOne(email: CatalogEmail) {
     setStatuses((s) => ({ ...s, [email.id]: { state: "sending" } }));
@@ -117,6 +133,11 @@ export default function EmailSequencesClient() {
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-medium text-charcoal-800">{email.name}</p>
                       <p className="text-sm text-charcoal-500">{email.trigger}</p>
+                      {customized[email.id]?.length ? (
+                        <p className="text-xs font-medium text-primary mt-1">
+                          Texte modifié ({customized[email.id].map((l) => (l === "fr" ? "français" : "anglais")).join(" et ")})
+                        </p>
+                      ) : null}
                       {email.fixedRecipient && (
                         <p className="text-xs text-charcoal-400 mt-1">Toujours envoyé à {email.fixedRecipient}</p>
                       )}
@@ -127,6 +148,15 @@ export default function EmailSequencesClient() {
                         <p className="text-sm text-error-600 mt-1">{status.message}</p>
                       )}
                     </div>
+                    {editable.has(email.id) && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(email)}
+                        className="self-start sm:self-auto shrink-0 rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] transition-colors"
+                      >
+                        Modifier le texte
+                      </button>
+                    )}
                     {email.testable ? (
                       <button
                         type="button"
@@ -146,6 +176,16 @@ export default function EmailSequencesClient() {
           </section>
         );
       })}
+
+      {editing && (
+        <EmailTemplateEditor
+          emailId={editing.id}
+          emailName={editing.name}
+          initialLang={lang}
+          onClose={() => setEditing(null)}
+          onChanged={(langs) => setCustomized((c) => ({ ...c, [editing.id]: langs }))}
+        />
+      )}
     </div>
   );
 }

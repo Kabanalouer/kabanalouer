@@ -3,49 +3,53 @@
 // Distinct de welcomeSubscription.ts, qui invite à compléter/publier — ici,
 // l'annonce est déjà en ligne, le lien pointe directement vers la fiche
 // publique.
-import { Resend } from "resend";
+// Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* ci-dessous =
+// textes par défaut, lib/emailTemplates).
 import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
+import { sendEmail } from "./send";
+import { escapeHtml } from "@/lib/escapeHtml";
+import { resolveEmailText } from "@/lib/emailTemplates/resolve";
+import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
-const TEMPLATES: Record<"fr" | "en", {
-  subjectGeneric: string;
-  subjectNamed: (firstName: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  bodyFree: (listingTitle: string) => string;
-  bodyPaid: (listingTitle: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: "Ton annonce Kabanalouer est en ligne !",
-    subjectNamed: (firstName) => `${firstName}, ton annonce Kabanalouer est en ligne !`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Ton annonce est en ligne !",
-    bodyFree: (listingTitle) =>
-      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer, et ta première année d'accès est gratuite. Les voyageurs peuvent dès maintenant te contacter directement.`,
-    bodyPaid: (listingTitle) =>
-      `Bonne nouvelle : ${listingTitle} est maintenant publiée sur Kabanalouer. Les voyageurs peuvent dès maintenant te contacter directement.`,
-    buttonLabel: "Voir mon annonce",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: "Your Kabanalouer listing is live!",
-    subjectNamed: (firstName) => `${firstName}, your Kabanalouer listing is live!`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your listing is live!",
-    bodyFree: (listingTitle) =>
-      `Good news: ${listingTitle} is now published on Kabanalouer, and your first year of access is free. Travelers can now contact you directly.`,
-    bodyPaid: (listingTitle) =>
-      `Good news: ${listingTitle} is now published on Kabanalouer. Travelers can now contact you directly.`,
-    buttonLabel: "View my listing",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_IMPORT_PUBLISHED: EmailTemplateDef = {
+  id: "import-published",
+  placeholders: [
+    { key: "prenom", label: "Prénom du proprio" },
+    { key: "titreChalet", label: "Titre du chalet" },
+    {
+      key: "anneeGratuite",
+      label: "Bout de phrase « , et ta première année d’accès est gratuite » (vide si l’offre de lancement ne s’applique pas)",
+      html: true,
+    },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, ton annonce Kabanalouer est en ligne !",
+      greeting: "Bonjour {prenom} !",
+      heading: "Ton annonce est en ligne !",
+      body: "Bonne nouvelle : {titreChalet} est maintenant publiée sur Kabanalouer{anneeGratuite}. Les voyageurs peuvent dès maintenant te contacter directement.",
+      buttonLabel: "Voir mon annonce",
+      footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
+    },
+    en: {
+      subject: "{prenom}, your Kabanalouer listing is live!",
+      greeting: "Hi {prenom}!",
+      heading: "Your listing is live!",
+      body: "Good news: {titreChalet} is now published on Kabanalouer{anneeGratuite}. Travelers can now contact you directly.",
+      buttonLabel: "View my listing",
+      footerNote: "Got a question? Just reply to this email — we're happy to help.",
+    },
   },
 };
+
+// Objet sans prénom : « , ton annonce… » → « Ton annonce… ».
+function tidySubject(subject: string): string {
+  const s = subject.replace(/^[\s,]+/, "").trim();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export async function sendImportPublishedEmail({
   email,
@@ -62,23 +66,29 @@ export async function sendImportPublishedEmail({
   listingTitle: string;
   isFreeLaunch: boolean;
 }): Promise<{ error: Error | null }> {
-  const template = TEMPLATES[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
+  // Offre de lancement : mention de la première année gratuite.
+  const freeYear = isFreeLaunch
+    ? preferredLanguage === "fr"
+      ? ", et ta première année d'accès est gratuite"
+      : ", and your first year of access is free"
+    : "";
+
+  const text = await resolveEmailText(TEMPLATE_IMPORT_PUBLISHED, preferredLanguage, {
+    prenom: firstName?.trim(),
+    titreChalet: listingTitle,
+    anneeGratuite: escapeHtml(freeYear),
+  });
 
   const html = renderEmail({
     lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: isFreeLaunch ? template.bodyFree(listingTitle) : template.bodyPaid(listingTitle),
-    buttonLabel: template.buttonLabel,
+    ...text,
     buttonUrl: `${SITE_URL}${listingPath}`,
-    footerNote: template.footerNote,
   });
 
-  const { error } = await resend.emails.send({
+  const { error } = await sendEmail({
     from: FROM,
     to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
+    subject: firstName?.trim() ? text.subject : tidySubject(text.subject),
     html,
   });
 

@@ -1,43 +1,53 @@
-import { Resend } from "resend";
 import { renderEmail } from "./renderEmail";
-import { escapeHtml } from "@/lib/escapeHtml";
+import { sendEmail } from "./send";
+import { resolveEmailText } from "@/lib/emailTemplates/resolve";
+import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* ci-dessous = textes par défaut).
+
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
+
+const FOOTER_QUESTION_FR = "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.";
+const FOOTER_QUESTION_EN = "Got a question? Just reply to this email — we're happy to help.";
+
+// Objet sans prénom : « {prenom}, comment… » devient « Comment… » (on retire la
+// virgule laissée en tête et on remet la majuscule).
+function tidySubject(subject: string): string {
+  const s = subject.replace(/^[\s,]+/, "");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 // ── Courriel initial : choix "J'ai échangé" / "J'ai réservé" ────────────────
 
-const INITIAL_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: string;
-  subjectNamed: (firstName: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string) => string;
-  exchangeButtonLabel: string;
-  stayButtonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: "Comment s'est passé votre contact avec le propriétaire ?",
-    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre contact avec le propriétaire ?`,
-    greeting: (firstName) => `Bonjour ${firstName},`,
-    heading: "Partagez votre expérience",
-    body: (listingTitle) => `Vous avez échangé avec le propriétaire de ${listingTitle} sur Kabanalouer. On aimerait connaître votre expérience — ça prend 30 secondes.`,
-    exchangeButtonLabel: "J'ai échangé avec le propriétaire",
-    stayButtonLabel: "J'ai réservé le chalet",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: "How did your contact with the owner go?",
-    subjectNamed: (firstName) => `${firstName}, how did your contact with the owner go?`,
-    greeting: (firstName) => `Hi ${firstName},`,
-    heading: "Share your experience",
-    body: (listingTitle) => `You reached out to the owner of ${listingTitle} on Kabanalouer. We'd love to hear how it went — it takes 30 seconds.`,
-    exchangeButtonLabel: "I contacted the owner",
-    stayButtonLabel: "I booked the cabin",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_REVIEW_REQUEST: EmailTemplateDef = {
+  id: "review-request",
+  placeholders: [
+    { key: "prenom", label: "Prénom du voyageur" },
+    { key: "titreChalet", label: "Titre du chalet" },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, comment s'est passé votre contact avec le propriétaire ?",
+      greeting: "Bonjour {prenom},",
+      heading: "Partagez votre expérience",
+      body: "Vous avez échangé avec le propriétaire de {titreChalet} sur Kabanalouer. On aimerait connaître votre expérience — ça prend 30 secondes.",
+      buttonLabel: "J'ai échangé avec le propriétaire",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, how did your contact with the owner go?",
+      greeting: "Hi {prenom},",
+      heading: "Share your experience",
+      body: "You reached out to the owner of {titreChalet} on Kabanalouer. We'd love to hear how it went — it takes 30 seconds.",
+      buttonLabel: "I contacted the owner",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
+
+// 2e bouton (« J'ai réservé ») : libellé non modifiable dans l'admin (un seul
+// champ « Bouton » par courriel).
+const STAY_BUTTON_LABEL = { fr: "J'ai réservé le chalet", en: "I booked the cabin" } as const;
 
 export async function sendReviewRequestEmail({
   email,
@@ -54,61 +64,48 @@ export async function sendReviewRequestEmail({
   echangeUrl: string;
   stayUrl: string;
 }): Promise<{ error: Error | null }> {
-  const template = INITIAL_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-
-  // firstName/listingTitle viennent de données saisies par les utilisateurs
-  // (nom de profil, titre d'annonce) — jamais interpolées telles quelles.
+  const lang = preferredLanguage;
+  // Prénom et titre bruts : le résolveur les échappe (données saisies par les utilisateurs).
+  const text = await resolveEmailText(TEMPLATE_REVIEW_REQUEST, lang, {
+    prenom: firstName?.trim(),
+    titreChalet: listingTitle,
+  });
   const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
-    heading: template.heading,
-    body: template.body(escapeHtml(listingTitle)),
-    buttonLabel: template.exchangeButtonLabel,
+    lang,
+    ...text,
     buttonUrl: echangeUrl,
-    secondaryButtonLabel: template.stayButtonLabel,
+    secondaryButtonLabel: STAY_BUTTON_LABEL[lang],
     secondaryButtonUrl: stayUrl,
-    footerNote: template.footerNote,
   });
-
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
-    html,
-  });
-
+  const { error } = await sendEmail({ from: FROM, to: [email], subject: tidySubject(text.subject), html });
   return { error: error ? new Error(error.message) : null };
 }
 
 // ── 2e courriel : demande d'avis de séjour (check_out + 24h dépassé) ────────
 
-const STAY_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: string;
-  subjectNamed: (firstName: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: "Comment s'est passé votre séjour ?",
-    subjectNamed: (firstName) => `${firstName}, comment s'est passé votre séjour ?`,
-    greeting: (firstName) => `Bonjour ${firstName},`,
-    heading: "Comment s'est passé votre séjour ?",
-    body: (listingTitle) => `Vous avez récemment séjourné à ${listingTitle}. Racontez-nous comment ça s'est passé — ça prend 30 secondes et ça aide les prochains voyageurs.`,
-    buttonLabel: "Laisser mon avis de séjour",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: "How was your stay?",
-    subjectNamed: (firstName) => `${firstName}, how was your stay?`,
-    greeting: (firstName) => `Hi ${firstName},`,
-    heading: "How was your stay?",
-    body: (listingTitle) => `You recently stayed at ${listingTitle}. Tell us how it went — it takes 30 seconds and helps future travelers.`,
-    buttonLabel: "Leave my stay review",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_STAY_REVIEW_REQUEST: EmailTemplateDef = {
+  id: "stay-review-request",
+  placeholders: [
+    { key: "prenom", label: "Prénom du voyageur" },
+    { key: "titreChalet", label: "Titre du chalet" },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, comment s'est passé votre séjour ?",
+      greeting: "Bonjour {prenom},",
+      heading: "Comment s'est passé votre séjour ?",
+      body: "Vous avez récemment séjourné à {titreChalet}. Racontez-nous comment ça s'est passé — ça prend 30 secondes et ça aide les prochains voyageurs.",
+      buttonLabel: "Laisser mon avis de séjour",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, how was your stay?",
+      greeting: "Hi {prenom},",
+      heading: "How was your stay?",
+      body: "You recently stayed at {titreChalet}. Tell us how it went — it takes 30 seconds and helps future travelers.",
+      buttonLabel: "Leave my stay review",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
@@ -125,25 +122,12 @@ export async function sendStayReviewRequestEmail({
   listingTitle: string;
   stayUrl: string;
 }): Promise<{ error: Error | null }> {
-  const template = STAY_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(escapeHtml(trimmedFirstName)) : undefined,
-    heading: template.heading,
-    body: template.body(escapeHtml(listingTitle)),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: stayUrl,
-    footerNote: template.footerNote,
+  const lang = preferredLanguage;
+  const text = await resolveEmailText(TEMPLATE_STAY_REVIEW_REQUEST, lang, {
+    prenom: firstName?.trim(),
+    titreChalet: listingTitle,
   });
-
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName) : template.subjectGeneric,
-    html,
-  });
-
+  const html = renderEmail({ lang, ...text, buttonUrl: stayUrl });
+  const { error } = await sendEmail({ from: FROM, to: [email], subject: tidySubject(text.subject), html });
   return { error: error ? new Error(error.message) : null };
 }

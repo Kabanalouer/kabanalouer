@@ -1,9 +1,14 @@
-import { Resend } from "resend";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getRegionByDbValue } from "@/lib/regions";
+import { escapeHtml } from "@/lib/escapeHtml";
+import { resolveEmailText } from "@/lib/emailTemplates/resolve";
+import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 import { renderEmail } from "./renderEmail";
+import { sendEmail } from "./send";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// Séquence courriel des boosts (vedettes) : confirmation d'achat, rappel J-3,
+// expiration. Textes modifiables dans Admin → Séquences courriel (TEMPLATE_*
+// ci-dessous = textes par défaut, lib/emailTemplates).
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
@@ -50,12 +55,13 @@ function regionDisplayName(region: string | null | undefined, lang: "fr" | "en")
 
 // Phrase complète ("la section vedette de la région Laurentides"), avec un lien cliquable
 // vers la page publique concernée (page d'accueil ou page région) intégré dans la phrase.
+// HTML : inséré tel quel dans le courriel (repère html).
 function placementLabel(type: FeaturedType, region: string | null | undefined, lang: "fr" | "en"): string {
   if (lang === "en") {
     if (type === "home") {
       return `the <a href="${homePageUrl(lang)}" style="${LINK_STYLE}">homepage's featured section</a>`;
     }
-    const regionText = regionDisplayName(region, lang);
+    const regionText = escapeHtml(regionDisplayName(region, lang));
     const url = regionPageUrl(region, lang);
     return url
       ? `the featured section for the <a href="${url}" style="${LINK_STYLE}">${regionText}</a> region`
@@ -64,7 +70,7 @@ function placementLabel(type: FeaturedType, region: string | null | undefined, l
   if (type === "home") {
     return `la section vedette de la <a href="${homePageUrl(lang)}" style="${LINK_STYLE}">page d'accueil</a>`;
   }
-  const regionText = region ?? "";
+  const regionText = escapeHtml(region ?? "");
   const url = regionPageUrl(region, lang);
   return url
     ? `la section vedette de la région <a href="${url}" style="${LINK_STYLE}">${regionText}</a>`
@@ -78,67 +84,109 @@ function pageFieldLabel(type: FeaturedType, region: string | null | undefined, l
   return regionDisplayName(region, lang);
 }
 
-function detailsBlock(monthLabel: string, pageField: string, lang: "fr" | "en"): string {
-  const monthWord = lang === "en" ? "Month" : "Mois";
-  const pageWord = lang === "en" ? "Page" : "Page";
-  return `<strong>${monthWord}</strong> : ${monthLabel}<br/><strong>${pageWord}</strong> : ${pageField}`;
-}
-
 function boostButtonPath(listingId: string, lang: "fr" | "en"): string {
   const base = `/dashboard/listings/${listingId}/edit?section=vedette`;
   return lang === "en" ? `/en${base}` : base;
 }
 
+// Objet sans prénom connu : « {prenom}, le boost… » devient « Le boost… ».
+function subjectWithoutName(subject: string): string {
+  const s = subject.replace(/^[\s,]+/, "");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+const FOOTER_QUESTION_FR = "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.";
+const FOOTER_QUESTION_EN = "Got a question? Just reply to this email — we're happy to help.";
+
+const PRENOM = { key: "prenom", label: "Prénom du proprio" };
+const TITRE_CHALET = { key: "titreChalet", label: "Titre du chalet" };
+const MOIS = { key: "mois", label: "Mois du boost (ex. « octobre 2026 »)" };
+const PAGE = { key: "page", label: "Page du boost : « Accueil » ou le nom de la région" };
+const EMPLACEMENT = {
+  key: "emplacement",
+  label: "Où l’annonce est mise en avant, avec un lien : « la section vedette de la page d’accueil » ou « la section vedette de la région Laurentides »",
+  html: true,
+};
+
+type FeaturedEmailArgs = {
+  email: string;
+  preferredLanguage: "fr" | "en";
+  firstName?: string | null;
+  listingId: string;
+  listingTitle: string;
+  type: FeaturedType;
+  region?: string | null;
+  month: string;
+};
+
+async function sendFeaturedEmail(
+  def: EmailTemplateDef,
+  { email, preferredLanguage: lang, firstName, listingId, listingTitle, type, region, month }: FeaturedEmailArgs,
+): Promise<{ error: Error | null }> {
+  const name = firstName?.trim();
+  const monthLabel = formatMonthLabel(month, lang);
+  const placement = placementLabel(type, region, lang);
+
+  // Confirmation : la phrase change selon que le boost commence maintenant ou un mois futur.
+  const appearance = isMonthCurrent(month)
+    ? lang === "en" ? `now appears in ${placement}` : `apparaît dès maintenant dans ${placement}`
+    : lang === "en"
+      ? `will appear in ${placement} starting at the beginning of ${escapeHtml(monthLabel)}`
+      : `apparaîtra dès le début de ${escapeHtml(monthLabel)} dans ${placement}`;
+
+  const text = await resolveEmailText(def, lang, {
+    prenom: name,
+    titreChalet: listingTitle,
+    mois: monthLabel,
+    page: pageFieldLabel(type, region, lang),
+    emplacement: placement,
+    apparition: appearance,
+  });
+  const html = renderEmail({ lang, ...text, buttonUrl: `${SITE_URL}${boostButtonPath(listingId, lang)}` });
+  const { error } = await sendEmail({
+    from: FROM,
+    to: [email],
+    subject: name ? text.subject : subjectWithoutName(text.subject),
+    html,
+  });
+  return { error: error ? new Error(error.message) : null };
+}
+
 // ── Confirmation d'achat (déclenchée dans le webhook Stripe, checkout.session.completed) ──
-const CONFIRMATION_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: (listingTitle: string) => string;
-  subjectNamed: (firstName: string, listingTitle: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string, monthLabel: string, placement: string, pageField: string, isCurrentMonth: boolean) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est confirmé`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est confirmé`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Le boost de ton annonce est confirmé !",
-    body: (listingTitle, monthLabel, placement, pageField, isCurrentMonth) =>
-      `Félicitations ! Le boost de ${listingTitle} est maintenant confirmé.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>` +
-      (isCurrentMonth
-        ? `Ton annonce apparaît dès maintenant dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs.`
-        : `Ton annonce apparaîtra dès le début de ${monthLabel} dans ${placement}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs.`) +
-      ` Un petit rappel te sera envoyé avant le terme de ton boost, pour que tu gardes le contrôle facilement.<br/><br/>Merci pour ta confiance 🙏`,
-    buttonLabel: "Voir mon annonce",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} is confirmed`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} is confirmed`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your ad boost is confirmed!",
-    body: (listingTitle, monthLabel, placement, pageField, isCurrentMonth) =>
-      `Congratulations! Your boost for ${listingTitle} is now confirmed.<br/><br/>${detailsBlock(monthLabel, pageField, "en")}<br/><br/>` +
-      (isCurrentMonth
-        ? `Your listing now appears in ${placement}, with extra visibility and a priority spot in what travelers see first.`
-        : `Your listing will appear in ${placement} starting at the beginning of ${monthLabel}, with extra visibility and a priority spot in what travelers see first.`) +
-      ` We'll send you a quick reminder before it ends, so you stay easily in control.<br/><br/>Thanks for trusting us 🙏`,
-    buttonLabel: "View my listing",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_FEATURED_CONFIRMATION: EmailTemplateDef = {
+  id: "featured-confirmation",
+  placeholders: [
+    PRENOM,
+    TITRE_CHALET,
+    MOIS,
+    PAGE,
+    {
+      key: "apparition",
+      label: "Quand et où l’annonce apparaît, avec un lien : « apparaît dès maintenant dans la section vedette… » (boost du mois en cours) ou « apparaîtra dès le début de [mois] dans la section vedette… » (mois futur)",
+      html: true,
+    },
+  ],
+  defaults: {
+    fr: {
+      subject: "{prenom}, le boost de ton annonce {titreChalet} est confirmé",
+      greeting: "Bonjour {prenom} !",
+      heading: "Le boost de ton annonce est confirmé !",
+      body: "Félicitations ! Le boost de {titreChalet} est maintenant confirmé.\n\n**Mois** : {mois}\n**Page** : {page}\n\nTon annonce {apparition}, avec une visibilité accrue et une place prioritaire dans la sélection présentée aux voyageurs. Un petit rappel te sera envoyé avant le terme de ton boost, pour que tu gardes le contrôle facilement.\n\nMerci pour ta confiance 🙏",
+      buttonLabel: "Voir mon annonce",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, your ad boost for {titreChalet} is confirmed",
+      greeting: "Hi {prenom}!",
+      heading: "Your ad boost is confirmed!",
+      body: "Congratulations! Your boost for {titreChalet} is now confirmed.\n\n**Month** : {mois}\n**Page** : {page}\n\nYour listing {apparition}, with extra visibility and a priority spot in what travelers see first. We'll send you a quick reminder before it ends, so you stay easily in control.\n\nThanks for trusting us 🙏",
+      buttonLabel: "View my listing",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
-export async function sendFeaturedConfirmationEmail({
-  email,
-  preferredLanguage,
-  firstName,
-  listingId,
-  listingTitle,
-  type,
-  region,
-  month,
-}: {
+export async function sendFeaturedConfirmationEmail(args: {
   email: string;
   preferredLanguage: "fr" | "en";
   firstName?: string | null;
@@ -148,75 +196,34 @@ export async function sendFeaturedConfirmationEmail({
   region?: string | null;
   month: string;
 }): Promise<{ error: Error | null }> {
-  const template = CONFIRMATION_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const monthLabel = formatMonthLabel(month, preferredLanguage);
-  const placement = placementLabel(type, region, preferredLanguage);
-  const pageField = pageFieldLabel(type, region, preferredLanguage);
-  const currentMonth = isMonthCurrent(month);
-
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: template.body(listingTitle, monthLabel, placement, pageField, currentMonth),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${boostButtonPath(listingId, preferredLanguage)}`,
-    footerNote: template.footerNote,
-  });
-
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName, listingTitle) : template.subjectGeneric(listingTitle),
-    html,
-  });
-
-  return { error: error ? new Error(error.message) : null };
+  return sendFeaturedEmail(TEMPLATE_FEATURED_CONFIRMATION, args);
 }
 
 // ── Rappel J-3 (cron expire-featured) ────────────────────────────────────────
-const EXPIRING_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: (listingTitle: string) => string;
-  subjectNamed: (firstName: string, listingTitle: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string, monthLabel: string, placement: string, pageField: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} se termine dans 3 jours`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Le boost de ton annonce se termine dans 3 jours",
-    body: (listingTitle, monthLabel, placement, pageField) =>
-      `${listingTitle} bénéficie en ce moment d'un boost de visibilité dans ${placement}.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Les annonces boostées reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ton boost dès maintenant pour l'éviter.`,
-    buttonLabel: "Renouveler mon boost",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} ends in 3 days`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} ends in 3 days`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your ad boost ends in 3 days",
-    body: (listingTitle, monthLabel, placement, pageField) =>
-      `${listingTitle} currently benefits from a visibility boost in ${placement}.<br/><br/>${detailsBlock(monthLabel, pageField, "en")}<br/><br/>Boosted listings generally get significantly more visits than standard listings. In 3 days, your listing will go back to standard and lose that priority visibility. Renew your boost now to avoid that.`,
-    buttonLabel: "Renew my boost",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_FEATURED_EXPIRING: EmailTemplateDef = {
+  id: "featured-expiring",
+  placeholders: [PRENOM, TITRE_CHALET, MOIS, PAGE, EMPLACEMENT],
+  defaults: {
+    fr: {
+      subject: "{prenom}, le boost de ton annonce {titreChalet} se termine dans 3 jours",
+      greeting: "Bonjour {prenom} !",
+      heading: "Le boost de ton annonce se termine dans 3 jours",
+      body: "{titreChalet} bénéficie en ce moment d'un boost de visibilité dans {emplacement}.\n\n**Mois** : {mois}\n**Page** : {page}\n\nLes annonces boostées reçoivent généralement beaucoup plus de visites que les annonces standards. Dans 3 jours, ton annonce redeviendra standard et perdra cette visibilité prioritaire. Renouvelle ton boost dès maintenant pour l'éviter.",
+      buttonLabel: "Renouveler mon boost",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, your ad boost for {titreChalet} ends in 3 days",
+      greeting: "Hi {prenom}!",
+      heading: "Your ad boost ends in 3 days",
+      body: "{titreChalet} currently benefits from a visibility boost in {emplacement}.\n\n**Month** : {mois}\n**Page** : {page}\n\nBoosted listings generally get significantly more visits than standard listings. In 3 days, your listing will go back to standard and lose that priority visibility. Renew your boost now to avoid that.",
+      buttonLabel: "Renew my boost",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
-export async function sendFeaturedExpiringEmail({
-  email,
-  preferredLanguage,
-  firstName,
-  listingId,
-  listingTitle,
-  type,
-  region,
-  month,
-}: {
+export async function sendFeaturedExpiringEmail(args: {
   email: string;
   preferredLanguage: "fr" | "en";
   firstName?: string | null;
@@ -226,74 +233,34 @@ export async function sendFeaturedExpiringEmail({
   region?: string | null;
   month: string;
 }): Promise<{ error: Error | null }> {
-  const template = EXPIRING_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const monthLabel = formatMonthLabel(month, preferredLanguage);
-  const placement = placementLabel(type, region, preferredLanguage);
-  const pageField = pageFieldLabel(type, region, preferredLanguage);
-
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: template.body(listingTitle, monthLabel, placement, pageField),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${boostButtonPath(listingId, preferredLanguage)}`,
-    footerNote: template.footerNote,
-  });
-
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName, listingTitle) : template.subjectGeneric(listingTitle),
-    html,
-  });
-
-  return { error: error ? new Error(error.message) : null };
+  return sendFeaturedEmail(TEMPLATE_FEATURED_EXPIRING, args);
 }
 
 // ── Notification d'expiration, jour J (cron expire-featured) ────────────────
-const EXPIRED_TEMPLATE: Record<"fr" | "en", {
-  subjectGeneric: (listingTitle: string) => string;
-  subjectNamed: (firstName: string, listingTitle: string) => string;
-  greeting: (firstName: string) => string;
-  heading: string;
-  body: (listingTitle: string, monthLabel: string, placement: string, pageField: string) => string;
-  buttonLabel: string;
-  footerNote: string;
-}> = {
-  fr: {
-    subjectGeneric: (listingTitle) => `Le boost de ton annonce ${listingTitle} est maintenant terminé`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, le boost de ton annonce ${listingTitle} est maintenant terminé`,
-    greeting: (firstName) => `Bonjour ${firstName} !`,
-    heading: "Le boost de ton annonce est terminé",
-    body: (listingTitle, monthLabel, placement, pageField) =>
-      `La période de boost de ${listingTitle} est terminée — ton annonce est repassée en affichage standard.<br/><br/>${detailsBlock(monthLabel, pageField, "fr")}<br/><br/>Elle n'apparaît plus dans ${placement}. Réactive ton boost pour lui redonner cette visibilité prioritaire.`,
-    buttonLabel: "Réactiver mon boost",
-    footerNote: "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.",
-  },
-  en: {
-    subjectGeneric: (listingTitle) => `Your ad boost for ${listingTitle} has ended`,
-    subjectNamed: (firstName, listingTitle) => `${firstName}, your ad boost for ${listingTitle} has ended`,
-    greeting: (firstName) => `Hi ${firstName}!`,
-    heading: "Your ad boost has ended",
-    body: (listingTitle, monthLabel, placement, pageField) =>
-      `The boost period for ${listingTitle} has ended — your listing is back to standard display.<br/><br/>${detailsBlock(monthLabel, pageField, "en")}<br/><br/>It no longer appears in ${placement}. Reactivate your boost to give it back that priority visibility.`,
-    buttonLabel: "Reactivate my boost",
-    footerNote: "Got a question? Just reply to this email — we're happy to help.",
+export const TEMPLATE_FEATURED_EXPIRED: EmailTemplateDef = {
+  id: "featured-expired",
+  placeholders: [PRENOM, TITRE_CHALET, MOIS, PAGE, EMPLACEMENT],
+  defaults: {
+    fr: {
+      subject: "{prenom}, le boost de ton annonce {titreChalet} est maintenant terminé",
+      greeting: "Bonjour {prenom} !",
+      heading: "Le boost de ton annonce est terminé",
+      body: "La période de boost de {titreChalet} est terminée — ton annonce est repassée en affichage standard.\n\n**Mois** : {mois}\n**Page** : {page}\n\nElle n'apparaît plus dans {emplacement}. Réactive ton boost pour lui redonner cette visibilité prioritaire.",
+      buttonLabel: "Réactiver mon boost",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "{prenom}, your ad boost for {titreChalet} has ended",
+      greeting: "Hi {prenom}!",
+      heading: "Your ad boost has ended",
+      body: "The boost period for {titreChalet} has ended — your listing is back to standard display.\n\n**Month** : {mois}\n**Page** : {page}\n\nIt no longer appears in {emplacement}. Reactivate your boost to give it back that priority visibility.",
+      buttonLabel: "Reactivate my boost",
+      footerNote: FOOTER_QUESTION_EN,
+    },
   },
 };
 
-export async function sendFeaturedExpiredEmail({
-  email,
-  preferredLanguage,
-  firstName,
-  listingId,
-  listingTitle,
-  type,
-  region,
-  month,
-}: {
+export async function sendFeaturedExpiredEmail(args: {
   email: string;
   preferredLanguage: "fr" | "en";
   firstName?: string | null;
@@ -303,28 +270,5 @@ export async function sendFeaturedExpiredEmail({
   region?: string | null;
   month: string;
 }): Promise<{ error: Error | null }> {
-  const template = EXPIRED_TEMPLATE[preferredLanguage];
-  const trimmedFirstName = firstName?.trim() || undefined;
-  const monthLabel = formatMonthLabel(month, preferredLanguage);
-  const placement = placementLabel(type, region, preferredLanguage);
-  const pageField = pageFieldLabel(type, region, preferredLanguage);
-
-  const html = renderEmail({
-    lang: preferredLanguage,
-    greeting: trimmedFirstName ? template.greeting(trimmedFirstName) : undefined,
-    heading: template.heading,
-    body: template.body(listingTitle, monthLabel, placement, pageField),
-    buttonLabel: template.buttonLabel,
-    buttonUrl: `${SITE_URL}${boostButtonPath(listingId, preferredLanguage)}`,
-    footerNote: template.footerNote,
-  });
-
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: [email],
-    subject: trimmedFirstName ? template.subjectNamed(trimmedFirstName, listingTitle) : template.subjectGeneric(listingTitle),
-    html,
-  });
-
-  return { error: error ? new Error(error.message) : null };
+  return sendFeaturedEmail(TEMPLATE_FEATURED_EXPIRED, args);
 }
