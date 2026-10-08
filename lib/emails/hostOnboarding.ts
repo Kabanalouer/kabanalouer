@@ -120,14 +120,14 @@ export async function sendDraftReminderEmail({
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, lang);
   const pricing = fr
     ? offerEnd
-      ? `C’est gratuit la première année pour toute annonce publiée d’ici le ${offerEnd}.`
+      ? `C’est gratuit la première année pour toute annonce publiée d’ici le <strong>${offerEnd}</strong>.`
       : `L’abonnement est de ${regularPrice} par année, sans aucune commission sur tes réservations.`
     : offerEnd
-      ? `It’s free for the first year for any listing published by ${offerEnd}.`
+      ? `It’s free for the first year for any listing published by <strong>${offerEnd}</strong>.`
       : `The subscription is ${regularPrice} per year, with no commission on your bookings.`;
   const body = fr
-    ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ». ${pricing}`
-    : `${intro}<br/><br/>Once everything is filled in, click “Publish my listing”. ${pricing}`;
+    ? `${intro}<br/><br/>Une fois tout rempli, clique sur « Publier mon annonce ».<br/><br/>${pricing}`
+    : `${intro}<br/><br/>Once everything is filled in, click “Publish my listing”.<br/><br/>${pricing}`;
 
   const html = renderEmail({
     lang,
