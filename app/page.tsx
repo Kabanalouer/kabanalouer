@@ -241,7 +241,7 @@ export default async function HomePage() {
 
           {/* Contenu : badge + titre + sous-titre + recherche */}
           <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
-            <div className="inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
+            <div className="hidden sm:inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
               {t("badge")}
             </div>
             <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-bold leading-[1.15] tracking-normal mb-4 sm:mb-5 max-w-3xl">
