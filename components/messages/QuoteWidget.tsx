@@ -139,19 +139,44 @@ export default function QuoteWidget({
 
   // Champ « Prix total » : le prix tapé est recopié dans le texte, à la place
   // de ce qui y est inscrit pour l'instant (le repère « ____ $ » au départ).
-  // Si le proprio a effacé cet endroit du texte, le prix reste quand même
-  // envoyé (priceCents) et affiché en gros sur la carte du voyageur.
+  // C'est le texte qui fait foi : le proprio peut aussi écrire son prix
+  // directement dedans. Seul le repère encore présent bloque l'envoi.
+  const pricePlaceholder = t("priceInTextPlaceholder");
   const [priceInput, setPriceInput] = useState("");
   const priceCents = parseQuotePrice(priceInput);
-  const priceInText = useRef(t("priceInTextPlaceholder"));
+  const [priceInText, setPriceInText] = useState(pricePlaceholder);
+  const placeholderInText = editedText.includes(pricePlaceholder);
+  // Prix du champ remplacé à la main dans le texte : le champ ne suit plus.
+  const priceEditedInText = priceCents !== null && !editedText.includes(priceInText);
 
   const handlePriceChange = (value: string) => {
     setPriceInput(value);
     const cents = parseQuotePrice(value);
-    const next = cents ? formatQuotePrice(cents, locale) : t("priceInTextPlaceholder");
-    const previous = priceInText.current;
-    priceInText.current = next;
-    setEditedText((text) => (text.includes(previous) ? text.replace(previous, next) : text));
+    const next = cents ? formatQuotePrice(cents, locale) : pricePlaceholder;
+    setEditedText((text) => writePriceInText(text, priceInText, next));
+    setPriceInText(next);
+  };
+
+  // Où écrire le prix du champ : à la place du prix inscrit en dernier ; sinon
+  // sur la ligne « …, toutes taxes comprises » ; sinon sous le titre « PRIX »
+  // (le proprio a pu écrire un prix à la main puis l'effacer).
+  const writePriceInText = (text: string, previous: string, next: string): string => {
+    if (text.includes(previous)) return text.replace(previous, next);
+    const lines = text.split("\n");
+    const suffix = t("priceLine", { price: "" });
+    const lineIndex = lines.findIndex((l) => l.trimEnd().endsWith(suffix.trim()));
+    if (lineIndex !== -1) {
+      lines[lineIndex] = t("priceLine", { price: next });
+      return lines.join("\n");
+    }
+    const headingIndex = lines.findIndex((l) => l.trim() === t("priceHeading"));
+    if (headingIndex !== -1) {
+      const after = lines[headingIndex + 1];
+      if (after !== undefined && after.trim() === "") lines[headingIndex + 1] = t("priceLine", { price: next });
+      else lines.splice(headingIndex + 1, 0, t("priceLine", { price: next }));
+      return lines.join("\n");
+    }
+    return text;
   };
 
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
@@ -199,7 +224,7 @@ export default function QuoteWidget({
             travelerFirstName,
             listingTitle,
             datesGuestsBlock,
-            priceDisplay: priceInText.current,
+            priceDisplay: priceInText,
           })
         );
       }
@@ -208,7 +233,7 @@ export default function QuoteWidget({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canSend = !!editedText.trim() && priceCents !== null;
+  const canSend = !!editedText.trim() && !placeholderInText;
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -222,7 +247,7 @@ export default function QuoteWidget({
           travelerFirstName,
           listingTitle,
           datesGuestsBlock,
-          priceDisplay: priceInText.current,
+          priceDisplay: priceInText,
         })
       : undefined;
 
@@ -235,7 +260,8 @@ export default function QuoteWidget({
         receiverId,
         sourceMessageId,
         editedContent: editedText,
-        priceCents,
+        // Prix enregistré seulement s'il correspond encore au texte envoyé.
+        priceCents: priceEditedInText ? null : priceCents,
         saveAsTemplate,
         closingTemplateToSave,
       }),
@@ -290,12 +316,16 @@ export default function QuoteWidget({
         {priceInput.trim() !== "" && priceCents === null && (
           <p className="mt-2 text-sm text-error-600">{t("priceInvalid")}</p>
         )}
+        {priceEditedInText && (
+          <p className="mt-2 text-sm text-charcoal-500">{t("priceEditedInText")}</p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-charcoal-500 mb-1">
+        <label className="block text-sm font-medium text-charcoal-500">
           {t("quoteTextareaLabel")}
         </label>
+        <p className="text-sm text-charcoal-400 mb-1">{t("textEditableNote")}</p>
         <AutoTextarea
           value={editedText}
           onChange={(e) => {
@@ -330,7 +360,7 @@ export default function QuoteWidget({
           >
             {sending ? t("sendingGeneric") : t("sendQuoteButton")}
           </button>
-          {priceCents === null && (
+          {placeholderInText && (
             <span
               role="tooltip"
               className="pointer-events-none absolute bottom-full left-0 mb-2 w-64 rounded-lg bg-charcoal-800 px-3 py-2 text-sm text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -348,7 +378,7 @@ export default function QuoteWidget({
         </button>
       </div>
       {/* Pas de survol sur un écran tactile : même consigne, en texte. */}
-      {priceCents === null && (
+      {placeholderInText && (
         <p className="text-sm text-charcoal-400 md:hidden">{t("priceRequired")}</p>
       )}
     </div>

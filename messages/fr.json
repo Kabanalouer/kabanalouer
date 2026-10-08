@@ -664,6 +664,8 @@
     "priceFieldPlaceholder": "0",
     "priceInTextPlaceholder": "____ $",
     "priceRequired": "Vous devez entrer un prix avant d'envoyer votre devis.",
+    "priceEditedInText": "Le prix a été modifié dans le texte. C'est le texte qui sera envoyé.",
+    "textEditableNote": "Vous pouvez modifier le texte ci-dessous.",
     "priceInvalid": "Prix invalide. Exemple : 1250 ou 1250,50",
     "reservationHeading": "COMMENT RÉSERVER ?",
     "reservationParagraph": "Si vous désirez réserver ce chalet, vous avez simplement à me faire part de votre intérêt et je vous ferai parvenir les informations de paiements pour procéder au dépôt.",

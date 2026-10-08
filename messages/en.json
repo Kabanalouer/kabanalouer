@@ -664,6 +664,8 @@
     "priceFieldPlaceholder": "0",
     "priceInTextPlaceholder": "$____",
     "priceRequired": "You need to enter a price before sending your quote.",
+    "priceEditedInText": "The price was changed in the text. The text is what will be sent.",
+    "textEditableNote": "You can edit the text below.",
     "priceInvalid": "Invalid price. Example: 1250 or 1250.50",
     "reservationHeading": "HOW TO BOOK?",
     "reservationParagraph": "If you'd like to book this cabin, just let me know you're interested and I'll send you the payment details to proceed with the deposit.",
