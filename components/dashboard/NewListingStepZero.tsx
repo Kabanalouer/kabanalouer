@@ -44,14 +44,13 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
 
   // Lien venu de /devenir-hote (?import= ou, à défaut, localStorage) :
   // prérempli, puis la case de consentement photos reste à cocher.
+  // Pas de défilement ni de focus : la page s'ouvre toujours en haut (le focus
+  // ouvrait le clavier sur mobile et faisait descendre la page au milieu).
   useEffect(() => {
     const input = importInputRef.current;
     if (!input) return;
     const url = initialImportUrl ?? readPendingAirbnbImport();
-    if (!url) return;
-    if (!input.value) input.value = url;
-    input.scrollIntoView({ block: "center" });
-    input.focus({ preventScroll: true });
+    if (url && !input.value) input.value = url;
   }, [initialImportUrl]);
 
   const router = useRouter();
