@@ -12,6 +12,7 @@ import NoAvailabilityWidget from "./NoAvailabilityWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 import { buildListingPath } from "@/lib/listingUrl";
+import { firstPhotoUrl } from "@/lib/photo";
 import PhotoReminderBanner from "@/components/PhotoReminderBanner";
 import Link from "next/link";
 import { localePath } from "@/lib/localePath";
@@ -51,6 +52,8 @@ type Conversation = {
   listing_title_en: string | null;
   listing_host_id: string | null;
   listing_region: string | null;
+  listing_region_label: string | null;
+  listing_photo: string | null;
   listing_city: string | null;
   listing_number: number | null;
   listing_custom_slug: string | null;
@@ -309,7 +312,7 @@ export default function MessagesClient({
 
       const [{ data: other }, { data: listing }] = await Promise.all([
         supabase.from("public_profiles").select(`name, avatar_url, created_at, ${BIO_COLUMNS}`).eq("id", otherId).single(),
-        supabase.from("listings").select("title, title_en, host_id, region, city, listing_number, custom_slug").eq("id", msg.listing_id).single(),
+        supabase.from("listings").select("title, title_en, host_id, region, city, listing_number, custom_slug, photos").eq("id", msg.listing_id).single(),
       ]);
       const conv: Conversation = {
         other_user_id: otherId,
@@ -322,6 +325,8 @@ export default function MessagesClient({
         listing_title_en: (listing?.title_en as string | null) ?? null,
         listing_host_id: (listing?.host_id as string | null) ?? null,
         listing_region: (listing?.region as string | null) ?? null,
+        listing_region_label: (listing?.region as string | null) ?? null,
+        listing_photo: firstPhotoUrl(listing?.photos) ?? null,
         listing_city: (listing?.city as string | null) ?? null,
         listing_number: (listing?.listing_number as number | null) ?? null,
         listing_custom_slug: (listing?.custom_slug as string | null) ?? null,
@@ -666,6 +671,14 @@ export default function MessagesClient({
 
             {/* Messages */}
             <div className="flex-1 md:overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
+              {activeConv && (
+                <ListingIntroCard
+                  conv={activeConv}
+                  title={convTitle(activeConv)}
+                  href={activeListingPath}
+                  label={isHostOfListing ? t("requestForLabel") : t("ownerOfLabel", { name: activeFirstName })}
+                />
+              )}
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-charcoal-400 text-sm">{t("loading")}</div>
@@ -897,6 +910,48 @@ export default function MessagesClient({
       </div>
       </div>
     </div>
+  );
+}
+
+// ── Carte du chalet en tête de conversation (défile avec les messages) ──────
+function ListingIntroCard({ conv, title, href, label }: { conv: Conversation; title: string; href: string | null; label: string }) {
+  const t = useTranslations("messages");
+  const place = [conv.listing_city, conv.listing_region_label].filter(Boolean).join(", ");
+  const body = (
+    <>
+      <div className="w-20 h-20 rounded-xl bg-charcoal-100 overflow-hidden flex-shrink-0">
+        {conv.listing_photo ? (
+          <Image src={conv.listing_photo} alt={title} width={80} height={80} sizes="80px" className="object-cover w-full h-full" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-charcoal-400">
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-charcoal-400">{label}</p>
+        <p className="text-base font-semibold text-charcoal-800 truncate">{title}</p>
+        {place && <p className="text-sm text-charcoal-400 truncate">{place}</p>}
+        {href && (
+          <p className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-charcoal-800 underline group-hover:text-primary">
+            {t("viewListing")}
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H18m0 0v4.5m0-4.5L11 13.5M6 6H4.5a1.5 1.5 0 00-1.5 1.5v9a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V15" />
+            </svg>
+          </p>
+        )}
+      </div>
+    </>
+  );
+  const className = "group self-start w-full max-w-md shrink-0 mb-2 flex items-center gap-4 bg-white border border-[#ebebeb] rounded-2xl p-3";
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={`${className} hover:shadow-sm transition-shadow`}>
+      {body}
+    </a>
+  ) : (
+    <div className={className}>{body}</div>
   );
 }
 

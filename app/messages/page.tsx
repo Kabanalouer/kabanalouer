@@ -7,6 +7,8 @@ import DashboardBottomNav from "@/components/dashboard/DashboardBottomNav";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { localePath } from "@/lib/localePath";
+import { firstPhotoUrl } from "@/lib/photo";
+import { getRegionByDbValue } from "@/lib/regions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations("messages"), getLocale()]);
@@ -85,6 +87,12 @@ export default async function MessagesPage() {
     : { data: [] as ({ id: string; name: string | null; avatar_url: string | null; created_at: string | null } & BioFields)[] };
   const profileById = new Map((otherProfiles ?? []).map((p) => [p.id, p]));
 
+  const regionLabel = (dbValue: string | null) => {
+    if (!dbValue) return null;
+    const region = getRegionByDbValue(dbValue);
+    return region ? (isEn ? region.nameEn : region.name) : dbValue;
+  };
+
   const convMap = new Map<
     string,
     {
@@ -98,6 +106,8 @@ export default async function MessagesPage() {
       listing_title_en: string | null;
       listing_host_id: string | null;
       listing_region: string | null;
+      listing_region_label: string | null;
+      listing_photo: string | null;
       listing_city: string | null;
       listing_number: number | null;
       listing_custom_slug: string | null;
@@ -128,6 +138,8 @@ export default async function MessagesPage() {
         listing_title_en: msg.listing?.title_en ?? null,
         listing_host_id: msg.listing?.host_id ?? null,
         listing_region: msg.listing?.region ?? null,
+        listing_region_label: regionLabel(msg.listing?.region ?? null),
+        listing_photo: null,
         listing_city: msg.listing?.city ?? null,
         listing_number: msg.listing?.listing_number ?? null,
         listing_custom_slug: msg.listing?.custom_slug ?? null,
@@ -146,7 +158,19 @@ export default async function MessagesPage() {
     }
   }
 
-  const conversations = Array.from(convMap.values());
+  // Première photo de chaque chalet, pour la carte en tête de conversation —
+  // requête à part : la jointure ci-dessus répéterait tout le jsonb photos
+  // pour chaque message.
+  const listingIds = [...new Set(messages.map((m) => m.listing_id))];
+  const { data: listingPhotos } = listingIds.length > 0
+    ? await supabase.from("listings").select("id, photos").in("id", listingIds)
+    : { data: [] as { id: string; photos: unknown }[] };
+  const photoByListing = new Map((listingPhotos ?? []).map((l) => [l.id, firstPhotoUrl(l.photos) ?? null]));
+
+  const conversations = Array.from(convMap.values()).map((c) => ({
+    ...c,
+    listing_photo: photoByListing.get(c.listing_id) ?? null,
+  }));
 
   return (
     <>
