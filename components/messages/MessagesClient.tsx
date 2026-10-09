@@ -162,6 +162,14 @@ export default function MessagesClient({
   // précise (pas juste son rôle global — un même compte peut être proprio
   // d'un chalet et avoir contacté un autre proprio ailleurs comme voyageur).
   const isHostOfListing = !!activeConv && activeConv.listing_host_id === currentUserId;
+  const activeConvKey = activeConv ? `${activeConv.listing_id}-${activeConv.other_user_id}` : null;
+  const [expandedBioKey, setExpandedBioKey] = useState<string | null>(null);
+  const bioExpanded = !!activeConvKey && expandedBioKey === activeConvKey;
+  const bioIsLong = (activeConv?.other_user_bio?.length ?? 0) > 160;
+  const activeFirstName = activeConv?.other_user_name.split(" ")[0] ?? "";
+  const activeMemberSince = activeConv?.other_user_created_at
+    ? new Date(activeConv.other_user_created_at).toLocaleDateString(isEn ? "en-CA" : "fr-CA", { month: "long", year: "numeric", timeZone: TIME_ZONE })
+    : null;
 
   useEffect(() => {
     setActiveQuickReply(null);
@@ -529,7 +537,7 @@ export default function MessagesClient({
         ) : (
           <>
             {/* Thread header */}
-            <div className="max-md:sticky max-md:top-20 max-md:z-10 bg-white border-b border-[#ebebeb] px-2 md:px-6 py-2 md:py-4 flex items-center gap-2 md:gap-3">
+            <div className="max-md:sticky max-md:top-20 max-md:z-10 bg-white border-b border-[#ebebeb] px-2 md:px-6 py-2 md:py-4 flex items-center md:items-start gap-2 md:gap-4">
               {/* Retour — mobile seulement, icône seule */}
               <button
                 onClick={handleBack}
@@ -543,17 +551,17 @@ export default function MessagesClient({
 
               {activeConv && (
                 <>
-                  <div className="w-9 h-9 rounded-full bg-charcoal-100 overflow-hidden flex-shrink-0">
+                  <div className="w-9 h-9 md:w-12 md:h-12 rounded-full bg-charcoal-100 overflow-hidden flex-shrink-0">
                     {activeConv.other_user_avatar ? (
                       <Image
                         src={activeConv.other_user_avatar}
                         alt={activeConv.other_user_name}
-                        width={36}
-                        height={36}
-                        className="object-cover"
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-charcoal-600 font-bold text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-charcoal-600 font-bold text-sm md:text-base">
                         {activeConv.other_user_name[0]?.toUpperCase()}
                       </div>
                     )}
@@ -566,23 +574,32 @@ export default function MessagesClient({
                     aria-label={t("detailsOpen")}
                   >
                     <p className="font-semibold text-charcoal-800 text-base leading-tight truncate">{activeConv.other_user_name}</p>
-                    <p className="text-sm text-charcoal-400 leading-tight truncate">{convTitle(activeConv)}</p>
+                    <p className="text-sm text-charcoal-400 leading-tight truncate">
+                      {isHostOfListing ? t("requestForLabel") : t("myCabinLabel")} {convTitle(activeConv)}
+                    </p>
                   </button>
+                  {/* Desktop : présentation complète de l'autre personne, toujours visible */}
                   <div className="hidden md:block flex-1 min-w-0">
-                    <p className="font-semibold text-charcoal-800 text-base">{activeConv.other_user_name}</p>
-                    <div className="flex items-center gap-1 min-w-0">
+                    <p className="text-base text-charcoal-800">
+                      <span className="font-semibold">{activeConv.other_user_name}</span>
+                      {activeMemberSince && (
+                        <span className="text-sm text-charcoal-400"> · {t("travelerMemberSince", { date: activeMemberSince })}</span>
+                      )}
+                    </p>
+                    <p className="text-sm text-charcoal-600 flex items-center gap-1 min-w-0">
+                      <span className="shrink-0">{isHostOfListing ? t("requestForLabel") : t("myCabinLabel")}</span>
                       {activeListingPath ? (
                         <a
                           href={activeListingPath}
                           target="_blank"
                           rel="noopener noreferrer"
                           title={t("viewListing")}
-                          className="text-sm text-charcoal-400 truncate max-w-xs hover:underline"
+                          className="font-semibold text-charcoal-800 truncate hover:underline"
                         >
                           {convTitle(activeConv)}
                         </a>
                       ) : (
-                        <p className="text-sm text-charcoal-400 truncate max-w-xs">{convTitle(activeConv)}</p>
+                        <span className="font-semibold text-charcoal-800 truncate">{convTitle(activeConv)}</span>
                       )}
                       {activeListingPath && (
                         <a
@@ -598,7 +615,19 @@ export default function MessagesClient({
                           </svg>
                         </a>
                       )}
-                    </div>
+                    </p>
+                    <p className={`mt-1.5 max-w-2xl text-sm leading-relaxed ${activeConv.other_user_bio ? "text-charcoal-600" : "text-charcoal-400 italic"} ${bioExpanded ? "" : "line-clamp-2"}`}>
+                      {activeConv.other_user_bio ?? t("travelerNoBio", { name: activeFirstName })}
+                    </p>
+                    {bioIsLong && (
+                      <button
+                        type="button"
+                        onClick={() => setExpandedBioKey(bioExpanded ? null : activeConvKey)}
+                        className="mt-0.5 text-sm font-semibold text-charcoal-800 underline hover:text-primary"
+                      >
+                        {bioExpanded ? t("bioLess") : t("bioMore")}
+                      </button>
+                    )}
                   </div>
                 </>
               )}
@@ -615,7 +644,7 @@ export default function MessagesClient({
                 </svg>
               </button>
 
-              <div className="hidden md:flex ml-auto flex-shrink-0 items-center gap-2">
+              <div className="hidden md:flex ml-auto flex-shrink-0 items-center gap-2 md:mt-1">
                 <span className="text-xs text-charcoal-400">{t("translationToggleLabel")}</span>
                 <button
                   type="button"
@@ -638,10 +667,6 @@ export default function MessagesClient({
 
             {/* Messages */}
             <div className="flex-1 md:overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col gap-3">
-              {/* Fiche du voyageur, visible seulement par le proprio de l'annonce */}
-              {isHostOfListing && activeConv && (
-                <div className="hidden md:block"><TravelerCard conv={activeConv} /></div>
-              )}
               {loadingMessages ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-charcoal-400 text-sm">{t("loading")}</div>
@@ -832,11 +857,9 @@ export default function MessagesClient({
                     </button>
                   </div>
 
-                  {isHostOfListing && (
-                    <div className="border-t border-[#ebebeb] pt-5">
-                      <TravelerCard conv={activeConv} />
-                    </div>
-                  )}
+                  <div className="border-t border-[#ebebeb] pt-5">
+                    <ParticipantCard conv={activeConv} />
+                  </div>
                 </div>
               </div>
             )}
@@ -878,8 +901,8 @@ export default function MessagesClient({
   );
 }
 
-// ── Fiche du voyageur (côté proprio) ──────────────────────────────────────────
-function TravelerCard({ conv }: { conv: Conversation }) {
+// ── Présentation de l'autre personne (panneau Détails, mobile) ──────────────────────────────────────────
+function ParticipantCard({ conv }: { conv: Conversation }) {
   const t = useTranslations("messages");
   const locale = useLocale();
   const firstName = conv.other_user_name.split(" ")[0];
