@@ -575,7 +575,7 @@ export default function MessagesClient({
                   >
                     <p className="font-semibold text-charcoal-800 text-base leading-tight truncate">{activeConv.other_user_name}</p>
                     <p className="text-sm text-charcoal-400 leading-tight truncate">
-                      {isHostOfListing ? t("requestForLabel") : t("myCabinLabel")} {convTitle(activeConv)}
+                      {isHostOfListing ? convTitle(activeConv) : `${t("myCabinLabel")} ${convTitle(activeConv)}`}
                     </p>
                   </button>
                   {/* Desktop : présentation complète de l'autre personne, toujours visible */}
@@ -587,7 +587,7 @@ export default function MessagesClient({
                       )}
                     </p>
                     <p className="text-sm text-charcoal-600 flex items-center gap-1 min-w-0">
-                      <span className="shrink-0">{isHostOfListing ? t("requestForLabel") : t("myCabinLabel")}</span>
+                      {!isHostOfListing && <span className="shrink-0">{t("myCabinLabel")}</span>}
                       {activeListingPath ? (
                         <a
                           href={activeListingPath}
