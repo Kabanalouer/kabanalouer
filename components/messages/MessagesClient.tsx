@@ -165,11 +165,21 @@ export default function MessagesClient({
   const activeConvKey = activeConv ? `${activeConv.listing_id}-${activeConv.other_user_id}` : null;
   const [expandedBioKey, setExpandedBioKey] = useState<string | null>(null);
   const bioExpanded = !!activeConvKey && expandedBioKey === activeConvKey;
-  const bioIsLong = (activeConv?.other_user_bio?.length ?? 0) > 160;
+  const bioRef = useRef<HTMLParagraphElement>(null);
+  const [bioOverflows, setBioOverflows] = useState(false);
   const activeFirstName = activeConv?.other_user_name.split(" ")[0] ?? "";
   const activeMemberSince = activeConv?.other_user_created_at
     ? new Date(activeConv.other_user_created_at).toLocaleDateString(isEn ? "en-CA" : "fr-CA", { month: "long", year: "numeric", timeZone: TIME_ZONE })
     : null;
+  useEffect(() => {
+    const el = bioRef.current;
+    if (!el || bioExpanded) return;
+    const measure = () => setBioOverflows(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeConvKey, activeConv?.other_user_bio, bioExpanded]);
 
   useEffect(() => {
     setActiveQuickReply(null);
@@ -575,7 +585,7 @@ export default function MessagesClient({
                   >
                     <p className="font-semibold text-charcoal-800 text-base leading-tight truncate">{activeConv.other_user_name}</p>
                     <p className="text-sm text-charcoal-400 leading-tight truncate">
-                      {isHostOfListing ? convTitle(activeConv) : `${t("myCabinLabel")} ${convTitle(activeConv)}`}
+                      {convTitle(activeConv)}
                     </p>
                   </button>
                   {/* Desktop : présentation complète de l'autre personne, toujours visible */}
@@ -586,48 +596,37 @@ export default function MessagesClient({
                         <span className="text-sm text-charcoal-400"> · {t("travelerMemberSince", { date: activeMemberSince })}</span>
                       )}
                     </p>
-                    <p className="text-sm text-charcoal-600 flex items-center gap-1 min-w-0">
-                      {!isHostOfListing && <span className="shrink-0">{t("myCabinLabel")}</span>}
-                      {activeListingPath ? (
-                        <a
-                          href={activeListingPath}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={t("viewListing")}
-                          className="font-semibold text-charcoal-800 truncate hover:underline"
-                        >
-                          {convTitle(activeConv)}
-                        </a>
-                      ) : (
-                        <span className="font-semibold text-charcoal-800 truncate">{convTitle(activeConv)}</span>
-                      )}
-                      {activeListingPath && (
-                        <a
-                          href={activeListingPath}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={t("viewListing")}
-                          title={t("viewListing")}
-                          className="text-charcoal-400 hover:text-primary transition-colors shrink-0"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H18m0 0v4.5m0-4.5L11 13.5M6 6H4.5a1.5 1.5 0 00-1.5 1.5v9a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V15" />
-                          </svg>
-                        </a>
-                      )}
-                    </p>
-                    <p className={`mt-1.5 max-w-2xl text-sm leading-relaxed ${activeConv.other_user_bio ? "text-charcoal-600" : "text-charcoal-400 italic"} ${bioExpanded ? "" : "line-clamp-2"}`}>
-                      {activeConv.other_user_bio ?? t("travelerNoBio", { name: activeFirstName })}
-                    </p>
-                    {bioIsLong && (
-                      <button
-                        type="button"
-                        onClick={() => setExpandedBioKey(bioExpanded ? null : activeConvKey)}
-                        className="mt-0.5 text-sm font-semibold text-charcoal-800 underline hover:text-primary"
+                    <div className="relative mt-1 max-w-2xl">
+                      <p
+                        ref={bioRef}
+                        className={`text-sm leading-relaxed ${activeConv.other_user_bio ? "text-charcoal-600" : "text-charcoal-400 italic"} ${bioExpanded ? "" : "line-clamp-2"}`}
                       >
-                        {bioExpanded ? t("bioLess") : t("bioMore")}
-                      </button>
-                    )}
+                        {activeConv.other_user_bio ?? t("travelerNoBio", { name: activeFirstName })}
+                        {bioExpanded && (
+                          <>
+                            {" "}
+                            <button
+                              type="button"
+                              onClick={() => setExpandedBioKey(null)}
+                              className="font-semibold text-charcoal-800 underline hover:text-primary"
+                            >
+                              {t("bioLess")}
+                            </button>
+                          </>
+                        )}
+                      </p>
+                      {/* « Lire la suite » posé au bout de la 2ᵉ ligne, par-dessus la fin du texte coupé */}
+                      {!bioExpanded && bioOverflows && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedBioKey(activeConvKey)}
+                          className="absolute bottom-0 right-0 pl-8 bg-[linear-gradient(to_right,transparent,white_1.5rem)] text-sm leading-relaxed text-charcoal-600"
+                        >
+                          …{" "}
+                          <span className="font-semibold text-charcoal-800 underline hover:text-primary">{t("bioMore")}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
