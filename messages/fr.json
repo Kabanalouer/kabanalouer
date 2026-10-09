@@ -662,6 +662,7 @@
     "priceLine": "{price}, toutes taxes comprises",
     "priceFieldLabel": "Prix total du séjour",
     "priceFieldTaxes": "taxes incluses",
+    "priceFieldHint": "Votre prix s'affichera dans le devis ci-dessous.",
     "priceFieldPlaceholder": "0",
     "priceInTextPlaceholder": "____ $",
     "priceRequired": "Vous devez entrer un prix avant d'envoyer votre devis.",

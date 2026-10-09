@@ -662,6 +662,7 @@
     "priceLine": "{price}, all taxes included",
     "priceFieldLabel": "Total price for the stay",
     "priceFieldTaxes": "taxes included",
+    "priceFieldHint": "Your price will appear in the quote below.",
     "priceFieldPlaceholder": "0",
     "priceInTextPlaceholder": "$____",
     "priceRequired": "You need to enter a price before sending your quote.",

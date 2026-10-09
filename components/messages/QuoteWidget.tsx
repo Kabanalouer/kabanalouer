@@ -316,8 +316,10 @@ export default function QuoteWidget({
         {priceInput.trim() !== "" && priceCents === null && (
           <p className="mt-2 text-sm text-error-600">{t("priceInvalid")}</p>
         )}
-        {priceEditedInText && (
+        {priceEditedInText ? (
           <p className="mt-2 text-sm text-charcoal-500">{t("priceEditedInText")}</p>
+        ) : (
+          <p className="mt-2 text-sm text-charcoal-500">{t("priceFieldHint")}</p>
         )}
       </div>
 
