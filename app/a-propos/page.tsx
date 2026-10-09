@@ -96,8 +96,7 @@ export default async function AProposPage() {
             <p>{t("origin1")}</p>
             <p>{t("origin2")}</p>
           </div>
-          <p className="mt-8 text-base font-semibold text-charcoal-800">{t("founderSignature")}</p>
-          <p className="mt-1 text-sm text-charcoal-400">
+          <p className="mt-8 text-sm text-charcoal-400">
             {t("updatedOn", { date: new Date(`${ABOUT_UPDATED_ON}T12:00:00`).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { day: "numeric", month: "long", year: "numeric" }) })}
           </p>
         </div>

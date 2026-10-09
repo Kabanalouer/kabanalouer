@@ -129,6 +129,7 @@ Fichiers dans `public/` :
 - **Jamais "hôte"** dans l'UI (ni "host" visible côté public)
 - **Français québécois naturel**, jamais trop familier — pas de "Salut!", "Yo", "Hey"
 - Les voyageurs = "voyageurs" (pas "clients", pas "guests")
+- **Jamais le nom du fondateur sur le front** (choix de Simon, 2026-10-09) : la page À propos n'a plus de signature (seulement la date de mise à jour), les courriels et la signature Gmail de info@ signent « L'équipe Kabanalouer ». Le nom reste **uniquement** dans les données structurées (`founder` de l'Organization, `app/layout.tsx`) pour les moteurs et les LLM.
 - **Typographie française — espaces insécables obligatoires** (règle OQLF, appliquée à tout le site le 2026-09-24) — pour tout texte FR ajouté ou modifié (`messages/fr.json`, chaînes FR en dur dans le code, courriels, FAQ/JSON-LD) :
   - avant `?` `!` `;` → **espace fine insécable** U+202F (ex. `avec {name} ?`)
   - avant `:` → **espace insécable** U+00A0
@@ -1175,3 +1176,13 @@ Section stable — à ne pas laisser disparaître dans le fil de session (contra
 - `frontend-design` — revue visuelle
 
 **Note** : ces plugins/skills sont spécifiques à l'environnement Claude Code (terminal) et n'ont pas d'équivalent automatique dans Cowork — leurs capacités les plus utiles pour ce projet (Vercel, Stripe) sont déjà branchées ici comme connecteurs MCP.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
