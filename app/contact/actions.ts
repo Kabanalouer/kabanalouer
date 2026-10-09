@@ -70,7 +70,7 @@ export async function submitContactForm(
   // Notification à l'admin — ne doit jamais faire échouer la soumission du
   // formulaire si Resend est indisponible (le message est déjà en base).
   try {
-    const { error: emailError } = await sendContactMessageNotification({ name, email, message });
+    const { error: emailError } = await sendContactMessageNotification({ name, email, message, lang: isEn ? "en" : "fr" });
     if (emailError) {
       console.error("sendContactMessageNotification error:", emailError.message);
     }
