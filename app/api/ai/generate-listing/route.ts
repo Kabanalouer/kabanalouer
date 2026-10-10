@@ -4,7 +4,8 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Client créé à la demande : sans clé (aperçus Vercel), la compilation ne plante pas.
+const anthropicClient = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `Tu es un expert en marketing immobilier spécialisé dans la location de chalets au Québec.
 Tu crées des descriptions authentiques, évocatrices et vendeuses pour des propriétaires qui veulent louer leur chalet.
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       : "non précisés";
 
   try {
-    const message = await anthropic.messages.create({
+    const message = await anthropicClient().messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: [

@@ -10,8 +10,6 @@
 //   « Re: Votre message à Kabanalouer », dans sa langue
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-
 const FROM_ADDRESS = "formulaire@kabanalouer.ca";
 const INBOX = "info@kabanalouer.ca";
 
@@ -32,6 +30,7 @@ export async function sendContactMessageNotification({
   message: string;
   lang?: "fr" | "en";
 }): Promise<{ error: Error | null }> {
+  const resend = new Resend(process.env.RESEND_API_KEY!);
   const { error } = await resend.emails.send({
     from: `"${displayName(name)} via Kabanalouer" <${FROM_ADDRESS}>`,
     to: [INBOX],

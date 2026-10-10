@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { translateField } from "@/lib/translateField";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Client créé à la demande : sans clé (aperçus Vercel), la compilation ne plante pas.
+const anthropicClient = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT =
   "Tu es un spécialiste en rédaction de présentation pour les propriétaires de chalet au Québec. " +
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
 
   const { firstName } = await request.json();
 
-  const message = await anthropic.messages.create({
+  const message = await anthropicClient().messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 300,
     system: SYSTEM_PROMPT,

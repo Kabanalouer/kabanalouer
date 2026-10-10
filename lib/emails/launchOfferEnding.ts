@@ -8,8 +8,6 @@ import { renderEmail } from "./renderEmail";
 import { formatLaunchOfferEnd, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 const ADMIN_EMAIL = "simon.authentik@gmail.com";
 
@@ -29,6 +27,7 @@ export async function sendLaunchOfferEndingNotification({ daysLeft }: { daysLeft
     footerNote: "Notification automatique envoyée 7 jours avant la fin de l’offre.",
   });
 
+  const resend = new Resend(process.env.RESEND_API_KEY!);
   const { error } = await resend.emails.send({
     from: FROM,
     to: [ADMIN_EMAIL],
