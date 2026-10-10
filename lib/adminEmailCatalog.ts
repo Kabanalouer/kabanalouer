@@ -33,6 +33,9 @@ export type CatalogEmail = {
   testable: boolean;
   /** destinataire imposé dans le code (notifications internes) */
   fixedRecipient?: string;
+  /** Objet des courriels dont le texte n'est pas modifiable dans l'admin
+   *  (les autres viennent de lib/emailTemplates, version modifiée comprise) */
+  subject?: { fr: string; en?: string };
 };
 
 export const MECHANISM_LABELS: Record<EmailMechanism, string> = {
@@ -215,14 +218,15 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   },
 
   // ── Connexion et compte (Supabase) ──
-  { id: "auth-signup", category: "compte", group: "Compte", name: "Confirmation d’inscription", when: "À l’inscription par courriel (/signup).", mechanism: "event", testable: false },
-  { id: "auth-recovery", category: "compte", group: "Compte", name: "Mot de passe oublié", when: "Sur /login → « Mot de passe oublié ? ».", mechanism: "event", testable: false },
-  { id: "auth-magiclink", category: "compte", group: "Compte", name: "Lien de connexion", when: "Sur /login → « Recevoir un lien de connexion ».", mechanism: "event", testable: false },
+  { id: "auth-signup", category: "compte", group: "Compte", name: "Confirmation d’inscription", subject: { fr: "Confirme ton compte Kabanalouer", en: "Confirm your Kabanalouer account" }, when: "À l’inscription par courriel (/signup).", mechanism: "event", testable: false },
+  { id: "auth-recovery", category: "compte", group: "Compte", name: "Mot de passe oublié", subject: { fr: "Réinitialise ton mot de passe Kabanalouer", en: "Reset your Kabanalouer password" }, when: "Sur /login → « Mot de passe oublié ? ».", mechanism: "event", testable: false },
+  { id: "auth-magiclink", category: "compte", group: "Compte", name: "Lien de connexion", subject: { fr: "Ton lien de connexion Kabanalouer", en: "Your Kabanalouer sign-in link" }, when: "Sur /login → « Recevoir un lien de connexion ».", mechanism: "event", testable: false },
 
   // ── Interne ──
   {
     id: "contact-notification", category: "interne", group: "Équipe",
     name: "Nouveau message de contact",
+    subject: { fr: "Votre message à Kabanalouer", en: "Your message to Kabanalouer" },
     when: "Dès qu’un visiteur envoie le formulaire /contact.",
     conditions: "En texte brut, « Répondre » écrit directement au visiteur depuis info@.",
     mechanism: "event", testable: true, fixedRecipient: "info@kabanalouer.ca",
@@ -230,12 +234,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   {
     id: "launch-offer-ending", category: "interne", group: "Équipe",
     name: "Fin de l’offre de lancement dans 7 jours",
+    subject: { fr: "L’offre de lancement se termine le {date}" },
     when: "Le jour où il reste 7 jours à l’offre de lancement.",
     mechanism: "daily", dailyAt: "11 h", testable: true, fixedRecipient: "simon.authentik@gmail.com",
   },
   {
     id: "import-notification", category: "interne", group: "Équipe",
     name: "Import d’annonce (pour info)",
+    subject: { fr: "Nouvelle annonce importée — {titreChalet}" },
     when: "Dès qu’un proprio importe une annonce Airbnb.",
     mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
   },

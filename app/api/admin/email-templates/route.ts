@@ -41,11 +41,20 @@ export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
 
   if (!id) {
-    const { data, error } = await admin.from("email_templates").select("email_id, lang");
+    const { data, error } = await admin.from("email_templates").select("email_id, lang, subject");
     if (error) return NextResponse.json({ error: "Erreur de lecture." }, { status: 500 });
     const customized: Record<string, Lang[]> = {};
-    for (const row of data ?? []) (customized[row.email_id] ??= []).push(row.lang as Lang);
-    return NextResponse.json({ editable: Object.keys(EMAIL_TEMPLATES), customized });
+    // Objet réellement envoyé : version modifiée si elle existe, sinon texte par défaut.
+    const subjects: Record<string, Record<Lang, string>> = Object.fromEntries(
+      Object.values(EMAIL_TEMPLATES).map((d) => [d.id, { fr: d.defaults.fr.subject, en: d.defaults.en.subject }]),
+    );
+    for (const row of data ?? []) {
+      const lang = parseLang(row.lang);
+      if (!lang) continue;
+      (customized[row.email_id] ??= []).push(lang);
+      if (subjects[row.email_id] && typeof row.subject === "string" && row.subject.trim()) subjects[row.email_id][lang] = row.subject;
+    }
+    return NextResponse.json({ editable: Object.keys(EMAIL_TEMPLATES), customized, subjects });
   }
 
   const def = EMAIL_TEMPLATES[id];
