@@ -1033,7 +1033,38 @@ Tout en ligne (commits `887b12e` → `62065b2`).
 - **GitHub a renvoyé « Internal Server Error »** au push pendant ~4 minutes : le commit reste local, réessayer (boucle de 10 essais espacés d'une minute) plutôt que de modifier quoi que ce soit.
 - **Garde-fou Claude Code** : la suppression d'un dossier entier (`git rm -r`) a été bloquée par le classificateur ; Simon l'a lancée lui-même avec `! git rm -r -q "…"` (attention au point final tapé par erreur).
 
+### Session du 2026-10-09 → 2026-10-10 — Messagerie, vie privée du fondateur, courriels, boucle d'amélioration continue, consentement (Loi 25)
+
+Tout en ligne (commits `5f5835f` → `81ff36c`). Détails techniques dans les sections 9 (Notifications, Analytics) et le tableau des scripts SQL.
+
+1. **Messagerie** : présentation de l'autre personne dans l'en-tête fixe (bio coupée à 2 lignes, « Lire la suite » au bout de la 2ᵉ ligne), carte du chalet avec photo en tête de conversation, alignée à gauche (« Demande pour » côté proprio, « {prénom} est proprio de » côté voyageur).
+2. **Nom du fondateur** retiré du front (règle en section 4) : plus de signature sur À propos ; le nom reste seulement dans les données structurées. Signature Gmail de info@ proposée (modèles A/B/C, « L'équipe Kabanalouer »).
+3. **Formulaire de contact** : avis en texte brut envoyé à info@, Reply-To = le visiteur, expéditeur « {nom} via Kabanalouer » — « Répondre » dans Gmail part de info@ sans design à casser.
+4. **Courriels** : relance « le proprio n'a pas encore répondu » (cron horaire, 48 h, 3 chalets semblables) ; Admin → Séquences courriel refaite (actif/en pause, quand, règles, mode d'envoi, objet, groupes, filtre) ; vignettes JPG pour Outlook (`/api/email-photo`).
+5. **Boucle d'amélioration continue** : Admin → Santé de la plateforme (indicateurs 7/30/90 j, à surveiller, tunnels proprio et voyageur avec compteurs anonymes sans témoin) ; suivi des erreurs maison (Admin → Erreurs, alertes courriel, pages d'erreur) ; rapport du lundi rédigé par Claude (Admin → Rapports, courriel, prompts à copier dans Claude Code qui ne contiennent qu'une référence) ; retours « Une idée ou un problème ? » des proprios et voyageurs connectés (carte du tableau de bord, menu de compte, pied de page ; triés par Claude ; Admin → Retours des utilisateurs).
+6. **Aperçus Vercel réparés** : clients Resend/Anthropic créés à la demande + 3 clés Supabase pour Preview (mémoire `project_vercel_previews_broken`).
+7. **Vie privée (Loi 25)** : bandeau de consentement compact (Google Analytics seulement après « Accepter », « Gérer mes cookies » en pied de page) ; politique de confidentialité complétée (sous-traitants, données, conservation appliquée chaque nuit) ; info@ comme adresse du responsable de la protection des renseignements personnels (sans nom) et des conditions.
+8. **GA4** : événements de conversion (`generate_lead`, `contact_form_submit`, `sign_up`, `listing_create`, `listing_publish`, `begin_checkout`).
+
+**Leçons de la session**
+- **Revue de sécurité automatique après chaque push** : elle a trouvé de vrais problèmes à 6 reprises (compteurs sans limite, mémoire non bornée, injection de consignes dans le rapport IA et dans les prompts à copier, filtre contournable). Toujours la traiter avant de passer à autre chose.
+- **Tout texte saisi par un utilisateur et transmis à une IA** (messages d'erreur, retours, titres) est non fiable : balises `<donnees>` + `lib/untrustedText.ts`, et jamais recopié tel quel dans un prompt destiné à Claude Code.
+- **Écritures Supabase (DDL) refusées par le classificateur** : donner le SQL à Simon, et faire en sorte que le code tolère l'absence de la table (garde-fou anti-doublon, message « pas encore activé » dans l'admin) en attendant.
+- **Secrets** : le classificateur interdit de lire des clés pour les recopier ; passer par un script que Simon lance lui-même (`!`), qui n'affiche jamais les valeurs. Vercel refuse le type « Secret » pour les variables `NEXT_PUBLIC_` (`--type config`).
+- **Réécrire un fichier JSON de traductions avec `json.dumps`** reformate tout le fichier : insérer les nouvelles clés en texte pour garder un diff minimal.
+
 ## 14. Points en suspens
+
+### À faire / à vérifier après la session du 2026-10-10
+
+- **GA4 — événements clés** : après un parcours test (bandeau accepté), marquer `generate_lead`, `sign_up`, `listing_create`, `listing_publish`, `contact_form_submit` comme événements clés (Admin GA4 → Événements). Aucun de ces événements n'a été vu en direct.
+- **Parcours test complet** recommandé par le premier rapport du lundi : vérifier que chaque étape des tunnels augmente de 1 (Santé de la plateforme). Les 3 premiers comptes du 2026-10-10 (`t_visit`, `h_landing`, `h_cta`) viennent des tests de Claude.
+- **Retours des utilisateurs** : parcours connecté jamais testé de bout en bout (proprio et voyageur) — vérifier les deux courriels (info@ puis analyse).
+- **Erreur de test** « Test du suivi des erreurs — à ignorer » dans Admin → Erreurs : à marquer « Ignorer ».
+- **Pixel Meta** : à brancher dans la catégorie `publicite` du consentement quand Simon aura son identifiant (voir section 9, Analytics) — ajouter alors la case Publicité au bandeau et mettre à jour la politique.
+- **Correctifs automatiques sur GitHub** : abandonnés au profit des prompts à copier depuis le rapport du lundi et Admin → Retours ; à reconsidérer plus tard (aperçus Vercel maintenant fonctionnels).
+- **Courriel « vers Simon »** : les notifications internes vont encore à `simon.authentik@gmail.com` (adresse codée en dur dans `lib/emails/*` et `lib/adminEmailCatalog.ts`).
+
 
 ### À faire / à vérifier après la session du 2026-10-07
 
