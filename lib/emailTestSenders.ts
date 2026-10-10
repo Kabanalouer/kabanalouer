@@ -18,6 +18,7 @@ import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotif
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
 import { sendErrorAlert } from "@/lib/emails/errorAlert";
+import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -114,6 +115,13 @@ export function emailTestSenders(): Record<string, Sender> {
 
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", message: "Ceci est un message de test envoyé depuis l’admin.",
+    }),
+    "weekly-report": () => sendWeeklyReportEmail({
+      resume: "Exemple de rapport (test depuis l’admin, sans appel à l’IA) : la semaine a été calme, 3 demandes et toutes ont reçu une réponse.",
+      problemes: [{ titre: "Une demande sur trois attend plus de 24 h", preuve: "2 réponses sur 3 en moins de 24 h ; délai médian 3,2 h.", gravite: "moyenne" }],
+      recommandations: [{ titre: "Rappeler aux proprios l’importance de répondre vite", pourquoi: "La réponse rapide est le premier facteur de confiance des voyageurs.", action: "Ajouter un texto de rappel 12 h après une demande sans réponse.", impact: "moyen", effort: "petit" }],
+      erreurs: [{ message: "Exemple : Cannot read properties of undefined (reading 'photos')", diagnostic: "Une annonce sans photo fait planter la carte du chalet.", action: "corriger" }],
+      suivi: "",
     }),
     "error-alert": () => sendErrorAlert({ source: "client", message: "Exemple : Cannot read properties of undefined (reading 'photos')", path: LISTING_PATH }),
     "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),

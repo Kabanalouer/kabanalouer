@@ -12,7 +12,7 @@ import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 export type EmailCategory = "proprio" | "voyageur" | "compte" | "interne";
 
 /** Comment l'envoi est déclenché */
-export type EmailMechanism = "event" | "minute" | "hourly" | "daily";
+export type EmailMechanism = "event" | "minute" | "hourly" | "daily" | "weekly";
 
 export type CatalogEmail = {
   id: string;
@@ -25,7 +25,7 @@ export type CatalogEmail = {
   /** Règles qui empêchent ou limitent l'envoi */
   conditions?: string;
   mechanism: EmailMechanism;
-  /** Heure de la tâche quotidienne (heure du Québec) */
+  /** Heure de la tâche quotidienne ou hebdomadaire (heure du Québec) */
   dailyAt?: string;
   paused?: boolean;
   pausedReason?: string;
@@ -43,6 +43,7 @@ export const MECHANISM_LABELS: Record<EmailMechanism, string> = {
   minute: "Vérifié chaque minute",
   hourly: "Vérifié toutes les heures",
   daily: "Tâche quotidienne",
+  weekly: "Tâche hebdomadaire",
 };
 
 export const CATEGORY_ORDER: EmailCategory[] = ["proprio", "voyageur", "compte", "interne"];
@@ -230,6 +231,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "Dès qu’un visiteur envoie le formulaire /contact.",
     conditions: "En texte brut, « Répondre » écrit directement au visiteur depuis info@.",
     mechanism: "event", testable: true, fixedRecipient: "info@kabanalouer.ca",
+  },
+  {
+    id: "weekly-report", category: "interne", group: "Équipe",
+    name: "Rapport du lundi",
+    subject: { fr: "Rapport du lundi — {date}" },
+    when: "Chaque lundi vers 7 h (6 h en hiver), ou avec « Générer un rapport maintenant » dans Admin → Rapports.",
+    conditions: "Rédigé par Claude à partir des chiffres de la semaine et des erreurs ouvertes. Le test envoie un rapport d’exemple, sans appeler l’IA.",
+    mechanism: "weekly", dailyAt: "7 h le lundi", testable: true, fixedRecipient: "simon.authentik@gmail.com",
   },
   {
     id: "error-alert", category: "interne", group: "Équipe",

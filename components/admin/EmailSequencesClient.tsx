@@ -25,7 +25,7 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 function timingLabel(email: CatalogEmail): string {
   const base = MECHANISM_LABELS[email.mechanism];
-  return email.mechanism === "daily" && email.dailyAt ? `${base}, vers ${email.dailyAt}` : base;
+  return (email.mechanism === "daily" || email.mechanism === "weekly") && email.dailyAt ? `${base}, vers ${email.dailyAt}` : base;
 }
 
 // Objet tel qu'écrit dans le gabarit : les repères {prenom}… sont remplis à l'envoi.

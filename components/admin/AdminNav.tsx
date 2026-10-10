@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { label: "Vue d'ensemble", href: "/admin", exact: true },
   { label: "Santé de la plateforme", href: "/admin/sante" },
   { label: "Erreurs", href: "/admin/erreurs" },
+  { label: "Rapports du lundi", href: "/admin/rapports" },
   { label: "Annonces", href: "/admin/listings" },
   { label: "Imports en attente", href: "/admin/imports" },
   { label: "Propriétaires", href: "/admin/hosts" },
