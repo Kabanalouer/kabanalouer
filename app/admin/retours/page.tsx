@@ -5,7 +5,7 @@ import { buildFeedbackPrompt } from "@/lib/feedbackPrompt";
 import type { FeedbackTriage } from "@/lib/feedback";
 import { setFeedbackStatus } from "./actions";
 
-export const metadata = { title: "Retours des proprios — Administration" };
+export const metadata = { title: "Retours des utilisateurs — Administration" };
 export const dynamic = "force-dynamic";
 
 type Row = {
@@ -16,7 +16,7 @@ type Row = {
   page: string | null;
   triage: FeedbackTriage | null;
   status: "nouveau" | "en_cours" | "regle" | "ferme";
-  user: { name: string | null; email: string | null } | null;
+  user: { name: string | null; email: string | null; role: string | null } | null;
 };
 
 const TABS = [
@@ -32,7 +32,7 @@ async function load(): Promise<{ rows: Row[]; error: boolean }> {
   const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const { data, error } = await admin
     .from("feedback")
-    .select("id, created_at, kind, message, page, triage, status, user:user_id(name, email)")
+    .select("id, created_at, kind, message, page, triage, status, user:user_id(name, email, role)")
     .order("created_at", { ascending: false })
     .limit(300);
   const rows = (data ?? []).map((r) => ({ ...r, user: Array.isArray(r.user) ? r.user[0] ?? null : r.user })) as Row[];
@@ -65,10 +65,10 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">Retours des proprios</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">Retours des utilisateurs</h1>
       <p className="mt-2 text-base text-charcoal-500">
-        Ce que les proprios écrivent avec « Une idée ou un problème ? » dans leur tableau de bord, trié par Claude. Le message
-        arrive aussi dans info@ : réponds au proprio depuis ce courriel-là.
+        Ce que les proprios et les voyageurs connectés écrivent avec « Une idée ou un problème ? » (tableau de bord ou menu de
+        compte), trié par Claude. Le message arrive aussi dans info@ : réponds depuis ce courriel-là.
       </p>
 
       {error ? (
@@ -99,12 +99,13 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
                 <li key={r.id} className="rounded-2xl border border-[#ebebeb] bg-white p-5">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="rounded-full bg-[#f5f6ec] px-2.5 py-0.5 font-semibold text-primary">{KIND[r.kind]}</span>
+                    <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 font-semibold text-charcoal-600">{r.user?.role === "host" ? "Proprio" : "Voyageur"}</span>
                     {r.triage && (
                       <span className={`rounded-full px-2.5 py-0.5 font-semibold ${PRIORITY[r.triage.priorite]}`}>Priorité {r.triage.priorite}</span>
                     )}
                     <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 font-semibold text-charcoal-600">{STATUS[r.status]}</span>
                     <span className="text-charcoal-400">
-                      n° {r.id} · {date(r.created_at)} · {r.user?.name ?? "Proprio"}
+                      n° {r.id} · {date(r.created_at)} · {r.user?.name ?? "Utilisateur"}
                       {r.user?.email ? ` (${r.user.email})` : ""}
                       {r.page ? ` · ${r.page}` : ""}
                     </span>

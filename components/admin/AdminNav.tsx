@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { label: "Santé de la plateforme", href: "/admin/sante" },
   { label: "Erreurs", href: "/admin/erreurs" },
   { label: "Rapports du lundi", href: "/admin/rapports" },
-  { label: "Retours des proprios", href: "/admin/retours" },
+  { label: "Retours des utilisateurs", href: "/admin/retours" },
   { label: "Annonces", href: "/admin/listings" },
   { label: "Imports en attente", href: "/admin/imports" },
   { label: "Propriétaires", href: "/admin/hosts" },

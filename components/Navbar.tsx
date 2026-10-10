@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import FeedbackModal from "@/components/FeedbackModal";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
@@ -111,6 +112,7 @@ export default function Navbar() {
   const [unansweredReviewsCount, setUnansweredReviewsCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   // Liens thématiques du menu mobile, masqués tant que la page a trop peu de
   // chalets (voir lib/themeLinks.ts) — même règle que le pied de page.
   const [themeLinks, setThemeLinks] = useState({ regions: false, deals: false });
@@ -282,6 +284,7 @@ export default function Navbar() {
 
     return (
       <nav className={navWrap}>
+        <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
         <div className={`${navInner} h-20 flex items-stretch`}>
 
           {/* Logo — icône seule sur tablette (768-1023 px) : les 4 onglets n'entrent pas avec le logo complet */}
@@ -349,7 +352,13 @@ export default function Navbar() {
                     <DropdownLink href={lp("/dashboard/profile")}>{t("myProfile")}</DropdownLink>
                     <DropdownLink href={lp("/dashboard/invoices")}>{t("myInvoices")}</DropdownLink>
                     <DropdownLink href={lp("/dashboard/listings/new")}>{t("createListing")}</DropdownLink>
-                    <DropdownLink href={lp("/dashboard?retour=1")}>{t("feedback")}</DropdownLink>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); setFeedbackOpen(true); }}
+                      className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
+                    >
+                      {t("feedback")}
+                    </button>
                     <button
                       onClick={enterVoyageurMode}
                       className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"
@@ -378,6 +387,7 @@ export default function Navbar() {
   if (user && profile) {
     return (
       <nav className={navWrap}>
+        <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
         <div className={`${navInner} h-20 flex items-center`}>
 
           {/* Left */}
@@ -446,6 +456,13 @@ export default function Navbar() {
                       <CountBadge count={unreadCount} label={t("unreadMessages", { count: unreadCount })} />
                     </Link>
                     <DropdownLink href={lp("/devenir-hote")}>{t("registerCabin")}</DropdownLink>
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); setFeedbackOpen(true); }}
+                      className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-charcoal-700 hover:bg-charcoal-50 transition-colors"
+                    >
+                      {t("feedback")}
+                    </button>
                     {isHost && voyageurMode && (
                       <button
                         onClick={exitVoyageurMode}

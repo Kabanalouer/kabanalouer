@@ -122,7 +122,7 @@ export function emailTestSenders(): Record<string, Sender> {
       message: "Exemple de retour (test depuis l’admin) : je ne trouve pas comment ajouter une deuxième période de prix pour l’été.",
     }),
     "feedback-analysis": () => sendFeedbackAnalysis({
-      id: 0, name: "Marc Test", kind: "probleme", page: "/dashboard/listings",
+      id: 0, name: "Marc Test", role: "proprio", kind: "probleme", page: "/dashboard/listings",
       message: "Exemple de retour (test depuis l’admin) : je ne trouve pas comment ajouter une deuxième période de prix pour l’été.",
       triage: {
         categorie: "question", priorite: "moyenne",

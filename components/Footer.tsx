@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
+import FooterFeedbackLink from "./FooterFeedbackLink";
 import FooterLangToggle from "./FooterLangToggle";
 import { localePath } from "@/lib/localePath";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
@@ -106,6 +107,7 @@ export default async function Footer() {
             <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/a-propos", locale)} label={t("legal.about")} />
               <FooterLink href={localePath("/contact", locale)} label={t("legal.contact")} />
+              <FooterFeedbackLink label={t("legal.feedback")} contactHref={localePath("/contact", locale)} />
             </ul>
           </div>
         </div>
