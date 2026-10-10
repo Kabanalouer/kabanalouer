@@ -10,6 +10,7 @@ export function renderEmail({
   secondaryButtonLabel,
   secondaryButtonUrl,
   footerNote,
+  extraHtml,
 }: {
   lang: "fr" | "en";
   greeting?: string;
@@ -20,6 +21,9 @@ export function renderEmail({
   secondaryButtonLabel?: string;
   secondaryButtonUrl?: string;
   footerNote: string;
+  // Bloc construit par le code (cartes de chalets…) inséré entre le texte et
+  // le bouton — hors du <p> du texte, qui ne peut pas contenir de tableau.
+  extraHtml?: string;
 }) {
   return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -42,9 +46,13 @@ export function renderEmail({
               <td style="padding:16px 32px 0 32px;">
                 ${greeting ? `<p style="margin:0 0 12px 0;font-size:16px;line-height:1.6;color:#484848;">${greeting}</p>` : ""}
                 <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.3;color:#222222;">${heading}</h1>
-                <p style="margin:0 0 28px 0;font-size:16px;line-height:1.6;color:#484848;">${body}</p>
+                <p style="margin:0 0 ${extraHtml ? "20px" : "28px"} 0;font-size:16px;line-height:1.6;color:#484848;">${body}</p>
               </td>
             </tr>
+            ${extraHtml ? `
+            <tr>
+              <td style="padding:0 32px 16px 32px;">${extraHtml}</td>
+            </tr>` : ""}
             <tr>
               <td style="padding:0 32px;text-align:center;">
                 <a href="${buttonUrl}" style="display:inline-block;background-color:#636e40;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:14px 32px;border-radius:9999px;">${buttonLabel}</a>

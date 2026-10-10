@@ -11,6 +11,9 @@ import { sendWinbackReminderEmail } from "@/lib/emails/winbackReminder";
 import { sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
 import { sendReviewRequestEmail, sendStayReviewRequestEmail } from "@/lib/emails/reviewRequest";
 import { sendReviewRepliedEmail } from "@/lib/emails/reviewReplied";
+import { sendNoReplyNudgeEmail } from "@/lib/emails/noReplyNudge";
+import { firstPhotoUrl } from "@/lib/photo";
+import { buildListingPath } from "@/lib/listingUrl";
 import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotification";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
@@ -75,6 +78,26 @@ export function emailTestSenders(): Record<string, Sender> {
       previewText: lang === "fr" ? "Bonjour Emma, oui le spa est disponible à ces dates !" : "Hi Emma, yes the hot tub is available on those dates!",
       recipientIsHost: false, listingId: LISTING_ID, otherUserId: HOST_ID,
     }),
+    "no-reply-nudge": async (to, lang) => {
+      // 3 vrais chalets publiés (photos réelles) — liens et prix tels quels
+      const { data } = await admin.from("listings")
+        .select("title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, listing_number, custom_slug")
+        .eq("is_published", true).eq("region", "Laurentides").limit(3);
+      const suggestions = (data ?? []).map((l) => ({
+        title: ((lang === "en" && l.title_en) || l.title) ?? "",
+        city: l.city, capacity: l.capacity, bedrooms: l.bedrooms,
+        price: l.price_low, priceOnRequest: !!l.price_on_request,
+        photoUrl: firstPhotoUrl(l.photos) ?? null,
+        path: buildListingPath(l, lang) ?? LISTING_PATH,
+      }));
+      return sendNoReplyNudgeEmail({
+        email: to, preferredLanguage: lang, firstName: "Emma", hostFirstName: "Marc", listingTitle: TITLE,
+        place: lang === "en" ? "in Mille-Isles" : "à Mille-Isles",
+        placePath: lang === "en" ? "/en/cabins/laurentians/mille-isles" : "/chalets/laurentides/mille-isles",
+        conversationPath: `${prefix(lang)}/messages?listing=${LISTING_ID}&with=${HOST_ID}`,
+        suggestions,
+      });
+    },
     // Liens d'exemple : aucun jeton réel n'est créé pour un test
     "review-request": (to, lang) => sendReviewRequestEmail({
       ...base(to, lang), listingTitle: TITLE,
