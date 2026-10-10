@@ -34,6 +34,7 @@ type Review = { rating: number | null; created_at: string };
 type ReviewRequest = { prompted_at: string | null };
 type Nudge = { status: string; created_at: string };
 type FunnelCount = { day: string; step: string; count: number };
+type ErrorGroupRow = { message: string; source: string; count: number; last_seen_at: string; resolved_at: string | null };
 
 export type FunnelRow = { label: string; count: number; note?: string };
 
@@ -86,6 +87,8 @@ export type PlatformHealth = {
     host: FunnelRow[];
   };
   watch: {
+    /** null : table error_groups absente (supabase/add-error-groups.sql pas encore exécuté) */
+    openErrors: { message: string; source: string; count: number; lastSeenAt: string }[] | null;
     unanswered: (Conversation & { ageHours: number })[];
     abandonedDrafts: { id: string; title: string; hostName: string; ageDays: number }[];
     quietListings: { id: string; title: string; hostName: string; publishedDays: number }[];
@@ -110,6 +113,13 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
     fetchAll<Nudge>(admin, "no_reply_nudges", "status, created_at").catch(() => [] as Nudge[]),
   ]);
   const funnelCounts = await fetchAll<FunnelCount>(admin, "funnel_counts", "day, step, count").catch(() => null);
+  const errorGroups = await fetchAll<ErrorGroupRow>(admin, "error_groups", "message, source, count, last_seen_at, resolved_at").catch(() => null);
+  const openErrors = errorGroups
+    ? errorGroups
+        .filter((e) => !e.resolved_at)
+        .sort((a, b) => b.last_seen_at.localeCompare(a.last_seen_at))
+        .map((e) => ({ message: e.message, source: e.source, count: e.count, lastSeenAt: e.last_seen_at }))
+    : null;
 
   const userById = new Map(users.map((u) => [u.id, u]));
   const listingById = new Map(listings.map((l) => [l.id, l]));
@@ -259,6 +269,6 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
       averageRating,
     },
     funnels,
-    watch: { unanswered, abandonedDrafts, quietListings },
+    watch: { openErrors, unanswered, abandonedDrafts, quietListings },
   };
 }

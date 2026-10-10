@@ -137,7 +137,21 @@ export default async function AdminHealthPage({ searchParams }: { searchParams: 
       </div>
 
       <Section title="À surveiller" description="État actuel, quelle que soit la période choisie.">
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <WatchList
+            title="Erreurs à régler"
+            empty={watch.openErrors === null ? "Suivi des erreurs pas encore activé." : "Aucune erreur à régler."}
+            items={watch.openErrors ?? []}
+            render={(e) => (
+              <>
+                <p className="font-medium text-charcoal-800 break-words">{e.message.slice(0, 140)}</p>
+                <p className="text-charcoal-500">
+                  {e.source === "client" ? "Navigateur" : "Serveur"} · {e.count} fois ·{" "}
+                  <Link href="/admin/erreurs" className="text-primary font-medium">voir</Link>
+                </p>
+              </>
+            )}
+          />
           <WatchList
             title="Demandes sans réponse"
             empty="Tous les proprios ont répondu aux demandes de plus de 24 h."

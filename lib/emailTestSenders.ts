@@ -17,6 +17,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotification";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
+import { sendErrorAlert } from "@/lib/emails/errorAlert";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -114,6 +115,7 @@ export function emailTestSenders(): Record<string, Sender> {
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", message: "Ceci est un message de test envoyé depuis l’admin.",
     }),
+    "error-alert": () => sendErrorAlert({ source: "client", message: "Exemple : Cannot read properties of undefined (reading 'photos')", path: LISTING_PATH }),
     "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
   };

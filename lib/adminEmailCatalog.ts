@@ -232,6 +232,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true, fixedRecipient: "info@kabanalouer.ca",
   },
   {
+    id: "error-alert", category: "interne", group: "Équipe",
+    name: "Nouvelle erreur sur le site",
+    subject: { fr: "Nouvelle erreur sur Kabanalouer : {message}" },
+    when: "À la première apparition d’une erreur, ou quand une erreur marquée « Réglée » revient.",
+    conditions: "Au plus 10 alertes par heure. Jamais pour une erreur ignorée. Détails dans Admin → Erreurs.",
+    mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+  },
+  {
     id: "launch-offer-ending", category: "interne", group: "Équipe",
     name: "Fin de l’offre de lancement dans 7 jours",
     subject: { fr: "L’offre de lancement se termine le {date}" },
