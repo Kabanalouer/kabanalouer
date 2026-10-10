@@ -192,9 +192,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "48 h après le premier message du voyageur, si le proprio n’a rien répondu.",
     conditions: "Une seule fois par conversation. Propose 3 chalets de la même ville (sinon de la même région), jamais du même proprio ni déjà contactés — pas d’envoi s’il n’y en a aucun. Désactivable dans le profil.",
     mechanism: "hourly", testable: true,
-    // Retirer ces deux lignes une fois supabase/add-no-reply-nudges.sql exécuté :
-    // sans la table no_reply_nudges, le cron n'envoie rien (garde-fou anti-doublon).
-    paused: true, pausedReason: "En attente du script SQL supabase/add-no-reply-nudges.sql (table anti-doublon) — le cron n’envoie rien tant qu’il n’est pas exécuté.",
   },
   {
     id: "review-request", category: "voyageur", group: "Avis",
