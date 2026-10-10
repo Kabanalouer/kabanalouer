@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { useActionState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { submitContactForm, type ContactFormState } from "./actions";
 import AutoTextarea from "@/components/AutoTextarea";
@@ -14,6 +15,10 @@ export default function ContactForm() {
   const t = useTranslations("contact");
   const locale = useLocale();
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
+
+  useEffect(() => {
+    if (state.status === "success") trackEvent("contact_form_submit");
+  }, [state.status]);
 
   if (state.status === "success") {
     return (

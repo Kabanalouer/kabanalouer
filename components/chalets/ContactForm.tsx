@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { trackFunnelStep } from "@/lib/funnel";
 import Link from "next/link";
@@ -262,6 +263,7 @@ export default function ContactForm({
     }
     clearPendingQuoteDraft(listingId);
     trackFunnelStep("t_request_sent");
+    trackEvent("generate_lead", { lead_type: "demande_devis", listing_id: listingId });
     setSent(true);
   };
 

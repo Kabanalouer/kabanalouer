@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
@@ -60,6 +61,7 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
   // compléter et le publier lui-même.
   useEffect(() => {
     if (state.status !== "success" && state.status !== "duplicate") return;
+    if (state.status === "success") trackEvent("listing_create", { method: "import_airbnb" });
     clearPendingAirbnbImport();
     const flag = state.status === "duplicate" ? "duplicate" : "1";
     router.push(localePath(`/dashboard/listings/${state.listingId}/edit?imported=${flag}`, locale));
@@ -131,7 +133,7 @@ export default function NewListingStepZero({ initialImportUrl = null }: { initia
               <span>{t("manualFeature3")}</span>
             </li>
           </ul>
-          <form action={createBlankListing}>
+          <form action={createBlankListing} onSubmit={() => trackEvent("listing_create", { method: "manuel" })}>
             <ManualSubmitButton label={t("manualCta")} pendingLabel={t("manualPending")} />
           </form>
         </div>

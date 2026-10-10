@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -243,6 +244,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       turnstileRef.current?.reset();
       return;
     }
+    trackEvent("sign_up", { method: "courriel", role: "traveler", context: "demande_devis" });
     // Confirmation par courriel requise (Send Email Hook, voir CLAUDE.md) —
     // pas de session ici, donc pas d'onAuthenticated : l'utilisateur doit
     // confirmer puis revenir se connecter avant de pouvoir envoyer sa demande.

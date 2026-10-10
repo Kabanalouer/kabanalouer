@@ -1,5 +1,7 @@
 "use client";
 
+import { trackFunnelStep } from "@/lib/funnel";
+import { trackEvent } from "@/lib/analytics";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -133,6 +135,8 @@ function ContactModal({
       return;
     }
 
+    trackFunnelStep("t_request_sent");
+    trackEvent("generate_lead", { lead_type: "contact_proprio", listing_id: listingId });
     setSent(true);
   };
 

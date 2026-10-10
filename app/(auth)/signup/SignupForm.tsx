@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { Suspense, useRef, useState } from "react";
 import { safeNextPath } from "@/lib/safeNextPath";
 import Link from "next/link";
@@ -95,10 +96,12 @@ function SignupForm() {
       turnstileRef.current?.reset();
       return;
     }
+    trackEvent("sign_up", { method: "courriel", role });
     setSuccess(true);
   };
 
   const handleGoogleSignup = async () => {
+    trackEvent("sign_up_start", { method: "google", role });
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl() },

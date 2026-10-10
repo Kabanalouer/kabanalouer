@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -604,6 +605,7 @@ export default function EditListingForm({
     setSubExpiresAt(expires.toISOString());
     setPublishLoading(false);
     setJustPublished(true);
+    trackEvent("listing_publish", { offer: "gratuite", listing_id: listingId });
     setActiveSection(BOOSTS_ENABLED ? "vedette" : "publier");
     // Met à jour l'en-tête de la page (pastille « En ligne ») sans perdre l'état du formulaire.
     router.refresh();
@@ -640,8 +642,10 @@ export default function EditListingForm({
       return;
     }
     const { url } = await res.json();
-    if (url) window.location.href = url;
-    else {
+    if (url) {
+      trackEvent("begin_checkout", { listing_id: listingId });
+      window.location.href = url;
+    } else {
       setPublishError(tEdit("stripeUrlMissing"));
       setPublishLoading(false);
     }
