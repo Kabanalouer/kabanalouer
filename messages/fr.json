@@ -1517,7 +1517,7 @@
     "metaDesc": "Politique de confidentialité de Kabanalouer — comment nous collectons, utilisons et protégeons vos données personnelles, conformément à la Loi 25 du Québec.",
     "label": "Légal",
     "h1": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : mai 2026",
+    "updated": "Dernière mise à jour : octobre 2026",
     "tocTitle": "Table des matières",
     "toc1": "1. Responsable du traitement",
     "toc2": "2. Données collectées",
@@ -1565,8 +1565,8 @@
     "s4T1": "Supabase", "s4D1": "Base de données et authentification. Données stockées sur des serveurs AWS (région us-east-1). Politique : supabase.com/privacy",
     "s4T2": "Vercel", "s4D2": "Hébergement et déploiement de la plateforme. Logs d'accès conservés selon la politique de Vercel. Politique : vercel.com/legal/privacy-policy",
     "s4T3": "Stripe", "s4D3": "Traitement des paiements d'abonnement propriétaire. Stripe est certifié PCI-DSS. Politique : stripe.com/privacy",
-    "s4T4": "Google Analytics", "s4D4": "Analyse du trafic web (données agrégées et anonymisées). Adresses IP tronquées. Politique : policies.google.com/privacy",
-    "s4T5": "Anthropic (Claude AI)", "s4D5": "Génération automatique de description d'annonce (fonctionnalité optionnelle). Seul le contenu de l'annonce est transmis, sans données personnelles identifiantes. Politique : anthropic.com/privacy",
+    "s4T4": "Google Analytics", "s4D4": "Analyse du trafic web (données agrégées et anonymisées). Adresses IP tronquées. Seulement avec votre accord (voir section 7). Politique : policies.google.com/privacy",
+    "s4T5": "Anthropic (Claude AI)", "s4D5": "Aide à la rédaction (descriptions, titres, présentation), importation d'annonces et traduction des annonces ; tri automatisé des retours envoyés avec « Une idée ou un problème ? » (le message est transmis, sans votre nom ni votre courriel). Les données transmises par l'API ne servent pas à entraîner les modèles d'Anthropic. Politique : anthropic.com/legal/privacy",
     "s4P2": "En dehors de ces prestataires, nous ne partageons vos données avec aucun tiers, sauf obligation légale (réponse à une autorité compétente, ordonnance judiciaire).",
     "s5Title": "5. Vos droits (Loi 25)",
     "s5P1": "Conformément à la Loi 25 du Québec, vous disposez des droits suivants concernant vos renseignements personnels :",
@@ -1586,8 +1586,8 @@
     "s7Title": "7. Cookies et technologies similaires",
     "s7Intro": "Nous utilisons les types de cookies suivants :",
     "s7T1": "Cookies essentiels", "s7D1": "Nécessaires au fonctionnement de la plateforme (session d'authentification, préférences de navigation). Ne peuvent pas être désactivés.",
-    "s7T2": "Cookies analytiques", "s7D2": "Google Analytics pour comprendre l'utilisation de la plateforme. Ces cookies sont anonymisés et ne permettent pas de vous identifier personnellement.",
-    "s7P2": "Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur. La désactivation des cookies essentiels peut affecter le fonctionnement de la plateforme.",
+    "s7T2": "Témoins de mesure d'audience (avec votre accord)", "s7D2": "Google Analytics, pour comprendre comment la plateforme est utilisée. Désactivés par défaut : ils ne sont activés que si vous cliquez sur « Accepter » dans le bandeau affiché à votre première visite. Données conservées 14 mois.",
+    "s7P2": "Vous pouvez changer d'avis en tout temps avec le lien « Gérer mes cookies » au bas de chaque page : si vous retirez votre accord, les témoins de mesure d'audience sont effacés. Nous mesurons aussi, sans aucun témoin ni identifiant, le nombre de visites qui passent chaque étape du site (totaux anonymes par jour), et nous enregistrons les erreurs techniques pour les corriger. Kabanalouer n'utilise aucun témoin publicitaire pour l'instant ; s'il en ajoute, ils ne seront activés qu'avec votre accord.",
     "s8Title": "8. Sécurité des données",
     "s8P1": "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données personnelles contre tout accès non autorisé, divulgation, modification ou destruction :",
     "s8I1": "Transmission des données chiffrée via HTTPS (TLS 1.2+).",
@@ -1602,7 +1602,21 @@
     "s10P1": "Pour toute question, demande d'exercice de vos droits ou plainte concernant le traitement de vos données personnelles, contactez-nous à :",
     "s10P2": "Si vous estimez que vos droits ne sont pas respectés, vous pouvez également déposer une plainte auprès de la Commission d'accès à l'information du Québec (CAI).",
     "backTerms": "Conditions d'utilisation →",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "s2RegI5": "Numéro de cellulaire (facultatif, pour recevoir les notifications par texto)",
+    "s2RegI6": "Photo de profil et présentation (facultatives)",
+    "s2CatFeedback": "Retours et données techniques",
+    "s2FbI1": "Messages envoyés avec « Une idée ou un problème ? » et page concernée",
+    "s2FbI2": "Rapports d'erreurs techniques (page, type de navigateur, message d'erreur)",
+    "s3I8": "Traiter vos retours et signalements, corriger les erreurs techniques et améliorer la plateforme, notamment grâce à un tri automatisé de vos retours par l'IA d'Anthropic.",
+    "s4T6": "Google Cloud Translation",
+    "s4D6": "Traduction automatique français-anglais des messages et des avis. Seul le texte à traduire est transmis. Politique : policies.google.com/privacy",
+    "s4T7": "Resend",
+    "s4D7": "Envoi des courriels de la plateforme (confirmation de compte, notifications). Votre adresse courriel et le contenu du courriel sont transmis. Politique : resend.com/legal/privacy-policy",
+    "s4T8": "Twilio",
+    "s4D8": "Envoi des notifications par texto, seulement si vous les activez. Votre numéro de cellulaire et le texte du message sont transmis. Politique : twilio.com/legal/privacy",
+    "s6T6": "Retours et données techniques",
+    "s6D6": "Les retours que vous nous envoyez sont conservés 24 mois, les rapports d'erreurs techniques 12 mois après leur dernière apparition, et les totaux de visites anonymes 25 mois."
   },
   "translateButton": {
     "translate": "Traduire",
@@ -1658,5 +1672,13 @@
     "errorGeneric": "L'envoi n'a pas fonctionné. Réessayez dans un instant.",
     "errorTooMany": "Vous avez envoyé plusieurs messages aujourd'hui. Réessayez demain.",
     "errorEmpty": "Écrivez quelques mots avant d'envoyer."
+  },
+  "consent": {
+    "text": "Acceptez-vous les témoins (cookies) de mesure d'audience ?",
+    "learnMore": "En savoir plus",
+    "accept": "Accepter",
+    "refuse": "Refuser",
+    "manage": "Gérer mes cookies",
+    "label": "Témoins (cookies)"
   }
 }

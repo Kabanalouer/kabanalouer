@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import FooterFeedbackLink from "./FooterFeedbackLink";
+import ManageCookiesLink from "./ManageCookiesLink";
 import FooterLangToggle from "./FooterLangToggle";
 import { localePath } from "@/lib/localePath";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
@@ -33,8 +34,9 @@ function FooterLogo() {
 }
 
 export default async function Footer() {
-  const [t, locale, show] = await Promise.all([
+  const [t, tc, locale, show] = await Promise.all([
     getTranslations("footer"),
+    getTranslations("consent"),
     getLocale(),
     getThemeLinkVisibility(),
   ]);
@@ -131,6 +133,7 @@ export default async function Footer() {
               <Link href={localePath("/confidentialite", locale)} className="hover:text-charcoal-800 transition-colors">
                 {t("legal.privacy")}
               </Link>
+              <ManageCookiesLink label={tc("manage")} className="hover:text-charcoal-800 transition-colors" />
             </div>
           </div>
           <p className="text-xs text-charcoal-400">

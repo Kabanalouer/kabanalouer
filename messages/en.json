@@ -1517,7 +1517,7 @@
     "metaDesc": "Privacy policy of Kabanalouer — how we collect, use, and protect your personal data in compliance with Quebec's Law 25.",
     "label": "Legal",
     "h1": "Privacy Policy",
-    "updated": "Last updated: May 2026",
+    "updated": "Last updated: October 2026",
     "tocTitle": "Table of contents",
     "toc1": "1. Data controller",
     "toc2": "2. Data collected",
@@ -1565,8 +1565,8 @@
     "s4T1": "Supabase", "s4D1": "Database and authentication. Data stored on AWS servers (us-east-1 region). Policy: supabase.com/privacy",
     "s4T2": "Vercel", "s4D2": "Platform hosting and deployment. Access logs retained according to Vercel's policy. Policy: vercel.com/legal/privacy-policy",
     "s4T3": "Stripe", "s4D3": "Owner subscription payment processing. Stripe is PCI-DSS certified. Policy: stripe.com/privacy",
-    "s4T4": "Google Analytics", "s4D4": "Web traffic analysis (aggregated and anonymized data). IP addresses are truncated. Policy: policies.google.com/privacy",
-    "s4T5": "Anthropic (Claude AI)", "s4D5": "Automatic listing description generation (optional feature). Only listing content is transmitted, with no personally identifiable data. Policy: anthropic.com/privacy",
+    "s4T4": "Google Analytics", "s4D4": "Web traffic analysis (aggregated and anonymized data). IP addresses are truncated. Only with your consent (see section 7). Policy: policies.google.com/privacy",
+    "s4T5": "Anthropic (Claude AI)", "s4D5": "Writing help (descriptions, titles, bio), listing import and listing translation; automated sorting of feedback sent with “Ideas or issues?” (the message is sent, without your name or email). Data sent through the API is not used to train Anthropic's models. Policy: anthropic.com/legal/privacy",
     "s4P2": "Beyond these service providers, we do not share your data with any third party, except as required by law (response to a competent authority, court order).",
     "s5Title": "5. Your rights (Law 25)",
     "s5P1": "In accordance with Quebec's Law 25, you have the following rights regarding your personal information:",
@@ -1586,8 +1586,8 @@
     "s7Title": "7. Cookies and similar technologies",
     "s7Intro": "We use the following types of cookies:",
     "s7T1": "Essential cookies", "s7D1": "Required for platform operation (authentication session, navigation preferences). Cannot be disabled.",
-    "s7T2": "Analytics cookies", "s7D2": "Google Analytics to understand platform usage. These cookies are anonymized and cannot identify you personally.",
-    "s7P2": "You can manage your cookie preferences through your browser settings. Disabling essential cookies may affect platform functionality.",
+    "s7T2": "Audience measurement cookies (with your consent)", "s7D2": "Google Analytics, to understand how the platform is used. Off by default: they are only enabled if you click “Accept” in the banner shown on your first visit. Data kept for 14 months.",
+    "s7P2": "You can change your mind at any time with the “Manage cookies” link at the bottom of every page: if you withdraw consent, audience measurement cookies are deleted. We also measure, without any cookie or identifier, how many visits go through each step of the site (anonymous daily totals), and we log technical errors to fix them. Kabanalouer does not use any advertising cookies for now; if it adds any, they will only be enabled with your consent.",
     "s8Title": "8. Data security",
     "s8P1": "We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, disclosure, modification, or destruction:",
     "s8I1": "Data transmission encrypted via HTTPS (TLS 1.2+).",
@@ -1602,7 +1602,21 @@
     "s10P1": "For any questions, requests to exercise your rights, or complaints about the processing of your personal data, contact us at:",
     "s10P2": "If you believe your rights are not being respected, you may also file a complaint with the Commission d'accès à l'information du Québec (CAI).",
     "backTerms": "Terms of use →",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "s2RegI5": "Mobile phone number (optional, to receive text notifications)",
+    "s2RegI6": "Profile photo and bio (optional)",
+    "s2CatFeedback": "Feedback and technical data",
+    "s2FbI1": "Messages sent with “Ideas or issues?” and the page concerned",
+    "s2FbI2": "Technical error reports (page, browser type, error message)",
+    "s3I8": "Handle your feedback and reports, fix technical errors and improve the platform, including automated sorting of your feedback by Anthropic's AI.",
+    "s4T6": "Google Cloud Translation",
+    "s4D6": "Automatic French-English translation of messages and reviews. Only the text to translate is sent. Policy: policies.google.com/privacy",
+    "s4T7": "Resend",
+    "s4D7": "Sending platform emails (account confirmation, notifications). Your email address and the email content are sent. Policy: resend.com/legal/privacy-policy",
+    "s4T8": "Twilio",
+    "s4D8": "Sending text notifications, only if you turn them on. Your mobile number and the message text are sent. Policy: twilio.com/legal/privacy",
+    "s6T6": "Feedback and technical data",
+    "s6D6": "Feedback you send us is kept for 24 months, technical error reports for 12 months after they last occurred, and anonymous visit totals for 25 months."
   },
   "translateButton": {
     "translate": "Translate",
@@ -1658,5 +1672,13 @@
     "errorGeneric": "Sending didn't work. Please try again in a moment.",
     "errorTooMany": "You've sent several messages today. Please try again tomorrow.",
     "errorEmpty": "Write a few words before sending."
+  },
+  "consent": {
+    "text": "Allow audience measurement cookies?",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "refuse": "Decline",
+    "manage": "Manage cookies",
+    "label": "Cookies"
   }
 }

@@ -7,6 +7,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SiteVisitTracker from "@/components/SiteVisitTracker";
 import ErrorReporter from "@/components/ErrorReporter";
+import ConsentBanner from "@/components/ConsentBanner";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -128,6 +129,7 @@ export default async function RootLayout({
         />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <ConsentBanner />
         </NextIntlClientProvider>
       </body>
     </html>

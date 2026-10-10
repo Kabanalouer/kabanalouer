@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { purgeExpiredData } from "@/lib/dataRetention";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendFeaturedExpiringEmail, sendFeaturedExpiredEmail, type FeaturedType } from "@/lib/emails/featuredListing";
 
@@ -186,5 +187,8 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, expired: data?.length ?? 0, reminderSent, reminderSkipped, expiredEmailSent, expiredSkipped });
+  // Ménage nocturne : durées de conservation de la politique de confidentialité.
+  const purged = await purgeExpiredData();
+
+  return NextResponse.json({ ok: true, expired: data?.length ?? 0, reminderSent, reminderSkipped, expiredEmailSent, expiredSkipped, purged });
 }
