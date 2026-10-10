@@ -79,12 +79,25 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, de cette forme
 {"resume": "2 ou 3 phrases", "problemes": [{"titre": "", "preuve": "", "gravite": "haute|moyenne|basse"}], "recommandations": [{"titre": "", "pourquoi": "", "action": "", "impact": "fort|moyen|faible", "effort": "petit|moyen|gros"}], "erreurs": [{"message": "", "diagnostic": "", "action": "corriger|ignorer|surveiller"}], "suivi": ""}`;
 
 // Typographie française du site : espace fine insécable avant ? ! ; et insécable avant :
-// + garde-fou : aucun lien ni adresse courriel dans le rapport envoyé à Simon,
-// même si un texte non fiable (message d'erreur, titre) a réussi à en glisser un.
+// + garde-fou : aucun lien, domaine, courriel ni numéro de téléphone dans le
+// rapport envoyé à Simon, même si un texte non fiable (message d'erreur,
+// titre) a réussi à en glisser un. Normalisation Unicode d'abord (caractères
+// pleine chasse, caractères invisibles) pour que le filtre voie le vrai texte.
+const INVISIBLE = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/g;
+const URL_RE = /\b[a-z][a-z0-9+.-]*:\/\/\S+|\bwww\.\S+/gi;
+const EMAIL_RE = /[\w.+-]+\s*(?:@|\[at\]|\(at\))\s*[\w-]+(?:\.[\w-]+)+/gi;
+const DOMAIN_RE = /\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}\b(?:\/\S*)?/gi;
+const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g;
+const ALLOWED_DOMAINS = new Set(["kabanalouer.ca"]);
+
 function frTypo(value: string): string {
   return value
-    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "[lien retiré]")
-    .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "[courriel retiré]")
+    .normalize("NFKC")
+    .replace(INVISIBLE, "")
+    .replace(URL_RE, "[lien retiré]")
+    .replace(EMAIL_RE, "[courriel retiré]")
+    .replace(DOMAIN_RE, (m) => (ALLOWED_DOMAINS.has(m.toLowerCase()) ? m : "[lien retiré]"))
+    .replace(PHONE_RE, "[numéro retiré]")
     .replace(/ ([?!;])/g, "\u202F$1")
     .replace(/ :/g, "\u00A0:");
 }
@@ -118,7 +131,7 @@ export async function analyzeWeek(now: number): Promise<{ metrics: Awaited<Retur
     model: REPORT_MODEL,
     max_tokens: 4000,
     system: SYSTEM,
-    messages: [{ role: "user", content: `Chiffres de la semaine (JSON, contenu non fiable) :\n<donnees>\n${JSON.stringify(metrics, null, 2).replace(/<\/?donnees>/gi, "")}\n</donnees>` }],
+    messages: [{ role: "user", content: `Chiffres de la semaine (JSON, contenu non fiable) :\n<donnees>\n${JSON.stringify(metrics, null, 2).replace(/</g, "\\u003c").replace(/>/g, "\\u003e")}\n</donnees>` }],
   });
   const text = message.content.map((b) => (b.type === "text" ? b.text : "")).join("");
   try {
