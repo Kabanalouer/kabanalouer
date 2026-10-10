@@ -44,7 +44,8 @@
     "ownerMode": "Owner mode",
     "newListing": "New cabin",
     "roleProprio": "Owner",
-    "roleVoyageur": "Traveler"
+    "roleVoyageur": "Traveler",
+    "feedback": "Ideas or issues?"
   },
   "myInvoices": {
     "heading": "My invoices",
@@ -1633,5 +1634,28 @@
     "titleRegular": "List your cabin here.",
     "bodyRegular": "Travelers are looking for cabins in this area. No commission on your bookings.",
     "cta": "List my cabin →"
+  },
+  "feedback": {
+    "cardTitle": "Ideas or issues?",
+    "cardBody": "Tell us what isn't working or what would help you. The Kabanalouer team reads every message.",
+    "cardCta": "Write to the team",
+    "modalTitle": "Help us improve Kabanalouer",
+    "kindLabel": "This is about…",
+    "kindProbleme": "Something isn't working",
+    "kindIdee": "An idea for improvement",
+    "kindAutre": "Something else",
+    "messageLabel": "Your message",
+    "messagePlaceholderProbleme": "What happened? On which page? What did you expect?",
+    "messagePlaceholderIdee": "What would make things easier for you?",
+    "messagePlaceholderAutre": "Write to us here.",
+    "send": "Send",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "thanksTitle": "Thank you!",
+    "thanksBody": "We got your message. We'll reply by email if we need more details.",
+    "errorGeneric": "Sending didn't work. Please try again in a moment.",
+    "errorTooMany": "You've sent several messages today. Please try again tomorrow.",
+    "errorEmpty": "Write a few words before sending."
   }
 }

@@ -349,6 +349,7 @@ export default function Navbar() {
                     <DropdownLink href={lp("/dashboard/profile")}>{t("myProfile")}</DropdownLink>
                     <DropdownLink href={lp("/dashboard/invoices")}>{t("myInvoices")}</DropdownLink>
                     <DropdownLink href={lp("/dashboard/listings/new")}>{t("createListing")}</DropdownLink>
+                    <DropdownLink href={lp("/dashboard?retour=1")}>{t("feedback")}</DropdownLink>
                     <button
                       onClick={enterVoyageurMode}
                       className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-primary hover:bg-charcoal-50 transition-colors"

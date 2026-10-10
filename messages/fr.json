@@ -44,7 +44,8 @@
     "ownerMode": "Mode proprio",
     "newListing": "Nouveau chalet",
     "roleProprio": "Proprio",
-    "roleVoyageur": "Voyageur"
+    "roleVoyageur": "Voyageur",
+    "feedback": "Une idée ou un problème ?"
   },
   "myInvoices": {
     "heading": "Mes factures",
@@ -1633,5 +1634,28 @@
     "titleRegular": "Affichez votre chalet ici.",
     "bodyRegular": "Les voyageurs cherchent des chalets dans ce secteur. Aucune commission sur vos réservations.",
     "cta": "Inscrire mon chalet →"
+  },
+  "feedback": {
+    "cardTitle": "Une idée ou un problème ?",
+    "cardBody": "Dites-nous ce qui ne fonctionne pas ou ce qui vous aiderait. L'équipe Kabanalouer lit chaque message.",
+    "cardCta": "Écrire à l'équipe",
+    "modalTitle": "Aidez-nous à améliorer Kabanalouer",
+    "kindLabel": "C'est à propos de…",
+    "kindProbleme": "Quelque chose ne fonctionne pas",
+    "kindIdee": "Une idée d'amélioration",
+    "kindAutre": "Autre chose",
+    "messageLabel": "Votre message",
+    "messagePlaceholderProbleme": "Que s'est-il passé ? Sur quelle page ? Qu'attendiez-vous ?",
+    "messagePlaceholderIdee": "Qu'est-ce qui vous simplifierait la vie ?",
+    "messagePlaceholderAutre": "Écrivez-nous ici.",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "thanksTitle": "Merci !",
+    "thanksBody": "Votre message est bien reçu. On vous répondra par courriel si on a besoin de précisions.",
+    "errorGeneric": "L'envoi n'a pas fonctionné. Réessayez dans un instant.",
+    "errorTooMany": "Vous avez envoyé plusieurs messages aujourd'hui. Réessayez demain.",
+    "errorEmpty": "Écrivez quelques mots avant d'envoyer."
   }
 }

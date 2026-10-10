@@ -19,6 +19,7 @@ import { sendImportReviewNotification } from "@/lib/emails/importNotification";
 import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
 import { sendErrorAlert } from "@/lib/emails/errorAlert";
 import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
+import { sendFeedbackMessage, sendFeedbackAnalysis } from "@/lib/emails/feedback";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -115,6 +116,20 @@ export function emailTestSenders(): Record<string, Sender> {
 
     "contact-notification": () => sendContactMessageNotification({
       name: "Emma Test", email: "emma@example.com", message: "Ceci est un message de test envoyé depuis l’admin.",
+    }),
+    "feedback-message": (to) => sendFeedbackMessage({
+      name: "Marc Test", email: to, kind: "probleme",
+      message: "Exemple de retour (test depuis l’admin) : je ne trouve pas comment ajouter une deuxième période de prix pour l’été.",
+    }),
+    "feedback-analysis": () => sendFeedbackAnalysis({
+      id: 0, name: "Marc Test", kind: "probleme", page: "/dashboard/listings",
+      message: "Exemple de retour (test depuis l’admin) : je ne trouve pas comment ajouter une deuxième période de prix pour l’été.",
+      triage: {
+        categorie: "question", priorite: "moyenne",
+        resume: "Le proprio ne trouve pas où définir un prix différent pour l’été.",
+        action_recommandee: true,
+        recommandation: "Lui indiquer la section Tarifs de l’annonce, et rendre le prix de haute saison plus visible dans le formulaire.",
+      },
     }),
     "weekly-report": () => sendWeeklyReportEmail({
       resume: "Exemple de rapport (test depuis l’admin, sans appel à l’IA) : la semaine a été calme, 3 demandes et toutes ont reçu une réponse.",

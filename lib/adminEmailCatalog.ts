@@ -233,6 +233,22 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true, fixedRecipient: "info@kabanalouer.ca",
   },
   {
+    id: "feedback-message", category: "interne", group: "Équipe",
+    name: "Retour d’un proprio (message)",
+    subject: { fr: "Votre retour sur Kabanalouer — {type}" },
+    when: "Dès qu’un proprio envoie « Une idée ou un problème ? » depuis son tableau de bord.",
+    conditions: "En texte brut, « Répondre » écrit directement au proprio depuis info@. Au plus 5 retours par proprio et par 24 h.",
+    mechanism: "event", testable: true, fixedRecipient: "info@kabanalouer.ca",
+  },
+  {
+    id: "feedback-analysis", category: "interne", group: "Équipe",
+    name: "Retour d’un proprio (analyse de Claude)",
+    subject: { fr: "Analyse du retour de {nom} — Priorité {priorite}" },
+    when: "Quelques secondes après le message, une fois le retour trié par Claude.",
+    conditions: "Catégorie, priorité, recommandation, et un prompt à copier si une action est utile. Envoyé à Simon seulement, jamais dans le fil avec le proprio.",
+    mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+  },
+  {
     id: "weekly-report", category: "interne", group: "Équipe",
     name: "Rapport du lundi",
     subject: { fr: "Rapport du lundi — {date}" },
