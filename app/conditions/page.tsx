@@ -210,8 +210,8 @@ export default async function ConditionsPage() {
             <H2>{t("s12Title")}</H2>
             <p className="text-base leading-relaxed">
               {t("s12P1")}{" "}
-              <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
-                support@kabanalouer.ca
+              <a href="mailto:info@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
+                info@kabanalouer.ca
               </a>
             </p>
           </section>

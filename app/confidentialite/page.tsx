@@ -81,8 +81,8 @@ export default async function ConfidentialitePage() {
               <p>{t("s1P1")}</p>
               <p>
                 {t("s1P2")}{" "}
-                <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
-                  support@kabanalouer.ca
+                <a href="mailto:info@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
+                  info@kabanalouer.ca
                 </a>
               </p>
             </div>
@@ -256,8 +256,8 @@ export default async function ConfidentialitePage() {
             <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s10P1")}</p>
               <p>
-                <a href="mailto:support@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
-                  support@kabanalouer.ca
+                <a href="mailto:info@kabanalouer.ca" className={TEXT_LINK_CLASSNAME}>
+                  info@kabanalouer.ca
                 </a>
               </p>
               <p>{t("s10P2")}</p>
