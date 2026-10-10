@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { trackFunnelStep } from "@/lib/funnel";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -181,7 +182,9 @@ export default function ContactForm({
     : ts("guestsCount", { count: humanTotal });
 
   const handleSubmitClick = () => {
+    trackFunnelStep("t_request_click");
     if (!currentUserId) {
+      trackFunnelStep("t_auth_prompt");
       savePendingQuoteDraft(listingId, { checkin, checkout, adults, children, babies, pets, message });
       setAuthModalOpen(true);
       return;
@@ -258,6 +261,7 @@ export default function ContactForm({
       return;
     }
     clearPendingQuoteDraft(listingId);
+    trackFunnelStep("t_request_sent");
     setSent(true);
   };
 

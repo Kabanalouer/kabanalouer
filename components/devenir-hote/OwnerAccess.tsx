@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 import { trackEvent } from "@/lib/analytics";
+import { trackFunnelStep } from "@/lib/funnel";
 
 export const NEW_LISTING_PATH = "/dashboard/listings/new";
 
@@ -107,6 +108,7 @@ export function CreateListingLink({
       className={className}
       onClick={(e) => {
         trackEvent("lp_hote_creer_annonce", { emplacement });
+        trackFunnelStep("h_cta");
         if (!guard(NEW_LISTING_PATH)) e.preventDefault();
       }}
     >

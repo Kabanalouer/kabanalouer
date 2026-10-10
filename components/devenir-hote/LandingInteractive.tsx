@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { trackFunnelStep } from "@/lib/funnel";
 import { normalizeAirbnbInput, savePendingAirbnbImport } from "@/lib/pendingAirbnbImport";
 import type { DevenirHoteContent, Faq } from "@/lib/devenirHoteContent";
 import { CreateListingLink, NEW_LISTING_PATH, useOwnerAccess } from "./OwnerAccess";
@@ -41,6 +42,7 @@ export function ScrollToImportButton({
       className={className}
       onClick={() => {
         trackEvent("lp_hote_dupliquer_airbnb", { emplacement });
+        trackFunnelStep("h_cta");
         goToImportForm();
       }}
     >

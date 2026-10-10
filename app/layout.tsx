@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { SITE_URL } from "@/lib/siteUrl";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import SiteVisitTracker from "@/components/SiteVisitTracker";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -118,6 +119,7 @@ export default async function RootLayout({
     <html lang={locale} className={`h-full ${jakarta.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col">
         {gaMeasurementId && <GoogleAnalytics measurementId={gaMeasurementId} />}
+        <SiteVisitTracker />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraphJsonLd(locale === "en")) }}

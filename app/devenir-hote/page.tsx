@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FunnelStepTracker from "@/components/FunnelStepTracker";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
@@ -105,6 +106,7 @@ export default async function DevenirHotePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       <div className="flex flex-col min-h-screen bg-white">
         <Navbar />
+        <FunnelStepTracker step="h_landing" />
 
         <main className="flex-1">
           {/* ── 01 Hero : gratuité (offre de lancement) ou sans commission ── */}
