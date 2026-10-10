@@ -122,7 +122,7 @@ export function emailTestSenders(): Record<string, Sender> {
       recommandations: [{ titre: "Rappeler aux proprios l’importance de répondre vite", pourquoi: "La réponse rapide est le premier facteur de confiance des voyageurs.", action: "Ajouter un texto de rappel 12 h après une demande sans réponse.", impact: "moyen", effort: "petit" }],
       erreurs: [{ message: "Exemple : Cannot read properties of undefined (reading 'photos')", diagnostic: "Une annonce sans photo fait planter la carte du chalet.", action: "corriger" }],
       suivi: "",
-    }),
+    }, 0),
     "error-alert": () => sendErrorAlert({ source: "client", message: "Exemple : Cannot read properties of undefined (reading 'photos')", path: LISTING_PATH }),
     "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),

@@ -1,6 +1,8 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import GenerateReportButton from "@/components/admin/GenerateReportButton";
 import type { WeeklyReport } from "@/lib/weeklyReport";
+import { buildReportPrompts } from "@/lib/weeklyReportPrompts";
+import CopyPromptButton from "@/components/admin/CopyPromptButton";
 
 export const metadata = { title: "Rapports — Administration" };
 export const dynamic = "force-dynamic";
@@ -73,6 +75,28 @@ function Report({ row }: { row: Row }) {
           </ul>
         </div>
       )}
+
+      {(() => {
+        const prompts = buildReportPrompts(r, date(row.created_at), row.id);
+        if (!prompts.length) return null;
+        return (
+          <div>
+            <h3 className="text-base font-semibold text-charcoal-800 mb-1">Prompts pour Claude Code</h3>
+            <p className="text-sm text-charcoal-500 mb-3">Copie un prompt et colle-le dans Claude Code pour qu’il s’en charge.</p>
+            <ul className="space-y-3">
+              {prompts.map((p, i) => (
+                <li key={i} className="rounded-xl border border-[#ebebeb] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-medium text-charcoal-800">{p.titre}</p>
+                    <CopyPromptButton text={p.prompt} />
+                  </div>
+                  <pre className="mt-3 max-h-48 overflow-auto rounded-lg bg-charcoal-50 p-3 text-xs text-charcoal-600 whitespace-pre-wrap break-words font-sans">{p.prompt}</pre>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
 
       {r.suivi && (
         <div>

@@ -160,7 +160,7 @@ export async function generateWeeklyReport({ sendEmail = true }: { sendEmail?: b
   if (error) return { id: null, error: `Enregistrement impossible : ${error.message}` };
 
   if (sendEmail) {
-    const { error: mailError } = await sendWeeklyReportEmail(report);
+    const { error: mailError } = await sendWeeklyReportEmail(report, data.id as number);
     if (mailError) return { id: data.id as number, error: `Rapport enregistré, courriel non envoyé : ${mailError.message}` };
   }
   return { id: data.id as number, error: null };
