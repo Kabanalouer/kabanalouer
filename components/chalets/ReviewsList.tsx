@@ -26,28 +26,36 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
   const locale = useLocale();
   const [filter, setFilter] = useState<"all" | "echange" | "sejour">("all");
   const filtered = filter === "all" ? reviews : reviews.filter((r) => r.review_type === filter);
+  const hasBothTypes = reviews.some((r) => r.review_type === "echange") && reviews.some((r) => r.review_type === "sejour");
 
   return (
     <div>
-      <div className="flex gap-2 mb-6">
-        {(["all", "echange", "sejour"] as const).map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            className={`inline-flex items-center min-h-[44px] px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-              filter === f ? "bg-primary text-white" : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
-            }`}
-          >
-            {f === "all" ? t("reviewsFilterAll") : f === "echange" ? t("reviewsFilterExchange") : t("reviewsFilterStay")}
-          </button>
-        ))}
-      </div>
+      {/* Filtres discrets, seulement s'il y a des avis des deux types */}
+      {hasBothTypes && (
+        <div className="flex gap-5 mb-5 border-b border-charcoal-100" role="tablist">
+          {(["all", "echange", "sejour"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              role="tab"
+              aria-selected={filter === f}
+              onClick={() => setFilter(f)}
+              className={`-mb-px py-2.5 text-sm border-b-2 transition-colors ${
+                filter === f
+                  ? "border-charcoal-800 text-charcoal-800 font-semibold"
+                  : "border-transparent text-charcoal-400 hover:text-charcoal-800"
+              }`}
+            >
+              {f === "all" ? t("reviewsFilterAll") : f === "echange" ? t("reviewsFilterExchange") : t("reviewsFilterStay")}
+            </button>
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <p className="text-charcoal-400 text-base">{t("reviewsFilterEmpty")}</p>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-4">
           {filtered.map((review) => {
             const authorName = review.author?.name ?? t("reviewsDefaultAuthor");
             const authorFirst = authorName.split(" ")[0];
@@ -56,9 +64,9 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
               month: "long", year: "numeric",
             });
             return (
-              <div key={review.id} className="space-y-2">
+              <div key={review.id} className="bg-white rounded-2xl p-5 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full shrink-0 bg-charcoal-100 overflow-hidden flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full shrink-0 bg-charcoal-100 overflow-hidden flex items-center justify-center">
                     {review.author?.avatar_url ? (
                       <img src={review.author.avatar_url} alt={authorFirst} className="w-full h-full object-cover" />
                     ) : (
@@ -68,7 +76,7 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-base font-semibold text-charcoal-800 leading-tight">{authorFirst}</p>
-                      <span className="text-xs font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                      <span className="text-xs font-medium text-charcoal-600 bg-charcoal-50 rounded-full px-2 py-0.5">
                         {review.review_type === "echange" ? t("reviewsTypeExchange") : t("reviewsTypeStay")}
                       </span>
                     </div>
@@ -91,7 +99,7 @@ export default function ReviewsList({ reviews }: { reviews: Review[] }) {
                   />
                 )}
                 {review.host_reply && (
-                  <div className="pl-4 border-l-2 border-[#ebebeb] mt-2">
+                  <div className="bg-charcoal-50 rounded-xl p-4">
                     <p className="text-sm font-semibold text-charcoal-600 mb-1">{t("hostReplyLabel")}</p>
                     <TranslatedText
                       original={review.host_reply}

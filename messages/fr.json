@@ -894,6 +894,7 @@
     "reviewsFilterEmpty": "Aucun avis de ce type pour l'instant.",
     "reviewsTypeExchange": "Échange",
     "reviewsTypeStay": "Séjour",
+    "reviewsTotal": "{count, plural, one {# avis} other {# avis}}",
     "practicalInfo": "Informations pratiques",
     "checkinFrom": "Arrivée : à partir de {time}",
     "checkoutBefore": "Départ : avant {time}",

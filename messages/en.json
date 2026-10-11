@@ -894,6 +894,7 @@
     "reviewsFilterEmpty": "No reviews of this type yet.",
     "reviewsTypeExchange": "Exchange",
     "reviewsTypeStay": "Stay",
+    "reviewsTotal": "{count, plural, one {# review} other {# reviews}}",
     "practicalInfo": "Practical information",
     "checkinFrom": "Check-in: from {time}",
     "checkoutBefore": "Check-out: before {time}",
