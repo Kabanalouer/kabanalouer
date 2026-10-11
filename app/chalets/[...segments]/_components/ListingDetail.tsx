@@ -421,6 +421,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
             {/* Points forts — teaser, voir AmenitiesSection plus bas pour la liste complète */}
             {amenities.length > 0 && <ListingHighlights amenities={amenities} />}
 
+            <hr className="border-[#ebebeb]" />
+
             {/* Description */}
             {displayDescription && (
               <div>
