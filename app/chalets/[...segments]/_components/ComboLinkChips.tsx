@@ -14,7 +14,7 @@ export default function ComboLinkChips({
   if (links.length === 0) return null;
   return (
     <div className={className}>
-      <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">{title}</h2>
+      <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-4">{title}</h2>
       <div className="flex flex-wrap gap-2">
         {links.map((l) => (
           <Link

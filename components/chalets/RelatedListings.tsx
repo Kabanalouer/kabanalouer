@@ -5,9 +5,10 @@ import { normalizePhotos } from "@/lib/photo";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
+const RELATED_COUNT = 3;
 const COLUMNS = "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug";
 
-// Bas de fiche chalet : 3 autres chalets de la même ville (sinon de la même
+// Bas de fiche chalet : 3 autres chalets de la même ville (complétés par la
 // région) + lien vers la page ville/région — maillage interne pour le SEO/GEO.
 export default async function RelatedListings({
   listingId,
@@ -18,6 +19,7 @@ export default async function RelatedListings({
   regionName,
   locale,
   currentUserId,
+  children,
 }: {
   listingId: string;
   city: string | null;
@@ -27,27 +29,33 @@ export default async function RelatedListings({
   regionName: string;
   locale: string;
   currentUserId: string | null;
+  // Suite du bloc « fin de fiche » (pastilles de pages semblables).
+  children?: React.ReactNode;
 }) {
-  if (!region) return null;
+  if (!region) return children ? <section className="mt-12 pt-12 border-t border-[#ebebeb] w-full">{children}</section> : null;
   const isEn = locale === "en";
   const supabase = await createClient();
 
   let rows: Record<string, unknown>[] = [];
-  let scope: "city" | "region" = "city";
   if (city) {
     const { data } = await supabase.from("listings").select(COLUMNS)
       .eq("is_published", true).eq("region", region).eq("city", city).neq("id", listingId)
-      .order("created_at", { ascending: false }).limit(3);
+      .order("created_at", { ascending: false }).limit(RELATED_COUNT);
     rows = data ?? [];
+  }
+  // Moins de 3 dans la ville : on complète avec la région (le titre garde la
+  // ville tant qu'au moins un chalet en vient).
+  const scope: "city" | "region" = rows.length > 0 ? "city" : "region";
+  if (rows.length < RELATED_COUNT) {
+    const exclude = [listingId, ...rows.map((r) => r.id as string)];
+    const { data } = await supabase.from("listings").select(COLUMNS)
+      .eq("is_published", true).eq("region", region).not("id", "in", `(${exclude.join(",")})`)
+      .order("created_at", { ascending: false }).limit(RELATED_COUNT - rows.length);
+    rows = [...rows, ...(data ?? [])];
   }
   if (rows.length === 0) {
-    scope = "region";
-    const { data } = await supabase.from("listings").select(COLUMNS)
-      .eq("is_published", true).eq("region", region).neq("id", listingId)
-      .order("created_at", { ascending: false }).limit(3);
-    rows = data ?? [];
+    return children ? <section className="mt-12 pt-12 border-t border-[#ebebeb] w-full">{children}</section> : null;
   }
-  if (rows.length === 0) return null;
 
   const listings: Listing[] = rows.map((l) => ({
     id: l.id as string,
@@ -73,7 +81,7 @@ export default async function RelatedListings({
     : (isEn ? `Cabin rentals in ${regionName} →` : `Location de chalet ${regionName} →`);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+    <section className="mt-12 pt-12 border-t border-[#ebebeb] w-full">
       <div className="flex items-end justify-between gap-4 mb-6 flex-wrap">
         <h2 className="text-heading-2 font-semibold text-charcoal-800">{title}</h2>
         {moreHref && (
@@ -85,6 +93,7 @@ export default async function RelatedListings({
           <ListingCard key={listing.id} listing={listing} currentUserId={currentUserId} />
         ))}
       </div>
+      {children}
     </section>
   );
 }

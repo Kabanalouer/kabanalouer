@@ -726,7 +726,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
             />
           </div>
         )}
-      {/* Maillage interne : autres chalets de la ville (ou région) */}
+      {/* Fin de fiche : autres chalets de la ville (ou région) + pages
+          région/ville × type de ce chalet, dans un seul bloc */}
       {!isPreviewFrame && !isDraftPreview && (
         <RelatedListings
           listingId={listing.id as string}
@@ -737,13 +738,15 @@ export default async function ListingDetail({ listing, user, searchParams, local
           regionName={regionDisplayName}
           locale={locale}
           currentUserId={user?.id ?? null}
-        />
-      )}
-      {/* Maillage interne : pages région/ville × type de ce chalet */}
-      {!isPreviewFrame && !isDraftPreview && comboLinks.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-[#ebebeb]">
-          <ComboLinkChips title={isEn ? "Explore similar cabins" : "Explorer des chalets semblables"} links={comboLinks} />
-        </section>
+        >
+          {comboLinks.length > 0 && (
+            <ComboLinkChips
+              title={isEn ? "Explore similar cabins" : "Explorer des chalets semblables"}
+              links={comboLinks}
+              className="mt-12"
+            />
+          )}
+        </RelatedListings>
       )}
       </main>
 

@@ -57,11 +57,13 @@ export default function ListingCard({
   const checkin = searchParams.get("checkin");
   const checkout = searchParams.get("checkout");
   const capacity = searchParams.get("capacity");
+  const dogs = searchParams.get("dogs");
   const listingHref = (() => {
     const qs = new URLSearchParams();
     if (checkin) qs.set("checkin", checkin);
     if (checkout) qs.set("checkout", checkout);
     if (capacity) qs.set("capacity", capacity);
+    if (dogs) qs.set("dogs", dogs);
     const s = qs.toString();
     const path = buildListingPath(
       { region: listing.region, city: listing.city ?? null, listing_number: listing.listing_number ?? null, custom_slug: listing.custom_slug ?? null },

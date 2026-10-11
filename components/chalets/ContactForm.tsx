@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { trackFunnelStep } from "@/lib/funnel";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import { getMonthNames, getMonthNamesShort, getDayNames } from "@/lib/dateLocale";
@@ -84,8 +84,13 @@ export default function ContactForm({
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
-  const [checkin, setCheckin] = useState(initialCheckin ?? "");
-  const [checkout, setCheckout] = useState(initialCheckout ?? "");
+  // L'adresse prime sur les valeurs du serveur : la feuille mobile, remontée
+  // à chaque ouverture, retrouve ainsi ce que le voyageur a déjà choisi.
+  const searchParams = useSearchParams();
+  const urlCapacity = parseInt(searchParams.get("capacity") ?? "", 10);
+  const urlPets = parseInt(searchParams.get("dogs") ?? "", 10);
+  const [checkin, setCheckin] = useState(searchParams.get("checkin") ?? initialCheckin ?? "");
+  const [checkout, setCheckout] = useState(searchParams.get("checkout") ?? initialCheckout ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [hoverDate, setHoverDate] = useState("");
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -96,10 +101,10 @@ export default function ContactForm({
 
   const blockedSet = useMemo(() => new Set(blockedDates ?? []), [blockedDates]);
 
-  const [adults, setAdults] = useState(initialAdults ?? 1);
+  const [adults, setAdults] = useState(urlCapacity > 0 ? urlCapacity : (initialAdults ?? 1));
   const [children, setChildren] = useState(initialChildren ?? 0);
   const [babies, setBabies] = useState(initialBabies ?? 0);
-  const [pets, setPets] = useState(Math.min(initialPets ?? 0, dogsMax));
+  const [pets, setPets] = useState(Math.min(urlPets > 0 ? urlPets : (initialPets ?? 0), dogsMax));
   const [guestsOpen, setGuestsOpen] = useState(false);
   const guestsRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -127,6 +132,25 @@ export default function ContactForm({
     if (draft.message) setMessage(draft.message);
   }, [listingId, today, dogsMax]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Dates et voyageurs reportés dans l'adresse (sans recharger) : les liens
+  // « Autres chalets à… » de la fiche les transmettent alors au chalet suivant.
+  // Rien au montage, seulement après un choix du voyageur.
+  const urlSynced = useRef(false);
+  useEffect(() => {
+    if (!urlSynced.current) { urlSynced.current = true; return; }
+    if (checkin && !checkout) return;
+    const url = new URL(window.location.href);
+    const setOrDelete = (key: string, value: string | null) => {
+      if (value) url.searchParams.set(key, value); else url.searchParams.delete(key);
+    };
+    setOrDelete("checkin", checkin || null);
+    setOrDelete("checkout", checkout || null);
+    const total = adults + children;
+    setOrDelete("capacity", total > 1 ? String(total) : null);
+    setOrDelete("dogs", pets > 0 ? String(pets) : null);
+    if (url.href !== window.location.href) window.history.replaceState(null, "", url.href);
+  }, [checkin, checkout, adults, children, pets]);
 
   // Close calendar on outside click
   useEffect(() => {
