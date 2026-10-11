@@ -368,7 +368,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* ── Breadcrumb ── */}
-        <nav className="hidden md:block text-sm text-charcoal-400 mb-4" aria-label={locale === "en" ? "Breadcrumb" : "Fil d’Ariane"}>
+        <nav className="hidden md:block text-sm text-charcoal-400 mb-6" aria-label={locale === "en" ? "Breadcrumb" : "Fil d’Ariane"}>
           <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">{t("breadcrumbCabins")}</Link>
           {regionBasePath && (
             <>
