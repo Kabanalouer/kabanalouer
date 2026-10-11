@@ -527,7 +527,7 @@ Anciennement "Caractéristiques" — renommé partout où le libellé désigne c
 
 #### Fiche publique — affichage des équipements (2026-09-19)
 
-- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`, fonction exportée `pickHighlightAmenities()`), plus de bouton "Voir caractéristiques". **Depuis le 2026-10-07** : 3 colonnes (1 sur mobile), sans filets, icône 24px au-dessus, titre 16px 600, détail 14px `charcoal-400`, gap 28px — n'utilise plus `AmenityRow`.
+- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`, fonction exportée `pickHighlightAmenities()`), plus de bouton "Voir caractéristiques". **Depuis le 2026-10-07** : 3 colonnes (1 sur mobile), sans filets, icône 24px au-dessus, titre 16px 600, détail 14px `charcoal-400`, gap 28px — n'utilise plus `AmenityRow`. **Depuis le 2026-10-11** : plus de résumé des détails sous le nom (visible dans « Ce que propose ce chalet »), icône dans un rond `bg-charcoal-50` de 44px, fond blanc (un encadré gris a été essayé puis retiré le même jour, Simon ne l'aimait pas — ne pas le reproposer) ; sur mobile, icône à gauche du nom.
 - **`components/chalets/AmenitiesSection.tsx`** : section "Ce que propose ce chalet" (repositionnée après "Où vous dormirez"), affiche 10 équipements prioritaires **en excluant les 3 points forts** (comparés par objet, depuis le 2026-10-07 — ils restent dans la modale) + bouton "Afficher {X} équipements" (X = total ; affiché si plus de 10 au total ou si l'aperçu est vide) ouvrant une modale groupée par catégorie via `groupAmenitiesByCategory()`.
 - **`components/chalets/AmenityRow.tsx`** (utilisé par l'aperçu et la modale de `AmenitiesSection`) : icône + nom + résumé (`summarizeAmenityDetails()`), résumé toujours tronqué sur une seule ligne (`truncate` + `min-w-0` sur le parent flex) peu importe sa longueur.
 
@@ -1053,7 +1053,28 @@ Tout en ligne (commits `5f5835f` → `81ff36c`). Détails techniques dans les se
 - **Secrets** : le classificateur interdit de lire des clés pour les recopier ; passer par un script que Simon lance lui-même (`!`), qui n'affiche jamais les valeurs. Vercel refuse le type « Secret » pour les variables `NEXT_PUBLIC_` (`--type config`).
 - **Réécrire un fichier JSON de traductions avec `json.dumps`** reformate tout le fichier : insérer les nouvelles clés en texte pour garder un diff minimal.
 
+
+### Session du 2026-10-11 — Fiche chalet : avis, fin de fiche, fenêtre d'inscription
+
+Tout en ligne (commits `96e6792` → `fc4e194`).
+
+1. **Fil d'Ariane** : 24px sous le fil d'Ariane avant le titre (`mb-6`, était 16px).
+2. **Points forts** : voir section 9 (catalogue d'équipements, fiche publique).
+3. **Zone avis** (`ListingDetail.tsx` + `components/chalets/ReviewsList.tsx`) : encadré `bg-charcoal-50` arrondi (gardé par Simon, contrairement aux points forts), note moyenne en grand à droite du titre (étoiles + « N avis », clé `listing.reviewsTotal`), chaque avis dans une carte blanche, badge Échange/Séjour neutre (`charcoal`, plus olive), réponse du proprio dans un bloc gris pâle. **Filtres Tous · Échanges · Séjours** en onglets texte discrets, affichés **seulement s'il existe des avis des deux types**.
+4. **Fin de fiche** (`RelatedListings.tsx`) : un seul bloc sous un trait — « Autres chalets à {ville} » puis « Explorer des chalets semblables » (`ComboLinkChips` passé en `children`, rendu même s'il n'y a aucun chalet à suggérer). Toujours 3 suggestions : complétées par la région si la ville en a moins (titre gardé sur la ville). Double marge corrigée (les sections avaient leur propre `max-w-7xl px-…` à l'intérieur de `main`). Titre de `ComboLinkChips` aligné sur les autres H2 (`font-semibold text-charcoal-800`).
+5. **Dates et voyageurs transmis** : `ContactForm` reporte dates, voyageurs (`capacity` = adultes + enfants) et chiens (`dogs`) dans l'adresse via `window.history.replaceState(null, …)` après un choix du voyageur (jamais au montage), et lit l'adresse en priorité à l'initialisation (la feuille mobile, remontée à chaque ouverture, garde les choix). `ListingCard` transmet `checkin`/`checkout`/`capacity`/`dogs` dans ses liens. ⚠️ Passer `null` comme état à `replaceState` : avec `window.history.state`, Next ne met pas `useSearchParams` à jour.
+6. **Fenêtre d'inscription des demandes** (`QuoteAuthModal.tsx`) : sous-titre « Contactez le propriétaire directement et économisez » (onglet Créer un compte, clé `listing.authModalSignupSubtitle`) et bouton « Continuer avec Google » dans les deux onglets — retour via `/auth/callback?next={page + adresse complète}`, la demande commencée est remise par `lib/pendingQuoteDraft.ts`. Rôle voyageur par défaut.
+7. **Pied de page** : « Une idée ou un problème ? » masqué hors connexion.
+
+**Pistes proposées, non retenues pour l'instant** : envoi automatique de la demande dès la confirmation du courriel (plus grosse fuite du tunnel : le voyageur doit revenir et recliquer « Envoyer »), suggestions par similarité (capacité, équipements) plutôt que par date, carrousel horizontal des suggestions sur mobile, récapitulatif de la demande et liste d'avantages dans la fenêtre d'inscription (Simon a gardé seulement le sous-titre).
+
 ## 14. Points en suspens
+
+### À vérifier après la session du 2026-10-11
+
+- **« Continuer avec Google » dans la fenêtre de demande** : jamais testé jusqu'au retour (fenêtre privée → fiche → dates → « Envoyer la demande » → Google → retour sur la fiche avec dates et demande remise).
+- **Suggestions complétées par la région** et **filtres d'avis** jamais vus à l'écran (pas assez de chalets publiés / d'avis des deux types).
+- **Points forts sur fond blanc** et **feuille mobile qui garde les dates** : pas revérifiés à l'écran après publication.
 
 ### À faire / à vérifier après la session du 2026-10-10
 
