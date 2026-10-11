@@ -109,7 +109,7 @@ export default async function Footer() {
             <ul className="text-sm md:space-y-3">
               <FooterLink href={localePath("/a-propos", locale)} label={t("legal.about")} />
               <FooterLink href={localePath("/contact", locale)} label={t("legal.contact")} />
-              <FooterFeedbackLink label={t("legal.feedback")} contactHref={localePath("/contact", locale)} />
+              <FooterFeedbackLink label={t("legal.feedback")} />
             </ul>
           </div>
         </div>
