@@ -960,6 +960,7 @@
     "quoteRequestCta": "Demande de devis",
     "authModalLoginTitle": "Connectez-vous à votre compte",
     "authModalSignupTitle": "Créez votre compte",
+    "authModalSignupSubtitle": "Contactez le propriétaire directement et économisez",
     "authModalLoginTab": "Se connecter",
     "authModalSignupTab": "Créer un compte",
     "authModalCheckEmailReturn": "Le lien vous ramènera sur cette page.",

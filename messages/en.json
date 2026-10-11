@@ -960,6 +960,7 @@
     "quoteRequestCta": "Request a quote",
     "authModalLoginTitle": "Log in to your account",
     "authModalSignupTitle": "Create your account",
+    "authModalSignupSubtitle": "Contact the owner directly and save",
     "authModalLoginTab": "Log in",
     "authModalSignupTab": "Create an account",
     "authModalCheckEmailReturn": "The link will bring you back to this page.",
