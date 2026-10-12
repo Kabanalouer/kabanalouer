@@ -106,6 +106,10 @@ export default function ContactForm({
   const [babies, setBabies] = useState(initialBabies ?? 0);
   const [pets, setPets] = useState(Math.min(urlPets > 0 ? urlPets : (initialPets ?? 0), dogsMax));
   const [guestsOpen, setGuestsOpen] = useState(false);
+  // Le nombre de voyageurs compte comme choisi s'il vient de l'adresse, de la
+  // recherche ou d'une demande gardée, ou dès que le voyageur ouvre le champ :
+  // « 1 adulte » par défaut ne doit pas passer pour un vrai choix.
+  const [guestsChosen, setGuestsChosen] = useState(urlCapacity > 0 || initialAdults != null);
   const guestsRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
 
@@ -126,6 +130,7 @@ export default function ContactForm({
       setCheckout(draft.checkout > draft.checkin ? draft.checkout : "");
     }
     setAdults(draft.adults);
+    setGuestsChosen(true);
     setChildren(draft.children);
     setBabies(draft.babies);
     setPets(Math.min(draft.pets, dogsMax));
@@ -147,10 +152,10 @@ export default function ContactForm({
     setOrDelete("checkin", checkin || null);
     setOrDelete("checkout", checkout || null);
     const total = adults + children;
-    setOrDelete("capacity", total > 1 ? String(total) : null);
+    setOrDelete("capacity", guestsChosen ? String(total) : null);
     setOrDelete("dogs", pets > 0 ? String(pets) : null);
     if (url.href !== window.location.href) window.history.replaceState(null, "", url.href);
-  }, [checkin, checkout, adults, children, pets]);
+  }, [checkin, checkout, adults, children, pets, guestsChosen]);
 
   // Close calendar on outside click
   useEffect(() => {
@@ -194,7 +199,13 @@ export default function ContactForm({
   // Les chiens ne comptent pas dans la capacité en personnes du chalet —
   // ils ont leur propre plafond (dogsMax).
   const atCapacity = adults + children + babies >= capacity;
-  const canSubmit = !!(checkin || guestTotal > 0 || pets > 0 || message.trim());
+  // Sans dates ni nombre de voyageurs, le proprio ne peut pas calculer de prix.
+  const hasDates = !!(checkin && checkout);
+  const canSubmit = hasDates && guestsChosen;
+  const missingHint = canSubmit ? null
+    : !hasDates && !guestsChosen ? t("quoteMissingDatesAndGuests")
+    : !hasDates ? (checkin ? t("quoteMissingCheckout") : t("quoteMissingDates"))
+    : t("quoteMissingGuests");
 
   // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
   // (adultes + enfants + bébés) et les animaux sont deux clauses distinctes,
@@ -207,6 +218,7 @@ export default function ContactForm({
     : ts("guestsCount", { count: humanTotal });
 
   const handleSubmitClick = () => {
+    if (!canSubmit) return;
     trackFunnelStep("t_request_click");
     if (!currentUserId) {
       trackFunnelStep("t_auth_prompt");
@@ -425,11 +437,13 @@ export default function ContactForm({
       <div ref={guestsRef} className="relative">
         <button
           type="button"
-          onClick={() => setGuestsOpen((o) => !o)}
+          onClick={() => { setGuestsOpen((o) => !o); setGuestsChosen(true); }}
           className="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-left rounded-xl border border-[#ebebeb] hover:border-charcoal-200 transition-colors"
         >
           <span className="text-xs font-medium text-charcoal-400">{ts("guestsPlaceholder")}</span>
-          <span className="text-sm text-charcoal-800 font-medium">{guestsSummary}</span>
+          <span className={`text-sm ${guestsChosen ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
+            {guestsChosen ? guestsSummary : t("addGuests")}
+          </span>
         </button>
 
         {guestsOpen && (
@@ -509,6 +523,15 @@ export default function ContactForm({
       )}
 
       {error && <p className="text-sm text-error-500">{error}</p>}
+
+      {missingHint && (
+        <p className="flex items-start gap-2 text-sm text-charcoal-600" role="status">
+          <svg className="w-4 h-4 mt-0.5 shrink-0 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          <span>{missingHint} {t("quoteMissingReason")}</span>
+        </p>
+      )}
 
       <button
         onClick={handleSubmitClick}
