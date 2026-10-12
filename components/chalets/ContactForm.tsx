@@ -92,6 +92,9 @@ export default function ContactForm({
   const [checkin, setCheckin] = useState(searchParams.get("checkin") ?? initialCheckin ?? "");
   const [checkout, setCheckout] = useState(searchParams.get("checkout") ?? initialCheckout ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  // Clic sur « Envoyer » sans dates : on ouvre le calendrier et on signale le
+  // champ, plutôt qu'un bouton grisé ou une note permanente.
+  const [datesNudge, setDatesNudge] = useState(false);
   const [hoverDate, setHoverDate] = useState("");
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
@@ -197,7 +200,7 @@ export default function ContactForm({
   // Sans dates, le proprio ne peut pas calculer de prix. Les voyageurs ont
   // toujours au moins 1 adulte par défaut.
   const canSubmit = !!(checkin && checkout);
-  const missingHint = canSubmit ? null : checkin ? t("quoteMissingCheckout") : t("quoteMissingDates");
+  const showDatesNudge = datesNudge && !canSubmit;
 
   // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
   // (adultes + enfants + bébés) et les animaux sont deux clauses distinctes,
@@ -210,7 +213,11 @@ export default function ContactForm({
     : ts("guestsCount", { count: humanTotal });
 
   const handleSubmitClick = () => {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      setDatesNudge(true);
+      setCalendarOpen(true);
+      return;
+    }
     trackFunnelStep("t_request_click");
     if (!currentUserId) {
       trackFunnelStep("t_auth_prompt");
@@ -374,7 +381,7 @@ export default function ContactForm({
       {/* Dates */}
       <p className="text-base font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
       <div ref={calRef} className="relative">
-        <div className="grid grid-cols-2 rounded-xl border border-[#ebebeb] overflow-hidden">
+        <div className={`grid grid-cols-2 rounded-xl border overflow-hidden transition-colors ${showDatesNudge ? "border-charcoal-800 ring-1 ring-charcoal-800" : "border-[#ebebeb]"}`}>
           <button
             type="button"
             onClick={() => setCalendarOpen((o) => !o)}
@@ -396,6 +403,9 @@ export default function ContactForm({
             </span>
           </button>
         </div>
+        {showDatesNudge && (
+          <p className="mt-1.5 text-sm text-charcoal-600" role="status">{t("quoteDatesNudge")}</p>
+        )}
 
         {calendarOpen && (
           <div
@@ -514,18 +524,9 @@ export default function ContactForm({
 
       {error && <p className="text-sm text-error-500">{error}</p>}
 
-      {missingHint && (
-        <p className="flex items-start gap-2 text-sm text-charcoal-600" role="status">
-          <svg className="w-4 h-4 mt-0.5 shrink-0 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-          </svg>
-          <span>{missingHint} {t("quoteMissingReason")}</span>
-        </p>
-      )}
-
       <button
         onClick={handleSubmitClick}
-        disabled={sending || !canSubmit}
+        disabled={sending}
         className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {sending ? t("sendingRequest") : t("sendRequestCta")}
