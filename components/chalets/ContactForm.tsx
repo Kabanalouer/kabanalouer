@@ -106,10 +106,6 @@ export default function ContactForm({
   const [babies, setBabies] = useState(initialBabies ?? 0);
   const [pets, setPets] = useState(Math.min(urlPets > 0 ? urlPets : (initialPets ?? 0), dogsMax));
   const [guestsOpen, setGuestsOpen] = useState(false);
-  // Le nombre de voyageurs compte comme choisi s'il vient de l'adresse, de la
-  // recherche ou d'une demande gardée, ou dès que le voyageur ouvre le champ :
-  // « 1 adulte » par défaut ne doit pas passer pour un vrai choix.
-  const [guestsChosen, setGuestsChosen] = useState(urlCapacity > 0 || initialAdults != null);
   const guestsRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
 
@@ -130,7 +126,6 @@ export default function ContactForm({
       setCheckout(draft.checkout > draft.checkin ? draft.checkout : "");
     }
     setAdults(draft.adults);
-    setGuestsChosen(true);
     setChildren(draft.children);
     setBabies(draft.babies);
     setPets(Math.min(draft.pets, dogsMax));
@@ -152,10 +147,10 @@ export default function ContactForm({
     setOrDelete("checkin", checkin || null);
     setOrDelete("checkout", checkout || null);
     const total = adults + children;
-    setOrDelete("capacity", guestsChosen ? String(total) : null);
+    setOrDelete("capacity", total > 1 ? String(total) : null);
     setOrDelete("dogs", pets > 0 ? String(pets) : null);
     if (url.href !== window.location.href) window.history.replaceState(null, "", url.href);
-  }, [checkin, checkout, adults, children, pets, guestsChosen]);
+  }, [checkin, checkout, adults, children, pets]);
 
   // Close calendar on outside click
   useEffect(() => {
@@ -199,13 +194,10 @@ export default function ContactForm({
   // Les chiens ne comptent pas dans la capacité en personnes du chalet —
   // ils ont leur propre plafond (dogsMax).
   const atCapacity = adults + children + babies >= capacity;
-  // Sans dates ni nombre de voyageurs, le proprio ne peut pas calculer de prix.
-  const hasDates = !!(checkin && checkout);
-  const canSubmit = hasDates && guestsChosen;
-  const missingHint = canSubmit ? null
-    : !hasDates && !guestsChosen ? t("quoteMissingDatesAndGuests")
-    : !hasDates ? (checkin ? t("quoteMissingCheckout") : t("quoteMissingDates"))
-    : t("quoteMissingGuests");
+  // Sans dates, le proprio ne peut pas calculer de prix. Les voyageurs ont
+  // toujours au moins 1 adulte par défaut.
+  const canSubmit = !!(checkin && checkout);
+  const missingHint = canSubmit ? null : checkin ? t("quoteMissingCheckout") : t("quoteMissingDates");
 
   // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
   // (adultes + enfants + bébés) et les animaux sont deux clauses distinctes,
@@ -437,13 +429,11 @@ export default function ContactForm({
       <div ref={guestsRef} className="relative">
         <button
           type="button"
-          onClick={() => { setGuestsOpen((o) => !o); setGuestsChosen(true); }}
+          onClick={() => setGuestsOpen((o) => !o)}
           className="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-left rounded-xl border border-[#ebebeb] hover:border-charcoal-200 transition-colors"
         >
           <span className="text-xs font-medium text-charcoal-400">{ts("guestsPlaceholder")}</span>
-          <span className={`text-sm ${guestsChosen ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
-            {guestsChosen ? guestsSummary : t("addGuests")}
-          </span>
+          <span className="text-sm text-charcoal-800 font-medium">{guestsSummary}</span>
         </button>
 
         {guestsOpen && (
