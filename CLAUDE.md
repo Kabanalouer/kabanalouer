@@ -528,7 +528,7 @@ Anciennement "Caractéristiques" — renommé partout où le libellé désigne c
 
 #### Fiche publique — affichage des équipements (2026-09-19)
 
-- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`, fonction exportée `pickHighlightAmenities()`), plus de bouton "Voir caractéristiques". **Depuis le 2026-10-07** : 3 colonnes (1 sur mobile), sans filets, icône 24px au-dessus, titre 16px 600, détail 14px `charcoal-400`, gap 28px — n'utilise plus `AmenityRow`. **Depuis le 2026-10-11** : plus de résumé des détails sous le nom (visible dans « Ce que propose ce chalet »), icône dans un rond `bg-charcoal-50` de 44px, fond blanc (un encadré gris a été essayé puis retiré le même jour, Simon ne l'aimait pas — ne pas le reproposer) ; sur mobile, icône à gauche du nom.
+- **`components/chalets/ListingHighlights.tsx`** : "Points forts du chalet" en haut de fiche (top 3 selon `AMENITY_PRIORITY_ORDER`, fonction exportée `pickHighlightAmenities()`), plus de bouton "Voir caractéristiques". **Depuis le 2026-10-07** : 3 colonnes (1 sur mobile), sans filets, icône 24px au-dessus, titre 16px 600, détail 14px `charcoal-400`, gap 28px — n'utilise plus `AmenityRow`. **Depuis le 2026-10-11** : plus de résumé des détails sous le nom (visible dans « Ce que propose ce chalet »), fond blanc (un encadré gris a été essayé puis retiré le même jour, Simon ne l'aimait pas — ne pas le reproposer) ; sur mobile, icône à gauche du nom. **Depuis le 2026-10-12** : plus de rond gris derrière les icônes (icône seule 28px, `text-charcoal-800`) — ne pas le remettre.
 - **`components/chalets/AmenitiesSection.tsx`** : section "Ce que propose ce chalet" (repositionnée après "Où vous dormirez"), affiche 10 équipements prioritaires **en excluant les 3 points forts** (comparés par objet, depuis le 2026-10-07 — ils restent dans la modale) + bouton "Afficher {X} équipements" (X = total ; affiché si plus de 10 au total ou si l'aperçu est vide) ouvrant une modale groupée par catégorie via `groupAmenitiesByCategory()`.
 - **`components/chalets/AmenityRow.tsx`** (utilisé par l'aperçu et la modale de `AmenitiesSection`) : icône + nom + résumé (`summarizeAmenityDetails()`), résumé toujours tronqué sur une seule ligne (`truncate` + `min-w-0` sur le parent flex) peu importe sa longueur.
 
@@ -1070,7 +1070,30 @@ Tout en ligne (commits `96e6792` → `fc4e194`).
 
 **Pistes proposées, non retenues pour l'instant** : envoi automatique de la demande dès la confirmation du courriel (plus grosse fuite du tunnel : le voyageur doit revenir et recliquer « Envoyer »), suggestions par similarité (capacité, équipements) plutôt que par date, carrousel horizontal des suggestions sur mobile, récapitulatif de la demande et liste d'avantages dans la fenêtre d'inscription (Simon a gardé seulement le sous-titre).
 
+### Session du 2026-10-12 — Pixel Meta, consentement, politique de confidentialité, fiche chalet
+
+Tout en ligne (commits `2273624` → `3329ed6`). Détails techniques en sections 9 (Analytics) et 10.
+
+1. **Pixel Meta (Facebook/Instagram)** branché (`components/MetaPixel.tsx`, jeu de données 1247153310943964) : chargé seulement si le visiteur accepte la publicité ; PageView + conversions (Lead, CompleteRegistration, Contact, InitiateCheckout, ListingCreate/ListingPublish) via `trackEvent()`. API Conversions non activée.
+2. **Bandeau des cookies** : nouvelle catégorie `publicite` à côté de `mesure` (`lib/consent.ts`) ; boutons Refuser · Choisir · Accepter (« Choisir » = cases Mesure d'audience / Publicité) ; les visiteurs qui avaient déjà répondu revoient le bandeau une fois (`publiciteAsked`). Sans `NEXT_PUBLIC_META_PIXEL_ID`, le bandeau reste à la seule question mesure.
+3. **Politique de confidentialité** mise à jour pour Meta (sections 3, 4, 6 et 7 : données, sous-traitant, conservation, témoins `_fbp`/`_fbc`).
+4. **Points forts** : rond gris retiré derrière les icônes (section 9).
+5. **Demande de prix** (`ContactForm.tsx`) : **dates d'arrivée et de départ obligatoires** ; voyageurs laissés à 1 adulte par défaut (choix de Simon, pour garder le parcours simple). Sans dates, le bouton « Envoyer la demande » est grisé (`aria-disabled`, pas `disabled` : un bouton désactivé ne reçoit ni survol ni toucher) avec une bulle « Entrez vos dates pour envoyer la demande » (clé `listing.quoteDatesNudge`) au survol, au focus clavier (`peer-focus-visible`) et 2,5 s au toucher sur mobile. **Essayé puis retiré le même jour, ne pas reproposer** : note permanente sous le bouton (alourdit le formulaire) et clic qui ouvre le calendrier en signalant les dates (Simon : « on dirait un bug »). La garde est côté client seulement — `/api/messages` accepte encore un message sans dates (aussi utilisé par `ContactButton`).
+6. **Hors code** : photo de profil Instagram (1080×1080, favicon plein cadre, sapin centré pour le recadrage rond) générée dans `~/Downloads/kabanalouer-instagram-profil.png`.
+
+**Leçons de la session**
+- **Vercel n'a pas déclenché le déploiement automatique 2 fois sur 4 pushes** : après chaque push, vérifier `list_deployments` (MCP Vercel) au lieu d'attendre. `npx vercel --prod` échoue (« Not authorized » : CLI non connecté sur la machine) ; passer par l'outil MCP `create_deployment` (`project` = `prj_WFM93C708HzKSL8FjZb6VooPlgXz`, `teamId` = `team_7B1qAJeuVctQk4e5ORnNMNr9`, `target: "production"`, `gitSource` GitHub `Kabanalouer/kabanalouer`, `ref: main`, `sha` du commit). Le « publie » de Simon vaut accord.
+- **Playwright refuse de cliquer un bouton `aria-disabled`** : `click({ force: true })` pour les tests.
+- **Bandeau des cookies** : il intercepte les clics/touchers en bas d'écran dans les tests mobiles — cliquer « Refuser » d'abord.
+- **Un script de capture lancé depuis le dossier du projet y écrit ses images** (déjà noté le 2026-09-30, refait aujourd'hui) : toujours `cd` dans le scratchpad dans la même commande.
+- **Redirection `/chalets/…/{numéro}` → lien personnalisé** : les paramètres d'adresse (`?checkin=…`) sont perdus. Sans impact pour les cartes (elles pointent déjà vers le lien personnalisé), mais un lien partagé avec le numéro perd ses dates.
+
 ## 14. Points en suspens
+
+### À vérifier après la session du 2026-10-12
+
+- **Bulle « Entrez vos dates »** : vérifiée en local seulement (ordinateur et mobile), pas sur un vrai téléphone.
+- **Bandeau Refuser · Choisir · Accepter et Pixel** : voir le point Pixel Meta plus bas (Gestionnaire d'événements, audiences).
 
 ### À vérifier après la session du 2026-10-11
 
