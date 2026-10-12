@@ -92,9 +92,10 @@ export default function ContactForm({
   const [checkin, setCheckin] = useState(searchParams.get("checkin") ?? initialCheckin ?? "");
   const [checkout, setCheckout] = useState(searchParams.get("checkout") ?? initialCheckout ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
-  // Clic sur « Envoyer » sans dates : on ouvre le calendrier et on signale le
-  // champ, plutôt qu'un bouton grisé ou une note permanente.
-  const [datesNudge, setDatesNudge] = useState(false);
+  // Bulle « Entrez vos dates » sur le bouton grisé : au survol sur ordinateur,
+  // quelques secondes au toucher sur mobile (pas de survol).
+  const [datesTipTapped, setDatesTipTapped] = useState(false);
+  const datesTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hoverDate, setHoverDate] = useState("");
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
@@ -200,7 +201,6 @@ export default function ContactForm({
   // Sans dates, le proprio ne peut pas calculer de prix. Les voyageurs ont
   // toujours au moins 1 adulte par défaut.
   const canSubmit = !!(checkin && checkout);
-  const showDatesNudge = datesNudge && !canSubmit;
 
   // Résumé affiché sur le champ "Voyageurs" replié — le compte de personnes
   // (adultes + enfants + bébés) et les animaux sont deux clauses distinctes,
@@ -214,8 +214,9 @@ export default function ContactForm({
 
   const handleSubmitClick = () => {
     if (!canSubmit) {
-      setDatesNudge(true);
-      setCalendarOpen(true);
+      setDatesTipTapped(true);
+      if (datesTipTimer.current) clearTimeout(datesTipTimer.current);
+      datesTipTimer.current = setTimeout(() => setDatesTipTapped(false), 2500);
       return;
     }
     trackFunnelStep("t_request_click");
@@ -381,7 +382,7 @@ export default function ContactForm({
       {/* Dates */}
       <p className="text-base font-semibold text-charcoal-800 pt-1">{t("requestPriceHeading")}</p>
       <div ref={calRef} className="relative">
-        <div className={`grid grid-cols-2 rounded-xl border overflow-hidden transition-colors ${showDatesNudge ? "border-charcoal-800 ring-1 ring-charcoal-800" : "border-[#ebebeb]"}`}>
+        <div className="grid grid-cols-2 rounded-xl border border-[#ebebeb] overflow-hidden">
           <button
             type="button"
             onClick={() => setCalendarOpen((o) => !o)}
@@ -403,9 +404,6 @@ export default function ContactForm({
             </span>
           </button>
         </div>
-        {showDatesNudge && (
-          <p className="mt-1.5 text-sm text-charcoal-600" role="status">{t("quoteDatesNudge")}</p>
-        )}
 
         {calendarOpen && (
           <div
@@ -524,13 +522,29 @@ export default function ContactForm({
 
       {error && <p className="text-sm text-error-500">{error}</p>}
 
-      <button
-        onClick={handleSubmitClick}
-        disabled={sending}
-        className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {sending ? t("sendingRequest") : t("sendRequestCta")}
-      </button>
+      {/* aria-disabled plutôt que disabled : un bouton désactivé ne reçoit ni
+          survol ni toucher, la bulle ne pourrait pas s'afficher. */}
+      <div className="relative group">
+        <button
+          onClick={handleSubmitClick}
+          disabled={sending}
+          aria-disabled={!canSubmit}
+          aria-describedby={!canSubmit ? "quote-dates-tip" : undefined}
+          className={`peer w-full bg-primary text-white py-3 rounded-full font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${canSubmit ? "hover:bg-primary/90" : "opacity-40 cursor-not-allowed"}`}
+        >
+          {sending ? t("sendingRequest") : t("sendRequestCta")}
+        </button>
+        {!canSubmit && (
+          <span
+            id="quote-dates-tip"
+            role="tooltip"
+            className={`pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-lg bg-charcoal-800 px-3 py-1.5 text-sm text-white shadow-lg transition-opacity group-hover:opacity-100 peer-focus-visible:opacity-100 ${datesTipTapped ? "opacity-100" : "opacity-0"}`}
+          >
+            {t("quoteDatesNudge")}
+            <span className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-charcoal-800" aria-hidden="true" />
+          </span>
+        )}
+      </div>
 
       {authModalOpen && (
         <QuoteAuthModal onClose={() => setAuthModalOpen(false)} onAuthenticated={handleAuthenticated} />
