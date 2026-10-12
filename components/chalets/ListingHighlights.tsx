@@ -21,8 +21,9 @@ export function pickHighlightAmenities(amenities: AmenityValue[]): AmenityValue[
 // AmenitiesSection.tsx ("Ce que propose ce chalet", plus bas sur la page,
 // avec le reste des équipements et le modal complet) — pas de bouton ici
 // depuis le repositionnement du 2026-09-19. Mise en page en 3 colonnes
-// (icône au-dessus) depuis le 2026-10-07. Fond blanc, icônes dans un rond gris
-// pâle, sans le résumé des détails (visible dans AmenitiesSection) depuis le 2026-10-11.
+// (icône au-dessus) depuis le 2026-10-07. Fond blanc, sans le résumé des détails
+// (visible dans AmenitiesSection) depuis le 2026-10-11. Icônes sans rond gris
+// derrière depuis le 2026-10-12.
 export default function ListingHighlights({ amenities }: { amenities: AmenityValue[] }) {
   const t = useTranslations("amenitiesSection");
   const locale = useLocale();
@@ -41,9 +42,7 @@ export default function ListingHighlights({ amenities }: { amenities: AmenityVal
           const label = locale === "en" ? entry.labelEn : entry.label;
           return (
             <div key={`${value.id}-${index}`} className="flex items-center sm:flex-col sm:items-start gap-3 min-w-0">
-              <span className="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-charcoal-50">
-                <AmenityIcon name={entry.icon} className="w-6 h-6 text-charcoal-800" />
-              </span>
+              <AmenityIcon name={entry.icon} className="w-7 h-7 shrink-0 text-charcoal-800" />
               <p className="text-base font-semibold text-charcoal-800 min-w-0">{label}</p>
             </div>
           );
