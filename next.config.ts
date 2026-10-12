@@ -13,7 +13,7 @@ const securityHeaders = [
       "default-src 'self'",
       // Next.js requires unsafe-inline + unsafe-eval; Google Maps needs *.googleapis.com
       // *.googletagmanager.com : script gtag.js (Google Analytics 4)
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com *.googletagmanager.com js.stripe.com challenges.cloudflare.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com *.googletagmanager.com connect.facebook.net js.stripe.com challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com challenges.cloudflare.com",
       "font-src 'self' fonts.gstatic.com data:",
       // img: allow HTTPS broadly (Unsplash, Supabase storage, Google Maps tiles)
@@ -21,7 +21,7 @@ const securityHeaders = [
       // *.google-analytics.com/*.googletagmanager.com : envoi des événements GA4
       // *.gstatic.com / *.google.com / data: / blob: : requis par les cartes
       // Google vectorielles (Map ID) — sans eux, le fond de carte reste vide.
-      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com *.gstatic.com *.google.com data: blob: api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com",
+      "connect-src 'self' *.supabase.co wss://*.supabase.co *.googleapis.com *.gstatic.com *.google.com data: blob: api.stripe.com hooks.stripe.com challenges.cloudflare.com *.google-analytics.com *.googletagmanager.com connect.facebook.net www.facebook.com",
       "frame-src 'self' js.stripe.com hooks.stripe.com challenges.cloudflare.com",
       "worker-src 'self' blob:",
       "child-src blob:",

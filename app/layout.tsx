@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { SITE_URL } from "@/lib/siteUrl";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MetaPixel from "@/components/MetaPixel";
 import SiteVisitTracker from "@/components/SiteVisitTracker";
 import ErrorReporter from "@/components/ErrorReporter";
 import ConsentBanner from "@/components/ConsentBanner";
@@ -116,11 +117,13 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
   return (
     <html lang={locale} className={`h-full ${jakarta.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col">
         {gaMeasurementId && <GoogleAnalytics measurementId={gaMeasurementId} />}
+        {metaPixelId && <MetaPixel pixelId={metaPixelId} />}
         <SiteVisitTracker />
         <ErrorReporter />
         <script

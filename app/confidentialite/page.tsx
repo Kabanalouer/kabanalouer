@@ -178,6 +178,7 @@ export default async function ConfidentialitePage() {
                 <LegalItem term={t("s4T6")}>{t("s4D6")}</LegalItem>
                 <LegalItem term={t("s4T7")}>{t("s4D7")}</LegalItem>
                 <LegalItem term={t("s4T8")}>{t("s4D8")}</LegalItem>
+                <LegalItem term={t("s4T9")}>{t("s4D9")}</LegalItem>
               </ul>
               <p>{t("s4P2")}</p>
             </div>
@@ -223,6 +224,7 @@ export default async function ConfidentialitePage() {
               <ul className="space-y-3">
                 <LegalItem term={t("s7T1")}>{t("s7D1")}</LegalItem>
                 <LegalItem term={t("s7T2")}>{t("s7D2")}</LegalItem>
+                <LegalItem term={t("s7T3")}>{t("s7D3")}</LegalItem>
               </ul>
               <p>{t("s7P2")}</p>
             </div>
