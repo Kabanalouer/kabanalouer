@@ -12,15 +12,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: t2(locale, "Non authentifié", "Not authenticated") }, { status: 401 });
   }
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("listings")
     .delete()
     .eq("id", id)
-    .eq("host_id", user.id);
+    .eq("host_id", user.id)
+    .select("id");
 
   if (error) {
     console.error("listings/[id]: échec suppression", error);
     return NextResponse.json({ error: t2(locale, "Erreur lors de la suppression de l'annonce.", "Error while deleting the listing.") }, { status: 500 });
+  }
+
+  // Aucune ligne supprimée (annonce d'un autre compte, déjà retirée) : ne jamais afficher un faux succès.
+  if (!deleted || deleted.length === 0) {
+    return NextResponse.json({ error: t2(locale, "Annonce introuvable ou déjà supprimée.", "Listing not found or already deleted.") }, { status: 404 });
   }
 
   return NextResponse.json({ success: true });
