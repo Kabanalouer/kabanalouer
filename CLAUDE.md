@@ -1088,6 +1088,19 @@ Tout en ligne (commits `2273624` → `3329ed6`). Détails techniques en sections
 - **Un script de capture lancé depuis le dossier du projet y écrit ses images** (déjà noté le 2026-09-30, refait aujourd'hui) : toujours `cd` dans le scratchpad dans la même commande.
 - **Redirection `/chalets/…/{numéro}` → lien personnalisé** : les paramètres d'adresse (`?checkin=…`) sont perdus. Sans impact pour les cartes (elles pointent déjà vers le lien personnalisé), mais un lien partagé avec le numéro perd ses dates.
 
+### Session du 2026-10-13 — Annonce test bloquant l'import, compte test supprimé
+
+Commit `cf0d3a5`.
+
+1. **« Cette annonce est déjà sur Kabanalouer »** à l'import du Chalet Authentik 40 par `info@chaletauthentik.com` : l'annonce test créée par Simon avec un autre compte (`simon@simonlemay.com`, pour tester l'objectif Meta) n'avait **jamais été supprimée** (toujours publiée, avec abonnement gratuit). L'anti-doublon par numéro Airbnb (`airbnbRoomId()`, `lib/listingImport.ts`) bloquait donc à bon droit.
+2. **Compte `simon@simonlemay.com` supprimé** avec l'accord de Simon (`DELETE FROM auth.users` → cascade `users` → `listings` → `rooms`/`subscriptions`), puis ses 57 photos retirées du bucket `listing-photos` par l'API de stockage (la cascade SQL ne touche pas au stockage).
+3. **Faux succès de suppression corrigé** : `DELETE /api/listings/[id]` renvoyait `success` même quand aucune ligne n'était supprimée (RLS ou annonce déjà retirée). Ajout de `.select("id")` et réponse 404 si rien n'est supprimé ; `DeleteListingModal` affiche alors son erreur.
+
+**Leçons de la session**
+- **Supprimer un compte de test** : vérifier d'abord ses liens (annonces, abonnements, messages, factures — `invoices` et `featured_listings` sont en `NO ACTION`, ils bloqueraient la cascade —, `stripe_customer_id`), supprimer dans `auth.users`, puis vider `listing-photos/{user_id}/` et `avatars` par l'API de stockage (`list` + `remove`, clé service).
+- **Une suppression Supabase sans `.select()`** ne dit pas combien de lignes ont été retirées : toujours vérifier le nombre pour une action que l'utilisateur doit voir réussir.
+- L'outil MCP `execute_sql` a renvoyé une fois « Invalid or expired requestState » sans rien exécuter : revérifier l'état, puis relancer.
+
 ## 14. Points en suspens
 
 ### À vérifier après la session du 2026-10-12
