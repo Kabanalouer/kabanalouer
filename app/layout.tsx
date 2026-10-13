@@ -7,6 +7,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import MetaPixel from "@/components/MetaPixel";
 import SiteVisitTracker from "@/components/SiteVisitTracker";
+import SignupTracker from "@/components/SignupTracker";
 import ErrorReporter from "@/components/ErrorReporter";
 import ConsentBanner from "@/components/ConsentBanner";
 import "./globals.css";
@@ -125,6 +126,7 @@ export default async function RootLayout({
         {gaMeasurementId && <GoogleAnalytics measurementId={gaMeasurementId} />}
         {metaPixelId && <MetaPixel pixelId={metaPixelId} />}
         <SiteVisitTracker />
+        <SignupTracker />
         <ErrorReporter />
         <script
           type="application/ld+json"

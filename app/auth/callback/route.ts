@@ -3,6 +3,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { claimTravelerWelcomeSlot, sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
 import { localePath } from "@/lib/localePath";
+import { NEW_SIGNUP_COOKIE } from "@/lib/newSignupCookie";
+
+// Un compte Google créé il y a moins de 10 minutes = une inscription, pas une
+// connexion d'un compte existant.
+const NEW_SIGNUP_WINDOW_MS = 10 * 60 * 1000;
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -87,15 +92,33 @@ export async function GET(request: Request) {
           }
         }
 
+        const finalRole =
+          resolvedRole ??
+          ((await supabase.from("users").select("role").eq("id", user.id).single()).data?.role === "host"
+            ? "host"
+            : "traveler");
+
         // Redirect hosts to their dashboard by default (unless a specific `next` was set)
-        if (next === defaultHome) {
-          const isHost = resolvedRole
-            ? resolvedRole === "host"
-            : (await supabase.from("users").select("role").eq("id", user.id).single()).data?.role === "host";
-          if (isHost) {
-            return NextResponse.redirect(`${origin}${localePath("/dashboard", locale)}`);
-          }
+        const destination =
+          next === defaultHome && finalRole === "host" ? localePath("/dashboard", locale) : next;
+        const response = NextResponse.redirect(`${origin}${destination}`);
+
+        // L'inscription Google se termine ici, côté serveur : aucun code du
+        // navigateur ne peut envoyer « sign_up » (GA4 / CompleteRegistration
+        // Meta). Un témoin de courte durée le signale à SignupTracker, qui
+        // l'envoie une fois la page chargée (si le visiteur a consenti).
+        const isNewGoogleSignup =
+          user.app_metadata?.provider === "google" &&
+          Date.now() - new Date(user.created_at).getTime() < NEW_SIGNUP_WINDOW_MS;
+        if (isNewGoogleSignup) {
+          response.cookies.set(NEW_SIGNUP_COOKIE, `google.${finalRole}`, {
+            path: "/",
+            maxAge: 600,
+            sameSite: "lax",
+            secure: true,
+          });
         }
+        return response;
       }
       return NextResponse.redirect(`${origin}${next}`);
     }
