@@ -1,8 +1,10 @@
 // Envoi d'une erreur du navigateur à /api/errors (lib/errorTracking.ts).
 // Bruit ignoré : extensions du navigateur, scripts tiers illisibles, coupures
-// réseau, avertissement ResizeObserver. Au plus 5 envois par page.
+// réseau, avertissement ResizeObserver, scripts injectés par les navigateurs
+// intégrés (Facebook/Instagram). Au plus 5 envois par page.
 
 const IGNORED = [
+  /Java object is gone/i,
   /ResizeObserver loop/i,
   /^Script error\.?$/i,
   /Failed to fetch|Load failed|NetworkError|network error/i,
@@ -19,7 +21,7 @@ export function reportClientError(error: unknown, extra?: { digest?: string }): 
     const message = err?.message ?? (typeof error === "string" ? error : JSON.stringify(error ?? "Erreur inconnue"));
     const stack = err?.stack ?? "";
     if (!message || IGNORED.some((re) => re.test(message))) return;
-    if (/chrome-extension:|moz-extension:|safari-web-extension:/.test(stack)) return;
+    if (/chrome-extension:|moz-extension:|safari-web-extension:|iabjs:\/\//.test(stack)) return;
     sent++;
     const body = JSON.stringify({
       message: extra?.digest ? `${message} (digest ${extra.digest})` : message,
