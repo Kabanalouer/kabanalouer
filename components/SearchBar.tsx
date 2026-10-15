@@ -286,7 +286,7 @@ export default function SearchBar({
             aria-controls="dest-suggestions"
             aria-expanded={showDropdown}
             aria-autocomplete="list"
-            className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-300 min-w-0"
+            className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-400 min-w-0"
           />
           {destQuery && (
             <button onClick={clearDest} className="text-charcoal-400 hover:text-charcoal-600 transition-colors shrink-0">
