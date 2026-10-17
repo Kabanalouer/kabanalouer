@@ -10,6 +10,7 @@ const IGNORED = [
   /Failed to fetch|Load failed|NetworkError|network error/i,
   /AbortError|The operation was aborted/i,
   /Loading chunk \d+ failed|ChunkLoadError/i,
+  /window\.webkit\.messageHandlers/i,
 ];
 
 let sent = 0;
