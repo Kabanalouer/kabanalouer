@@ -15,6 +15,7 @@
 // affiché) et est bloqué : aucune session ne peut s'ouvrir avec.
 
 import { randomBytes } from "node:crypto";
+import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 import { generateUniqueListingNumber } from "../lib/generateListingNumber";
 import { buildListingPath } from "../lib/listingUrl";
@@ -100,6 +101,23 @@ async function ensureSystemUser(): Promise<string> {
   return id;
 }
 
+const PHOTO_NAMES = ["test-seed-1.webp", "test-seed-2.webp"];
+
+// 2 images unies rangées sous <compte système>/<id de la fiche>/ (la règle des photos
+// d'une fiche non revendiquée) : sert à vérifier leur déplacement après une revendication.
+async function uploadTestPhotos(systemId: string, listingId: string) {
+  const photos: { url: string; caption: string }[] = [];
+  for (const [i, color] of [["1", "#636e40"], ["2", "#c2410c"]] as const) {
+    const buffer = await sharp({ create: { width: 800, height: 600, channels: 3, background: color } }).webp().toBuffer();
+    const path = `${systemId}/${listingId}/test-seed-${i}.webp`;
+    const { error } = await admin.storage.from("listing-photos").upload(path, buffer, { contentType: "image/webp", upsert: true });
+    if (error) throw new Error(`Photo de test ${i} : ${error.message}`);
+    photos.push({ url: admin.storage.from("listing-photos").getPublicUrl(path).data.publicUrl, caption: `Photo de test ${i}` });
+  }
+  const { error } = await admin.from("listings").update({ photos }).eq("id", listingId);
+  if (error) throw new Error(`Photos de la fiche : ${error.message}`);
+}
+
 async function seed(claimEmail: string) {
   const systemId = await ensureSystemUser();
   console.log(`Compte système : ${systemId}`);
@@ -156,6 +174,7 @@ async function seed(claimEmail: string) {
         .single();
       if (error || !data) throw new Error(`Fiche de test ${t.n} : ${error?.message ?? "échec"}`);
       row = data;
+      if (t.n === 1) await uploadTestPhotos(systemId, data.id as string);
     }
     const path = buildListingPath(
       { region: row.region as string, city: row.city as string, listing_number: row.listing_number as number, custom_slug: row.custom_slug as string | null },
@@ -167,6 +186,16 @@ async function seed(claimEmail: string) {
 }
 
 async function cleanup(all: boolean) {
+  // Photos de test : dans le dossier de la fiche (avant revendication) et dans celui du
+  // propriétaire (après le déplacement) — à retirer avant de supprimer les fiches.
+  const { data: sys0 } = await admin.from("users").select("id").eq("is_system", true).maybeSingle();
+  const { data: toDelete } = await admin.from("listings").select("id, host_id").eq("is_test", true).eq("import_source", TEST_SOURCE);
+  const files = (toDelete ?? []).flatMap((l) => [
+    ...PHOTO_NAMES.map((n) => `${l.host_id}/${n}`),
+    ...(sys0 ? PHOTO_NAMES.map((n) => `${sys0.id}/${l.id}/${n}`) : []),
+  ]);
+  if (files.length > 0) await admin.storage.from("listing-photos").remove(files);
+
   const { data: deleted, error } = await admin
     .from("listings")
     .delete()
