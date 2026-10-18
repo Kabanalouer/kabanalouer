@@ -28,6 +28,7 @@ import {
   sendClaimAdminAlert,
 } from "@/lib/emails/unclaimedOwner";
 import { claimLink, removeLink, reportLink } from "@/lib/claims/tokens";
+import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -160,6 +161,16 @@ export function emailTestSenders(): Record<string, Sender> {
     }),
     "claim-activated": (to, lang) => sendClaimActivatedEmail({
       to, lang, listingTitles: [TITLE], maskedClaimant: "j…@gmail.com", reportUrl: reportLink(lang, "exemple"),
+    }),
+    "claim-invitation": (to, lang) => sendClaimInvitationEmail({
+      to, lang, kind: "invite",
+      listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
+      claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
+    }),
+    "claim-invitation-reminder": (to, lang) => sendClaimInvitationEmail({
+      to, lang, kind: "reminder",
+      listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
+      claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
     }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, approved: true }),
     "claim-refused": (to, lang) => sendClaimDecisionEmail({

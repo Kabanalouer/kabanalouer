@@ -1,5 +1,6 @@
 import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { maskEmail } from "@/lib/claims/maskedEmail";
+import { markInvitationsClaimed } from "@/lib/claims/invitations";
 import {
   canSendMessageEmail,
   claimLink,
@@ -47,6 +48,8 @@ export async function claimListingsForUser(
 
   const rows = (data ?? []) as ClaimedRow[];
   try {
+    // L'invitation envoyée à cette adresse est marquée « revendiquée » (résultats de l'admin)
+    await markInvitationsClaimed(admin, [...new Set(rows.map((r) => r.out_claim_email).filter((e): e is string => !!e))]);
     await notifyOldAddresses(admin, input.userId, rows);
   } catch (e) {
     // La revendication a réussi : l'avis à l'ancienne adresse ne doit jamais la défaire.

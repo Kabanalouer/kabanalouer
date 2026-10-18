@@ -45,19 +45,20 @@ async function fetchAllRows<T>(build: (from: number, to: number) => PromiseLike<
 
 type Row = CandidateListing & { claim_email: string; claim_language: string | null };
 
-// Fiches non revendiquées, publiées, qui ne sont pas des fiches de test, avec une adresse
-async function unclaimedPublished(admin: AdminClient): Promise<Row[]> {
-  return fetchAllRows<Row>((from, to) =>
-    admin
+// Fiches non revendiquées, publiées, qui ne sont pas des fiches de test, avec une adresse.
+// testMode (essais seulement, jamais utilisé par le site) : l'inverse — uniquement les
+// fiches de test, publiées ou non — pour essayer le parcours sans rien publier.
+async function unclaimedPublished(admin: AdminClient, testMode: boolean): Promise<Row[]> {
+  return fetchAllRows<Row>((from, to) => {
+    let query = admin
       .from("listings")
       .select(LISTING_COLUMNS)
       .eq("claim_status", "unclaimed")
-      .eq("is_published", true)
-      .eq("is_test", false)
-      .not("claim_email", "is", null)
-      .order("claim_email")
-      .range(from, to)
-  );
+      .eq("is_test", testMode)
+      .not("claim_email", "is", null);
+    if (!testMode) query = query.eq("is_published", true);
+    return query.order("claim_email").range(from, to);
+  });
 }
 
 function group(rows: Row[], only?: Set<string>, exclude?: Set<string>): InvitationCandidate[] {
@@ -77,8 +78,8 @@ function group(rows: Row[], only?: Set<string>, exclude?: Set<string>): Invitati
 // À inviter : adresses avec au moins une fiche non revendiquée publiée et aucune invitation.
 // À relancer : invitée il y a 5 jours ou plus, pas revendiquée, pas encore relancée,
 // et au moins une fiche toujours non revendiquée et publiée.
-export async function listInvitationCandidates(admin: AdminClient, kind: InvitationKind): Promise<InvitationCandidate[]> {
-  const rows = await unclaimedPublished(admin);
+export async function listInvitationCandidates(admin: AdminClient, kind: InvitationKind, testMode = false): Promise<InvitationCandidate[]> {
+  const rows = await unclaimedPublished(admin, testMode);
 
   if (kind === "invite") {
     const { data } = await admin.from("listing_invitations").select("claim_email").eq("kind", "invite");

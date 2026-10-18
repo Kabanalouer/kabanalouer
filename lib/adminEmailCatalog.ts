@@ -136,6 +136,20 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true,
   },
   {
+    id: "claim-invitation", category: "proprio", group: "Fiches non revendiquées",
+    name: "Invitation à activer sa fiche",
+    when: "Quand tu cliques « Envoyer » ou « Tout envoyer » dans Admin → Invitations.",
+    conditions: "Part de info@kabanalouer.ca, seulement pour une fiche non revendiquée et publiée, une seule invitation par adresse. Contient le lien de la fiche, « Activer ma fiche » (gratuitement tant que l’offre de lancement est en cours) et « Retirer ma fiche ». Un pixel invisible compte les ouvertures (indicatif).",
+    mechanism: "event", testable: true,
+  },
+  {
+    id: "claim-invitation-reminder", category: "proprio", group: "Fiches non revendiquées",
+    name: "Relance de l’invitation (5 jours plus tard)",
+    when: "5 jours après l’invitation, si la fiche n’est pas revendiquée ; tu l’envoies depuis Admin → Invitations.",
+    conditions: "Une seule relance par adresse, jamais automatique : elle apparaît dans Admin → Invitations avant l’envoi.",
+    mechanism: "event", testable: true,
+  },
+  {
     id: "review-received", category: "proprio", group: "Demandes et avis",
     name: "Nouvel avis reçu",
     when: "Dès qu’un voyageur publie un avis sur le chalet.",

@@ -1,4 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
+import { lookup } from "node:dns/promises";
+import net from "node:net";
 import sharp from "sharp";
 import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -223,15 +225,87 @@ export function isSafeImageUrl(u: string): boolean {
   }
 }
 
+// Adresse IP interne, de bouclage, de lien local ou réservée : jamais téléchargée.
+export function isPrivateAddress(ip: string): boolean {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split(".").map(Number);
+    return (
+      a === 0 || a === 10 || a === 127 || a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && (b === 168 || b === 0)) ||
+      (a === 198 && (b === 18 || b === 19))
+    );
+  }
+  if (net.isIPv6(ip)) {
+    const v = ip.toLowerCase();
+    if (v === "::" || v === "::1") return true;
+    const mapped = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    if (mapped) return isPrivateAddress(mapped[1]);
+    if (v.startsWith("::ffff:")) return true;
+    return /^(fc|fd|fe[89ab])/.test(v);
+  }
+  return true; // format inconnu : refusé
+}
+
+// Un nom de domaine peut pointer vers une adresse interne : on vérifie l'adresse réelle
+// derrière le nom avant chaque téléchargement. (Il reste une très courte fenêtre entre la
+// vérification et la connexion ; l'attaque exige que le lot contienne une adresse piégée.)
+async function assertPublicHost(hostname: string): Promise<boolean> {
+  try {
+    const addresses = await lookup(hostname, { all: true, verbatim: true });
+    return addresses.length > 0 && !addresses.some((a) => isPrivateAddress(a.address));
+  } catch {
+    return false;
+  }
+}
+
+async function readCapped(res: Response, max: number): Promise<Buffer | null> {
+  if (!res.body) return null;
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > max) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks);
+}
+
+// Téléchargement d'une photo d'un site tiers : https seulement, nom de domaine vérifié,
+// redirections suivies à la main (3 au plus) en revérifiant chaque étape, taille plafonnée
+// pendant le téléchargement. Jamais une adresse interne.
+export async function fetchPublicImage(url: string): Promise<Buffer | null> {
+  let current = url;
+  for (let hop = 0; hop <= 3; hop++) {
+    if (!isSafeImageUrl(current) || !(await assertPublicHost(new URL(current).hostname))) return null;
+    const res = await fetch(current, { redirect: "manual", signal: AbortSignal.timeout(20000) });
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get("location");
+      if (!location) return null;
+      current = new URL(location, current).toString();
+      continue;
+    }
+    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) return null;
+    if (Number(res.headers.get("content-length") ?? 0) > MAX_PHOTO_BYTES) return null;
+    return readCapped(res, MAX_PHOTO_BYTES);
+  }
+  return null;
+}
+
 type PreparedPhoto = { webp: Buffer; thumb: Buffer; hash: string };
 
 async function prepareImage(url: string): Promise<PreparedPhoto | null> {
-  if (!isSafeImageUrl(url)) return null;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) return null;
-    const source = Buffer.from(await res.arrayBuffer());
-    if (source.byteLength > MAX_PHOTO_BYTES) return null;
+    const source = await fetchPublicImage(url);
+    if (!source) return null;
     const meta = await sharp(source).metadata();
     if (!meta.width || meta.width < MIN_PHOTO_WIDTH) return null;
     // sharp retire les métadonnées (EXIF, GPS…) par défaut ; rotate() applique l'orientation
