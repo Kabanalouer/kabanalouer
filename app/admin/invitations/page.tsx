@@ -22,6 +22,14 @@ export default async function AdminInvitationsPage() {
     admin.from("listings").select("id", { count: "exact", head: true }).eq("claim_status", "unclaimed").eq("is_published", false).eq("is_test", false),
   ]);
 
+  // Fiches importées dont le CITQ existe déjà chez un vrai compte (importées quand même, à juger)
+  const { data: dupes } = await admin
+    .from("listings")
+    .select("id, title, is_published, import_raw_data")
+    .eq("claim_status", "unclaimed")
+    .not("import_raw_data->doublon_possible", "is", null)
+    .limit(50);
+
   const sent = (sentData ?? []) as Sent[];
   const invites = sent.filter((s) => s.kind === "invite");
   const stats = {
@@ -88,6 +96,31 @@ export default async function AdminInvitationsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {(dupes ?? []).length > 0 && (
+        <>
+          <h2 className="mb-3 mt-10 text-heading-3 font-semibold text-charcoal-800">Doublons possibles ({(dupes ?? []).length})</h2>
+          <p className="mb-3 text-sm text-charcoal-400">Fiches importées dont le CITQ existe déjà chez un proprio inscrit. Elles sont importées quand même : à vous de juger (un CITQ peut couvrir plusieurs unités).</p>
+          <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden divide-y divide-[#ebebeb]">
+            {(dupes ?? []).map((d) => {
+              const matches = ((d.import_raw_data as { doublon_possible?: { id: string; title: string }[] } | null)?.doublon_possible ?? []);
+              return (
+                <div key={d.id as string} className="px-6 py-3 text-sm">
+                  <p className="text-charcoal-800">
+                    <a href={`/dashboard/listings/${d.id}/edit`} className="font-semibold text-primary hover:underline">{(d.title as string) ?? "(sans titre)"}</a>
+                    {d.is_published ? " · en ligne" : " · pas encore publiée"}
+                  </p>
+                  <p className="text-charcoal-500">
+                    Même CITQ que : {matches.map((m, i) => (
+                      <span key={m.id}>{i > 0 ? ", " : ""}<a href={`/dashboard/listings/${m.id}/edit`} className="hover:underline">{m.title}</a></span>
+                    ))}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       <h2 className="mb-3 mt-10 text-heading-3 font-semibold text-charcoal-800">File d&apos;import</h2>

@@ -1166,7 +1166,7 @@ Le code des fiches non revendiquées est sur `main` (déployé). **Parcours rée
 - **Premier lot réel de la tâche planifiée** : le format du `payload` (section 9) est une lecture tolérante écrite avant d'avoir vu un vrai lot. Après le premier passage, regarder Admin → Invitations (file d'import) : un lot refusé y affiche son erreur ; ajuster `normalizePayload` (`lib/importQueue.ts`) si les noms de champs diffèrent.
 - **`publish-unclaimed` publie de vraies fiches** (15 par jour, à 14 h UTC) : surveiller le premier jour (sitemap, pages, courriels du cron `new-message-notifications` si un voyageur écrit).
 - **Aucune invitation envoyée pour de vrai** : les courriels `claim-invitation` et `claim-invitation-reminder` ont été validés par capture ; faire un test depuis Admin → Séquences courriel avant le premier « Tout envoyer ».
-- **Même CITQ qu'une annonce de proprio déjà inscrit** : l'import suit la consigne (pas de doublon seulement sur CITQ + adresse d'origine). Un chalet déjà inscrit par son proprio pourrait donc aussi arriver en fiche non revendiquée ; à décider si on veut un refus dans ce cas.
+- **Même CITQ qu'une annonce déjà tenue par un vrai compte (décidé par Simon le 2026-10-18)** : pas de refus. La fiche est importée quand même (non publiée), `import_raw_data.doublon_possible` liste les annonces concernées, un courriel d'alerte part à Simon (`import-duplicate-alert`) et la page Admin → Invitations a une section « Doublons possibles ». ⚠️ Rien n'empêche `publish-unclaimed` de la publier ensuite : si un doublon doit rester hors ligne, la retirer à la main avant 14 h UTC (ou ajouter un blocage de publication pour les fiches avec `doublon_possible`).
 
 ### À décider / à vérifier après la session du 2026-10-18 (fiches non revendiquées)
 

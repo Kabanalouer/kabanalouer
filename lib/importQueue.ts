@@ -11,6 +11,7 @@ import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
 import { computeScore } from "@/lib/listingScore";
 import { cleanDescription } from "@/lib/aiText";
 import { GENERIC_ADJECTIVE_WORDS_FR, NO_GENERIC_ADJECTIVES_FR, findGenericAdjectives } from "@/lib/aiWritingRules";
+import { sendImportDuplicateAlert } from "@/lib/emails/unclaimedOwner";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import type { PhotoItem } from "@/lib/photo";
 
@@ -538,6 +539,16 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       recentReviewCount: 0,
     });
 
+    // Même CITQ qu'une annonce déjà tenue par un vrai compte (proprio inscrit ou fiche
+    // revendiquée) : la fiche est importée quand même, mais Simon est averti (pas de refus).
+    const { data: sameCitq } = await admin
+      .from("listings")
+      .select("id, title, claim_status")
+      .eq("citq_number", d.citq)
+      .neq("host_id", systemId)
+      .limit(5);
+    const duplicates = (sameCitq ?? []).map((x) => ({ id: x.id as string, title: (x.title as string | null) ?? "(sans titre)", claim_status: (x.claim_status as string | null) ?? null }));
+
     const listingNumber = await generateUniqueListingNumber(admin);
     const { error: insertError } = await admin.from("listings").insert({
       id: listingId,
@@ -579,6 +590,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         equipements_non_reconnus: d.unmatchedAmenities,
         photos_importees: photos.length,
         photos_dans_le_lot: d.photos.length,
+        ...(duplicates.length > 0 ? { doublon_possible: duplicates } : {}),
       },
     });
     if (insertError) {
@@ -589,6 +601,11 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     }
 
     await finish(admin, row, { status: "imported", error: null, imported_at: new Date().toISOString(), listing_id: listingId });
+    if (duplicates.length > 0) {
+      await sendImportDuplicateAlert({ listingId, title: d.title, citq: d.citq, matches: duplicates }).catch((e) =>
+        console.error("[importQueue] échec de l'alerte de doublon", e)
+      );
+    }
     return { outcome: "imported" };
   } catch (err) {
     if (uploaded.length > 0) await admin.storage.from(BUCKET).remove(uploaded).catch(() => undefined);

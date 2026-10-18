@@ -26,6 +26,7 @@ import {
   sendClaimActivatedEmail,
   sendClaimDecisionEmail,
   sendClaimAdminAlert,
+  sendImportDuplicateAlert,
 } from "@/lib/emails/unclaimedOwner";
 import { claimLink, removeLink, reportLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
@@ -177,6 +178,10 @@ export function emailTestSenders(): Record<string, Sender> {
       to, lang, listingTitle: TITLE, approved: false,
       adminNote: lang === "fr" ? "Le numéro CITQ de la photo ne correspond pas à celui de la fiche." : "The CITQ number on the photo does not match the one on the listing.",
     }),
+    "import-duplicate-alert": async () => {
+      await sendImportDuplicateAlert({ listingId: LISTING_ID, title: "Pourvoirie du Lac Exemple", citq: "123456", matches: [{ id: LISTING_ID, title: TITLE, claim_status: null }] });
+      return { error: null };
+    },
     "claim-admin-alert": async () => {
       await sendClaimAdminAlert({ kind: "proof", listingTitle: TITLE, listingId: LISTING_ID, from: "proprio@example.com", message: "Je suis le propriétaire, voici mon attestation CITQ." });
       return { error: null };

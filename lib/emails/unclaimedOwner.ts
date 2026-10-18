@@ -238,6 +238,26 @@ export async function sendClaimDecisionEmail(input: {
   return { error: error ? new Error(error.message) : null };
 }
 
+// Alerte à l'équipe : une fiche importée a le même CITQ qu'une annonce déjà tenue par un vrai
+// compte. La fiche est importée quand même (aucun refus) ; c'est à Simon de décider.
+export async function sendImportDuplicateAlert(input: {
+  listingId: string;
+  title: string;
+  citq: string;
+  matches: { id: string; title: string; claim_status: string | null }[];
+}): Promise<void> {
+  const edit = (id: string) => `${SITE_URL}/dashboard/listings/${id}/edit`;
+  const lines = input.matches
+    .map((m) => `<li><a href="${edit(m.id)}">${escapeHtml(m.title)}</a> (${m.claim_status === "claimed" ? "fiche revendiquée" : "annonce d’un proprio inscrit"})</li>`)
+    .join("");
+  const html = `<p><strong>Doublon possible à l’import</strong></p>
+<p>La fiche importée <a href="${edit(input.listingId)}">${escapeHtml(input.title)}</a> (CITQ ${escapeHtml(input.citq)}) a le même numéro CITQ que :</p>
+<ul>${lines}</ul>
+<p>Elle est importée quand même, non publiée pour l’instant. Un CITQ peut couvrir plusieurs unités : à vous de juger. Elle est aussi listée dans <a href="${SITE_URL}/admin/invitations">Admin → Invitations</a>.</p>`;
+  const { error } = await sendEmail({ from: FROM_NOREPLY, to: [ADMIN_EMAIL], subject: `Doublon possible à l’import : ${input.title}`, html });
+  if (error) console.error("sendImportDuplicateAlert: échec envoi", error);
+}
+
 // Alerte immédiate à l'équipe : demande de vérification ou signalement (texte
 // simple, contenu des utilisateurs échappé). Jamais bloquant pour l'appelant.
 export async function sendClaimAdminAlert(input: {

@@ -305,6 +305,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
   },
   {
+    id: "import-duplicate-alert", category: "interne", group: "Équipe",
+    name: "Doublon possible à l’import",
+    subject: { fr: "Doublon possible à l’import : {titre}" },
+    when: "Quand une fiche importée a le même CITQ qu’une annonce déjà tenue par un proprio inscrit.",
+    conditions: "La fiche est importée quand même (aucun refus) ; l’alerte et la section « Doublons possibles » d’Admin → Invitations te laissent juger.",
+    mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+  },
+  {
     id: "weekly-report", category: "interne", group: "Équipe",
     name: "Rapport du lundi",
     subject: { fr: "Rapport du lundi — {date}" },
