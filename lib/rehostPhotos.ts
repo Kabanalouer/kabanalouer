@@ -74,9 +74,12 @@ export async function rehostListingPhotos(
   budget: number
 ): Promise<{ rehosted: number; failed: number; remaining: number }> {
   const [{ data: listing }, { data: rooms }] = await Promise.all([
-    admin.from("listings").select("photos").eq("id", listingId).single(),
+    admin.from("listings").select("photos, claim_status").eq("id", listingId).single(),
     admin.from("rooms").select("id, photos").eq("listing_id", listingId),
   ]);
+  // Fiche non revendiquée : dossier propre à la fiche (<compte système>/<id de la fiche>/),
+  // pour que le cron move-claimed-photos ne déplace jamais le fichier d'une autre fiche.
+  const folder = listing?.claim_status === "unclaimed" ? `${hostId}/${listingId}` : hostId;
   const galleryUrls = ((listing?.photos ?? []) as PhotoItem[]).map((p) => p.url);
   const roomUrls = (rooms ?? []).flatMap((r) => (Array.isArray(r.photos) ? (r.photos as string[]) : []));
   const pending = [...new Set([...galleryUrls, ...roomUrls])].filter(isExternalPhotoUrl);
@@ -86,7 +89,7 @@ export async function rehostListingPhotos(
   let failed = 0;
   // 5 téléchargements à la fois : assez rapide sans surcharger la fonction.
   for (let i = 0; i < batch.length; i += 5) {
-    const results = await Promise.all(batch.slice(i, i + 5).map((url) => rehostPhoto(admin, hostId, url)));
+    const results = await Promise.all(batch.slice(i, i + 5).map((url) => rehostPhoto(admin, folder, url)));
     results.forEach((newUrl, j) => {
       if (newUrl) mapping.set(batch[i + j], newUrl);
       else failed++;

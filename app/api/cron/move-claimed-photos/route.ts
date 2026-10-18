@@ -58,8 +58,12 @@ export async function GET(request: NextRequest) {
     let failed = 0;
     for (const url of pending.slice(0, budget)) {
       const path = decodeURIComponent(url.split(`/${BUCKET}/`)[1]?.split("?")[0] ?? "");
-      const fileName = path.slice(`${sys.id}/`.length);
-      if (!path.startsWith(`${sys.id}/`) || !fileName || fileName.includes("/")) {
+      // Les adresses de photos sont modifiables par le proprio : on ne déplace QUE les
+      // fichiers rangés sous le dossier de CETTE fiche (<compte système>/<id de la fiche>/…,
+      // voir lib/rehostPhotos.ts), jamais un fichier d'une autre fiche non revendiquée.
+      const prefix = `${sys.id}/${listing.id}/`;
+      const fileName = path.slice(prefix.length);
+      if (!path.startsWith(prefix) || !fileName || fileName.includes("/") || fileName.includes("..")) {
         failed++;
         continue;
       }
