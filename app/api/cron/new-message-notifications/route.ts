@@ -4,6 +4,7 @@ import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotifica
 import { sendNewMessageSms } from "@/lib/sms";
 import { sendPushToUser } from "@/lib/push";
 import { SITE_URL } from "@/lib/siteUrl";
+import { notifyUnclaimedOwner } from "@/lib/claims/actions";
 
 // Délai de grâce : pas de courriel/SMS si le destinataire lit le message
 // dans les 2 minutes (il est sur le site). Cron chaque minute → 2 à 3 min.
@@ -106,8 +107,29 @@ export async function GET(request: NextRequest) {
     const [{ data: sender }, { data: receiver }, { data: listing }] = await Promise.all([
       supabase.from("users").select("name").eq("id", group.senderId).single(),
       supabase.from("users").select("email, name, preferred_language, phone, notify_email, notify_sms, translation_enabled").eq("id", group.receiverId).single(),
-      supabase.from("listings").select("title, title_en, host_id").eq("id", group.listingId).single(),
+      supabase.from("listings").select("title, title_en, host_id, claim_status, claim_email, claim_language").eq("id", group.listingId).single(),
     ]);
+
+    // Fiche non revendiquée : le destinataire est le compte système (ni courriel, ni
+    // texto, ni notification). La demande est transmise à claim_email avec un lien
+    // d'activation ; au plus 3 courriels par jour par fiche et par adresse.
+    if (listing?.claim_status === "unclaimed") {
+      const claimLang: "fr" | "en" = listing.claim_language === "en" ? "en" : "fr";
+      const translated = group.latestTranslated && group.latestTranslatedLanguage === claimLang;
+      const outcome = await notifyUnclaimedOwner(supabase, {
+        listingId: group.listingId,
+        claimEmail: (listing.claim_email as string | null) ?? null,
+        claimLanguage: claimLang,
+        listingTitle: (claimLang === "en" ? listing.title_en : null) || listing.title || (claimLang === "en" ? "your cabin" : "votre chalet"),
+        senderFirstName: (sender?.name?.trim() || (claimLang === "en" ? "A traveler" : "Un voyageur")).split(/\s+/)[0],
+        messageText: translated ? (group.latestTranslated as string) : group.latestContent,
+        translated: !!translated,
+      });
+      if (outcome === "retry") continue; // plafond atteint ou échec : retenté plus tard, flag non posé
+      await supabase.from("messages").update({ notification_sent_at: nowIso }).in("id", group.messageIds);
+      if (outcome === "sent") sent++;
+      continue;
+    }
 
     if (!receiver?.email) continue;
 

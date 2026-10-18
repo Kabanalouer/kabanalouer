@@ -29,12 +29,15 @@ export interface ListingSchemaInput {
   priceHigh: number;
   amenities: AmenityValue[];
   locale: string;
-  bedroomCount: number;
-  bathrooms: number;
-  capacity: number;
+  // null = inconnu (fiche importée) : le champ est omis du JSON-LD, jamais inventé
+  bedroomCount: number | null;
+  bathrooms: number | null;
+  capacity: number | null;
   dogPolicy: DogPolicy;
+  // false = politique des chiens inconnue : ni petsAllowed ni question FAQ
+  dogsKnown: boolean;
   accessibility: AccessibilityInfo;
-  smokingAllowed: boolean;
+  smokingAllowed: boolean | null;
   citqNumber: string | null;
   reviewCount: number;
   avgRating: number;
@@ -68,10 +71,12 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
   const accommodation: Record<string, unknown> = {
     "@type": "Accommodation",
     additionalType: "EntirePlace",
-    numberOfBedrooms: input.bedroomCount,
-    numberOfBathroomsTotal: input.bathrooms,
-    occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" },
-    petsAllowed: input.dogPolicy.allowed,
+    ...(input.bedroomCount !== null ? { numberOfBedrooms: input.bedroomCount } : {}),
+    ...(input.bathrooms !== null ? { numberOfBathroomsTotal: input.bathrooms } : {}),
+    ...(input.capacity !== null
+      ? { occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" } }
+      : {}),
+    ...(input.dogsKnown ? { petsAllowed: input.dogPolicy.allowed } : {}),
     amenityFeature: [
       ...(input.accessibility.accessible
         ? [
@@ -125,17 +130,19 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     // petsAllowed (aussi dans containsPlace) reste booléen ; seuls les
     // chiens sont acceptés sur Kabanalouer, précisé avec les détails dans
     // additionalProperty pour les agents IA qui ne lisent que le JSON-LD.
-    petsAllowed: input.dogPolicy.allowed,
+    ...(input.dogsKnown ? { petsAllowed: input.dogPolicy.allowed } : {}),
     // "smokingAllowed" n'existe pas dans le vocabulaire schema.org — passé en
     // additionalProperty (mécanisme d'extension générique) plutôt qu'inventé
-    // comme propriété directe.
+    // comme propriété directe. Omis quand l'information est inconnue.
     additionalProperty: [
-      {
-        "@type": "PropertyValue",
-        name: isEn ? "Smoking allowed" : "Fumeurs acceptés",
-        value: input.smokingAllowed,
-      },
-      ...buildDogProperties(input.dogPolicy, input.locale),
+      ...(input.smokingAllowed !== null
+        ? [{
+            "@type": "PropertyValue",
+            name: isEn ? "Smoking allowed" : "Fumeurs acceptés",
+            value: input.smokingAllowed,
+          }]
+        : []),
+      ...(input.dogsKnown ? buildDogProperties(input.dogPolicy, input.locale) : []),
     ],
     ...(input.citqNumber
       ? { identifier: { "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber } }
@@ -183,6 +190,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
   const isEn = input.locale === "en";
   const questions: { question: string; answer: string }[] = [];
 
+  if (input.dogsKnown) {
   const dogDetails = dogPolicyDetails(input.dogPolicy, input.locale).map((d) => d.charAt(0).toLowerCase() + d.slice(1));
   questions.push({
     question: isEn ? `Are dogs allowed at ${input.title}?` : `Les chiens sont-ils acceptés à ${input.title} ?`,
@@ -194,6 +202,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
       ? `No, dogs are not allowed at ${input.title}.`
       : `Non, les chiens ne sont pas acceptés à ${input.title}.`,
   });
+  }
 
   if (input.accessibility.accessible) {
     const features = input.accessibility.features.map((id) => {
@@ -210,6 +219,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
     });
   }
 
+  if (input.smokingAllowed !== null) {
   questions.push({
     question: isEn ? `Is smoking allowed at ${input.title}?` : `Peut-on fumer à ${input.title} ?`,
     answer: input.smokingAllowed
@@ -220,6 +230,7 @@ export function buildListingFaqJsonLd(input: ListingSchemaInput): Record<string,
       ? `No, smoking is not allowed at ${input.title}.`
       : `Non, il n'est pas permis de fumer à ${input.title}.`,
   });
+  }
 
   if (input.checkinTime && input.checkoutTime) {
     const checkin = input.checkinTime.replace(":", isEn ? ":" : "h");

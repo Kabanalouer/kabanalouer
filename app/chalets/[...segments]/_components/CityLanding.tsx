@@ -56,6 +56,7 @@ export default async function CityLanding({
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
     .eq("city", cityName)
+    .order("unclaimed_rank", { ascending: true })
     .order("created_at", { ascending: false });
 
   const listings: Listing[] = (rawListings ?? []).map((l) => ({

@@ -44,7 +44,7 @@ export default async function MessagesPage() {
   // Fetch all messages where the user is sender or receiver
   const { data: rawMessages } = await supabase
     .from("messages")
-    .select("*, listing:listing_id(id, title, title_en, host_id, region, city, listing_number, custom_slug)")
+    .select("*, listing:listing_id(id, title, title_en, host_id, region, city, listing_number, custom_slug, claim_status)")
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
@@ -70,6 +70,7 @@ export default async function MessagesPage() {
       city: string | null;
       listing_number: number | null;
       custom_slug: string | null;
+      claim_status: string | null;
     };
   };
 
@@ -125,14 +126,19 @@ export default async function MessagesPage() {
     const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
     const other = profileById.get(otherId);
     const key = `${msg.listing_id}::${otherId}`;
+    // Fiche non revendiquée : l'interlocuteur est le compte système, jamais présenté
+    // comme un vrai propriétaire (ni nom, ni photo, ni présentation, ni date d'inscription).
+    const isUnclaimedOwner = msg.listing?.claim_status === "unclaimed" && otherId === msg.listing?.host_id;
 
     if (!convMap.has(key)) {
       convMap.set(key, {
         other_user_id: otherId,
-        other_user_name: other?.name ?? (isEn ? "Unknown" : "Inconnu"),
-        other_user_avatar: other?.avatar_url ?? null,
-        other_user_bio: localizedBio(other, locale),
-        other_user_created_at: other?.created_at ?? null,
+        other_user_name: isUnclaimedOwner
+          ? (isEn ? "Owner (listing not activated)" : "Propriétaire (fiche non activée)")
+          : (other?.name ?? (isEn ? "Unknown" : "Inconnu")),
+        other_user_avatar: isUnclaimedOwner ? null : (other?.avatar_url ?? null),
+        other_user_bio: isUnclaimedOwner ? null : localizedBio(other, locale),
+        other_user_created_at: isUnclaimedOwner ? null : (other?.created_at ?? null),
         listing_id: msg.listing_id,
         listing_title: msg.listing?.title ?? "",
         listing_title_en: msg.listing?.title_en ?? null,

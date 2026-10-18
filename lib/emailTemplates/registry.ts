@@ -17,6 +17,13 @@ import { TEMPLATE_REVIEW_REPLIED } from "@/lib/emails/reviewReplied";
 import { TEMPLATE_WELCOME_TRAVELER } from "@/lib/emails/welcomeTraveler";
 import { TEMPLATE_REVIEW_REQUEST, TEMPLATE_STAY_REVIEW_REQUEST } from "@/lib/emails/reviewRequest";
 import { TEMPLATE_NO_REPLY_NUDGE } from "@/lib/emails/noReplyNudge";
+import {
+  TEMPLATE_UNCLAIMED_REQUEST,
+  TEMPLATE_CLAIM_LINK,
+  TEMPLATE_CLAIM_ACTIVATED,
+  TEMPLATE_CLAIM_APPROVED,
+  TEMPLATE_CLAIM_REFUSED,
+} from "@/lib/emails/unclaimedOwner";
 
 // Courriels dont les textes sont modifiables dans Admin → Séquences courriel,
 // par id du catalogue (lib/adminEmailCatalog.ts). Tout nouveau courriel proprio
@@ -45,6 +52,11 @@ const ALL: EmailTemplateDef[] = [
   TEMPLATE_REVIEW_REQUEST,
   TEMPLATE_STAY_REVIEW_REQUEST,
   TEMPLATE_REVIEW_REPLIED,
+  TEMPLATE_UNCLAIMED_REQUEST,
+  TEMPLATE_CLAIM_LINK,
+  TEMPLATE_CLAIM_ACTIVATED,
+  TEMPLATE_CLAIM_APPROVED,
+  TEMPLATE_CLAIM_REFUSED,
 ];
 
 export const EMAIL_TEMPLATES: Record<string, EmailTemplateDef> = Object.fromEntries(ALL.map((d) => [d.id, d]));

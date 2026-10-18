@@ -12,7 +12,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { normalizePhotos } from "@/lib/photo";
 import { slugify } from "@/lib/slugify";
 import { isKnownMunicipality } from "@/lib/municipalities";
-import { metaDescription, metaTitle } from "@/lib/metaText";
+import { metaDescription, metaDescriptionWithCity, metaTitle } from "@/lib/metaText";
 import RegionLanding from "./_components/RegionLanding";
 import CityLanding from "./_components/CityLanding";
 import DogFriendlyLanding, { buildDogFriendlyMeta } from "./_components/DogFriendlyLanding";
@@ -369,9 +369,12 @@ export async function generateMetadata({ params }: Props) {
       return cityName ? buildComboMetadata(comboTheme, regionConfig, cityName, isEn) : {};
     }
 
-    const data = await findListingByChaletSlug(supabase, chaletSlug, { publishedOnly: true });
+    // Fiche publiée, ou fiche de test (non publiée, lisible par lien, noindex).
+    // Un brouillon ordinaire garde des métadonnées vides.
+    const data = await findListingByChaletSlug(supabase, chaletSlug);
 
-    if (!data) return {};
+    if (!data || (!data.is_published && data.is_test !== true)) return {};
+    const isTestListing = data.is_test === true;
 
     const rawTitle = (isEn && data.title_en) ? data.title_en : data.title;
     const rawDesc = (isEn && data.description_en) ? data.description_en : data.description;
@@ -384,7 +387,7 @@ export async function generateMetadata({ params }: Props) {
     const fullLocation = [data.city, regionLabel].filter(Boolean).join(", ");
     const location = `${cleanTitle} | ${fullLocation}`.length <= 60 ? fullLocation : (data.city ?? fullLocation);
     const title = location ? `${cleanTitle} | ${location}` : cleanTitle;
-    const description = metaDescription(rawDesc as string | null);
+    const description = metaDescriptionWithCity(rawDesc as string | null, data.city, regionLabel, isEn);
     const photos = normalizePhotos(data.photos);
     const ogImage = photos[0]?.url ?? DEFAULT_PHOTO;
 
@@ -395,6 +398,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title,
       description,
+      ...(isTestListing ? { robots: { index: false, follow: false } } : {}),
       alternates: {
         canonical: canonicalPath ?? undefined,
         languages: {

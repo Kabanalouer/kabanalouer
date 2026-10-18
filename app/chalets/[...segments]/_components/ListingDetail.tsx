@@ -11,6 +11,8 @@ import PhotoGallery from "@/components/chalets/PhotoGallery";
 import AmenitiesSection from "@/components/chalets/AmenitiesSection";
 import ListingHighlights from "@/components/chalets/ListingHighlights";
 import HostCard from "@/components/chalets/HostCard";
+import UnclaimedNotice from "@/components/chalets/UnclaimedNotice";
+import { getMaskedClaimEmail } from "@/lib/claims/maskedEmail";
 import { BIO_COLUMNS, type BioFields } from "@/lib/bio";
 import FavoriteButton from "@/components/chalets/FavoriteButton";
 import ShareButton from "@/components/chalets/ShareButton";
@@ -70,7 +72,11 @@ export default async function ListingDetail({ listing, user, searchParams, local
   // Si la ligne a pu être lue alors qu'elle n'est pas publiée, c'est
   // uniquement parce que la RLS a laissé passer le propriétaire ou un
   // admin — sert de signal pour le bandeau d'aperçu ci-dessous.
-  const isDraftPreview = !listing.is_published;
+  const isTestListing = listing.is_test === true;
+  // Fiche importée détenue par le compte système : pas de profil de proprio,
+  // pas de calendrier, mention « pas encore activée » et bouton « C'est mon chalet ».
+  const isUnclaimed = listing.claim_status === "unclaimed";
+  const isDraftPreview = !listing.is_published && !isTestListing;
 
   const id = listing.id as string; // UUID for all sub-queries
   const canonicalPath = buildListingPath(listing, isEn ? "en" : "fr") ?? `/chalets/${id}`;
@@ -103,11 +109,14 @@ export default async function ListingDetail({ listing, user, searchParams, local
   // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
   // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
   // public.users directement, dont la RLS ne permet plus la lecture publique.
-  const { data: hostProfile } = await supabase
-    .from("public_profiles")
-    .select(`id, name, avatar_url, created_at, ${BIO_COLUMNS}`)
-    .eq("id", listing.host_id as string)
-    .single();
+  const { data: hostProfile } = isUnclaimed
+    ? { data: null }
+    : await supabase
+        .from("public_profiles")
+        .select(`id, name, avatar_url, created_at, ${BIO_COLUMNS}`)
+        .eq("id", listing.host_id as string)
+        .single();
+  const maskedClaimEmail = isUnclaimed ? await getMaskedClaimEmail(listing.id as string) : null;
 
   // Increment view count (fire and forget — don't block page render)
   void supabase.rpc("increment_listing_views", { p_listing_id: id });
@@ -305,12 +314,13 @@ export default async function ListingDetail({ listing, user, searchParams, local
     priceHigh: (listing.price_high as number) ?? 0,
     amenities,
     locale,
-    bedroomCount: bedroomCount as number,
-    bathrooms: listing.bathrooms as number,
-    capacity: listing.capacity as number,
+    bedroomCount: (bedroomCount as number | null) ?? null,
+    bathrooms: (listing.bathrooms as number | null) ?? null,
+    capacity: (listing.capacity as number | null) ?? null,
     dogPolicy,
+    dogsKnown: listing.dogs_allowed != null,
     accessibility,
-    smokingAllowed: !!listing.smoking_allowed,
+    smokingAllowed: listing.smoking_allowed == null ? null : !!listing.smoking_allowed,
     citqNumber: (listing.citq_number as string | null) ?? null,
     reviewCount: schemaReviews.length,
     avgRating: schemaReviews.length > 0
@@ -332,10 +342,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
   };
 
   const subtitleParts = [
-    t("personCount", { count: listing.capacity as number }),
-    t("bedroomCount", { count: bedroomCount as number }),
+    listing.capacity != null ? t("personCount", { count: listing.capacity as number }) : null,
+    bedroomCount != null ? t("bedroomCount", { count: bedroomCount as number }) : null,
     totalBeds !== null && totalBeds > 0 ? t("bedCount", { count: totalBeds }) : null,
-    t("bathroomCount", { count: listing.bathrooms as number }),
+    listing.bathrooms != null ? t("bathroomCount", { count: listing.bathrooms as number }) : null,
   ].filter(Boolean);
 
   return (
@@ -362,6 +372,14 @@ export default async function ListingDetail({ listing, user, searchParams, local
         <div className="bg-primary/10 border-b border-primary/20">
           <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 text-sm font-medium text-primary text-center">
             {t("draftPreviewBanner")}
+          </p>
+        </div>
+      )}
+
+      {isTestListing && (
+        <div className="bg-warning-50 border-b border-warning-100">
+          <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 text-sm font-medium text-warning-800 text-center">
+            {t("testListingBanner")}
           </p>
         </div>
       )}
@@ -399,6 +417,9 @@ export default async function ListingDetail({ listing, user, searchParams, local
             <p className="text-base text-charcoal-500">
               {subtitleParts.join(" · ")}
             </p>
+            {isUnclaimed && listing.citq_number && (
+              <p className="text-sm text-charcoal-400 mt-1">{t("citqNumber", { number: listing.citq_number as string })}</p>
+            )}
           </div>
           <div className="hidden md:flex shrink-0 mt-1 items-center gap-2">
             <ShareButton />
@@ -483,7 +504,9 @@ export default async function ListingDetail({ listing, user, searchParams, local
               </>
             )}
 
-            {/* Reviews — encadré gris pâle, comme les points forts */}
+            {/* Reviews — encadré gris pâle, comme les points forts. Masqué (pas de section vide)
+                pour une fiche non revendiquée qui n'a aucun avis. */}
+            {!(isUnclaimed && reviews.length === 0) && (
             <section className="bg-charcoal-50 rounded-2xl p-6 sm:p-8">
               <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-6">
                 <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("reviewsTitle")}</h2>
@@ -525,6 +548,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 <p className="text-charcoal-400 text-base">{t("noReviews")}</p>
               )}
             </section>
+            )}
 
             {/* Practical info */}
             <>
@@ -543,6 +567,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                       <span>{t("checkoutBefore", { time: formatTime(listing.checkout_time as string, locale) })}</span>
                     </div>
                   )}
+                  {listing.checkin_type && (
                   <div className="flex items-center gap-3">
                     <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                     <span>
@@ -551,6 +576,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
                         : t("checkinAutonomous")}
                     </span>
                   </div>
+                  )}
+                  {listing.dogs_allowed != null && (
                   <div className="flex items-start gap-3">
                     <PawIcon className="w-5 h-5 text-charcoal-400 shrink-0 mt-0.5" />
                     <div className="min-w-0">
@@ -562,6 +589,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                       )}
                     </div>
                   </div>
+                  )}
                   {accessibility.accessible && (
                     <div className="flex items-start gap-3">
                       <AccessibilityIcon className="w-5 h-5 text-charcoal-400 shrink-0 mt-0.5" />
@@ -578,10 +606,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
                       </div>
                     </div>
                   )}
+                  {listing.smoking_allowed != null && (
                   <div className="flex items-center gap-3">
                     <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     <span>{listing.smoking_allowed ? t("smokingAllowed") : t("smokingNotAllowed")}</span>
                   </div>
+                  )}
                   {listing.min_age && (listing.min_age as number) > 0 && (
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -598,6 +628,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
               </div>
             </>
 
+            {!isUnclaimed && (
+            <>
             {/* Availability */}
             <hr className="border-[#ebebeb]" />
             <div>
@@ -606,6 +638,12 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 blocked={(availability ?? []) as { date: string; source: "manual" | "ical" }[]}
               />
             </div>
+            </>
+            )}
+
+            {isUnclaimed && (
+              <UnclaimedNotice listingId={id} maskedEmail={maskedClaimEmail} locale={locale} signedIn={!!user} />
+            )}
 
             {/* Host section */}
             {host && (
@@ -660,7 +698,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 <>
                   <ContactForm
                     listingId={listing.id}
-                    hostId={host?.id ?? ""}
+                    hostId={host?.id ?? (listing.host_id as string)}
                     hostName={host?.name ?? t("fallbackOwnerName")}
                     hostAvatarUrl={host?.avatar_url ?? null}
                     hostCreatedAt={host?.created_at ?? null}
@@ -673,8 +711,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     initialCheckout={urlCheckout}
                     initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}
                     price={listing.price_low as number | null}
-                    priceOnRequest={!!(listing.price_on_request)}
-                    capacity={listing.capacity as number}
+                    priceOnRequest={!!listing.price_on_request || listing.price_low == null}
+                    capacity={(listing.capacity as number | null) ?? 20}
                     dogsMax={dogPolicy.allowed ? (dogPolicy.max ?? DOGS_MAX_LIMIT) : 0}
                     initialPets={urlDogs ?? undefined}
                     blockedDates={blockedDateStrings}
@@ -682,6 +720,9 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   <p className="text-xs text-charcoal-400 text-center mt-3">
                     {t("contactDirect")}
                   </p>
+                  {isUnclaimed && (
+                    <p className="text-xs text-charcoal-500 text-center mt-2">{t("unclaimedContactNote")}</p>
+                  )}
                 </>
               )}
             </div>
@@ -691,7 +732,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
         {/* Mobile CTA */}
         {!isOwner && (
           <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-4">
-            {listing.price_on_request || listing.price_low === 0 ? (
+            {listing.price_on_request || listing.price_low === 0 || listing.price_low == null ? (
               <span className="text-sm font-bold text-charcoal-800">{t("priceOnRequest")}</span>
             ) : (
               <div>
@@ -707,7 +748,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
             <MobileContactTrigger
               label={t("quoteRequestCta")}
               listingId={listing.id}
-              hostId={host?.id ?? ""}
+              hostId={host?.id ?? (listing.host_id as string)}
               hostName={host?.name ?? t("fallbackOwnerName")}
               hostAvatarUrl={host?.avatar_url ?? null}
               hostCreatedAt={host?.created_at ?? null}
@@ -720,8 +761,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
               initialCheckout={urlCheckout}
               initialAdults={urlCapacity ? (parseInt(urlCapacity) || undefined) : undefined}
               price={listing.price_low as number | null}
-              priceOnRequest={!!(listing.price_on_request)}
-              capacity={listing.capacity as number}
+              priceOnRequest={!!listing.price_on_request || listing.price_low == null}
+              capacity={(listing.capacity as number | null) ?? 20}
               dogsMax={dogPolicy.allowed ? (dogPolicy.max ?? DOGS_MAX_LIMIT) : 0}
                     initialPets={urlDogs ?? undefined}
               blockedDates={blockedDateStrings}

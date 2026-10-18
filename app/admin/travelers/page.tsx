@@ -12,6 +12,7 @@ export default async function AdminTravelersPage() {
         .from("users")
         .select("id, name, email, avatar_url, created_at")
         .eq("role", "traveler")
+        .eq("is_system", false)
         .order("created_at", { ascending: false }),
       supabase.from("messages").select("sender_id"),
       supabase.from("reviews").select("author_id"),

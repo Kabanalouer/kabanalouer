@@ -47,14 +47,15 @@ export async function POST(request: NextRequest) {
   // écrit), ou un voyageur qui a déjà écrit au proprio au sujet de cette
   // annonce (proprio qui répond). Sans ça, n'importe quel compte pouvait faire
   // envoyer courriels, textos et notifications à n'importe quel utilisateur.
-  const { data: listing } = await admin.from("listings").select("host_id, is_published").eq("id", listingId).maybeSingle();
+  const { data: listing } = await admin.from("listings").select("host_id, is_published, is_test").eq("id", listingId).maybeSingle();
   if (!listing) {
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
   const hostId = listing.host_id as string;
   let allowed = false;
   if (receiverId === hostId) {
-    allowed = listing.is_published === true || (await hasThread(admin, listingId, user.id, receiverId));
+    // Fiche de test (non publiée, lisible par son lien) : on peut lui écrire pour essayer le parcours.
+    allowed = listing.is_published === true || listing.is_test === true || (await hasThread(admin, listingId, user.id, receiverId));
   } else if (user.id === hostId) {
     allowed = await hasThread(admin, listingId, user.id, receiverId);
   }

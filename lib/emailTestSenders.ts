@@ -20,6 +20,14 @@ import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEndin
 import { sendErrorAlert } from "@/lib/emails/errorAlert";
 import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
 import { sendFeedbackMessage, sendFeedbackAnalysis } from "@/lib/emails/feedback";
+import {
+  sendUnclaimedRequestEmail,
+  sendClaimLinkEmail,
+  sendClaimActivatedEmail,
+  sendClaimDecisionEmail,
+  sendClaimAdminAlert,
+} from "@/lib/emails/unclaimedOwner";
+import { claimLink, removeLink, reportLink } from "@/lib/claims/tokens";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -141,5 +149,26 @@ export function emailTestSenders(): Record<string, Sender> {
     "error-alert": () => sendErrorAlert({ source: "client", message: "Exemple : Cannot read properties of undefined (reading 'photos')", path: LISTING_PATH }),
     "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
+    // Fiches non revendiquées : liens d'exemple (la page affiche « lien invalide », rien n'est modifié)
+    "unclaimed-request": (to, lang) => sendUnclaimedRequestEmail({
+      to, lang, listingTitle: TITLE, senderFirstName: "Emma", messageText: sampleMessage(lang),
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
+    }),
+    "claim-link": (to, lang) => sendClaimLinkEmail({
+      to, lang, listingTitles: [TITLE, "Chalet des Bouleaux"],
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
+    }),
+    "claim-activated": (to, lang) => sendClaimActivatedEmail({
+      to, lang, listingTitles: [TITLE], maskedClaimant: "j…@gmail.com", reportUrl: reportLink(lang, "exemple"),
+    }),
+    "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, approved: true }),
+    "claim-refused": (to, lang) => sendClaimDecisionEmail({
+      to, lang, listingTitle: TITLE, approved: false,
+      adminNote: lang === "fr" ? "Le numéro CITQ de la photo ne correspond pas à celui de la fiche." : "The CITQ number on the photo does not match the one on the listing.",
+    }),
+    "claim-admin-alert": async () => {
+      await sendClaimAdminAlert({ kind: "proof", listingTitle: TITLE, listingId: LISTING_ID, from: "proprio@example.com", message: "Je suis le propriétaire, voici mon attestation CITQ." });
+      return { error: null };
+    },
   };
 }

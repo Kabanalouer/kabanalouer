@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   const listingIds = [...new Set(recent.map((m) => m.listing_id as string))];
   const { data: listings } = await supabase
     .from("listings")
-    .select("id, host_id, title, title_en, region, city")
+    .select("id, host_id, title, title_en, region, city, claim_status")
     .in("id", listingIds);
   const listingById = new Map((listings ?? []).map((l) => [l.id as string, l]));
 
@@ -68,6 +68,8 @@ export async function GET(request: NextRequest) {
   for (const m of recent) {
     const listing = listingById.get(m.listing_id as string);
     if (!listing) continue; // annonce supprimée
+    // Fiche non revendiquée : le compte système ne répond jamais, la relance n'aurait aucun sens
+    if (listing.claim_status === "unclaimed") continue;
     const hostId = listing.host_id as string;
     const travelerId = m.sender_id === hostId ? (m.receiver_id as string) : (m.sender_id as string);
     if (!travelerId || travelerId === hostId) continue;

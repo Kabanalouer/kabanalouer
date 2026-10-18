@@ -131,6 +131,9 @@ async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, no
     .from("listings")
     .select("id, host_id, title, title_en, created_at")
     .eq("is_published", false)
+    // Jamais pour une fiche non revendiquée (détenue par le compte système), retirée ou de test
+    .or("claim_status.is.null,claim_status.eq.claimed")
+    .eq("is_test", false)
     .is("draft_reminder_sent_at", null)
     .lte("created_at", new Date(now - H48).toISOString())
     .gte("created_at", new Date(now - WINDOW_MS).toISOString());

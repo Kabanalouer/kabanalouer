@@ -27,8 +27,8 @@ async function fetchAll<T>(admin: Admin, table: string, columns: string): Promis
 }
 
 type Msg = { listing_id: string; sender_id: string; receiver_id: string; created_at: string };
-type Listing = { id: string; host_id: string; title: string | null; region: string | null; city: string | null; is_published: boolean; created_at: string; views_listing: number | null };
-type User = { id: string; name: string | null; role: string; created_at: string };
+type Listing = { id: string; host_id: string; title: string | null; region: string | null; city: string | null; is_published: boolean; created_at: string; views_listing: number | null; claim_status: string | null; is_test: boolean };
+type User = { id: string; name: string | null; role: string; created_at: string; is_system: boolean };
 type Sub = { listing_id: string | null; created_at: string };
 type Review = { rating: number | null; created_at: string };
 type ReviewRequest = { prompted_at: string | null };
@@ -103,15 +103,20 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
   const start = now - days * DAY;
   const prevStart = start - days * DAY;
 
-  const [messages, listings, users, subs, reviews, reviewRequests, nudges] = await Promise.all([
+  const [messages, allListings, allUsers, subs, reviews, reviewRequests, nudges] = await Promise.all([
     fetchAll<Msg>(admin, "messages", "listing_id, sender_id, receiver_id, created_at"),
-    fetchAll<Listing>(admin, "listings", "id, host_id, title, region, city, is_published, created_at, views_listing"),
-    fetchAll<User>(admin, "users", "id, name, role, created_at"),
+    fetchAll<Listing>(admin, "listings", "id, host_id, title, region, city, is_published, created_at, views_listing, claim_status, is_test"),
+    fetchAll<User>(admin, "users", "id, name, role, created_at, is_system"),
     fetchAll<Sub>(admin, "subscriptions", "listing_id, created_at"),
     fetchAll<Review>(admin, "reviews", "rating, created_at"),
     fetchAll<ReviewRequest>(admin, "review_requests", "prompted_at"),
     fetchAll<Nudge>(admin, "no_reply_nudges", "status, created_at").catch(() => [] as Nudge[]),
   ]);
+  // Fiches non revendiquées, fiches de test et compte système : hors des statistiques
+  // des proprios (demandes sans réponse, brouillons abandonnés, annonces sans demande).
+  // Leurs messages sont ignorés plus bas : sans fiche connue, la boucle les saute.
+  const listings = allListings.filter((l) => l.claim_status !== "unclaimed" && !l.is_test);
+  const users = allUsers.filter((u) => !u.is_system);
   const funnelCounts = await fetchAll<FunnelCount>(admin, "funnel_counts", "day, step, count").catch(() => null);
   const errorGroups = await fetchAll<ErrorGroupRow>(admin, "error_groups", "message, source, count, last_seen_at, resolved_at").catch(() => null);
   const openErrors = errorGroups

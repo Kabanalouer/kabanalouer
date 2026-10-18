@@ -55,14 +55,17 @@ export async function GET(request: NextRequest) {
 
   const { data: listingsData, error: listingsError } = await supabase
     .from("listings")
-    .select("id, host_id, title, title_en");
+    .select("id, host_id, title, title_en, claim_status");
 
   if (listingsError) {
     console.error("[review-requests] échec lecture listings", listingsError);
     return NextResponse.json({ error: "Erreur lors de la lecture des annonces." }, { status: 500 });
   }
 
-  const hostByListing = new Map((listingsData ?? []).map((l) => [l.id as string, l.host_id as string]));
+  // Les fiches non revendiquées n'ont pas de vrai proprio : aucune demande d'avis
+  const hostByListing = new Map(
+    (listingsData ?? []).filter((l) => l.claim_status !== "unclaimed").map((l) => [l.id as string, l.host_id as string])
+  );
   const titleByListing = new Map((listingsData ?? []).map((l) => [l.id as string, l.title as string]));
   const titleEnByListing = new Map((listingsData ?? []).map((l) => [l.id as string, (l.title_en as string | null) ?? ""]));
 
