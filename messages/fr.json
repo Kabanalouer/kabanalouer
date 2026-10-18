@@ -1625,7 +1625,16 @@
     "s4T9": "Meta (pixel Meta)",
     "s4D9": "Mesure de nos publicités sur Facebook et Instagram : pages vues et actions sur le site (demande envoyée, inscription), associées à un identifiant de navigateur. Seulement avec votre accord (voir section 7). Meta peut traiter ces données hors du Québec. Politique : facebook.com/privacy/policy",
     "s6T6": "Retours et données techniques",
-    "s6D6": "Les retours que vous nous envoyez sont conservés 24 mois, les rapports d'erreurs techniques 12 mois après leur dernière apparition, et les totaux de visites anonymes 25 mois."
+    "s6D6": "Les retours que vous nous envoyez sont conservés 24 mois, les rapports d'erreurs techniques 12 mois après leur dernière apparition, et les totaux de visites anonymes 25 mois.",
+    "s2CatUnclaimed": "Fiches de chalets créées à partir de renseignements publics (propriétaires qui n’ont pas encore de compte)",
+    "s2UnI1": "Nom de l’établissement, description et photos du chalet, tels que l’établissement les publie lui-même",
+    "s2UnI2": "Adresse du chalet (seules la ville et la région sont affichées) et numéro CITQ",
+    "s2UnI3": "Adresse courriel professionnelle de l’établissement, utilisée seulement pour lui transmettre les demandes des voyageurs et le lien d’activation de sa fiche (jamais affichée sur le site)",
+    "s2UnI4": "Source : renseignements accessibles publiquement (par exemple le site web de l’établissement et le registre des établissements d’hébergement touristique). Nous ne collectons aucune autre donnée sur ces personnes tant qu’elles n’ont pas de compte.",
+    "s3I9": "Publier des fiches créées à partir de renseignements publics, transmettre aux propriétaires les demandes des voyageurs et leur permettre d’activer ou de retirer leur fiche.",
+    "s5P3": "Une fiche créée à partir de renseignements publics peut être retirée en tout temps : cliquez sur « Retirer ma fiche » dans le courriel que nous vous envoyons, ou écrivez à info@kabanalouer.ca. La fiche est alors retirée immédiatement et ne sera plus jamais ajoutée.",
+    "s6T7": "Fiches non revendiquées",
+    "s6D7": "Une fiche créée à partir de renseignements publics reste en ligne tant que son propriétaire ne l’a pas activée ou retirée. Si vous la faites retirer, elle disparaît du site immédiatement ; nous gardons seulement son numéro CITQ et son adresse d’origine pour ne pas la remettre en ligne. Les courriels que nous envoyons à son adresse au sujet des demandes de voyageurs sont limités à 3 par jour par fiche, et les liens d’activation sont valides 30 jours."
   },
   "translateButton": {
     "translate": "Traduire",

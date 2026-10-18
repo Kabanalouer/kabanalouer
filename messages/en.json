@@ -1625,7 +1625,16 @@
     "s4T9": "Meta (Meta Pixel)",
     "s4D9": "Measuring our ads on Facebook and Instagram: pages viewed and actions on the site (request sent, sign-up), linked to a browser identifier. Only with your consent (see section 7). Meta may process this data outside Québec. Policy: facebook.com/privacy/policy",
     "s6T6": "Feedback and technical data",
-    "s6D6": "Feedback you send us is kept for 24 months, technical error reports for 12 months after they last occurred, and anonymous visit totals for 25 months."
+    "s6D6": "Feedback you send us is kept for 24 months, technical error reports for 12 months after they last occurred, and anonymous visit totals for 25 months.",
+    "s2CatUnclaimed": "Cabin listings created from public information (owners who do not have an account yet)",
+    "s2UnI1": "Business name, description and photos of the cabin, as the business publishes them itself",
+    "s2UnI2": "Cabin address (only the city and region are shown) and CITQ number",
+    "s2UnI3": "The business’s professional email address, used only to forward travelers’ requests and the activation link for its listing (never shown on the site)",
+    "s2UnI4": "Source: publicly available information (for example the business’s own website and the register of tourist accommodation establishments). We collect no other data about these people until they have an account.",
+    "s3I9": "Publish listings created from public information, forward travelers’ requests to owners and let them activate or remove their listing.",
+    "s5P3": "A listing created from public information can be removed at any time: click “Remove my listing” in the email we send you, or write to info@kabanalouer.ca. The listing is then removed immediately and will never be added again.",
+    "s6T7": "Unclaimed listings",
+    "s6D7": "A listing created from public information stays online until its owner activates or removes it. If you have it removed, it disappears from the site immediately; we only keep its CITQ number and original address so it is not put back online. The emails we send to its address about travelers’ requests are limited to 3 per day per listing, and activation links are valid for 30 days."
   },
   "translateButton": {
     "translate": "Translate",

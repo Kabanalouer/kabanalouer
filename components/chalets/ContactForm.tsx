@@ -328,7 +328,8 @@ export default function ContactForm({
   // hostName falls back to the localized "the owner" string when unset — see HostCard.tsx
   const resolvedName = hostName && hostName !== t("fallbackOwnerName") ? hostName : null;
   const hostFirstName = resolvedName ? resolvedName.split(" ")[0] : null;
-  const hostInitials = hostFirstName ? hostFirstName[0].toUpperCase() : "H";
+  // Nom inconnu (fiche non revendiquée) : silhouette neutre plutôt qu'une initiale inventée
+  const hostInitials = hostFirstName ? hostFirstName[0].toUpperCase() : null;
 
   return (
     <div className="space-y-3">
@@ -345,8 +346,12 @@ export default function ContactForm({
               loading="lazy"
               className="w-full h-full object-cover rounded-full"
             />
-          ) : (
+          ) : hostInitials ? (
             <span className="text-charcoal-600 font-bold text-lg">{hostInitials}</span>
+          ) : (
+            <svg className="w-7 h-7 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
           )}
         </div>
         <div>

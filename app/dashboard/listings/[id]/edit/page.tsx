@@ -180,6 +180,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         importStatus={(listing.import_status as string | null) ?? null}
         importSourceUrl={(listing.import_source_url as string | null) ?? null}
         listingNumber={(listing.listing_number as number | null) ?? null}
+        roomsOptional={listing.claim_status === "claimed"}
         initialCustomSlug={(listing.custom_slug as string | null) ?? null}
         initialData={{
           title: listing.title ?? "",

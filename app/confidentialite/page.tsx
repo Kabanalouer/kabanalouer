@@ -142,6 +142,15 @@ export default async function ConfidentialitePage() {
                   <li>{t("s2FbI2")}</li>
                 </ul>
               </div>
+              <div>
+                <p className="font-semibold text-charcoal-800 mb-2">{t("s2CatUnclaimed")}</p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-charcoal-600">
+                  <li>{t("s2UnI1")}</li>
+                  <li>{t("s2UnI2")}</li>
+                  <li>{t("s2UnI3")}</li>
+                  <li>{t("s2UnI4")}</li>
+                </ul>
+              </div>
             </div>
           </section>
 
@@ -159,6 +168,7 @@ export default async function ConfidentialitePage() {
                 <li>{t("s3I6")}</li>
                 <li>{t("s3I7")}</li>
                 <li>{t("s3I8")}</li>
+                <li>{t("s3I9")}</li>
               </ul>
               <p>{t("s3P2")}</p>
             </div>
@@ -198,6 +208,7 @@ export default async function ConfidentialitePage() {
                 <LegalItem term={t("s5T6")}>{t("s5D6")}</LegalItem>
               </ul>
               <p>{t("s5P2")}</p>
+              <p>{t("s5P3")}</p>
             </div>
           </section>
 
@@ -212,6 +223,7 @@ export default async function ConfidentialitePage() {
                 <LegalItem term={t("s6T4")}>{t("s6D4")}</LegalItem>
                 <LegalItem term={t("s6T5")}>{t("s6D5")}</LegalItem>
                 <LegalItem term={t("s6T6")}>{t("s6D6")}</LegalItem>
+                <LegalItem term={t("s6T7")}>{t("s6D7")}</LegalItem>
               </ul>
             </div>
           </section>

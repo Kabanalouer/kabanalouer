@@ -189,6 +189,7 @@ export default function EditListingForm({
   importSourceUrl,
   listingNumber,
   initialCustomSlug,
+  roomsOptional = false,
 }: {
   userId: string;
   listingId: string;
@@ -214,6 +215,9 @@ export default function EditListingForm({
   // Lien Airbnb original soumis par le proprio — visible en révision admin
   // pour compléter la fiche (ex. section Chambres) avec les bonnes infos.
   importSourceUrl?: string | null;
+  // Fiche importée puis revendiquée : on n'a aucune information sur ses chambres, la
+  // section n'est pas exigée pour publier (jamais pour une annonce créée par un proprio).
+  roomsOptional?: boolean;
   // Numéro d'annonce stable (assigné à la création, jamais modifiable) et
   // lien personnalisé optionnel — voir CLAUDE.md section 9 et
   // components/dashboard/CustomSlugField.tsx.
@@ -382,7 +386,7 @@ export default function EditListingForm({
     titre: form.title.trim().length > 0,
     description: form.description.trim().length >= DESC_MIN,
     capacite: form.capacity >= 1 && form.bedrooms >= 1,
-    chambres: roomsHasBeds,
+    chambres: roomsOptional || roomsHasBeds,
     equipements: form.amenities.length >= 3,
     tarifs: form.price_on_request || form.price_low >= 10,
     localisation: locationValid,
