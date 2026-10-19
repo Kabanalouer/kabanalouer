@@ -28,6 +28,7 @@ interface Props {
   hostId: string;
   hostName: string;
   hostAvatarUrl?: string | null;
+  unclaimed?: boolean;
   hostCreatedAt?: string | null;
   listingTitle: string;
   currentUserId: string | null;
@@ -66,7 +67,7 @@ function hostSinceDuration(
 }
 
 export default function ContactForm({
-  listingId, hostId, hostName, hostAvatarUrl, hostCreatedAt, listingTitle, currentUserId,
+  listingId, hostId, hostName, hostAvatarUrl, unclaimed, hostCreatedAt, listingTitle, currentUserId,
   senderFirstName, senderLastName,
   initialCheckin, initialCheckout,
   initialAdults, initialChildren, initialBabies, initialPets,
@@ -75,6 +76,7 @@ export default function ContactForm({
 }: Props) {
   const t = useTranslations("listing");
   const ts = useTranslations("searchBar");
+  const tClaim = useTranslations("claim");
   const locale = useLocale();
   const router = useRouter();
   const monthNames = getMonthNames(locale);
@@ -358,6 +360,15 @@ export default function ContactForm({
           <p className="font-semibold text-charcoal-800 text-sm">
             {hostFirstName ? t("ownerLabelWithName", { name: hostFirstName }) : t("ownerLabel")}
           </p>
+          {unclaimed && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("kbl:open-claim"))}
+              className="text-sm text-primary underline underline-offset-2 hover:text-primary-dark mt-0.5"
+            >
+              {tClaim("sidebarLink")}
+            </button>
+          )}
           {hostCreatedAt && (() => {
             const duration = hostSinceDuration(hostCreatedAt, t);
             return (

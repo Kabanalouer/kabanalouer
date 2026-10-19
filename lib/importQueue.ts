@@ -26,6 +26,7 @@ import type { PhotoItem } from "@/lib/photo";
 // (CITQ + adresse d'origine) ; import_exclusions respectée.
 
 const BUCKET = "listing-photos";
+const MIN_PHOTOS = 5;
 const MAX_PHOTOS = 40;
 const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const MIN_PHOTO_WIDTH = 400;
@@ -301,7 +302,7 @@ export async function fetchPublicImage(url: string): Promise<Buffer | null> {
   return null;
 }
 
-type PreparedPhoto = { webp: Buffer; thumb: Buffer; hash: string };
+type PreparedPhoto = { webp: Buffer; hash: string };
 
 async function prepareImage(url: string): Promise<PreparedPhoto | null> {
   try {
@@ -315,62 +316,10 @@ async function prepareImage(url: string): Promise<PreparedPhoto | null> {
       .resize({ width: 2048, height: 2048, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 80 })
       .toBuffer();
-    const thumb = await sharp(webp).resize({ width: 512, height: 512, fit: "inside" }).jpeg({ quality: 70 }).toBuffer();
-    return { webp, thumb, hash: createHash("sha1").update(webp).digest("hex") };
+    return { webp, hash: createHash("sha1").update(webp).digest("hex") };
   } catch {
     return null;
   }
-}
-
-export async function captionPhotos(thumbs: Buffer[], title: string, city: string | null): Promise<string[]> {
-  const fallback = (i: number) => `${title}${city ? `, ${city}` : ""} — photo ${i + 1}`;
-  const captions: string[] = thumbs.map((_, i) => fallback(i));
-  if (!process.env.ANTHROPIC_API_KEY) return captions;
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  for (let start = 0; start < thumbs.length; start += 8) {
-    const batch = thumbs.slice(start, start + 8);
-    try {
-      const msg = await anthropic.messages.create({
-        model: "claude-haiku-5-5",
-        max_tokens: 800,
-        system:
-          "Tu rédiges les légendes de photos d'un chalet québécois, qui servent aussi de texte alternatif. " +
-          "Pour chaque photo, dans l'ordre, écris une légende de 4 à 12 mots en français qui décrit ce qu'on y voit " +
-          "réellement (extérieur du chalet, salon, chambre, cuisine, spa, lac, quai, paysage…). N'invente rien : " +
-          "décris seulement ce qui est visible. Chaque légende doit être différente des autres. Pas d'emojis. " +
-          "Réponds UNIQUEMENT par un tableau JSON de chaînes, une par photo.",
-        messages: [
-          {
-            role: "user",
-            content: [
-              ...batch.map((b) => ({
-                type: "image" as const,
-                source: { type: "base64" as const, media_type: "image/jpeg" as const, data: b.toString("base64") },
-              })),
-              { type: "text" as const, text: `${batch.length} photos. Établissement : ${title}${city ? `, ${city}` : ""}.` },
-            ],
-          },
-        ],
-      });
-      const text = textOf(msg);
-      const parsed = JSON.parse(text.slice(text.indexOf("["), text.lastIndexOf("]") + 1)) as unknown;
-      if (Array.isArray(parsed)) {
-        parsed.forEach((c, j) => {
-          if (typeof c === "string" && c.trim() && start + j < captions.length) captions[start + j] = c.trim().slice(0, 140);
-        });
-      }
-    } catch (err) {
-      console.error("[importQueue] échec des légendes IA", err);
-    }
-  }
-  // Une légende unique par photo
-  const seen = new Set<string>();
-  return captions.map((c, i) => {
-    let out = c;
-    if (seen.has(out.toLowerCase())) out = `${c} (photo ${i + 1})`;
-    seen.add(out.toLowerCase());
-    return out;
-  });
 }
 
 // ── Description ─────────────────────────────────────────────────────────────
@@ -509,17 +458,20 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         }
       }
     }
-    if (prepared.length === 0) throw new Error("Aucune photo n'a pu être téléchargée.");
+    // Minimum de 5 photos : moins de 5 dans le lot = refus ; 5 ou plus dans le lot mais téléchargement raté = nouvel essai
+    if (prepared.length < MIN_PHOTOS) {
+      if (d.photos.length < MIN_PHOTOS) return await reject(admin, row, `Moins de ${MIN_PHOTOS} photos dans le lot.`);
+      throw new Error(`Seulement ${prepared.length} photo(s) téléchargée(s) sur ${d.photos.length}.`);
+    }
 
     const base = [slugify(d.title), slugify(d.city ?? "")].filter(Boolean).join("-").slice(0, 70).replace(/-+$/g, "");
-    const captions = await captionPhotos(prepared.map((p) => p.thumb), d.title, d.city);
     const photos: PhotoItem[] = [];
     for (let i = 0; i < prepared.length; i++) {
       const path = `${systemId}/${listingId}/${base || "chalet"}-${i + 1}.webp`;
       const { error } = await admin.storage.from(BUCKET).upload(path, prepared[i].webp, { contentType: "image/webp", cacheControl: "31536000", upsert: true });
       if (error) throw new Error(`Dépôt d'une photo : ${error.message}`);
       uploaded.push(path);
-      photos.push({ url: admin.storage.from(BUCKET).getPublicUrl(path).data.publicUrl, caption: captions[i], sizeMb: Math.round((prepared[i].webp.byteLength / 1048576) * 100) / 100 });
+      photos.push({ url: admin.storage.from(BUCKET).getPublicUrl(path).data.publicUrl, caption: "", sizeMb: Math.round((prepared[i].webp.byteLength / 1048576) * 100) / 100 });
     }
 
     const description = await rewriteDescription(d.descriptionOriginal);

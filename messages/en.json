@@ -913,7 +913,6 @@
     "editListingCta": "Edit my listing",
     "contactDirect": "Direct contact · No service fees",
     "testListingBanner": "Test listing: visible only with its link, not indexed.",
-    "unclaimedContactNote": "Your request will be forwarded to the owner by email. The reply may take a little longer than usual.",
     "perNight": "/night",
     "hostReplyLabel": "Owner's response:",
     "personCount": "{count, plural, one {{count} person} other {{count} persons}}",
@@ -1692,9 +1691,10 @@
     "errorEmpty": "Write a few words before sending."
   },
   "claim": {
-    "noticeTitle": "This owner hasn’t activated their listing yet",
-    "noticeBody": "This listing was created from public information. You can still write to the owner: your request will be forwarded by email, and the reply may take a little longer than usual.",
+    "noticeTitle": "This owner hasn’t claimed their listing yet",
+    "noticeBody": "If you own this cabin, you must first claim your listing to respond to travelers’ requests.",
     "cta": "This is my cabin",
+    "sidebarLink": "Claim my listing",
     "dialogTitle": "Activate your listing",
     "dialogIntro": "Activate the listing with your account to edit it and reply to travelers directly.",
     "sendLinkTitle": "Send the activation link to {email}",

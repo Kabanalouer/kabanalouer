@@ -52,3 +52,6 @@ supabase/.temp/
 
 # Design handoff bundles (matériel de référence, pas du code applicatif)
 design_handoff_traduction_titre/
+
+# Listes de prospects (données personnelles, jamais sur GitHub)
+/prospection/

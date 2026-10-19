@@ -417,9 +417,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
             <p className="text-base text-charcoal-500">
               {subtitleParts.join(" · ")}
             </p>
-            {isUnclaimed && listing.citq_number && (
-              <p className="text-sm text-charcoal-400 mt-1">{t("citqNumber", { number: listing.citq_number as string })}</p>
-            )}
           </div>
           <div className="hidden md:flex shrink-0 mt-1 items-center gap-2">
             <ShareButton />
@@ -701,6 +698,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                     hostId={host?.id ?? (listing.host_id as string)}
                     hostName={host?.name ?? t("fallbackOwnerName")}
                     hostAvatarUrl={host?.avatar_url ?? null}
+                    unclaimed={isUnclaimed}
                     hostCreatedAt={host?.created_at ?? null}
                     listingTitle={displayTitle}
                     currentUserId={user?.id ?? null}
@@ -720,9 +718,6 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   <p className="text-xs text-charcoal-400 text-center mt-3">
                     {t("contactDirect")}
                   </p>
-                  {isUnclaimed && (
-                    <p className="text-xs text-charcoal-500 text-center mt-2">{t("unclaimedContactNote")}</p>
-                  )}
                 </>
               )}
             </div>

@@ -913,7 +913,6 @@
     "editListingCta": "Modifier mon annonce",
     "contactDirect": "Contact direct · Zéro frais de service",
     "testListingBanner": "Fiche de test : visible seulement avec son lien, non indexée.",
-    "unclaimedContactNote": "Votre demande sera transmise au propriétaire par courriel. La réponse peut prendre un peu plus de temps que d’habitude.",
     "perNight": "/nuit",
     "hostReplyLabel": "Réponse du propriétaire :",
     "personCount": "{count, plural, one {{count} personne} other {{count} personnes}}",
@@ -1692,9 +1691,10 @@
     "errorEmpty": "Écrivez quelques mots avant d'envoyer."
   },
   "claim": {
-    "noticeTitle": "Ce propriétaire n’a pas encore activé sa fiche",
-    "noticeBody": "Cette fiche a été créée à partir de renseignements publics. Vous pouvez quand même écrire au propriétaire : votre demande lui sera transmise par courriel, et la réponse peut prendre un peu plus de temps que d’habitude.",
+    "noticeTitle": "Ce propriétaire n’a pas encore revendiqué sa fiche",
+    "noticeBody": "Si vous êtes le propriétaire de ce chalet, vous devez d’abord revendiquer votre fiche pour répondre aux demandes des voyageurs.",
     "cta": "C’est mon chalet",
+    "sidebarLink": "Revendiquer mon annonce",
     "dialogTitle": "Activer votre fiche",
     "dialogIntro": "Activez la fiche avec votre compte pour la modifier et répondre directement aux voyageurs.",
     "sendLinkTitle": "Envoyer le lien d’activation à {email}",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { localePath } from "@/lib/localePath";
 
@@ -21,6 +21,13 @@ export default function UnclaimedNotice({
   const t = useTranslations("claim");
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  // Le lien « Revendiquer mon annonce » du bloc de demande de prix ouvre la même fenêtre
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("kbl:open-claim", onOpen);
+    return () => window.removeEventListener("kbl:open-claim", onOpen);
+  }, []);
 
   async function sendLink() {
     setState("sending");
