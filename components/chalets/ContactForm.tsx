@@ -578,7 +578,8 @@ export default function ContactForm({
       {/* Visiteur sans compte : prénom + courriel, aucun mot de passe */}
       {!currentUserId && (
         <div className="space-y-2">
-          <div className="grid grid-cols-[1fr_1.6fr] gap-2">
+          <hr className="border-charcoal-100 !mt-4 !mb-3" />
+          <div className="space-y-2">
             <input
               type="text"
               value={guestName}
@@ -615,7 +616,6 @@ export default function ContactForm({
               </div>
             </div>
           )}
-          <p className="text-xs text-charcoal-400">{t("guestHint")}</p>
         </div>
       )}
 
