@@ -4,13 +4,16 @@ import { claimLink, createClaimToken, removeLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 import { buildListingPath } from "@/lib/listingUrl";
 
-// Invitations à revendiquer, envoyées depuis Admin → Invitations (table listing_invitations).
+// Invitations à revendiquer, envoyées chaque jour par le cron send-invitations ou à la main depuis
+// Admin → Invitations (table listing_invitations).
 // Une seule invitation et une seule relance par adresse (clé unique en base). Seules les
 // fiches non revendiquées ET publiées sont invitées : le courriel renvoie vers la fiche en ligne.
 
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export const REMINDER_DELAY_DAYS = 5;
+export const REMINDER_DELAY_DAYS = 3;
+// Envoi automatique (cron send-invitations) : false = seul l'envoi manuel d'Admin → Invitations reste actif
+export const AUTO_INVITATIONS_ENABLED = true;
 export type InvitationKind = "invite" | "reminder";
 
 type CandidateListing = {
@@ -76,7 +79,7 @@ function group(rows: Row[], only?: Set<string>, exclude?: Set<string>): Invitati
 }
 
 // À inviter : adresses avec au moins une fiche non revendiquée publiée et aucune invitation.
-// À relancer : invitée il y a 5 jours ou plus, pas revendiquée, pas encore relancée,
+// À relancer : invitée il y a REMINDER_DELAY_DAYS jours ou plus, pas revendiquée, pas encore relancée,
 // et au moins une fiche toujours non revendiquée et publiée.
 export async function listInvitationCandidates(admin: AdminClient, kind: InvitationKind, testMode = false): Promise<InvitationCandidate[]> {
   const rows = await unclaimedPublished(admin, testMode);

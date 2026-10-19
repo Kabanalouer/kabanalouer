@@ -51,6 +51,10 @@
     {
       "path": "/api/cron/import-queue",
       "schedule": "3-59/15 * * * *"
+    },
+    {
+      "path": "/api/cron/send-invitations",
+      "schedule": "30 14 * * *"
     }
   ]
 }

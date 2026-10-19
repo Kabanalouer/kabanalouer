@@ -6,8 +6,8 @@ import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 import { SITE_URL } from "@/lib/siteUrl";
 import { formatLaunchOfferEnd, isLaunchOfferActive } from "@/lib/launchOffer";
 
-// Invitation à revendiquer une fiche (envoyée depuis Admin → Invitations) et relance
-// 5 jours plus tard. Part de info@kabanalouer.ca : les réponses arrivent chez Simon.
+// Invitation à revendiquer une fiche (envoyée automatiquement après la publication, ou depuis
+// Admin → Invitations) et relance 3 jours plus tard. Part de info@kabanalouer.ca : les réponses arrivent chez Simon.
 // Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* = textes par défaut).
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";

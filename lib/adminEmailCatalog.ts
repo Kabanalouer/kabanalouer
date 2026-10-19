@@ -138,16 +138,16 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   {
     id: "claim-invitation", category: "proprio", group: "Fiches non revendiquées",
     name: "Invitation à activer sa fiche",
-    when: "Quand tu cliques « Envoyer » ou « Tout envoyer » dans Admin → Invitations.",
-    conditions: "Part de info@kabanalouer.ca, seulement pour une fiche non revendiquée et publiée, une seule invitation par adresse. Contient le lien de la fiche, « Activer ma fiche » (gratuitement tant que l’offre de lancement est en cours) et « Retirer ma fiche ». Un pixel invisible compte les ouvertures (indicatif).",
-    mechanism: "event", testable: true,
+    when: "Chaque jour vers 10 h, après la publication des fiches ; tu peux aussi l’envoyer à la main depuis Admin → Invitations.",
+    conditions: "Part de info@kabanalouer.ca, seulement pour une fiche non revendiquée et publiée, une seule invitation par adresse (30 par jour au plus). Contient le lien de la fiche, « Activer ma fiche » (gratuitement tant que l’offre de lancement est en cours) et « Retirer ma fiche ». Un pixel invisible compte les ouvertures (indicatif).",
+    mechanism: "daily", dailyAt: "vers 10 h", testable: true,
   },
   {
     id: "claim-invitation-reminder", category: "proprio", group: "Fiches non revendiquées",
-    name: "Relance de l’invitation (5 jours plus tard)",
-    when: "5 jours après l’invitation, si la fiche n’est pas revendiquée ; tu l’envoies depuis Admin → Invitations.",
-    conditions: "Une seule relance par adresse, jamais automatique : elle apparaît dans Admin → Invitations avant l’envoi.",
-    mechanism: "event", testable: true,
+    name: "Relance de l’invitation (3 jours plus tard)",
+    when: "Chaque jour vers 10 h, pour les adresses invitées il y a 3 jours ou plus dont la fiche n’est pas revendiquée.",
+    conditions: "Une seule relance par adresse (30 par jour au plus). Elle apparaît aussi dans Admin → Invitations, où tu peux l’envoyer à la main.",
+    mechanism: "daily", dailyAt: "vers 10 h", testable: true,
   },
   {
     id: "review-received", category: "proprio", group: "Demandes et avis",
