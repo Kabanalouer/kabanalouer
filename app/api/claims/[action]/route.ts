@@ -165,7 +165,8 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
   const listingId = String(form.get("listingId") ?? "");
   const message = String(form.get("message") ?? "").trim();
   const proof = form.get("proof");
-  if (!UUID.test(listingId) || !message || message.length > MAX_MESSAGE) return bad(locale, "Demande invalide", "Invalid request");
+  if (!UUID.test(listingId) || message.length > MAX_MESSAGE) return bad(locale, "Demande invalide", "Invalid request");
+  if (!(proof instanceof File) || proof.size === 0) return bad(locale, "Joignez une copie de votre permis CITQ.", "Attach a copy of your CITQ permit.");
 
   const admin = adminSupabase();
   const { data: listing } = await admin
@@ -194,9 +195,9 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
   if ((pending ?? 0) > 0) return bad(locale, "Une demande est déjà en cours.", "A request is already pending.", 409);
 
   let proofPath: string | null = null;
-  if (proof instanceof File && proof.size > 0) {
+  {
     const ext = PROOF_TYPES[proof.type];
-    if (!ext || proof.size > MAX_PROOF_BYTES) return bad(locale, "Fichier non accepté (image ou PDF, 5 Mo maximum).", "File not accepted (image or PDF, 5 MB max).");
+    if (!ext || proof.size > MAX_PROOF_BYTES) return bad(locale, "Fichier non accepté. Formats acceptés : PDF, JPG, PNG ou WebP, 5 Mo maximum.", "File not accepted. Accepted formats: PDF, JPG, PNG or WebP, 5 MB maximum.");
     proofPath = await uploadProof(admin, `${listingId}/${user.id}-${Date.now()}.${ext}`, proof, proof.type);
     if (!proofPath) return bad(locale, "Le fichier n'a pas pu être envoyé.", "The file could not be uploaded.", 500);
   }
@@ -206,7 +207,7 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
     listing_id: listingId,
     user_id: user.id,
     contact_email: user.email ?? null,
-    message,
+    message: message || null,
     proof_path: proofPath,
   });
   if (error) {
@@ -221,7 +222,7 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
     listingTitle: (listing.title as string | null) ?? "(sans titre)",
     listingId,
     from: user.email ?? user.id,
-    message,
+    message: message || null,
   });
   return NextResponse.json({ ok: true });
 }

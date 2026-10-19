@@ -51,6 +51,24 @@ export default async function AdminClaimsPage() {
     admin.from("listings").select("id", { count: "exact", head: true }).eq("claim_status", "unclaimed").eq("is_test", false).eq("is_published", true),
   ]);
 
+  // Autres fiches non revendiquées liées à la même adresse : elles suivent une approbation
+  const siblingTitles = new Map<string, string[]>();
+  await Promise.all(
+    rows
+      .filter((r) => r.status === "pending" && r.kind === "proof")
+      .map(async (r) => {
+        const l = one(r.listing);
+        if (!l?.claim_email) return;
+        const { data: sib } = await admin
+          .from("listings")
+          .select("id, title")
+          .eq("claim_status", "unclaimed")
+          .eq("claim_email", l.claim_email)
+          .neq("id", l.id);
+        if ((sib ?? []).length > 0) siblingTitles.set(r.id, (sib ?? []).map((s) => (s.title as string | null) ?? "(sans titre)"));
+      })
+  );
+
   const pending = rows.filter((r) => r.status === "pending");
   const done = rows.filter((r) => r.status !== "pending");
 
@@ -85,7 +103,12 @@ export default async function AdminClaimsPage() {
           </p>
         )}
         {r.admin_note && <p className="mt-2 text-sm text-charcoal-500">Note : {r.admin_note}</p>}
-        {r.status === "pending" && <ClaimRequestActions id={r.id} kind={r.kind} />}
+        {r.status === "pending" && r.kind === "proof" && siblingTitles.has(r.id) && (
+          <p className="mt-2 rounded-xl bg-warning-50 p-3 text-sm text-warning-800">
+            L’approbation transfère aussi {siblingTitles.get(r.id)!.length} autre{siblingTitles.get(r.id)!.length > 1 ? "s" : ""} fiche{siblingTitles.get(r.id)!.length > 1 ? "s" : ""} liée{siblingTitles.get(r.id)!.length > 1 ? "s" : ""} à la même adresse au dossier : {siblingTitles.get(r.id)!.join(", ")}.
+          </p>
+        )}
+        {r.status === "pending" && <ClaimRequestActions id={r.id} kind={r.kind} siblingCount={siblingTitles.get(r.id)?.length ?? 0} />}
       </div>
     );
   };

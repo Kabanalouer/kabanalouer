@@ -45,7 +45,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (action === "approve") {
     // Le transfert d'abord : si la fiche a été revendiquée entre-temps, rien n'est marqué approuvé.
-    const result = await claimListingsForUser(admin, { userId: req.user_id as string, listingIds: [req.listing_id as string] });
+    // Un propriétaire avec plusieurs chalets n'envoie qu'un permis : les autres fiches non
+    // revendiquées liées à la même adresse au dossier suivent (la page admin les liste avant l'approbation).
+    const { data: base } = await admin.from("listings").select("claim_email, is_test").eq("id", req.listing_id).maybeSingle();
+    let listingIds = [req.listing_id as string];
+    if (base?.claim_email) {
+      const { data: siblings } = await admin
+        .from("listings")
+        .select("id")
+        .eq("claim_status", "unclaimed")
+        .eq("claim_email", base.claim_email)
+        .eq("is_test", base.is_test as boolean);
+      listingIds = Array.from(new Set([...listingIds, ...((siblings ?? []).map((s) => s.id as string))]));
+    }
+    const result = await claimListingsForUser(admin, { userId: req.user_id as string, listingIds });
     if (!result.ok) return NextResponse.json({ error: "Transfert impossible : la fiche n'est probablement plus disponible." }, { status: 409 });
   }
 

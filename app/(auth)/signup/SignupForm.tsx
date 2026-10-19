@@ -22,6 +22,8 @@ function SignupForm() {
   const defaultHome = localePath("/", locale);
   const next = safeNextPath(searchParams.get("next"), defaultHome);
   const roleParam = searchParams.get("role") === "host" ? "host" : null;
+  // Arrivé par « Revendiquer mon annonce » : compte proprio imposé, avec une explication claire
+  const claiming = roleParam === "host" && /^\/(en\/)?(revendiquer|claim)(\/|$)/.test(next);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -161,10 +163,13 @@ function SignupForm() {
         <p className="text-charcoal-500 text-base mb-6">
           {role === "host" ? t("subtitleHost") : t("subtitleDefault")}
         </p>
+        {claiming && (
+          <p className="mb-6 rounded-xl bg-[#f5f6ec] p-4 text-base text-charcoal-700" role="note">{t("claimBanner")}</p>
+        )}
 
         {/* Choix du rôle — toujours visible ; Proprio présélectionné quand on
             arrive par « Inscrire mon chalet » (?role=host). */}
-        <div className="mb-6 mt-6">
+        {!claiming && (<div className="mb-6 mt-6">
           <p className="text-sm font-medium text-charcoal-700 mb-3">{t("iAm")}</p>
           <div className="grid grid-cols-2 gap-3">
             <RoleButton
@@ -182,7 +187,7 @@ function SignupForm() {
               subtitle={t("ownerSubtitle")}
             />
           </div>
-        </div>
+        </div>)}
 
         {/* Google */}
         <button

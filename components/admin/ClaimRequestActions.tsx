@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Boutons d'une demande de la file /admin/revendications.
-export default function ClaimRequestActions({ id, kind }: { id: string; kind: "proof" | "dispute" }) {
+export default function ClaimRequestActions({ id, kind, siblingCount = 0 }: { id: string; kind: "proof" | "dispute"; siblingCount?: number }) {
   const router = useRouter();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function act(action: "approve" | "refuse" | "handled") {
-    if (action === "approve" && !window.confirm("Transférer cette fiche au demandeur ? Le propriétaire actuel (compte système) la perd.")) return;
+    if (action === "approve" && !window.confirm(`Transférer cette fiche${siblingCount > 0 ? ` et ${siblingCount} autre${siblingCount > 1 ? "s" : ""} fiche${siblingCount > 1 ? "s" : ""} de la même adresse` : ""} au demandeur ? Le propriétaire actuel (compte système) les perd.`)) return;
     setBusy(action);
     setError(null);
     try {

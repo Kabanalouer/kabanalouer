@@ -153,20 +153,26 @@ export function ReportForm({ token }: { token: string }) {
   );
 }
 
+const ACCEPTED_PROOF = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+
 export function VerificationForm({ listingId, title }: { listingId: string; title: string }) {
   const t = useTranslations("claim");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<Status | "already">("idle");
+  const [status, setStatus] = useState<Status | "already" | "fileError">("idle");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024 || !ACCEPTED_PROOF.includes(file.type)) {
+      setStatus("fileError");
+      return;
+    }
     setStatus("submitting");
     const form = new FormData();
     form.set("listingId", listingId);
     form.set("message", message);
-    if (file) form.set("proof", file);
+    form.set("proof", file);
     try {
       const res = await fetch("/api/claims/request", { method: "POST", body: form });
       setStatus(res.ok ? "done" : res.status === 409 ? "already" : "error");
@@ -186,33 +192,36 @@ export function VerificationForm({ listingId, title }: { listingId: string; titl
   return (
     <form onSubmit={submit}>
       <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("verifyTitle")}</h2>
-      <p className="mt-2 text-base text-charcoal-600">{t("verifyIntro", { title })}</p>
+      <p className="mt-2 text-base text-charcoal-600">{t("verifyIntro")}</p>
+      <p className="mt-1 text-sm text-charcoal-400">{t("verifyChalet", { title })}</p>
 
-      <label htmlFor="verify-message" className="mt-6 block text-sm font-medium text-charcoal-700">{t("verifyMessage")}</label>
+      <label htmlFor="verify-proof" className="mt-6 block text-sm font-medium text-charcoal-700">{t("verifyProof")}</label>
+      <input
+        id="verify-proof"
+        type="file"
+        required
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        onChange={(e) => { setFile(e.target.files?.[0] ?? null); setStatus("idle"); }}
+        className="mt-1 block w-full text-base text-charcoal-600 file:mr-4 file:rounded-full file:border-0 file:bg-charcoal-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-charcoal-700"
+      />
+      <p className="mt-1 text-sm text-charcoal-400">{t("verifyProofHelp")}</p>
+
+      <label htmlFor="verify-message" className="mt-5 block text-sm font-medium text-charcoal-700">{t("verifyMessage")}</label>
       <textarea
         id="verify-message"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         maxLength={5000}
-        rows={6}
-        required
+        rows={4}
         className={`${INPUT} mt-1`}
       />
       <p className="mt-1 text-sm text-charcoal-400">{t("verifyMessageHelp")}</p>
 
-      <label htmlFor="verify-proof" className="mt-5 block text-sm font-medium text-charcoal-700">{t("verifyProof")}</label>
-      <input
-        id="verify-proof"
-        type="file"
-        accept="image/jpeg,image/png,image/webp,application/pdf"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="mt-1 block w-full text-base text-charcoal-600 file:mr-4 file:rounded-full file:border-0 file:bg-charcoal-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-charcoal-700"
-      />
-
-      <button type="submit" disabled={status === "submitting" || !message.trim()} className={`${PRIMARY_BUTTON} mt-6`}>
+      <button type="submit" disabled={status === "submitting" || !file} className={`${PRIMARY_BUTTON} mt-6`}>
         {status === "submitting" ? t("sending") : t("verifySubmit")}
       </button>
       {status === "already" && <p className="mt-3 text-sm text-charcoal-600" role="status">{t("verifyAlready")}</p>}
+      {status === "fileError" && <p className="mt-3 text-sm text-error-600" role="alert">{t("verifyFileError")}</p>}
       {status === "error" && <p className="mt-3 text-sm text-error-600" role="alert">{t("verifyError")}</p>}
     </form>
   );

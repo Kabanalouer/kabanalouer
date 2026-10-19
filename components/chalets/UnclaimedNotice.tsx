@@ -44,7 +44,7 @@ export default function UnclaimedNotice({
   }
 
   const verificationPath = `${localePath("/revendiquer/verification", locale)}?listing=${listingId}`;
-  const loginHref = `${localePath("/login", locale)}?next=${encodeURIComponent(verificationPath)}`;
+  const signupHref = `${localePath("/signup", locale)}?role=host&next=${encodeURIComponent(verificationPath)}`;
 
   return (
     <section className="bg-charcoal-50 rounded-2xl p-6 sm:p-8">
@@ -98,7 +98,7 @@ export default function UnclaimedNotice({
               <p className="text-base font-semibold text-charcoal-800">{t("proofTitle")}</p>
               <p className="mt-1 text-sm text-charcoal-500">{t("proofBody")}</p>
               <a
-                href={signedIn ? verificationPath : loginHref}
+                href={signedIn ? verificationPath : signupHref}
                 className="mt-4 inline-flex items-center justify-center rounded-full border border-charcoal-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors"
               >
                 {signedIn ? t("proofButton") : t("proofButtonSignIn")}

@@ -271,6 +271,7 @@ export async function sendClaimAdminAlert(input: {
     const label = input.kind === "proof" ? "Demande de vérification d’une fiche" : "Signalement après une activation";
     const html = `<p><strong>${label}</strong></p>
 <p>Fiche : ${escapeHtml(input.listingTitle)}<br/>De : ${escapeHtml(input.from)}</p>
+${input.kind === "proof" ? "<p>Une copie du permis CITQ est jointe à la demande.</p>" : ""}
 ${input.message ? `<p>${escapeHtml(input.message).replace(/\n/g, "<br/>")}</p>` : ""}
 <p><a href="${SITE_URL}/admin/revendications">Ouvrir la file des revendications</a></p>`;
     const { error } = await sendEmail({ from: FROM_NOREPLY, to: [ADMIN_EMAIL], subject: `${label} : ${input.listingTitle}`, html });
