@@ -77,13 +77,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   if (action !== "handled" && req.user_id) {
-    const { data: requester } = await admin.from("users").select("email, preferred_language").eq("id", req.user_id).maybeSingle();
+    const { data: requester } = await admin.from("users").select("email, name, preferred_language").eq("id", req.user_id).maybeSingle();
     if (requester?.email) {
       const { error: mailError } = await sendClaimDecisionEmail({
         to: requester.email as string,
         lang: requester.preferred_language === "en" ? "en" : "fr",
         listingTitle: title,
         listingTitles: approvedTitles,
+        firstName: ((requester.name as string | null) ?? "").split(" ")[0],
         approved: action === "approve",
         adminNote: note,
       });

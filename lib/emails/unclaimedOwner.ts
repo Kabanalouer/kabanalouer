@@ -93,11 +93,11 @@ export const TEMPLATE_CLAIM_ACTIVATED: EmailTemplateDef = {
 
 export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
   id: "claim-approved",
-  placeholders: [LISTINGS_PLACEHOLDER],
+  placeholders: [LISTINGS_PLACEHOLDER, { key: "prenom", label: "Prénom du demandeur" }],
   defaults: {
     fr: {
       subject: "Votre demande est approuvée",
-      greeting: "Bonjour,",
+      greeting: "Bonjour {prenom},",
       heading: "Votre demande est approuvée",
       body: "Vous êtes maintenant propriétaire de :\n\n{titresFiches}\n\nDepuis votre tableau de bord, vous pouvez tout modifier et répondre aux voyageurs.",
       buttonLabel: "Voir mes chalets",
@@ -105,7 +105,7 @@ export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
     },
     en: {
       subject: "Your request is approved",
-      greeting: "Hello,",
+      greeting: "Hi {prenom},",
       heading: "Your request is approved",
       body: "You are now the owner of:\n\n{titresFiches}\n\nFrom your dashboard, you can edit everything and reply to travelers.",
       buttonLabel: "See my cabins",
@@ -117,13 +117,14 @@ export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
 export const TEMPLATE_CLAIM_REFUSED: EmailTemplateDef = {
   id: "claim-refused",
   placeholders: [
+    { key: "prenom", label: "Prénom du demandeur" },
     { key: "titreChalet", label: "Titre du chalet" },
     { key: "noteAdmin", label: "Explication ajoutée par Kabanalouer (vide si aucune)", html: true },
   ],
   defaults: {
     fr: {
       subject: "À propos de votre demande pour {titreChalet}",
-      greeting: "Bonjour,",
+      greeting: "Bonjour {prenom},",
       heading: "Nous n’avons pas pu confirmer votre demande",
       body: "Nous n’avons pas pu vérifier que la fiche « {titreChalet} » est la vôtre.{noteAdmin}\n\nVous pouvez répondre à ce courriel avec plus de détails, ou utiliser le lien d’activation envoyé à l’adresse inscrite au dossier de la fiche.",
       buttonLabel: "Nous écrire",
@@ -131,7 +132,7 @@ export const TEMPLATE_CLAIM_REFUSED: EmailTemplateDef = {
     },
     en: {
       subject: "About your request for {titreChalet}",
-      greeting: "Hello,",
+      greeting: "Hi {prenom},",
       heading: "We could not confirm your request",
       body: "We could not verify that the listing “{titreChalet}” is yours.{noteAdmin}\n\nYou can reply to this email with more details, or use the activation link sent to the address on file for the listing.",
       buttonLabel: "Contact us",
@@ -220,6 +221,7 @@ export async function sendClaimDecisionEmail(input: {
   lang: Lang;
   listingTitle: string;
   listingTitles?: string[];
+  firstName?: string | null;
   approved: boolean;
   adminNote?: string | null;
 }): Promise<{ error: Error | null }> {
@@ -228,8 +230,8 @@ export async function sendClaimDecisionEmail(input: {
     ? `<br/><br/><em>${escapeHtml(input.adminNote.trim()).replace(/\n/g, "<br/>")}</em>`
     : "";
   const text = input.approved
-    ? await resolveEmailText(TEMPLATE_CLAIM_APPROVED, input.lang, { titresFiches: titlesHtml(input.listingTitles?.length ? input.listingTitles : [input.listingTitle]) })
-    : await resolveEmailText(TEMPLATE_CLAIM_REFUSED, input.lang, { titreChalet: input.listingTitle, noteAdmin: note });
+    ? await resolveEmailText(TEMPLATE_CLAIM_APPROVED, input.lang, { prenom: input.firstName?.trim(), titresFiches: titlesHtml(input.listingTitles?.length ? input.listingTitles : [input.listingTitle]) })
+    : await resolveEmailText(TEMPLATE_CLAIM_REFUSED, input.lang, { prenom: input.firstName?.trim(), titreChalet: input.listingTitle, noteAdmin: note });
   const html = renderEmail({
     lang: input.lang,
     ...text,

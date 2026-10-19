@@ -103,7 +103,12 @@ export async function resolveEmailText(def: EmailTemplateDef, lang: Lang, vars: 
 
   return {
     subject: toPlain(fields.subject, def, vars),
-    greeting: fields.greeting.trim() && !greetingMissing ? toHtml(fields.greeting, def, vars) : undefined,
+    // Prénom inconnu : « Bonjour, » plutôt que pas de formule du tout
+    greeting: !fields.greeting.trim()
+      ? undefined
+      : greetingMissing
+        ? lang === "en" ? "Hello," : "Bonjour,"
+        : toHtml(fields.greeting, def, vars),
     heading: toHtml(fields.heading, def, vars),
     body: toHtml(fields.body, def, vars),
     buttonLabel: toHtml(fields.buttonLabel, def, vars),

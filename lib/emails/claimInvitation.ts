@@ -13,6 +13,7 @@ import { formatLaunchOfferEnd, isLaunchOfferActive } from "@/lib/launchOffer";
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
 const PLACEHOLDERS: EmailTemplateDef["placeholders"] = [
+  { key: "titreChalet", label: "Titre du chalet (ou « Titre et 2 autres chalets » s’il y en a plusieurs), pour l’objet" },
   { key: "fiches", label: "Titre de chaque fiche en ligne, avec un lien vers la fiche", html: true },
   { key: "offre", label: "Phrase sur l’offre de lancement avec sa date de fin (vide si l’offre est terminée)", html: true },
   { key: "gratuitement", label: "« gratuitement » quand l’offre de lancement est en cours (vide sinon), pour le bouton" },
@@ -25,7 +26,7 @@ export const TEMPLATE_CLAIM_INVITATION: EmailTemplateDef = {
   placeholders: PLACEHOLDERS,
   defaults: {
     fr: {
-      subject: "Votre fiche est en ligne sur Kabanalouer",
+      subject: "{titreChalet} sur Kabanalouer",
       greeting: "Bonjour,",
       heading: "Votre fiche est en ligne sur Kabanalouer",
       body: "Nous avons mis en ligne une fiche pour votre établissement sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElle a été créée à partir des renseignements publics de votre établissement. En l’activant, vous pourrez la modifier, ajouter vos propres photos et répondre directement aux voyageurs.{offre}",
@@ -33,7 +34,7 @@ export const TEMPLATE_CLAIM_INVITATION: EmailTemplateDef = {
       footerNote: "Vous ne souhaitez pas figurer sur Kabanalouer ? {lienRetrait}\n\nLe lien d’activation est valide 30 jours.{suivi}",
     },
     en: {
-      subject: "Your listing is live on Kabanalouer",
+      subject: "{titreChalet} on Kabanalouer",
       greeting: "Hello,",
       heading: "Your listing is live on Kabanalouer",
       body: "We have put a listing for your business online on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nIt was created from your business’s public information. Once you activate it, you can edit it, add your own photos and reply to travelers directly.{offre}",
@@ -48,7 +49,7 @@ export const TEMPLATE_CLAIM_INVITATION_REMINDER: EmailTemplateDef = {
   placeholders: PLACEHOLDERS,
   defaults: {
     fr: {
-      subject: "Votre fiche Kabanalouer vous attend",
+      subject: "{titreChalet} sur Kabanalouer",
       greeting: "Bonjour,",
       heading: "Votre fiche est toujours en ligne",
       body: "Il y a quelques jours, nous vous avons écrit au sujet de la fiche de votre établissement sur Kabanalouer.\n\n{fiches}\n\nElle est toujours en ligne, mais tant que vous ne l’avez pas activée, vous ne pouvez ni la modifier ni répondre directement aux voyageurs. L’activation ne prend que quelques minutes.{offre}",
@@ -56,7 +57,7 @@ export const TEMPLATE_CLAIM_INVITATION_REMINDER: EmailTemplateDef = {
       footerNote: "C’est notre dernier courriel à ce sujet. Vous ne souhaitez pas figurer sur Kabanalouer ? {lienRetrait}{suivi}",
     },
     en: {
-      subject: "Your Kabanalouer listing is waiting for you",
+      subject: "{titreChalet} on Kabanalouer",
       greeting: "Hello,",
       heading: "Your listing is still online",
       body: "A few days ago we wrote to you about your business’s listing on Kabanalouer.\n\n{fiches}\n\nIt is still online, but until you activate it you cannot edit it or reply to travelers directly. Activation only takes a few minutes.{offre}",
@@ -102,10 +103,16 @@ export async function sendClaimInvitationEmail(input: {
     ? `<img src="${SITE_URL}/api/invitations/open/${input.trackToken}.gif" width="1" height="1" alt="" style="display:block;border:0;width:1px;height:1px;" />`
     : "";
 
+  const first = input.listings[0]?.title ?? (fr ? "Votre fiche" : "Your listing");
+  const others = input.listings.length - 1;
+  const subjectTitle =
+    others <= 0 ? first : fr ? `${first} et ${others} autre${others > 1 ? "s" : ""} chalet${others > 1 ? "s" : ""}` : `${first} and ${others} other cabin${others > 1 ? "s" : ""}`;
+
   const text = await resolveEmailText(
     input.kind === "invite" ? TEMPLATE_CLAIM_INVITATION : TEMPLATE_CLAIM_INVITATION_REMINDER,
     input.lang,
     {
+      titreChalet: subjectTitle,
       fiches,
       offre,
       gratuitement: offerActive ? (fr ? " gratuitement" : " for free") : "",
