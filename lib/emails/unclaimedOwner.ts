@@ -93,22 +93,22 @@ export const TEMPLATE_CLAIM_ACTIVATED: EmailTemplateDef = {
 
 export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
   id: "claim-approved",
-  placeholders: [{ key: "titreChalet", label: "Titre du chalet" }],
+  placeholders: [LISTINGS_PLACEHOLDER],
   defaults: {
     fr: {
-      subject: "Votre fiche est activée",
+      subject: "Votre demande est approuvée",
       greeting: "Bonjour,",
       heading: "Votre demande est approuvée",
-      body: "La fiche « {titreChalet} » est maintenant à vous. Vous pouvez la modifier et répondre aux voyageurs depuis votre tableau de bord.",
-      buttonLabel: "Aller à mon tableau de bord",
+      body: "Vous êtes maintenant propriétaire de :\n\n{titresFiches}\n\nDepuis votre tableau de bord, vous pouvez tout modifier et répondre aux voyageurs.",
+      buttonLabel: "Voir mes chalets",
       footerNote: "Une question ? Répondez simplement à ce courriel.",
     },
     en: {
-      subject: "Your listing is activated",
+      subject: "Your request is approved",
       greeting: "Hello,",
       heading: "Your request is approved",
-      body: "The listing “{titreChalet}” is now yours. You can edit it and reply to travelers from your dashboard.",
-      buttonLabel: "Go to my dashboard",
+      body: "You are now the owner of:\n\n{titresFiches}\n\nFrom your dashboard, you can edit everything and reply to travelers.",
+      buttonLabel: "See my cabins",
       footerNote: "Any question? Just reply to this email.",
     },
   },
@@ -219,15 +219,16 @@ export async function sendClaimDecisionEmail(input: {
   to: string;
   lang: Lang;
   listingTitle: string;
+  listingTitles?: string[];
   approved: boolean;
   adminNote?: string | null;
 }): Promise<{ error: Error | null }> {
-  const dashboard = `${SITE_URL}${input.lang === "en" ? "/en/dashboard" : "/dashboard"}`;
+  const dashboard = `${SITE_URL}${input.lang === "en" ? "/en/dashboard/listings" : "/dashboard/listings"}`;
   const note = input.adminNote?.trim()
     ? `<br/><br/><em>${escapeHtml(input.adminNote.trim()).replace(/\n/g, "<br/>")}</em>`
     : "";
   const text = input.approved
-    ? await resolveEmailText(TEMPLATE_CLAIM_APPROVED, input.lang, { titreChalet: input.listingTitle })
+    ? await resolveEmailText(TEMPLATE_CLAIM_APPROVED, input.lang, { titresFiches: titlesHtml(input.listingTitles?.length ? input.listingTitles : [input.listingTitle]) })
     : await resolveEmailText(TEMPLATE_CLAIM_REFUSED, input.lang, { titreChalet: input.listingTitle, noteAdmin: note });
   const html = renderEmail({
     lang: input.lang,

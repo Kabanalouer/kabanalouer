@@ -155,11 +155,12 @@ export function ReportForm({ token }: { token: string }) {
 
 const ACCEPTED_PROOF = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
-export function VerificationForm({ listingId, title }: { listingId: string; title: string }) {
+export function VerificationForm({ listingId, title, listingHref }: { listingId: string; title: string; listingHref: string }) {
   const t = useTranslations("claim");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status | "already" | "fileError">("idle");
+  const [others, setOthers] = useState(0);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -175,7 +176,13 @@ export function VerificationForm({ listingId, title }: { listingId: string; titl
     form.set("proof", file);
     try {
       const res = await fetch("/api/claims/request", { method: "POST", body: form });
-      setStatus(res.ok ? "done" : res.status === 409 ? "already" : "error");
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setOthers(typeof data.siblingCount === "number" ? data.siblingCount : 0);
+        setStatus("done");
+      } else {
+        setStatus(res.status === 409 ? "already" : "error");
+      }
     } catch {
       setStatus("error");
     }
@@ -186,6 +193,7 @@ export function VerificationForm({ listingId, title }: { listingId: string; titl
       <div role="status">
         <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("verifyDoneTitle")}</h2>
         <p className="mt-2 text-base text-charcoal-600">{t("verifyDoneBody")}</p>
+        {others > 0 && <p className="mt-3 text-base text-charcoal-600">{t("verifyDoneMore", { count: others })}</p>}
       </div>
     );
   }
@@ -193,7 +201,21 @@ export function VerificationForm({ listingId, title }: { listingId: string; titl
     <form onSubmit={submit}>
       <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("verifyTitle")}</h2>
       <p className="mt-2 text-base text-charcoal-600">{t("verifyIntro")}</p>
-      <p className="mt-1 text-sm text-charcoal-400">{t("verifyChalet", { title })}</p>
+      <p className="mt-6 flex items-center gap-2 text-base font-semibold text-charcoal-800">
+        <span>{title}</span>
+        <a
+          href={listingHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t("verifyOpenListing")}
+          title={t("verifyOpenListing")}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-charcoal-500 hover:bg-charcoal-100 hover:text-charcoal-800 transition-colors"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </a>
+      </p>
 
       <label htmlFor="verify-proof" className="mt-6 block text-sm font-medium text-charcoal-700">{t("verifyProof")}</label>
       <input
@@ -215,7 +237,6 @@ export function VerificationForm({ listingId, title }: { listingId: string; titl
         rows={4}
         className={`${INPUT} mt-1`}
       />
-      <p className="mt-1 text-sm text-charcoal-400">{t("verifyMessageHelp")}</p>
 
       <button type="submit" disabled={status === "submitting" || !file} className={`${PRIMARY_BUTTON} mt-6`}>
         {status === "submitting" ? t("sending") : t("verifySubmit")}

@@ -173,7 +173,7 @@ export function emailTestSenders(): Record<string, Sender> {
       listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
       claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
     }),
-    "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, approved: true }),
+    "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], approved: true }),
     "claim-refused": (to, lang) => sendClaimDecisionEmail({
       to, lang, listingTitle: TITLE, approved: false,
       adminNote: lang === "fr" ? "Le numéro CITQ de la photo ne correspond pas à celui de la fiche." : "The CITQ number on the photo does not match the one on the listing.",

@@ -171,7 +171,7 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
   const admin = adminSupabase();
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, claim_status")
+    .select("id, title, claim_status, claim_email, is_test")
     .eq("id", listingId)
     .maybeSingle();
   if (!listing || listing.claim_status !== "unclaimed") return bad(locale, "Fiche indisponible", "Listing unavailable", 404);
@@ -224,7 +224,19 @@ async function proofRequest(request: NextRequest, locale: "fr" | "en") {
     from: user.email ?? user.id,
     message: message || null,
   });
-  return NextResponse.json({ ok: true });
+  // Nombre d'autres fiches qu'une approbation transférera aussi (même adresse au dossier) : un nombre seulement
+  let siblingCount = 0;
+  if (listing.claim_email) {
+    const { count } = await admin
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("claim_status", "unclaimed")
+      .eq("claim_email", listing.claim_email as string)
+      .eq("is_test", listing.is_test as boolean)
+      .neq("id", listingId);
+    siblingCount = count ?? 0;
+  }
+  return NextResponse.json({ ok: true, siblingCount });
 }
 
 async function uploadProof(admin: Admin, path: string, file: File, contentType: string): Promise<string | null> {

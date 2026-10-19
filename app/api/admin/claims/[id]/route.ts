@@ -43,6 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Cette action concerne une demande de vérification" }, { status: 400 });
   }
 
+  let approvedTitles: string[] = [];
   if (action === "approve") {
     // Le transfert d'abord : si la fiche a été revendiquée entre-temps, rien n'est marqué approuvé.
     // Un propriétaire avec plusieurs chalets n'envoie qu'un permis : les autres fiches non
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     const result = await claimListingsForUser(admin, { userId: req.user_id as string, listingIds });
     if (!result.ok) return NextResponse.json({ error: "Transfert impossible : la fiche n'est probablement plus disponible." }, { status: 409 });
+    const { data: moved } = await admin.from("listings").select("title").in("id", listingIds);
+    approvedTitles = (moved ?? []).map((m) => (m.title as string | null) ?? "(sans titre)");
   }
 
   const status = action === "approve" ? "approved" : action === "refuse" ? "refused" : "handled";
@@ -80,6 +83,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         to: requester.email as string,
         lang: requester.preferred_language === "en" ? "en" : "fr",
         listingTitle: title,
+        listingTitles: approvedTitles,
         approved: action === "approve",
         adminNote: note,
       });

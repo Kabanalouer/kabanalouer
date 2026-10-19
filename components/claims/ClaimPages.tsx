@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { findClaimToken } from "@/lib/claims/tokens";
 import { localePath } from "@/lib/localePath";
+import { buildListingPath } from "@/lib/listingUrl";
 import { ClaimForm, RemoveForm, ReportForm, VerificationForm } from "@/components/claims/ClaimForms";
 
 // Pages de revendication des fiches non revendiquées. Jamais indexées, jamais
@@ -148,14 +149,18 @@ export async function VerificationPage({ listingId }: { listingId: string | unde
 
   const { data: listing } = await adminSupabase()
     .from("listings")
-    .select("title, title_en, claim_status")
+    .select("title, title_en, claim_status, region, city, listing_number, custom_slug")
     .eq("id", listingId)
     .maybeSingle();
   if (!listing || listing.claim_status !== "unclaimed") return unavailable;
 
   return (
     <Shell>
-      <VerificationForm listingId={listingId} title={titleOf(listing as { title: string | null; title_en: string | null }, isEn)} />
+      <VerificationForm
+        listingId={listingId}
+        title={titleOf(listing as { title: string | null; title_en: string | null }, isEn)}
+        listingHref={buildListingPath({ region: listing.region as string, city: listing.city as string, listing_number: listing.listing_number as number, custom_slug: (listing.custom_slug as string | null) ?? null }, isEn ? "en" : "fr") ?? localePath("/chalets", locale)}
+      />
     </Shell>
   );
 }
