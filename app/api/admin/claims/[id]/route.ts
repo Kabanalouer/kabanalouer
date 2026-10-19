@@ -59,7 +59,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         .eq("is_test", base.is_test as boolean);
       listingIds = Array.from(new Set([...listingIds, ...((siblings ?? []).map((s) => s.id as string))]));
     }
-    const result = await claimListingsForUser(admin, { userId: req.user_id as string, listingIds });
+    const result = await claimListingsForUser(admin, { userId: req.user_id as string, listingIds, welcome: false });
     if (!result.ok) return NextResponse.json({ error: "Transfert impossible : la fiche n'est probablement plus disponible." }, { status: 409 });
     const { data: moved } = await admin.from("listings").select("title").in("id", listingIds);
     approvedTitles = (moved ?? []).map((m) => (m.title as string | null) ?? "(sans titre)");

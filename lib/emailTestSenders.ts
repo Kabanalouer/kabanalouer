@@ -25,6 +25,7 @@ import {
   sendClaimLinkEmail,
   sendClaimActivatedEmail,
   sendClaimDecisionEmail,
+  sendClaimWelcomeEmail,
   sendClaimAdminAlert,
   sendImportDuplicateAlert,
 } from "@/lib/emails/unclaimedOwner";
@@ -173,6 +174,7 @@ export function emailTestSenders(): Record<string, Sender> {
       listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
       claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
     }),
+    "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], firstName: "Marie", approved: true }),
     "claim-refused": (to, lang) => sendClaimDecisionEmail({
       to, lang, listingTitle: TITLE, firstName: "Marie", approved: false,

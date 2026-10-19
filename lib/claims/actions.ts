@@ -9,7 +9,7 @@ import {
   reportLink,
   type ClaimTokenRow,
 } from "@/lib/claims/tokens";
-import { sendClaimActivatedEmail, sendClaimAdminAlert, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
+import { sendClaimActivatedEmail, sendClaimAdminAlert, sendClaimWelcomeEmail, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
 
 // Actions serveur des fiches non revendiquées. Toutes utilisent le client
 // service : les colonnes claim_* et les tables de jetons ne sont jamais
@@ -25,7 +25,7 @@ type ClaimedRow = { out_listing_id: string; out_claim_email: string | null };
 // Puis avertit les anciennes adresses.
 export async function claimListingsForUser(
   admin: AdminClient,
-  input: { userId: string; listingIds: string[]; tokenId?: string | null }
+  input: { userId: string; listingIds: string[]; tokenId?: string | null; welcome?: boolean }
 ): Promise<{ ok: true; listingIds: string[] } | { ok: false; error: string }> {
   let freeUntil: string | null = null;
   if (isLaunchOfferActive()) {
@@ -50,11 +50,34 @@ export async function claimListingsForUser(
     // L'invitation envoyée à cette adresse est marquée « revendiquée » (résultats de l'admin)
     await markInvitationsClaimed(admin, [...new Set(rows.map((r) => r.out_claim_email).filter((e): e is string => !!e))]);
     await notifyOldAddresses(admin, input.userId, rows);
+    if (input.welcome !== false) await welcomeNewOwner(admin, input.userId, rows.map((r) => r.out_listing_id), freeUntil !== null);
   } catch (e) {
     // La revendication a réussi : l'avis à l'ancienne adresse ne doit jamais la défaire.
     console.error("claimListingsForUser: échec de l'avis à l'ancienne adresse", e);
   }
   return { ok: true, listingIds: rows.map((r) => r.out_listing_id) };
+}
+
+// Un seul courriel de bienvenue par revendication, même pour plusieurs fiches.
+async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: string[], freeYear: boolean): Promise<void> {
+  if (listingIds.length === 0) return;
+  const [{ data: user }, { data: listings }] = await Promise.all([
+    admin.from("users").select("email, name, preferred_language").eq("id", userId).maybeSingle(),
+    admin.from("listings").select("title, title_en").in("id", listingIds),
+  ]);
+  if (!user?.email) return;
+  const lang: "fr" | "en" = user.preferred_language === "en" ? "en" : "fr";
+  const titles = (listings ?? []).map((l: { title: string | null; title_en: string | null }) =>
+    (lang === "en" ? l.title_en : null) || l.title || (lang === "en" ? "Your listing" : "Votre fiche")
+  );
+  const { error } = await sendClaimWelcomeEmail({
+    to: user.email as string,
+    lang,
+    firstName: ((user.name as string | null) ?? "").split(" ")[0],
+    listingTitles: titles,
+    freeYear,
+  });
+  if (error) console.error("welcomeNewOwner: échec envoi", error);
 }
 
 // « Votre fiche a été activée par le compte j…@gmail.com », un courriel par

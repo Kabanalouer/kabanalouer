@@ -91,6 +91,33 @@ export const TEMPLATE_CLAIM_ACTIVATED: EmailTemplateDef = {
   },
 };
 
+export const TEMPLATE_CLAIM_WELCOME: EmailTemplateDef = {
+  id: "claim-welcome",
+  placeholders: [
+    LISTINGS_PLACEHOLDER,
+    { key: "prenom", label: "Prénom du nouveau propriétaire" },
+    { key: "offre", label: "Phrase « Votre première année est gratuite. » (vide si l’offre de lancement est terminée)", html: true },
+  ],
+  defaults: {
+    fr: {
+      subject: "Bienvenue sur Kabanalouer : votre fiche est à vous",
+      greeting: "Bonjour {prenom},",
+      heading: "Bienvenue sur Kabanalouer",
+      body: "Vous êtes maintenant propriétaire de :\n\n{titresFiches}\n\n{offre}Voici comment en tirer le meilleur :\n\n**1. Ajoutez vos propres photos.** Les voyageurs choisissent d’abord avec leurs yeux.\n\n**2. Vérifiez et complétez les détails** : équipements, chambres, règlements, prix.\n\n**3. Recevez les demandes par texto** en ajoutant votre numéro de cellulaire dans votre profil.\n\nLes voyageurs vous écrivent directement, sans frais de service.",
+      buttonLabel: "Voir mes chalets",
+      footerNote: "Une question ? Répondez simplement à ce courriel.",
+    },
+    en: {
+      subject: "Welcome to Kabanalouer: your listing is now yours",
+      greeting: "Hi {prenom},",
+      heading: "Welcome to Kabanalouer",
+      body: "You are now the owner of:\n\n{titresFiches}\n\n{offre}Here is how to make the most of it:\n\n**1. Add your own photos.** Travelers choose with their eyes first.\n\n**2. Check and complete the details**: amenities, rooms, rules, price.\n\n**3. Get requests by text message** by adding your cell phone number to your profile.\n\nTravelers write to you directly, with no service fees.",
+      buttonLabel: "See my cabins",
+      footerNote: "Any question? Just reply to this email.",
+    },
+  },
+};
+
 export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
   id: "claim-approved",
   placeholders: [LISTINGS_PLACEHOLDER, { key: "prenom", label: "Prénom du demandeur" }],
@@ -211,6 +238,31 @@ export async function sendClaimActivatedEmail(input: {
     compteMasque: input.maskedClaimant,
   });
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.reportUrl });
+  const { error } = await sendEmail({ from: FROM_NOREPLY, to: [input.to], subject: text.subject, html });
+  return { error: error ? new Error(error.message) : null };
+}
+
+// Bienvenue au nouveau propriétaire, juste après une revendication par lien (option A).
+// Après une approbation manuelle (option B), le courriel de décision joue ce rôle.
+export async function sendClaimWelcomeEmail(input: {
+  to: string;
+  lang: Lang;
+  firstName?: string | null;
+  listingTitles: string[];
+  freeYear: boolean;
+}): Promise<{ error: Error | null }> {
+  const fr = input.lang === "fr";
+  const offre = input.freeYear ? `<strong>${fr ? "Votre première année est gratuite." : "Your first year is free."}</strong><br/><br/>` : "";
+  const text = await resolveEmailText(TEMPLATE_CLAIM_WELCOME, input.lang, {
+    prenom: input.firstName?.trim(),
+    titresFiches: titlesHtml(input.listingTitles),
+    offre,
+  });
+  const html = renderEmail({
+    lang: input.lang,
+    ...text,
+    buttonUrl: `${SITE_URL}${fr ? "" : "/en"}/dashboard/listings`,
+  });
   const { error } = await sendEmail({ from: FROM_NOREPLY, to: [input.to], subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };
 }

@@ -123,6 +123,13 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true,
   },
   {
+    id: "claim-welcome", category: "proprio", group: "Fiches non revendiquées",
+    name: "Bienvenue après la revendication",
+    when: "Dès qu’un propriétaire active sa fiche avec le lien reçu par courriel (après une approbation manuelle, le courriel « Demande approuvée » joue ce rôle).",
+    conditions: "Un seul courriel même s’il active plusieurs fiches. Liste ses fiches, mentionne l’année gratuite tant que l’offre de lancement est en cours et propose 3 prochaines étapes : photos, détails, numéro de cellulaire.",
+    mechanism: "event", testable: true,
+  },
+  {
     id: "claim-approved", category: "proprio", group: "Fiches non revendiquées",
     name: "Demande de vérification approuvée",
     when: "Quand tu approuves une demande dans Admin → Revendications.",
