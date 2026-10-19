@@ -4,12 +4,14 @@ import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
 
-// Accueil : « Explorer par région », seulement les régions qui ont au moins un
-// chalet publié (jamais de lien vers une page vide). Maillage interne vers les
+// Accueil : « Explorer par région », seulement les régions qui ont au moins
+// 3 chalets publiés (jamais de lien vers une page presque vide). Maillage interne vers les
 // pages région pour le SEO/GEO, en remplacement du lien de pied de page masqué.
 // Masquée tant qu'il y a moins de 4 régions (une rangée complète sur desktop),
 // choix de Simon, 2026-10-02.
 const MIN_REGIONS = 4;
+// Une région n'apparaît ici qu'à partir de 3 chalets publiés (choix de Simon, 2026-10-19).
+const MIN_LISTINGS_PER_REGION = 3;
 
 export default async function RegionsExplorer() {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
@@ -22,7 +24,7 @@ export default async function RegionsExplorer() {
     if (r) counts.set(r, (counts.get(r) ?? 0) + 1);
   }
   const regions = REGIONS
-    .filter((r) => (counts.get(r.dbValue) ?? 0) > 0)
+    .filter((r) => (counts.get(r.dbValue) ?? 0) >= MIN_LISTINGS_PER_REGION)
     .sort((a, b) => (counts.get(b.dbValue) ?? 0) - (counts.get(a.dbValue) ?? 0));
   if (regions.length < MIN_REGIONS) return null;
 

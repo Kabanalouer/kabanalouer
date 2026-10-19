@@ -322,6 +322,85 @@ async function prepareImage(url: string): Promise<PreparedPhoto | null> {
   }
 }
 
+// ── Filigranes ──────────────────────────────────────────────────────────────
+// Les photos des sites sources portent souvent un filigrane (« ChaletsAuQuebec.com », logo de
+// photographe…). Règle de Simon (2026-10-19) : jamais en ligne. Chaque photo est examinée par
+// l'IA (vision) ; un filigrane confiné à une bande du bas est coupé puis la photo est
+// revérifiée ; tout autre cas (coin du haut, centre, bande trop haute, doute) : la photo est écartée.
+
+const WATERMARK_MAX_BAND = 0.15;
+
+export type WatermarkVerdict = { found: boolean; position: string; band: number; text: string };
+
+// Lève une erreur si l'IA est injoignable ou illisible (l'import est alors repris plus tard) :
+// jamais de « pas de filigrane » par défaut.
+export async function detectWatermark(webp: Buffer): Promise<WatermarkVerdict> {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY manquante : vérification des filigranes impossible.");
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const jpeg = await sharp(webp).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const msg = await anthropic.messages.create({
+        model: "claude-sonnet-5-5",
+        max_tokens: 400,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: "image/jpeg", data: jpeg.toString("base64") } },
+              {
+                type: "text",
+                text:
+                  "Cette photo de chalet contient-elle un filigrane, un logo, une adresse web ou du texte incrusté dans l'image (par exemple « ChaletsAuQuebec.com », même petit, discret ou semi-transparent) ? Regarde bien les coins et les bords. " +
+                  'Réponds UNIQUEMENT par un objet JSON : {"watermark": true|false, "text": "le texte lu ou vide", "position": "bas-gauche|bas-droite|bas-centre|haut-gauche|haut-droite|centre|autre|aucune", "band": nombre entre 0 et 1 = fraction de la hauteur de l\'image, mesurée depuis le bord du bas, qu\'il faut couper pour retirer entièrement le filigrane}',
+              },
+            ],
+          },
+        ],
+      });
+      const text = textOf(msg);
+      const o = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)) as Record<string, unknown>;
+      return { found: o.watermark === true, text: String(o.text ?? ""), position: String(o.position ?? ""), band: Number(o.band ?? 0) };
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw new Error(`Vérification du filigrane impossible : ${(lastError as Error)?.message ?? "réponse illisible"}`);
+}
+
+// Renvoie la photo propre (éventuellement rognée), ou null si elle doit être écartée.
+export async function cleanPhoto(webp: Buffer): Promise<Buffer | null> {
+  const verdict = await detectWatermark(webp);
+  if (!verdict.found) return webp;
+  const bottom = verdict.position.startsWith("bas");
+  if (!bottom || !(verdict.band > 0) || verdict.band > WATERMARK_MAX_BAND) return null;
+  const meta = await sharp(webp).metadata();
+  if (!meta.width || !meta.height) return null;
+  const cut = Math.ceil(meta.height * Math.min(0.18, verdict.band * 1.4 + 0.02));
+  const cropped = await sharp(webp)
+    .extract({ left: 0, top: 0, width: meta.width, height: meta.height - cut })
+    .webp({ quality: 80 })
+    .toBuffer();
+  const again = await detectWatermark(cropped);
+  return again.found ? null : cropped;
+}
+
+// Vérifie un lot de photos, 4 à la fois ; les photos écartées sont retirées.
+export async function cleanPhotos<T extends { webp: Buffer }>(items: T[]): Promise<{ kept: T[]; dropped: number }> {
+  const kept: T[] = [];
+  for (let i = 0; i < items.length; i += 4) {
+    const results = await Promise.all(
+      items.slice(i, i + 4).map(async (item) => {
+        const clean = await cleanPhoto(item.webp);
+        return clean ? { ...item, webp: clean } : null;
+      })
+    );
+    for (const r of results) if (r) kept.push(r);
+  }
+  return { kept, dropped: items.length - kept.length };
+}
+
 // ── Description ─────────────────────────────────────────────────────────────
 
 function shingles(text: string, n = 4): Set<string> {
@@ -464,6 +543,11 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       throw new Error(`Seulement ${prepared.length} photo(s) téléchargée(s) sur ${d.photos.length}.`);
     }
 
+    // Filigranes : jamais de photo marquée en ligne (voir cleanPhoto)
+    const checked = await cleanPhotos(prepared);
+    if (checked.kept.length < MIN_PHOTOS) return await reject(admin, row, `Moins de ${MIN_PHOTOS} photos sans filigrane (${checked.dropped} écartée(s) sur ${prepared.length}).`);
+    prepared.splice(0, prepared.length, ...checked.kept.map((k) => ({ webp: k.webp, hash: createHash("sha1").update(k.webp).digest("hex") })));
+
     const base = [slugify(d.title), slugify(d.city ?? "")].filter(Boolean).join("-").slice(0, 70).replace(/-+$/g, "");
     const photos: PhotoItem[] = [];
     for (let i = 0; i < prepared.length; i++) {
@@ -540,6 +624,8 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         description_originale: d.descriptionOriginal,
         description_ia: { overlap: description.overlap, attempts: description.attempts, note: description.note },
         equipements_non_reconnus: d.unmatchedAmenities,
+        photos_filigrane_verifiees: true,
+        photos_ecartees_filigrane: checked.dropped,
         photos_importees: photos.length,
         photos_dans_le_lot: d.photos.length,
         ...(duplicates.length > 0 ? { doublon_possible: duplicates } : {}),

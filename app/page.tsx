@@ -83,7 +83,8 @@ export default async function HomePage() {
   // « Nouveautés » : les 3 chalets publiés le plus récemment (6 plus tard,
   // quand il y aura plus d'annonces). Pas de colonne
   // de date de publication : la ligne subscriptions d'une annonce est créée à
-  // sa première publication (gratuite ou payante), on trie donc par sa date.
+  // sa première publication (gratuite ou payante), on trie donc par sa date ;
+  // les fiches non revendiquées (sans abonnement) sont triées par leur date d'import.
   // Lecture serveur seulement (subscriptions n'est pas lisible par les visiteurs).
   const NEW_LISTINGS_COUNT = 3;
   const LISTING_CARD_COLUMNS = "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug";
@@ -96,7 +97,24 @@ export default async function HomePage() {
     .select("listing_id, created_at")
     .order("created_at", { ascending: false })
     .limit(30);
-  const publishedOrder = (recentSubs ?? []).map((r) => r.listing_id as string);
+  // Fiches non revendiquées publiées : pas de ligne subscriptions, leur date d'entrée
+  // (created_at, l'import) tient lieu de date de publication.
+  const { data: recentUnclaimed } = await createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  )
+    .from("listings")
+    .select("id, created_at")
+    .eq("claim_status", "unclaimed")
+    .eq("is_published", true)
+    .eq("is_test", false)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  const newestAt = new Map<string, string>();
+  for (const r of recentUnclaimed ?? []) newestAt.set(r.id as string, r.created_at as string);
+  for (const r of recentSubs ?? []) newestAt.set(r.listing_id as string, r.created_at as string);
+  const publishedOrder = [...newestAt.entries()].sort((a, b) => (a[1] < b[1] ? 1 : -1)).map(([id]) => id);
   const { data: candidateListings } = publishedOrder.length > 0
     ? await supabase
         .from("listings")
