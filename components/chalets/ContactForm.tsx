@@ -21,6 +21,20 @@ import { formatPrice } from "@/lib/formatPrice";
 import AutoTextarea from "@/components/AutoTextarea";
 import { savePendingQuoteDraft, readPendingQuoteDraft, clearPendingQuoteDraft } from "@/lib/pendingQuoteDraft";
 
+// Fautes de frappe courantes dans le domaine d'un courriel (proposées avant l'envoi, jamais imposées)
+const EMAIL_TYPOS: Record<string, string> = {
+  "gmial.com": "gmail.com", "gmai.com": "gmail.com", "gamil.com": "gmail.com", "gnail.com": "gmail.com", "gmail.co": "gmail.com", "gmail.con": "gmail.com", "gmaill.com": "gmail.com",
+  "hotmial.com": "hotmail.com", "hotmal.com": "hotmail.com", "hotmail.co": "hotmail.com", "hotmail.con": "hotmail.com", "hotnail.com": "hotmail.com",
+  "outlok.com": "outlook.com", "outloo.com": "outlook.com", "outlook.co": "outlook.com", "outlook.con": "outlook.com",
+  "yaho.com": "yahoo.com", "yahooo.com": "yahoo.com", "yahoo.co": "yahoo.com", "yahoo.con": "yahoo.com", "yhoo.com": "yahoo.com",
+  "icloud.co": "icloud.com", "icloud.con": "icloud.com", "iclod.com": "icloud.com",
+};
+function suggestEmail(email: string): string | null {
+  const [local, domain] = email.toLowerCase().split("@");
+  const fix = domain ? EMAIL_TYPOS[domain] : undefined;
+  return fix && local ? `${local}@${fix}` : null;
+}
+
 // ── ContactForm ───────────────────────────────────────────────────────────────
 
 interface Props {
@@ -119,6 +133,13 @@ export default function ContactForm({
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  // Visiteur sans compte (voir /api/messages/guest) : prénom + courriel, aucun mot de passe
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [website, setWebsite] = useState(""); // champ piège : un humain ne le voit pas
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [typoIgnored, setTypoIgnored] = useState(false);
+  const [guestSentTo, setGuestSentTo] = useState<string | null>(null);
 
   // Demande gardée pendant l'inscription (voir lib/pendingQuoteDraft.ts) :
   // le lien de confirmation rouvre la fiche, on remet ce que le voyageur
@@ -223,10 +244,15 @@ export default function ContactForm({
     }
     trackFunnelStep("t_request_click");
     if (!currentUserId) {
-      trackFunnelStep("t_auth_prompt");
-      savePendingQuoteDraft(listingId, { checkin, checkout, adults, children, babies, pets, message });
-      setAuthModalOpen(true);
-      return;
+      if (!guestName.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(guestEmail.trim())) {
+        setError(t("guestFieldsError"));
+        return;
+      }
+      const fix = suggestEmail(guestEmail.trim());
+      if (fix && !typoIgnored) {
+        setSuggestion(fix);
+        return;
+      }
     }
     handleSubmit();
   };
@@ -239,9 +265,11 @@ export default function ContactForm({
     router.refresh();
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (emailOverride?: string) => {
     setSending(true);
     setError("");
+    setSuggestion(null);
+    const guestEmailFinal = (emailOverride ?? guestEmail).trim();
 
     const datesLines = [
       checkin ? t("quoteMessageArrivalLine", { date: formatShort(checkin, monthNamesShort, locale) }) : null,
@@ -262,7 +290,7 @@ export default function ContactForm({
 
     // Signature omise si le compte voyageur n'a aucun nom renseigné (rare —
     // requis au signup — mais évite une signature vide le cas échéant).
-    const senderFullName = [senderFirstName, senderLastName].filter(Boolean).join(" ").trim();
+    const senderFullName = currentUserId ? [senderFirstName, senderLastName].filter(Boolean).join(" ").trim() : guestName.trim();
     const messageLine = message.trim() || null;
     const signatureLine = senderFullName ? t("quoteMessageSignatureLine", { name: senderFullName }) : null;
     // Ligne vide supplémentaire entre le message et la signature (espace plus
@@ -279,26 +307,35 @@ export default function ContactForm({
       messageAndSignatureBlock,
     ].filter((l): l is string => l !== null).join("\n\n");
 
-    const res = await fetch("/api/messages", {
+    const payload = {
+      listingId, receiverId: hostId, content: lines,
+      checkIn: checkin || undefined,
+      checkOut: checkout || undefined,
+      numGuests: guestTotal > 0 ? guestTotal : undefined,
+      numAdults: adults,
+      numChildren: children,
+      numBabies: babies,
+      numPets: pets,
+    };
+    const res = await fetch(currentUserId ? "/api/messages" : "/api/messages/guest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        listingId, receiverId: hostId, content: lines,
-        checkIn: checkin || undefined,
-        checkOut: checkout || undefined,
-        numGuests: guestTotal > 0 ? guestTotal : undefined,
-        numAdults: adults,
-        numChildren: children,
-        numBabies: babies,
-        numPets: pets,
-      }),
+      body: JSON.stringify(currentUserId ? payload : { ...payload, name: guestName.trim(), email: guestEmailFinal, website, userMessage: message.trim() }),
     });
 
     if (!res.ok) {
-      setError(t("sendError"));
+      const data = await res.json().catch(() => ({}));
       setSending(false);
+      // Adresse liée à un compte proprio/admin : connexion demandée, la demande est gardée
+      if (!currentUserId && data.code === "login_required") {
+        savePendingQuoteDraft(listingId, { checkin, checkout, adults, children, babies, pets, message });
+        setAuthModalOpen(true);
+        return;
+      }
+      setError(!currentUserId && typeof data.error === "string" ? data.error : t("sendError"));
       return;
     }
+    if (!currentUserId) setGuestSentTo(guestEmailFinal);
     clearPendingQuoteDraft(listingId);
     trackFunnelStep("t_request_sent");
     trackEvent("generate_lead", { lead_type: "demande_devis", listing_id: listingId });
@@ -316,11 +353,13 @@ export default function ContactForm({
         </div>
         <p className="font-semibold text-charcoal-800 text-base mb-1">{t("requestSent")}</p>
         <p className="text-sm text-charcoal-400">
-          {t("requestSentDetail")}
+          {guestSentTo ? t("guestRequestSentDetail", { email: guestSentTo }) : t("requestSentDetail")}
         </p>
-        <Link href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
-          {t("viewMessagesArrow")}
-        </Link>
+        {!guestSentTo && (
+          <Link href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
+            {t("viewMessagesArrow")}
+          </Link>
+        )}
         {currentUserId && !senderHasAvatar && <PhotoTip />}
       </div>
     );
@@ -534,6 +573,50 @@ export default function ContactForm({
           rows={3}
           className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
         />
+      )}
+
+      {/* Visiteur sans compte : prénom + courriel, aucun mot de passe */}
+      {!currentUserId && (
+        <div className="space-y-2">
+          <div className="grid grid-cols-[1fr_1.6fr] gap-2">
+            <input
+              type="text"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder={t("guestNameLabel")}
+              autoComplete="given-name"
+              maxLength={60}
+              aria-label={t("guestNameLabel")}
+              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
+            />
+            <input
+              type="email"
+              value={guestEmail}
+              onChange={(e) => { setGuestEmail(e.target.value); setSuggestion(null); setTypoIgnored(false); }}
+              placeholder={t("guestEmailLabel")}
+              autoComplete="email"
+              maxLength={200}
+              aria-label={t("guestEmailLabel")}
+              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
+            />
+          </div>
+          {/* Champ piège : invisible pour un humain */}
+          <input type="text" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
+          {suggestion && (
+            <div className="rounded-xl border border-warning-200 bg-warning-50 p-3 text-sm text-warning-800" role="alert">
+              <p>{t("guestTypoQuestion", { email: suggestion })}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" onClick={() => { setGuestEmail(suggestion); handleSubmit(suggestion); }} className="rounded-full bg-primary px-3 py-1.5 font-semibold text-white">
+                  {t("guestTypoYes", { email: suggestion })}
+                </button>
+                <button type="button" onClick={() => { setTypoIgnored(true); handleSubmit(); }} className="rounded-full border border-warning-200 bg-white px-3 py-1.5 font-semibold text-warning-800">
+                  {t("guestTypoNo", { email: guestEmail.trim() })}
+                </button>
+              </div>
+            </div>
+          )}
+          <p className="text-xs text-charcoal-400">{t("guestHint")}</p>
+        </div>
       )}
 
       {error && <p className="text-sm text-error-500">{error}</p>}

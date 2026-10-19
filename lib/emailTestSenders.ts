@@ -9,6 +9,7 @@ import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedE
 import { sendSubscriptionReminderEmail, sendAutoRenewalReminderEmail, sendPaymentFailedEmail } from "@/lib/emails/subscriptionReminder";
 import { sendWinbackReminderEmail } from "@/lib/emails/winbackReminder";
 import { sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
+import { sendGuestRequestEmail } from "@/lib/emails/guestRequest";
 import { sendReviewRequestEmail, sendStayReviewRequestEmail } from "@/lib/emails/reviewRequest";
 import { sendReviewRepliedEmail } from "@/lib/emails/reviewReplied";
 import { sendNoReplyNudgeEmail } from "@/lib/emails/noReplyNudge";
@@ -86,6 +87,12 @@ export function emailTestSenders(): Record<string, Sender> {
     "winback-14": (to, lang) => sendWinbackReminderEmail({ ...base(to, lang), threshold: 14, listingTitle: TITLE }),
 
     "welcome-traveler": (to, lang) => sendWelcomeTravelerEmail(base(to, lang)),
+    "guest-request": (to, lang) => sendGuestRequestEmail({
+      to, lang, firstName: "Marie", listingTitle: TITLE, checkIn: lang === "fr" ? "12 janvier 2027" : "January 12, 2027",
+      checkOut: lang === "fr" ? "15 janvier 2027" : "January 15, 2027", guests: 4,
+      message: lang === "fr" ? "Bonjour, le spa est-il disponible ces dates ?" : "Hello, is the hot tub available on those dates?",
+      followUrl: "https://kabanalouer.ca/messages", replyTo: "info@kabanalouer.ca", existingAccount: false,
+    }),
     "new-message-traveler": (to, lang) => sendNewMessageNotificationEmail(admin, {
       email: to, preferredLanguage: lang, recipientFirstName: "Emma", recipientId: TRAVELER_ID,
       senderFirstName: "Simon", listingTitle: TITLE, messageCount: 1,

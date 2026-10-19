@@ -232,6 +232,13 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
 
   // ── Voyageurs ──
   {
+    id: "guest-request", category: "voyageur", group: "Échanges avec les proprios",
+    name: "Récapitulatif d’une demande de prix (sans compte)",
+    when: "Dès qu’un visiteur envoie une demande de prix sans être connecté.",
+    conditions: "Le bouton le connecte directement (lien magique). Répondre à ce courriel écrit au proprio (Reply-To = adresse de la conversation). Si l’adresse avait déjà un compte, le courriel dit « ce n’était pas vous ? » et la réponse va à info@.",
+    mechanism: "event", testable: true,
+  },
+  {
     id: "welcome-traveler", category: "voyageur", group: "Inscription",
     name: "Bienvenue voyageur",
     when: "Dès la confirmation du compte voyageur.",
