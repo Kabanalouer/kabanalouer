@@ -32,8 +32,14 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
     <Map
       defaultCenter={{ lat, lng }}
       defaultZoom={13}
-      gestureHandling="none"
+      // Zoom possible (demande de Simon, 2026-10-19) : « cooperative » = ctrl + molette sur ordinateur,
+      // deux doigts sur mobile, pour ne pas bloquer le défilement de la page ; boutons +/− visibles.
+      // maxZoom : la carte reste une position approximative (le cercle de 500 m), jamais la rue.
+      gestureHandling="cooperative"
       disableDefaultUI
+      zoomControl
+      maxZoom={15}
+      minZoom={8}
       mapId={PUBLIC_MAP_ID}
       clickableIcons={false}
       style={{ width: "100%", height: "100%" }}
