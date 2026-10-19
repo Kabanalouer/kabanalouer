@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { lookup } from "node:dns/promises";
 import net from "node:net";
 import sharp from "sharp";
+import { enhancePhotos } from "@/lib/photoEnhance";
 import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { slugify } from "@/lib/slugify";
@@ -31,7 +32,9 @@ const MAX_PHOTOS = 40;
 const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const MIN_PHOTO_WIDTH = 400;
 const MAX_ATTEMPTS = 3;
-export const IMPORT_BATCH_SIZE = 3;
+// Une fiche par passage : vérifier les filigranes et agrandir une trentaine de photos prend
+// plusieurs minutes (le cron tourne toutes les 15 minutes, soit 96 fiches par jour au plus).
+export const IMPORT_BATCH_SIZE = 1;
 
 type Admin = SupabaseClient;
 
@@ -546,7 +549,9 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     // Filigranes : jamais de photo marquée en ligne (voir cleanPhoto)
     const checked = await cleanPhotos(prepared);
     if (checked.kept.length < MIN_PHOTOS) return await reject(admin, row, `Moins de ${MIN_PHOTOS} photos sans filigrane (${checked.dropped} écartée(s) sur ${prepared.length}).`);
-    prepared.splice(0, prepared.length, ...checked.kept.map((k) => ({ webp: k.webp, hash: createHash("sha1").update(k.webp).digest("hex") })));
+    // Agrandissement par IA de toutes les photos (jamais bloquant, voir lib/photoEnhance.ts)
+    const upscaled = await enhancePhotos(checked.kept);
+    prepared.splice(0, prepared.length, ...upscaled.items.map((k) => ({ webp: k.webp, hash: createHash("sha1").update(k.webp).digest("hex") })));
 
     const base = [slugify(d.title), slugify(d.city ?? "")].filter(Boolean).join("-").slice(0, 70).replace(/-+$/g, "");
     const photos: PhotoItem[] = [];
@@ -626,6 +631,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         equipements_non_reconnus: d.unmatchedAmenities,
         photos_filigrane_verifiees: true,
         photos_ecartees_filigrane: checked.dropped,
+        photos_agrandies: upscaled.enhanced,
         photos_importees: photos.length,
         photos_dans_le_lot: d.photos.length,
         ...(duplicates.length > 0 ? { doublon_possible: duplicates } : {}),
