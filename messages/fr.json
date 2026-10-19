@@ -611,6 +611,15 @@
     }
   },
   "messages": {
+    "passwordInviteTitle": "Ajoutez un mot de passe (facultatif)",
+    "passwordInviteBody": "Vous vous reconnecterez plus vite la prochaine fois et retrouverez toutes vos demandes au même endroit.",
+    "passwordInviteCta": "Ajouter un mot de passe",
+    "passwordInvitePlaceholder": "Nouveau mot de passe (8 caractères ou plus)",
+    "passwordInviteSave": "Enregistrer",
+    "passwordInviteSaving": "Enregistrement…",
+    "passwordInviteError": "Le mot de passe n’a pas pu être enregistré. Utilisez au moins 8 caractères.",
+    "passwordInviteDone": "Mot de passe ajouté. Vous pouvez maintenant vous connecter avec votre courriel et ce mot de passe.",
+    "passwordInviteClose": "Fermer",
     "emptyTitle": "Messagerie",
     "selectHint": "Sélectionnez une conversation dans la colonne de gauche pour afficher vos échanges.",
     "selectHintMobile": "Touchez une conversation pour l'ouvrir.",

@@ -14,7 +14,7 @@ import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 // réellement de répondre via le Reply-To (conv-{token}@reply.kabanalouer.ca).
 const FROM = "Kabanalouer <messages@kabanalouer.ca>";
 
-type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+type AdminClient = { from: (table: string) => any; auth?: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const FOOTER_REPLY_FR = "Vous pouvez répondre à ce message en répondant à cet email (reply) ou directement dans la messagerie de Kabanalouer en cliquant sur le bouton ci-dessus.";
 const FOOTER_REPLY_EN = "You can reply to this message by replying to this email, or directly in your Kabanalouer messaging by clicking the button above.";
@@ -117,7 +117,36 @@ export async function sendNewMessageNotificationEmail(
     : "";
 
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
-  const buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
+  let buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
+
+  // Voyageur : le bouton le connecte directement (lien magique) — un voyageur arrivé par la demande sans
+  // compte n'a pas de mot de passe. Le jeton est lu par LoginForm.tsx (verifyOtp) ; il expire selon le
+  // réglage Supabase, ensuite « Se connecter » en renvoie un. Jamais bloquant : sans lien, le lien simple.
+  // Compte « guest » (créé par /api/messages/guest) : une seule invitation à ajouter un mot de passe.
+  let accountInvite = "";
+  let markInvite: (() => Promise<void>) | null = null;
+  if (!recipientIsHost && admin.auth) {
+    try {
+      const { data: link } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+      const tokenHash = link?.properties?.hashed_token as string | undefined;
+      if (tokenHash) {
+        const next = `${buttonPath}?listing=${listingId}&with=${otherUserId}`;
+        buttonUrl = `${SITE_URL}${fr ? "" : "/en"}/login?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(next)}`;
+      }
+      const { data: au } = await admin.auth.admin.getUserById(recipientId);
+      const meta = (au?.user?.user_metadata ?? {}) as Record<string, unknown>;
+      if (meta.guest === true && !meta.account_invite_sent_at) {
+        accountInvite = fr
+          ? "Facultatif : dans votre messagerie, un petit encadré vous permet d’ajouter un mot de passe pour vous reconnecter plus vite la prochaine fois."
+          : "Optional: in your inbox, a small box lets you add a password so you can sign back in faster next time.";
+        markInvite = async () => {
+          await admin.auth!.admin.updateUserById(recipientId, { user_metadata: { ...meta, account_invite_sent_at: new Date().toISOString() } });
+        };
+      }
+    } catch (err) {
+      console.error("sendNewMessageNotificationEmail: lien de connexion", err);
+    }
+  }
 
   // Reply-To dédié (Phase 2b) — permet de répondre directement depuis
   // Gmail/Outlook sans se connecter à l'app. Un échec ici ne doit jamais
@@ -149,9 +178,15 @@ export async function sendNewMessageNotificationEmail(
       noteTraduction: translatedNote,
     }
   );
-  const html = renderEmail({ lang: preferredLanguage, ...text, buttonUrl });
+  const html = renderEmail({
+    lang: preferredLanguage,
+    ...text,
+    buttonUrl,
+    ...(accountInvite ? { footerNote: `${text.footerNote}<br/><br/>${escapeHtml(accountInvite)}` } : {}),
+  });
 
   const { error } = await sendEmail({ from: FROM, to: [email], subject: text.subject, html, replyTo });
+  if (!error && markInvite) await markInvite().catch((e) => console.error("sendNewMessageNotificationEmail: marque d'invitation", e));
 
   return { error: error ? new Error(error.message) : null };
 }

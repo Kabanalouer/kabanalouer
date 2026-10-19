@@ -189,6 +189,7 @@ export default async function MessagesPage() {
         hasPhone={!!profile?.phone}
         hasAvatar={!!profile?.avatar_url}
         isHost={isHost}
+        isGuest={user.user_metadata?.guest === true}
       />
       {isHost && <DashboardBottomNav />}
     </>

@@ -611,6 +611,15 @@
     }
   },
   "messages": {
+    "passwordInviteTitle": "Add a password (optional)",
+    "passwordInviteBody": "You’ll sign back in faster next time and keep all your requests in one place.",
+    "passwordInviteCta": "Add a password",
+    "passwordInvitePlaceholder": "New password (8 characters or more)",
+    "passwordInviteSave": "Save",
+    "passwordInviteSaving": "Saving…",
+    "passwordInviteError": "The password couldn’t be saved. Use at least 8 characters.",
+    "passwordInviteDone": "Password added. You can now sign in with your email and this password.",
+    "passwordInviteClose": "Close",
     "emptyTitle": "Messages",
     "selectHint": "Select a conversation in the left column to see your messages.",
     "selectHintMobile": "Tap a conversation to open it.",

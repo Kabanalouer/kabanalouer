@@ -10,6 +10,7 @@ import QuoteCard from "./QuoteCard";
 import QuoteWidget from "./QuoteWidget";
 import NoAvailabilityWidget from "./NoAvailabilityWidget";
 import PhoneReminderBanner from "@/components/PhoneReminderBanner";
+import PasswordInviteBanner from "@/components/messages/PasswordInviteBanner";
 import type { QuoteData } from "@/lib/quoteMessage";
 import { buildListingPath } from "@/lib/listingUrl";
 import { firstPhotoUrl } from "@/lib/photo";
@@ -88,6 +89,7 @@ export default function MessagesClient({
   initialConversations,
   hasPhone,
   hasAvatar,
+  isGuest = false,
   isHost,
 }: {
   currentUserId: string;
@@ -96,11 +98,24 @@ export default function MessagesClient({
   initialConversations: Conversation[];
   hasPhone: boolean;
   hasAvatar: boolean;
+  isGuest?: boolean;
   isHost: boolean;
 }) {
   const t = useTranslations("messages");
   const tq = useTranslations("quote");
   const [phoneBannerHidden, setPhoneBannerHidden] = useState(false);
+  // Voyageur arrivé par la demande sans compte visible : invitation facultative à ajouter un mot de passe.
+  // Lu après le montage (localStorage) pour ne pas fausser l'hydratation.
+  const [passwordInviteHidden, setPasswordInviteHidden] = useState(true);
+  useEffect(() => {
+    if (!isGuest) return;
+    try {
+      setPasswordInviteHidden(localStorage.getItem("kbl_pw_invite_dismissed") === "1");
+    } catch {
+      setPasswordInviteHidden(false);
+    }
+  }, [isGuest]);
+  const showPasswordInvite = isGuest && !passwordInviteHidden;
   const locale = useLocale();
   const isEn = locale === "en";
   const router = useRouter();
@@ -435,7 +450,11 @@ export default function MessagesClient({
     <div className={`flex flex-col min-h-[calc(100dvh-80px)] md:min-h-0 md:h-[calc(100dvh-80px)] ${isHost ? "max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]" : ""}`}>
       {/* Un seul rappel à la fois : le cellulaire (alertes texto) d'abord ; dès
           qu'il est rempli ou que son bandeau est fermé, la photo prend la place. */}
-      {!hasPhone && !phoneBannerHidden ? (
+      {showPasswordInvite ? (
+        <div className={`px-4 pt-4 shrink-0 ${mobileView === "thread" ? "hidden md:block" : ""}`}>
+          <PasswordInviteBanner onHidden={() => setPasswordInviteHidden(true)} />
+        </div>
+      ) : !hasPhone && !phoneBannerHidden ? (
         <div className={`px-4 pt-4 shrink-0 ${mobileView === "thread" ? "hidden md:block" : ""}`}>
           <PhoneReminderBanner show onHidden={() => setPhoneBannerHidden(true)} />
         </div>
