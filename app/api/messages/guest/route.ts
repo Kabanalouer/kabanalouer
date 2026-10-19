@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     const tokenHash = link?.properties?.hashed_token;
     const messagesPath = lang === "en" ? "/en/messages" : "/messages";
     const followUrl = tokenHash
-      ? `${SITE_URL}${lang === "en" ? "/en" : ""}/login?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(messagesPath)}`
+      ? `${SITE_URL}${lang === "en" ? "/en" : ""}/login?token_hash=${tokenHash}&type=magiclink&email=${encodeURIComponent(email)}&next=${encodeURIComponent(messagesPath)}`
       : `${SITE_URL}${messagesPath}`;
     const reply = await getOrCreateEmailReplyAddress(admin, { listingId, userAId: userId, userBId: hostId });
     const title = ((lang === "en" ? listing.title_en : null) || listing.title || (lang === "en" ? "the cabin" : "le chalet")) as string;

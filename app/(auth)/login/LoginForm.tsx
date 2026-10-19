@@ -60,6 +60,10 @@ function LoginForm() {
 
   const magicTokenHash = searchParams.get("token_hash");
   const magicType = searchParams.get("type");
+  // Les liens de nos courriels portent aussi l'adresse du voyageur (&email=…) : un lien expiré propose
+  // d'en recevoir un nouveau en un clic, sans retaper l'adresse.
+  const rawLinkEmail = searchParams.get("email")?.trim() ?? "";
+  const linkEmail = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(rawLinkEmail) && rawLinkEmail.length <= 200 ? rawLinkEmail : "";
   const [magicVerifying, setMagicVerifying] = useState(magicType === "magiclink" && !!magicTokenHash);
   const [magicVerifyError, setMagicVerifyError] = useState("");
   useEffect(() => {
@@ -70,6 +74,7 @@ function LoginForm() {
       if (cancelled) return;
       if (error) {
         setMagicVerifying(false);
+        if (linkEmail) setEmail(linkEmail);
         setMagicVerifyError(isEn
           ? "This sign-in link has expired or was already used. Request a new one below."
           : "Ce lien de connexion est expiré ou a déjà été utilisé. Demandez-en un nouveau ci-dessous.");
@@ -241,6 +246,20 @@ function LoginForm() {
         {magicVerifyError && (
           <div className="mb-6 bg-error-50 border border-error-200 rounded-xl px-4 py-3 text-base text-error-700" role="alert">
             {magicVerifyError}
+            {linkEmail && !magicSentTo && (
+              <button
+                type="button"
+                onClick={() => void sendMagicLink(linkEmail)}
+                disabled={!turnstileToken || magicLoading || cooldown > 0}
+                className="mt-3 block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+              >
+                {magicLoading
+                  ? (isEn ? "Sending…" : "Envoi en cours…")
+                  : !turnstileToken
+                    ? (isEn ? "Security check…" : "Vérification de sécurité…")
+                    : (isEn ? `Send a new link to ${linkEmail}` : `Envoyer un nouveau lien à ${linkEmail}`)}
+              </button>
+            )}
           </div>
         )}
 

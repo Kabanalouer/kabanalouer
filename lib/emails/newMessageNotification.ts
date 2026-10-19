@@ -136,7 +136,7 @@ export async function sendNewMessageNotificationEmail(
         const tokenHash = link?.properties?.hashed_token as string | undefined;
         if (tokenHash) {
           const next = `${buttonPath}?listing=${listingId}&with=${otherUserId}`;
-          buttonUrl = `${SITE_URL}${fr ? "" : "/en"}/login?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(next)}`;
+          buttonUrl = `${SITE_URL}${fr ? "" : "/en"}/login?token_hash=${tokenHash}&type=magiclink&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`;
         }
         if (!meta.account_invite_sent_at) {
           accountInvite = fr
