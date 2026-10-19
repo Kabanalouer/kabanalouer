@@ -5,6 +5,16 @@ import { useTranslations, useLocale } from "next-intl";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 
+// Rayon de base (position approximative) et taille minimale à l'écran : en dézoomant, le
+// cercle grossit pour rester repérable (au moins MIN_SCREEN_RADIUS_PX pixels de rayon).
+const BASE_RADIUS_M = 500;
+const MIN_SCREEN_RADIUS_PX = 26;
+
+function radiusFor(zoom: number, lat: number): number {
+  const metersPerPixel = (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+  return Math.max(BASE_RADIUS_M, MIN_SCREEN_RADIUS_PX * metersPerPixel);
+}
+
 // Circle overlay using native Maps API (no built-in Circle in @vis.gl)
 function ApproximateCircle({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
@@ -13,7 +23,7 @@ function ApproximateCircle({ lat, lng }: { lat: number; lng: number }) {
     if (!map) return;
     const circle = new window.google.maps.Circle({
       center: { lat, lng },
-      radius: 500,
+      radius: radiusFor(map.getZoom() ?? 13, lat),
       map,
       fillColor: "#0F6E56",
       fillOpacity: 0.15,
@@ -21,7 +31,11 @@ function ApproximateCircle({ lat, lng }: { lat: number; lng: number }) {
       strokeOpacity: 0.35,
       strokeWeight: 2,
     });
-    return () => circle.setMap(null);
+    const listener = map.addListener("zoom_changed", () => circle.setRadius(radiusFor(map.getZoom() ?? 13, lat)));
+    return () => {
+      listener.remove();
+      circle.setMap(null);
+    };
   }, [map, lat, lng]);
 
   return null;
@@ -34,12 +48,13 @@ function MapInner({ lat, lng }: { lat: number; lng: number }) {
       defaultZoom={13}
       // Zoom possible (demande de Simon, 2026-10-19) : « cooperative » = ctrl + molette sur ordinateur,
       // deux doigts sur mobile, pour ne pas bloquer le défilement de la page ; boutons +/− visibles.
-      // maxZoom : la carte reste une position approximative (le cercle de 500 m), jamais la rue.
+      // maxZoom : la carte reste une position approximative (le cercle de 500 m), jamais la rue ;
+      // minZoom 6 : on peut dézoomer assez pour situer le chalet dans la province.
       gestureHandling="cooperative"
       disableDefaultUI
       zoomControl
       maxZoom={15}
-      minZoom={8}
+      minZoom={6}
       mapId={PUBLIC_MAP_ID}
       clickableIcons={false}
       style={{ width: "100%", height: "100%" }}
