@@ -14,7 +14,7 @@ const PUBLISH_PER_RUN = 15;
 //
 // Une fiche est publiable si : non revendiquée, ni de test ni retirée, CITQ à 6 chiffres
 // et adresse de contact connus (la base l'exige aussi, voir listings_unclaimed_publish_check),
-// un titre, au moins 5 photos et la vérification des filigranes faite (import_raw_data.photos_filigrane_verifiees). Rien d'autre n'est jamais publié par ce cron.
+// un titre, une description, au moins 5 photos et la vérification des filigranes faite (import_raw_data.photos_filigrane_verifiees). Rien d'autre n'est jamais publié par ce cron.
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   const { data: candidates, error } = await admin
     .from("listings")
-    .select("id, title, citq_number, claim_email, photos, score, created_at, import_raw_data")
+    .select("id, title, citq_number, claim_email, photos, score, created_at, import_raw_data, description")
     .eq("claim_status", "unclaimed")
     .eq("is_published", false)
     .eq("is_test", false)
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
       (l) =>
         /^[0-9]{6}$/.test((l.citq_number as string) ?? "") &&
         ((l.title as string | null) ?? "").trim().length > 0 &&
+        ((l.description as string | null) ?? "").trim().length >= 40 && // jamais en ligne sans description
         ((l.photos ?? []) as PhotoItem[]).length >= 5 &&
         // Jamais en ligne sans la vérification des filigranes (lib/importQueue.ts, cleanPhoto)
         (l.import_raw_data as { photos_filigrane_verifiees?: boolean } | null)?.photos_filigrane_verifiees === true
