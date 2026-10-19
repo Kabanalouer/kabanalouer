@@ -180,7 +180,14 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
     return n !== null && Math.round(n) >= min && Math.round(n) <= max ? Math.round(n) : null;
   };
   const price = asNum(pick(p, "prix_par_nuit", "prix", "price_low", "price"));
-  const { matched, unmatched } = matchAmenities(asList(pick(p, "equipements", "équipements", "amenities")));
+  // La tâche du matin envoie les équipements sous « commodites » (nom de la source) ; « bord_de_l_eau » vrai
+  // ajoute « Bord de l'eau », que la source donne à part.
+  const waterfrontRaw = pick(p, "bord_de_l_eau", "bord_de_leau", "waterfront");
+  const waterfront = waterfrontRaw === true || ["true", "oui", "1"].includes(String(waterfrontRaw ?? "").toLowerCase());
+  const { matched, unmatched } = matchAmenities([
+    ...asList(pick(p, "equipements", "équipements", "amenities", "commodites", "commodités", "caracteristiques")),
+    ...(waterfront ? ["Bord de l'eau"] : []),
+  ]);
   const description = asStr(pick(p, "description_originale", "description"));
 
   return {

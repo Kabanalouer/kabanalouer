@@ -66,6 +66,40 @@ const AMENITY_KEYWORDS: Record<string, string[]> = {
   "terrasse": ["deck", "terrace", "terrasse", "patio"],
   "module-jeux-enfant": ["play area", "playground", "module de jeux"],
   "borne-recharge-vr": ["ev charg", "electric vehicle", "borne de recharge"],
+  // Libellés français de chaletsauquebec.com (« commodités ») — ajoutés le 2026-10-19 : sans eux,
+  // aucune fiche importée n'avait d'équipement. Seulement ce que le catalogue sait nommer ;
+  // le reste (électricité, déneigement, embarcations…) reste « non reconnu », jamais inventé.
+  "cafetiere": ["cafetière", "cafetiere"],
+  "cuisiniere": ["cuisinière", "cuisiniere", "table de cuisson"],
+  "micro-ondes": ["micro-onde"],
+  "refrigerateur": ["réfrigérateur", "refrigerateur"],
+  "lave-vaisselle": ["lave-vaisselle"],
+  "chaise-haute": ["chaise haute"],
+  "lit-bebe": ["lit de bébé", "lit de bebe", "parc pour bébé"],
+};
+
+// Libellés trop courts pour une recherche par morceau (« four » est dans « fourniture »,
+// « foyer » dans « foyer extérieur ») : comparés en entier. Premier élément = libellé normalisé.
+const EXACT_AMENITY_LABELS: Record<string, string> = {
+  "four": "four",
+  "foyer": "foyer-interieur-bois",
+  "poêle à bois": "foyer-interieur-bois",
+  "poêle au gaz": "foyer-interieur-bois",
+  "poêle au propane": "foyer-interieur-bois",
+  "accès internet": "wifi",
+  "internet": "wifi",
+  "téléviseur": "tv-intelligente",
+  "télévision": "tv-intelligente",
+  "câble": "tv-intelligente",
+  "satellite": "tv-intelligente",
+  "air climatisé": "climatisation",
+  "bain tourbillon": "spa",
+  "piscine creusée": "piscine-exterieure",
+  "piscine hors-terre": "piscine-exterieure",
+  "terrain de jeux": "module-jeux-enfant",
+  "quai": "quai",
+  "tennis de table": "table-ping-pong",
+  "système de son": "systeme-audio",
 };
 
 const AMENITY_CATALOG_IDS = new Set(AMENITY_CATALOG.map((e) => e.id));
@@ -77,6 +111,11 @@ export function matchAmenities(rawLabels: string[]): { matched: AmenityValue[]; 
   for (const raw of rawLabels) {
     if (!raw) continue;
     const norm = raw.toLowerCase();
+    const exact = EXACT_AMENITY_LABELS[norm.trim()];
+    if (exact && AMENITY_CATALOG_IDS.has(exact)) {
+      matchedIds.add(exact);
+      continue;
+    }
     let found = false;
     for (const id of AMENITY_CATALOG_IDS) {
       const keywords = AMENITY_KEYWORDS[id] ?? [];
