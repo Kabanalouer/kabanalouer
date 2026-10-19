@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
         messageText: translated ? (group.latestTranslated as string) : group.latestContent,
         translated: !!translated,
       });
-      if (outcome === "retry") continue; // plafond atteint ou échec : retenté plus tard, flag non posé
+      if (outcome === "retry") continue; // échec passager : retenté au prochain passage, flag non posé
       await supabase.from("messages").update({ notification_sent_at: nowIso }).in("id", group.messageIds);
       if (outcome === "sent") sent++;
       continue;

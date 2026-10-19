@@ -89,10 +89,9 @@ export function reportLink(locale: "fr" | "en", raw: string): string {
   return `${SITE_URL}${PATHS.report[locale]}${raw}`;
 }
 
-// Plafonds d'envoi aux propriétaires non inscrits (claim_email_log) : au plus
-// 3 courriels « message » par jour par fiche ET par adresse, toutes fiches
-// confondues ; lien d'activation demandé : 3 par jour par fiche, 5 par adresse.
-export const MAX_MESSAGE_EMAILS_PER_DAY = 3;
+// Plafonds du bouton public « Envoyer le lien » (claim_email_log) : 3 demandes par jour par
+// fiche, 5 par adresse. Les courriels « un voyageur s'intéresse » n'ont AUCUN plafond
+// (décision de Simon, 2026-10-19).
 export const MAX_LINK_EMAILS_PER_LISTING_PER_DAY = 3;
 export const MAX_LINK_EMAILS_PER_ADDRESS_PER_DAY = 5;
 
@@ -107,14 +106,6 @@ async function countSince(admin: AdminClient, column: "listing_id" | "claim_emai
     .eq("kind", kind)
     .gte("created_at", since);
   return count ?? 0;
-}
-
-export async function canSendMessageEmail(admin: AdminClient, listingId: string, claimEmail: string): Promise<boolean> {
-  const [perListing, perAddress] = await Promise.all([
-    countSince(admin, "listing_id", listingId, "message"),
-    countSince(admin, "claim_email", claimEmail, "message"),
-  ]);
-  return perListing < MAX_MESSAGE_EMAILS_PER_DAY && perAddress < MAX_MESSAGE_EMAILS_PER_DAY;
 }
 
 export async function canSendLinkEmail(admin: AdminClient, listingId: string, claimEmail: string): Promise<boolean> {

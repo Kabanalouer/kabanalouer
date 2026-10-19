@@ -105,7 +105,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "unclaimed-request", category: "proprio", group: "Fiches non revendiquées",
     name: "Un voyageur s’intéresse à votre chalet (propriétaire sans compte)",
     when: "2 à 3 min après un message non lu sur une fiche non revendiquée.",
-    conditions: "Envoyé à l’adresse au dossier de la fiche. Un courriel par conversation, au plus 3 par jour par fiche et par adresse (toutes fiches confondues) ; au-delà, il repart le lendemain. Contient « Activer ma fiche » et « Retirer ma fiche ».",
+    conditions: "Envoyé à l’adresse au dossier de la fiche. Un courriel par conversation, sans plafond. Contient « Activer ma fiche » et « Retirer ma fiche ».",
     mechanism: "minute", testable: true,
   },
   {

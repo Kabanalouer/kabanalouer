@@ -1634,7 +1634,7 @@
     "s3I9": "Publier des fiches créées à partir de renseignements publics, transmettre aux propriétaires les demandes des voyageurs et leur permettre d’activer ou de retirer leur fiche.",
     "s5P3": "Une fiche créée à partir de renseignements publics peut être retirée en tout temps : cliquez sur « Retirer ma fiche » dans le courriel que nous vous envoyons, ou écrivez à info@kabanalouer.ca. La fiche est alors retirée immédiatement et ne sera plus jamais ajoutée.",
     "s6T7": "Fiches non revendiquées",
-    "s6D7": "Une fiche créée à partir de renseignements publics reste en ligne tant que son propriétaire ne l’a pas activée ou retirée. Si vous la faites retirer, elle disparaît du site immédiatement ; nous gardons seulement son numéro CITQ et son adresse d’origine pour ne pas la remettre en ligne. Les courriels que nous envoyons à son adresse au sujet des demandes de voyageurs sont limités à 3 par jour par fiche, et les liens d’activation sont valides 30 jours."
+    "s6D7": "Une fiche créée à partir de renseignements publics reste en ligne tant que son propriétaire ne l’a pas activée ou retirée. Si vous la faites retirer, elle disparaît du site immédiatement ; nous gardons seulement son numéro CITQ et son adresse d’origine pour ne pas la remettre en ligne. Les liens d’activation que nous envoyons à son adresse sont valides 30 jours."
   },
   "translateButton": {
     "translate": "Traduire",

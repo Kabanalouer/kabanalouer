@@ -1634,7 +1634,7 @@
     "s3I9": "Publish listings created from public information, forward travelers’ requests to owners and let them activate or remove their listing.",
     "s5P3": "A listing created from public information can be removed at any time: click “Remove my listing” in the email we send you, or write to info@kabanalouer.ca. The listing is then removed immediately and will never be added again.",
     "s6T7": "Unclaimed listings",
-    "s6D7": "A listing created from public information stays online until its owner activates or removes it. If you have it removed, it disappears from the site immediately; we only keep its CITQ number and original address so it is not put back online. The emails we send to its address about travelers’ requests are limited to 3 per day per listing, and activation links are valid for 30 days."
+    "s6D7": "A listing created from public information stays online until its owner activates or removes it. If you have it removed, it disappears from the site immediately; we only keep its CITQ number and original address so it is not put back online. The activation links we send to its address are valid for 30 days."
   },
   "translateButton": {
     "translate": "Translate",

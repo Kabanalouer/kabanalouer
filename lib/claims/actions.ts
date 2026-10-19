@@ -2,7 +2,6 @@ import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { maskEmail } from "@/lib/claims/maskedEmail";
 import { markInvitationsClaimed } from "@/lib/claims/invitations";
 import {
-  canSendMessageEmail,
   claimLink,
   createClaimToken,
   logOwnerEmail,
@@ -172,9 +171,10 @@ export async function reportClaimProblem(
 
 // Demande d'un voyageur sur une fiche non revendiquée : transmise par courriel à
 // claim_email avec un lien d'activation et un lien « Retirer ma fiche ». Un courriel
-// par conversation, au plus 3 par jour par fiche ET par adresse (toutes fiches
-// confondues) — au-delà, 'retry' : le message reste en attente et repart le lendemain.
-// 'skipped' : aucune adresse connue (rien à envoyer, la demande attend la revendication).
+// par conversation, SANS plafond (décision de Simon, 2026-10-19 : chaque demande de voyageur
+// est transmise ; le voyageur est déjà limité par /api/messages). 'retry' : échec passager,
+// le message reste en attente. 'skipped' : aucune adresse connue (rien à envoyer, la demande
+// attend la revendication).
 export async function notifyUnclaimedOwner(
   admin: AdminClient,
   input: {
@@ -188,7 +188,6 @@ export async function notifyUnclaimedOwner(
   }
 ): Promise<"sent" | "retry" | "skipped"> {
   if (!input.claimEmail) return "skipped";
-  if (!(await canSendMessageEmail(admin, input.listingId, input.claimEmail))) return "retry";
 
   const [claimRaw, removeRaw] = await Promise.all([
     createClaimToken(admin, { kind: "claim", claimEmail: input.claimEmail, reason: "traveler_message" }),
