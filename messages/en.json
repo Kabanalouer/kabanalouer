@@ -1695,7 +1695,7 @@
     "noticeBody": "If you own this cabin, you must first claim your listing to respond to travelers’ requests.",
     "cta": "This is my cabin",
     "sidebarLink": "Claim my listing",
-    "dialogTitle": "Activate your listing",
+    "dialogTitle": "Claim my listing",
     "dialogIntro": "Activate the listing with your account to edit it and reply to travelers directly.",
     "sendLinkTitle": "Send the activation link to {email}",
     "sendLinkBody": "We send the link to the address we have on file. It is valid for 30 days.",

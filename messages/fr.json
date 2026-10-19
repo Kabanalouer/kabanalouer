@@ -1695,7 +1695,7 @@
     "noticeBody": "Si vous êtes le propriétaire de ce chalet, vous devez d’abord revendiquer votre fiche pour répondre aux demandes des voyageurs.",
     "cta": "C’est mon chalet",
     "sidebarLink": "Revendiquer mon annonce",
-    "dialogTitle": "Activer votre fiche",
+    "dialogTitle": "Revendiquer mon annonce",
     "dialogIntro": "Activez la fiche avec votre compte pour la modifier et répondre directement aux voyageurs.",
     "sendLinkTitle": "Envoyer le lien d’activation à {email}",
     "sendLinkBody": "Nous envoyons le lien à l’adresse que nous avons au dossier. Il est valide 30 jours.",
