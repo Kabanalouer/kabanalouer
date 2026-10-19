@@ -19,24 +19,24 @@ export const TEMPLATE_GUEST_REQUEST: EmailTemplateDef = {
     { key: "prenom", label: "Prénom du voyageur" },
     { key: "titreChalet", label: "Titre du chalet" },
     { key: "resume", label: "Résumé de la demande : dates, voyageurs et message", html: true },
-    { key: "suite", label: "Phrase finale : répondre au courriel (ou « ce n'était pas vous ? » si l'adresse avait déjà un compte)", html: true },
+    { key: "suite", label: "Phrase sous le bouton : répondre au courriel (ou « ce n'était pas vous ? » si l'adresse avait déjà un compte)", html: true },
   ],
   defaults: {
     fr: {
       subject: "Votre demande pour {titreChalet}",
       greeting: "Bonjour {prenom},",
       heading: "Votre demande est envoyée",
-      body: "Nous l’avons transmise au propriétaire de **{titreChalet}**. Voici ce que nous lui avons écrit :\n\n{resume}\n\n{suite}",
+      body: "Nous l’avons transmise au propriétaire de **{titreChalet}**. Voici ce que nous lui avons écrit :\n\n{resume}",
       buttonLabel: "Suivre ma demande",
-      footerNote: "Aucun compte ni mot de passe à créer : le bouton vous connecte directement.",
+      footerNote: "{suite}",
     },
     en: {
       subject: "Your request for {titreChalet}",
       greeting: "Hi {prenom},",
       heading: "Your request has been sent",
-      body: "We passed it on to the owner of **{titreChalet}**. Here is what we wrote to them:\n\n{resume}\n\n{suite}",
+      body: "We passed it on to the owner of **{titreChalet}**. Here is what we wrote to them:\n\n{resume}",
       buttonLabel: "Follow my request",
-      footerNote: "No account or password to create: the button signs you in directly.",
+      footerNote: "{suite}",
     },
   },
 };
@@ -75,8 +75,8 @@ export async function sendGuestRequestEmail(input: {
       )
     : escapeHtml(
         fr
-          ? "Vous pouvez aussi répondre directement à ce courriel : votre message sera transmis au propriétaire."
-          : "You can also reply directly to this email: your message will be passed on to the owner."
+          ? "Répondez directement à ce message (reply) pour contacter le propriétaire directement."
+          : "Reply directly to this message to contact the owner directly."
       );
 
   const text = await resolveEmailText(TEMPLATE_GUEST_REQUEST, input.lang, {

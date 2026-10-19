@@ -352,9 +352,6 @@ export default function ContactForm({
           </svg>
         </div>
         <p className="font-semibold text-charcoal-800 text-base mb-1">{t("requestSent")}</p>
-        <p className="text-sm text-charcoal-400">
-          {guestSentTo ? t("guestRequestSentDetail", { email: guestSentTo }) : t("requestSentDetail")}
-        </p>
         {!guestSentTo && (
           <Link href={localePath(`/messages?listing=${listingId}&with=${hostId}`, locale)} className={`mt-3 block text-sm ${TEXT_LINK_CLASSNAME}`}>
             {t("viewMessagesArrow")}
