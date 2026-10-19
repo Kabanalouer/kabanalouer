@@ -119,29 +119,33 @@ export async function sendNewMessageNotificationEmail(
   const buttonPath = preferredLanguage === "en" ? "/en/messages" : "/messages";
   let buttonUrl = `${SITE_URL}${buttonPath}?listing=${listingId}&with=${otherUserId}`;
 
-  // Voyageur : le bouton le connecte directement (lien magique) — un voyageur arrivé par la demande sans
-  // compte n'a pas de mot de passe. Le jeton est lu par LoginForm.tsx (verifyOtp) ; il expire selon le
+  // Compte « guest » seulement : le bouton le connecte directement (lien magique) — un voyageur arrivé par la
+  // demande sans compte n'a pas de mot de passe. Le jeton est lu par LoginForm.tsx (verifyOtp) ; il expire selon le
   // réglage Supabase, ensuite « Se connecter » en renvoie un. Jamais bloquant : sans lien, le lien simple.
   // Compte « guest » (créé par /api/messages/guest) : une seule invitation à ajouter un mot de passe.
   let accountInvite = "";
   let markInvite: (() => Promise<void>) | null = null;
   if (!recipientIsHost && admin.auth) {
     try {
-      const { data: link } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-      const tokenHash = link?.properties?.hashed_token as string | undefined;
-      if (tokenHash) {
-        const next = `${buttonPath}?listing=${listingId}&with=${otherUserId}`;
-        buttonUrl = `${SITE_URL}${fr ? "" : "/en"}/login?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(next)}`;
-      }
+      // Lien de connexion seulement pour un compte « guest » (créé par la demande sans compte, sans mot de passe) ;
+      // un voyageur avec mot de passe reçoit le lien simple. Dès qu'un guest ajoute un mot de passe, le drapeau tombe.
       const { data: au } = await admin.auth.admin.getUserById(recipientId);
       const meta = (au?.user?.user_metadata ?? {}) as Record<string, unknown>;
-      if (meta.guest === true && !meta.account_invite_sent_at) {
-        accountInvite = fr
-          ? "Facultatif : dans votre messagerie, un petit encadré vous permet d’ajouter un mot de passe pour vous reconnecter plus vite la prochaine fois."
-          : "Optional: in your inbox, a small box lets you add a password so you can sign back in faster next time.";
-        markInvite = async () => {
-          await admin.auth!.admin.updateUserById(recipientId, { user_metadata: { ...meta, account_invite_sent_at: new Date().toISOString() } });
-        };
+      if (meta.guest === true) {
+        const { data: link } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+        const tokenHash = link?.properties?.hashed_token as string | undefined;
+        if (tokenHash) {
+          const next = `${buttonPath}?listing=${listingId}&with=${otherUserId}`;
+          buttonUrl = `${SITE_URL}${fr ? "" : "/en"}/login?token_hash=${tokenHash}&type=magiclink&next=${encodeURIComponent(next)}`;
+        }
+        if (!meta.account_invite_sent_at) {
+          accountInvite = fr
+            ? "Facultatif : dans votre messagerie, un petit encadré vous permet d’ajouter un mot de passe pour vous reconnecter plus vite la prochaine fois."
+            : "Optional: in your inbox, a small box lets you add a password so you can sign back in faster next time.";
+          markInvite = async () => {
+            await admin.auth!.admin.updateUserById(recipientId, { user_metadata: { ...meta, account_invite_sent_at: new Date().toISOString() } });
+          };
+        }
       }
     } catch (err) {
       console.error("sendNewMessageNotificationEmail: lien de connexion", err);
