@@ -334,26 +334,48 @@ async function prepareImage(url: string): Promise<PreparedPhoto | null> {
 
 // ── Filigranes ──────────────────────────────────────────────────────────────
 // Les photos des sites sources portent souvent un filigrane (« ChaletsAuQuebec.com », logo de
-// photographe…). Règle de Simon (2026-10-19) : jamais en ligne. Chaque photo est examinée par
-// l'IA (vision) ; un filigrane confiné à une bande du bas est coupé puis la photo est
-// revérifiée ; tout autre cas (coin du haut, centre, bande trop haute, doute) : la photo est écartée.
+// photographe…). Règle de Simon (2026-10-19) : jamais en ligne. Pour économiser l'IA (2026-10-20) :
+//  A. seule la BANDE DU BAS de chaque photo est examinée (30 % de la hauteur, c'est là que sont tous les
+//     filigranes observés) : ~70 % moins d'image envoyée ;
+//  B. un modèle peu coûteux (Haiku) passe d'abord ; Sonnet n'intervient que si Haiku voit quelque chose ou
+//     ne répond pas lisiblement ;
+//  C. le verdict de chaque photo est gardé en mémoire (table import_step_cache) : une reprise de l'import
+//     ne repaie rien. Limite connue : un filigrane en haut ou au centre d'une photo n'est pas cherché.
+// Un filigrane confiné à la bande du bas est coupé puis la photo revérifiée ; tout autre cas : écartée.
 
 const WATERMARK_MAX_BAND = 0.15;
+const BAND_FRACTION = 0.3;
+const MODEL_CHEAP = "claude-haiku-5-5";
+// Premier passage avec le modèle peu coûteux. Mesuré le 2026-10-20 sur 192 photos : Haiku trouve 37 des 39
+// filigranes que Sonnet trouve (il rate 2 logos très discrets, sans texte) et lève 2 fausses alertes. Comme la
+// bande du bas coûte déjà peu, l'économie en plus est faible et le risque réel : désactivé tant que Simon
+// ne l'a pas décidé (mettre true pour l'activer).
+const CHEAP_FIRST_PASS = false;
+const MODEL_STRONG = "claude-sonnet-5-5";
 
 export type WatermarkVerdict = { found: boolean; position: string; band: number; text: string };
 
+async function bottomBandJpeg(webp: Buffer): Promise<Buffer> {
+  const meta = await sharp(webp).metadata();
+  const w = meta.width ?? 0;
+  const h = meta.height ?? 0;
+  if (!w || !h) throw new Error("Photo illisible.");
+  const top = Math.floor(h * (1 - BAND_FRACTION));
+  return sharp(webp).extract({ left: 0, top, width: w, height: h - top }).resize({ width: 1280, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+}
+
 // Lève une erreur si l'IA est injoignable ou illisible (l'import est alors repris plus tard) :
-// jamais de « pas de filigrane » par défaut.
-export async function detectWatermark(webp: Buffer): Promise<WatermarkVerdict> {
+// jamais de « pas de filigrane » par défaut. `band` est renvoyée en fraction de la hauteur de la PHOTO entière.
+export async function detectWatermark(webp: Buffer, model: string = MODEL_STRONG): Promise<WatermarkVerdict> {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY manquante : vérification des filigranes impossible.");
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const jpeg = await sharp(webp).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+  const jpeg = await bottomBandJpeg(webp);
   let lastError: unknown;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const msg = await anthropic.messages.create({
-        model: "claude-sonnet-5-5",
-        max_tokens: 400,
+        model,
+        max_tokens: 800,
         messages: [
           {
             role: "user",
@@ -362,8 +384,8 @@ export async function detectWatermark(webp: Buffer): Promise<WatermarkVerdict> {
               {
                 type: "text",
                 text:
-                  "Cette photo de chalet contient-elle un filigrane, un logo, une adresse web ou du texte incrusté dans l'image (par exemple « ChaletsAuQuebec.com », même petit, discret ou semi-transparent) ? Regarde bien les coins et les bords. " +
-                  'Réponds UNIQUEMENT par un objet JSON : {"watermark": true|false, "text": "le texte lu ou vide", "position": "bas-gauche|bas-droite|bas-centre|haut-gauche|haut-droite|centre|autre|aucune", "band": nombre entre 0 et 1 = fraction de la hauteur de l\'image, mesurée depuis le bord du bas, qu\'il faut couper pour retirer entièrement le filigrane}',
+                  "Cette image est la BANDE DU BAS d'une photo de chalet. Contient-elle un filigrane, un logo (même sans texte : symbole, initiales, forme semi-transparente), une adresse web ou du texte incrusté dans l'image (par exemple « ChaletsAuQuebec.com », même petit, discret ou semi-transparent) ? Regarde très attentivement les coins et les bords ; au moindre doute, réponds true. " +
+                  'Réponds UNIQUEMENT par un objet JSON : {"watermark": true|false, "text": "le texte lu ou vide", "position": "bas-gauche|bas-droite|bas-centre|autre|aucune", "band": nombre entre 0 et 1 = fraction de la hauteur de CETTE image, mesurée depuis son bord du bas, qu\'il faut couper pour retirer entièrement le filigrane}',
               },
             ],
           },
@@ -371,7 +393,8 @@ export async function detectWatermark(webp: Buffer): Promise<WatermarkVerdict> {
       });
       const text = textOf(msg);
       const o = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)) as Record<string, unknown>;
-      return { found: o.watermark === true, text: String(o.text ?? ""), position: String(o.position ?? ""), band: Number(o.band ?? 0) };
+      const found = o.watermark === true;
+      return { found, text: String(o.text ?? ""), position: String(o.position ?? ""), band: Math.min(1, Math.max(0, Number(o.band ?? 0))) * BAND_FRACTION };
     } catch (err) {
       lastError = err;
     }
@@ -379,30 +402,81 @@ export async function detectWatermark(webp: Buffer): Promise<WatermarkVerdict> {
   throw new Error(`Vérification du filigrane impossible : ${(lastError as Error)?.message ?? "réponse illisible"}`);
 }
 
-// Renvoie la photo propre (éventuellement rognée), ou null si elle doit être écartée.
-export async function cleanPhoto(webp: Buffer): Promise<Buffer | null> {
-  const verdict = await detectWatermark(webp);
-  if (!verdict.found) return webp;
-  const bottom = verdict.position.startsWith("bas");
-  if (!bottom || !(verdict.band > 0) || verdict.band > WATERMARK_MAX_BAND) return null;
+// Haiku d'abord ; Sonnet seulement si Haiku voit quelque chose ou ne répond pas lisiblement
+async function verdictOf(webp: Buffer): Promise<WatermarkVerdict> {
+  if (!CHEAP_FIRST_PASS) return detectWatermark(webp, MODEL_STRONG);
+  try {
+    const cheap = await detectWatermark(webp, MODEL_CHEAP);
+    if (!cheap.found) return cheap;
+  } catch (err) {
+    // Panne de crédit ou de service : pas la peine d'insister avec Sonnet, l'import sera repris
+    if (/credit balance|rate_limit|overloaded|authentication_error|invalid x-api-key|ANTHROPIC_API_KEY/i.test((err as Error).message)) throw err;
+  }
+  return detectWatermark(webp, MODEL_STRONG);
+}
+
+type Decision = { kind: "keep" } | { kind: "drop" } | { kind: "crop"; fraction: number };
+type AdminLike = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+async function cacheGet<T>(admin: AdminLike | undefined, key: string): Promise<T | null> {
+  if (!admin) return null;
+  const { data } = await admin.from("import_step_cache").select("value").eq("key", key).maybeSingle();
+  return (data?.value as T | undefined) ?? null;
+}
+async function cacheSet(admin: AdminLike | undefined, key: string, value: unknown): Promise<void> {
+  if (!admin) return;
+  const { error } = await admin.from("import_step_cache").upsert({ key, value }, { onConflict: "key" });
+  if (error) console.warn("[importQueue] mémoire de l'import indisponible", error.message);
+}
+
+async function applyCrop(webp: Buffer, fraction: number): Promise<Buffer> {
   const meta = await sharp(webp).metadata();
-  if (!meta.width || !meta.height) return null;
-  const cut = Math.ceil(meta.height * Math.min(0.18, verdict.band * 1.4 + 0.02));
-  const cropped = await sharp(webp)
-    .extract({ left: 0, top: 0, width: meta.width, height: meta.height - cut })
-    .webp({ quality: 80 })
-    .toBuffer();
-  const again = await detectWatermark(cropped);
-  return again.found ? null : cropped;
+  const cut = Math.ceil((meta.height ?? 0) * fraction);
+  return sharp(webp).extract({ left: 0, top: 0, width: meta.width ?? 0, height: (meta.height ?? 0) - cut }).webp({ quality: 80 }).toBuffer();
+}
+
+// Renvoie la photo propre (éventuellement rognée), ou null si elle doit être écartée.
+export async function cleanPhoto(webp: Buffer, cache?: AdminLike): Promise<Buffer | null> {
+  const key = `wm:${createHash("sha1").update(webp).digest("hex")}`;
+  const cached = await cacheGet<Decision>(cache, key);
+  if (cached) {
+    if (cached.kind === "keep") return webp;
+    if (cached.kind === "drop") return null;
+    return applyCrop(webp, cached.fraction);
+  }
+
+  const verdict = await verdictOf(webp);
+  let decision: Decision = { kind: "keep" };
+  let result: Buffer | null = webp;
+  if (verdict.found) {
+    const bottom = verdict.position.startsWith("bas");
+    if (!bottom || !(verdict.band > 0) || verdict.band > WATERMARK_MAX_BAND) {
+      decision = { kind: "drop" };
+      result = null;
+    } else {
+      const fraction = Math.min(0.18, verdict.band * 1.4 + 0.02);
+      const cropped = await applyCrop(webp, fraction);
+      const again = await verdictOf(cropped);
+      if (again.found) {
+        decision = { kind: "drop" };
+        result = null;
+      } else {
+        decision = { kind: "crop", fraction };
+        result = cropped;
+      }
+    }
+  }
+  await cacheSet(cache, key, decision);
+  return result;
 }
 
 // Vérifie un lot de photos, 4 à la fois ; les photos écartées sont retirées.
-export async function cleanPhotos<T extends { webp: Buffer }>(items: T[]): Promise<{ kept: T[]; dropped: number }> {
+export async function cleanPhotos<T extends { webp: Buffer }>(items: T[], cache?: AdminLike): Promise<{ kept: T[]; dropped: number }> {
   const kept: T[] = [];
   for (let i = 0; i < items.length; i += 4) {
     const results = await Promise.all(
       items.slice(i, i + 4).map(async (item) => {
-        const clean = await cleanPhoto(item.webp);
+        const clean = await cleanPhoto(item.webp, cache);
         return clean ? { ...item, webp: clean } : null;
       })
     );
@@ -644,9 +718,27 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       throw new Error(`Seulement ${prepared.length} photo(s) téléchargée(s) sur ${d.photos.length}.`);
     }
 
-    // Filigranes : jamais de photo marquée en ligne (voir cleanPhoto)
-    const checked = await cleanPhotos(prepared);
+    // Filigranes : jamais de photo marquée en ligne (voir cleanPhoto) ; verdicts gardés en mémoire pour les reprises
+    const checked = await cleanPhotos(prepared, admin);
     if (checked.kept.length < MIN_PHOTOS) return await reject(admin, row, `Moins de ${MIN_PHOTOS} photos sans filigrane (${checked.dropped} écartée(s) sur ${prepared.length}).`);
+
+    // Description AVANT l'agrandissement (étape payante qui peut échouer) : une reprise ne repaie pas Replicate
+    const descKey = `desc:${row.id}`;
+    const description = (await cacheGet<DescriptionResult>(admin, descKey)) ?? (await rewriteDescription(d.descriptionOriginal, {
+      city: d.city,
+      region: d.region,
+      capacity: d.capacity,
+      bedrooms: d.bedrooms,
+      bathrooms: d.bathrooms,
+      amenityLabels: d.amenities.map((x) => AMENITY_CATALOG.find((c) => c.id === x.id)?.label ?? "").filter(Boolean),
+      activities: d.nearbyActivities,
+      dogsAllowed: d.dogsAllowed,
+      smokingAllowed: d.smokingAllowed,
+      checkinTime: d.checkinTime,
+      checkoutTime: d.checkoutTime,
+    }));
+    if (description.text) await cacheSet(admin, descKey, description);
+
     // Agrandissement par IA de toutes les photos (jamais bloquant, voir lib/photoEnhance.ts)
     const upscaled = await enhancePhotos(checked.kept);
     prepared.splice(0, prepared.length, ...upscaled.items.map((k) => ({ webp: k.webp, hash: createHash("sha1").update(k.webp).digest("hex") })));
@@ -661,19 +753,6 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       photos.push({ url: admin.storage.from(BUCKET).getPublicUrl(path).data.publicUrl, caption: "", sizeMb: Math.round((prepared[i].webp.byteLength / 1048576) * 100) / 100 });
     }
 
-    const description = await rewriteDescription(d.descriptionOriginal, {
-      city: d.city,
-      region: d.region,
-      capacity: d.capacity,
-      bedrooms: d.bedrooms,
-      bathrooms: d.bathrooms,
-      amenityLabels: d.amenities.map((x) => AMENITY_CATALOG.find((c) => c.id === x.id)?.label ?? "").filter(Boolean),
-      activities: d.nearbyActivities,
-      dogsAllowed: d.dogsAllowed,
-      smokingAllowed: d.smokingAllowed,
-      checkinTime: d.checkinTime,
-      checkoutTime: d.checkoutTime,
-    });
     const score = computeScore({
       photoCount: photos.length,
       title: d.title,
