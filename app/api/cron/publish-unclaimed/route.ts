@@ -16,7 +16,7 @@ const INVITE_DELAY_MS = 650;
 const PUBLISH_PER_DAY = 15;
 // Pas de publication avant cette heure (le lot du matin est encore en préparation).
 const EARLIEST_HOUR = 6;
-// Après cette heure, on publie ce qui est prêt même si des fiches sont encore dans la file.
+// Après cette heure, l'avis à Simon part même si des fiches sont encore dans la file.
 const DEADLINE_HOUR = 10;
 
 function montrealParts(now: Date): { date: string; hour: number } {
@@ -33,12 +33,14 @@ function montrealParts(now: Date): { date: string; hour: number } {
 }
 
 // GET — appelé par le cron Vercel (toutes les 10 minutes, le matin) : publication des
-// fiches importées dès que le lot du jour est prêt. La tâche Claude du matin remplit
+// fiches importées au fur et à mesure. La tâche Claude du matin remplit
 // listing_import_queue vers 5 h 30 ; le cron import-queue crée les fiches (non publiées) ;
-// ce cron les met en ligne d'un coup quand la file est vide (ou à 10 h au plus tard),
-// au plus 15 par jour, les plus complètes d'abord (colonne score), puis avise Simon par
-// courriel. La date de mise en ligne est notée dans import_raw_data.publie_le (date de
-// Montréal) : c'est elle qui sert au plafond quotidien.
+// ce cron met en ligne chaque fiche prête au passage suivant (à partir de 6 h), au plus
+// 15 par jour, les plus complètes d'abord (colonne score). La date de mise en ligne est
+// notée dans import_raw_data.publie_le (date de Montréal) : elle sert au plafond quotidien.
+// Avis à Simon : un seul courriel quand la file est vide (ou à 10 h au plus tard), avec
+// toutes les fiches mises en ligne dans la journée ; import_raw_data.avis_envoye_le évite
+// de les annoncer deux fois.
 //
 // Une fiche est publiable si : non revendiquée, ni de test ni retirée, CITQ à 6 chiffres
 // et adresse de contact connus (la base l'exige aussi, voir listings_unclaimed_publish_check),
@@ -67,7 +69,9 @@ export async function GET(request: NextRequest) {
   let invites = { sent: 0, skipped: 0, errors: 0 };
   if (AUTO_INVITATIONS_ENABLED) invites = await sendNewInvitations(admin);
 
-  return NextResponse.json({ ok: true, ...publish, invites });
+  const notice = await notifySimonIfDone(admin);
+
+  return NextResponse.json({ ok: true, ...publish, invites, notice });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,16 +108,6 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
   const remaining = PUBLISH_PER_DAY - (publishedToday ?? 0);
   if (remaining <= 0) return { published: 0, skipped: "Plafond du jour atteint." };
 
-  // On attend la fin de l'import du lot du jour (une seule mise en ligne et un seul avis)
-  if (hour < DEADLINE_HOUR) {
-    const { count: pending } = await admin
-      .from("listing_import_queue")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending")
-      .lt("attempts", 5);
-    if ((pending ?? 0) > 0) return { published: 0, skipped: "Import en cours.", pending: pending ?? 0 };
-  }
-
   const { data: candidates, error } = await admin
     .from("listings")
     .select("id, title, citq_number, claim_email, photos, score, created_at, import_raw_data, description, region, city, listing_number, custom_slug")
@@ -145,7 +139,7 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
   if (ready.length === 0) return { published: 0, waiting: candidates?.length ?? 0 };
 
   // Une mise à jour par fiche : on ajoute publie_le à import_raw_data sans écraser le reste
-  const published: typeof ready = [];
+  let published = 0;
   for (const l of ready) {
     const raw = (l.import_raw_data as Record<string, unknown> | null) ?? {};
     const { data: updated, error: updateError } = await admin
@@ -159,33 +153,74 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
       console.error("[cron publish-unclaimed] échec de publication", l.id, updateError.message);
       continue;
     }
-    if (updated && updated.length > 0) published.push(l);
+    if (updated && updated.length > 0) published++;
   }
 
-  const waiting = Math.max(0, (candidates?.length ?? 0) - published.length);
-  if (published.length > 0) {
-    const { error: mailError } = await sendUnclaimedPublishedNotice({
-      waiting,
-      items: published.map((l) => {
-        const path = buildListingPath(
-          {
-            region: (l.region as string | null) ?? null,
-            city: (l.city as string | null) ?? null,
-            listing_number: (l.listing_number as number | null) ?? null,
-            custom_slug: (l.custom_slug as string | null) ?? null,
-          },
-          "fr"
-        );
-        return {
-          title: (l.title as string) ?? "",
-          city: (l.city as string | null) ?? null,
+  return { published, waiting: Math.max(0, (candidates?.length ?? 0) - published) };
+}
+
+// Un seul avis par jour à Simon : quand la file d'import est vide (ou à 10 h au plus tard)
+// et qu'au moins une fiche mise en ligne aujourd'hui n'a pas encore été annoncée.
+async function notifySimonIfDone(admin: Admin): Promise<{ notified: number; skipped?: string }> {
+  const { date: today, hour } = montrealParts(new Date());
+  if (hour < EARLIEST_HOUR) return { notified: 0 };
+
+  if (hour < DEADLINE_HOUR) {
+    const { count: pending } = await admin
+      .from("listing_import_queue")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending")
+      .lt("attempts", 5);
+    if ((pending ?? 0) > 0) return { notified: 0, skipped: "Import en cours." };
+  }
+
+  const { data: todays, error } = await admin
+    .from("listings")
+    .select("id, title, region, city, listing_number, custom_slug, import_raw_data, is_published")
+    .not("claim_status", "is", null)
+    .eq("is_published", true)
+    .eq("import_raw_data->>publie_le", today)
+    .order("region", { ascending: true });
+  if (error || !todays || todays.length === 0) return { notified: 0 };
+
+  const unannounced = todays.filter((l) => !(l.import_raw_data as { avis_envoye_le?: string } | null)?.avis_envoye_le);
+  if (unannounced.length === 0) return { notified: 0 };
+
+  const { count: waiting } = await admin
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("claim_status", "unclaimed")
+    .eq("is_published", false)
+    .eq("is_test", false);
+
+  const { error: mailError } = await sendUnclaimedPublishedNotice({
+    waiting: waiting ?? 0,
+    items: todays.map((l) => {
+      const path = buildListingPath(
+        {
           region: (l.region as string | null) ?? null,
-          url: path ? `${SITE_URL}${path}` : null,
-        };
-      }),
-    });
-    if (mailError) console.error("[cron publish-unclaimed] avis non envoyé", mailError.message);
+          city: (l.city as string | null) ?? null,
+          listing_number: (l.listing_number as number | null) ?? null,
+          custom_slug: (l.custom_slug as string | null) ?? null,
+        },
+        "fr"
+      );
+      return {
+        title: (l.title as string) ?? "",
+        city: (l.city as string | null) ?? null,
+        region: (l.region as string | null) ?? null,
+        url: path ? `${SITE_URL}${path}` : null,
+      };
+    }),
+  });
+  if (mailError) {
+    console.error("[cron publish-unclaimed] avis non envoyé", mailError.message);
+    return { notified: 0, skipped: "Échec de l'envoi." };
   }
 
-  return { published: published.length, waiting };
+  for (const l of unannounced) {
+    const raw = (l.import_raw_data as Record<string, unknown> | null) ?? {};
+    await admin.from("listings").update({ import_raw_data: { ...raw, avis_envoye_le: today } }).eq("id", l.id as string);
+  }
+  return { notified: todays.length };
 }

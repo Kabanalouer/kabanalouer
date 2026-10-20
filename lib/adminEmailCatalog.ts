@@ -338,8 +338,8 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "unclaimed-published", category: "interne", group: "Équipe",
     name: "Chalets du jour en ligne",
     subject: { fr: "{n} nouveaux chalets en ligne sur Kabanalouer" },
-    when: "Le matin, dès que les fiches importées du jour sont mises en ligne (cron publish-unclaimed, à partir de 6 h, au plus tard vers 10 h).",
-    conditions: "Un seul avis par mise en ligne, avec la liste des chalets (titre, ville, région, lien). Au plus 15 fiches par jour.",
+    when: "Le matin, quand la dernière fiche importée du jour est en ligne (cron publish-unclaimed ; au plus tard vers 10 h).",
+    conditions: "Les fiches sont publiées au fur et à mesure ; un seul avis par jour avec toutes celles mises en ligne (titre, ville, région, lien). Au plus 15 fiches par jour.",
     mechanism: "daily", dailyAt: "entre 6 h et 10 h", testable: false, fixedRecipient: "simon.authentik@gmail.com",
   },
   {

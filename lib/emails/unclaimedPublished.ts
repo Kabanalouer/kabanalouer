@@ -35,12 +35,12 @@ export async function sendUnclaimedPublishedNotice({
     to: [ADMIN_EMAIL],
     subject: `${n} ${n > 1 ? "nouveaux chalets en ligne" : "nouveau chalet en ligne"} sur Kabanalouer`,
     text: [
-      `${n} ${n > 1 ? "fiches non revendiquées viennent d’être mises en ligne" : "fiche non revendiquée vient d’être mise en ligne"} :`,
+      `${n} ${n > 1 ? "fiches non revendiquées ont été mises en ligne aujourd’hui" : "fiche non revendiquée a été mise en ligne aujourd’hui"} :`,
       "",
       ...lines,
       "",
       waiting > 0 ? `Encore ${waiting} fiche(s) importée(s) en attente de publication.` : null,
-      "Les invitations aux propriétaires partent tout de suite après la mise en ligne.",
+      "Chaque propriétaire a reçu son invitation dès la mise en ligne de sa fiche.",
       `Suivi : ${ADMIN_URL}`,
     ].filter((l) => l !== null).join("\n"),
   });
