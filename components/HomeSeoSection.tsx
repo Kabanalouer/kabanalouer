@@ -33,7 +33,7 @@ export default async function HomeSeoSection() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 w-full">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 w-full">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-6">{t("title")}</h2>
