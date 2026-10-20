@@ -765,6 +765,12 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     if (uploaded.length > 0) await admin.storage.from(BUCKET).remove(uploaded).catch(() => undefined);
     const message = err instanceof Error ? err.message : String(err);
     console.error("[importQueue]", row.import_source_url, message);
+    // Service d'IA indisponible (crédit épuisé, surcharge, clé refusée) : ce n'est pas la faute de la fiche, on
+    // ne consomme pas l'essai (sinon une panne de crédit ferait refuser toute la file en 15 minutes).
+    if (/credit balance|rate_limit|overloaded|authentication_error|invalid x-api-key|ANTHROPIC_API_KEY manquante|Vérification du filigrane impossible/i.test(message)) {
+      await finish(admin, row, { attempts: Math.max(0, row.attempts - 1), error: message.slice(0, 500) });
+      return { outcome: "retry", error: message };
+    }
     // row.attempts est déjà incrémenté au moment de la prise en charge par le cron
     if (row.attempts >= MAX_ATTEMPTS) return await reject(admin, row, `Échec après ${MAX_ATTEMPTS} essais : ${message}`);
     await finish(admin, row, { error: message.slice(0, 500) });

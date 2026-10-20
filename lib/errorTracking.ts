@@ -38,6 +38,7 @@ export function normalizeMessage(message: string): string {
     .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "<id>")
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "<courriel>")
     .replace(/\b[0-9a-f]{16,}\b/gi, "<jeton>")
+    .replace(/\breq_[A-Za-z0-9]+/g, "<req>")
     .replace(/\d+/g, "<n>")
     .replace(/\s+/g, " ")
     .trim()
