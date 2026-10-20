@@ -4,11 +4,13 @@ export type Lang = "fr" | "en";
 export type FieldType = "title" | "description" | "caption" | "roomName" | "bio";
 
 const MAX_TOKENS: Record<FieldType, number> = {
-  title: 400,
-  description: 4000,
-  caption: 600,
-  roomName: 300,
-  bio: 800,
+  // Large marge : les jetons de « réflexion » du modèle comptent dans la limite ; une limite trop juste
+  // laissait parfois la réponse sans aucun texte (« Traduction vide », 2026-10-20).
+  title: 2000,
+  description: 8000,
+  caption: 2000,
+  roomName: 1500,
+  bio: 4000,
 };
 
 const LANG_NAME: Record<Lang, string> = {
@@ -52,19 +54,23 @@ export async function translateField({
   fieldType: FieldType;
 }): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const msg = await anthropic.messages.create({
-    // Haiku (2026-10-20) : environ 5 fois moins cher que Sonnet, largement suffisant pour traduire un texte fourni
-    model: "claude-haiku-5-5",
-    max_tokens: MAX_TOKENS[fieldType],
-    system: buildSystemPrompt(fieldType, sourceLang, targetLang),
-    messages: [{ role: "user", content: text }],
-  });
-
-  // Certains modèles renvoient d'abord un bloc de réflexion vide : lire le premier bloc de TEXTE, pas content[0]
-  const textBlock = msg.content.find((b) => b.type === "text");
-  const raw = textBlock && textBlock.type === "text" ? textBlock.text.trim() : "";
-  if (!raw) throw new Error("Traduction vide.");
-  // Une traduction coupée par la limite de longueur ne doit jamais être enregistrée
-  if (msg.stop_reason === "max_tokens") throw new Error("Traduction coupée avant la fin.");
-  return raw.replace(/^["«»"]+|["«»"]+$/g, "").trim();
+  // Deux essais : si la réponse est vide ou coupée, on redemande avec une limite doublée
+  let lastError = "Traduction vide.";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const msg = await anthropic.messages.create({
+      // Haiku (2026-10-20) : environ 5 fois moins cher que Sonnet, largement suffisant pour traduire un texte fourni
+      model: "claude-haiku-5-5",
+      max_tokens: MAX_TOKENS[fieldType] * attempt,
+      system: buildSystemPrompt(fieldType, sourceLang, targetLang),
+      messages: [{ role: "user", content: text }],
+    });
+    // Certains modèles renvoient d'abord un bloc de réflexion : lire le premier bloc de TEXTE, pas content[0]
+    const textBlock = msg.content.find((b) => b.type === "text");
+    const raw = textBlock && textBlock.type === "text" ? textBlock.text.trim() : "";
+    // Une traduction coupée par la limite de longueur ne doit jamais être enregistrée
+    if (msg.stop_reason === "max_tokens") { lastError = raw ? "Traduction coupée avant la fin." : "Traduction vide (limite de longueur atteinte)."; continue; }
+    if (!raw) { lastError = `Traduction vide (réponse sans texte, arrêt : ${msg.stop_reason ?? "inconnu"}).`; continue; }
+    return raw.replace(/^["«»"]+|["«»"]+$/g, "").trim();
+  }
+  throw new Error(lastError);
 }
