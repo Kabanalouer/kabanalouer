@@ -441,7 +441,7 @@ export default function ContactForm({
             className="flex flex-col items-start gap-0.5 px-3 py-2 text-left border-r border-[#ebebeb] hover:bg-charcoal-50 transition-colors"
           >
             <span className="text-xs font-medium text-charcoal-400">{t("arrivalLabel")}</span>
-            <span className={`text-sm ${checkin ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
+            <span className={`text-sm ${checkin ? "text-charcoal-800 font-medium" : "text-charcoal-400"}`}>
               {checkin ? formatShort(checkin, monthNamesShort, locale) : t("addDate")}
             </span>
           </button>
@@ -451,7 +451,7 @@ export default function ContactForm({
             className="flex flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-charcoal-50 transition-colors"
           >
             <span className="text-xs font-medium text-charcoal-400">{t("departureLabel")}</span>
-            <span className={`text-sm ${checkout ? "text-charcoal-800 font-medium" : "text-charcoal-300"}`}>
+            <span className={`text-sm ${checkout ? "text-charcoal-800 font-medium" : "text-charcoal-400"}`}>
               {checkout ? formatShort(checkout, monthNamesShort, locale) : t("addDate")}
             </span>
           </button>
@@ -568,7 +568,7 @@ export default function ContactForm({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-300 text-charcoal-800"
+          className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none placeholder-charcoal-400 text-charcoal-800"
         />
       )}
 
@@ -585,7 +585,7 @@ export default function ContactForm({
               autoComplete="given-name"
               maxLength={60}
               aria-label={t("guestNameLabel")}
-              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
+              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-400 text-charcoal-800"
             />
             <input
               type="email"
@@ -595,7 +595,7 @@ export default function ContactForm({
               autoComplete="email"
               maxLength={200}
               aria-label={t("guestEmailLabel")}
-              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-300 text-charcoal-800"
+              className="w-full px-3 py-2.5 rounded-xl border border-[#ebebeb] text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-charcoal-400 text-charcoal-800"
             />
           </div>
           {/* Champ piège : invisible pour un humain */}
