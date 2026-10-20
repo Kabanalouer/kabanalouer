@@ -46,15 +46,15 @@
     },
     {
       "path": "/api/cron/publish-unclaimed",
-      "schedule": "0 14 * * *"
+      "schedule": "*/10 9-16 * * *"
     },
     {
       "path": "/api/cron/import-queue",
-      "schedule": "3-59/15 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/send-invitations",
-      "schedule": "30 14 * * *"
+      "schedule": "0 12,13 * * *"
     }
   ]
 }

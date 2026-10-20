@@ -145,16 +145,16 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   {
     id: "claim-invitation", category: "proprio", group: "Fiches non revendiquées",
     name: "Invitation à activer sa fiche",
-    when: "Chaque jour vers 10 h, après la publication des fiches ; tu peux aussi l’envoyer à la main depuis Admin → Invitations.",
+    when: "Chaque jour à 8 h, après la publication des fiches du matin ; tu peux aussi l’envoyer à la main depuis Admin → Invitations.",
     conditions: "Part de info@kabanalouer.ca, seulement pour une fiche non revendiquée et publiée, une seule invitation par adresse (30 par jour au plus). Contient le lien de la fiche, « Activer ma fiche » (gratuitement tant que l’offre de lancement est en cours) et « Retirer ma fiche ». Un pixel invisible compte les ouvertures (indicatif).",
-    mechanism: "daily", dailyAt: "vers 10 h", testable: true,
+    mechanism: "daily", dailyAt: "8 h", testable: true,
   },
   {
     id: "claim-invitation-reminder", category: "proprio", group: "Fiches non revendiquées",
     name: "Relance de l’invitation (3 jours plus tard)",
     when: "Chaque jour vers 10 h, pour les adresses invitées il y a 3 jours ou plus dont la fiche n’est pas revendiquée.",
     conditions: "Une seule relance par adresse (30 par jour au plus). Elle apparaît aussi dans Admin → Invitations, où tu peux l’envoyer à la main.",
-    mechanism: "daily", dailyAt: "vers 10 h", testable: true,
+    mechanism: "daily", dailyAt: "8 h", testable: true,
   },
   {
     id: "review-received", category: "proprio", group: "Demandes et avis",
@@ -333,6 +333,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "Chaque lundi vers 7 h (6 h en hiver), ou avec « Générer un rapport maintenant » dans Admin → Rapports.",
     conditions: "Rédigé par Claude à partir des chiffres de la semaine et des erreurs ouvertes. Le test envoie un rapport d’exemple, sans appeler l’IA.",
     mechanism: "weekly", dailyAt: "7 h le lundi", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+  },
+  {
+    id: "unclaimed-published", category: "interne", group: "Équipe",
+    name: "Chalets du jour en ligne",
+    subject: { fr: "{n} nouveaux chalets en ligne sur Kabanalouer" },
+    when: "Le matin, dès que les fiches importées du jour sont mises en ligne (cron publish-unclaimed, à partir de 6 h, au plus tard vers 10 h).",
+    conditions: "Un seul avis par mise en ligne, avec la liste des chalets (titre, ville, région, lien). Au plus 15 fiches par jour.",
+    mechanism: "daily", dailyAt: "entre 6 h et 10 h", testable: false, fixedRecipient: "simon.authentik@gmail.com",
   },
   {
     id: "error-alert", category: "interne", group: "Équipe",
