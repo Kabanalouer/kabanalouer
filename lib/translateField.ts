@@ -4,11 +4,11 @@ export type Lang = "fr" | "en";
 export type FieldType = "title" | "description" | "caption" | "roomName" | "bio";
 
 const MAX_TOKENS: Record<FieldType, number> = {
-  title: 150,
-  description: 2048,
-  caption: 300,
-  roomName: 150,
-  bio: 400,
+  title: 400,
+  description: 4000,
+  caption: 600,
+  roomName: 300,
+  bio: 800,
 };
 
 const LANG_NAME: Record<Lang, string> = {
@@ -53,13 +53,18 @@ export async function translateField({
 }): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const msg = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    // Haiku (2026-10-20) : environ 5 fois moins cher que Sonnet, largement suffisant pour traduire un texte fourni
+    model: "claude-haiku-5-5",
     max_tokens: MAX_TOKENS[fieldType],
     system: buildSystemPrompt(fieldType, sourceLang, targetLang),
     messages: [{ role: "user", content: text }],
   });
 
-  const raw = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
+  // Certains modèles renvoient d'abord un bloc de réflexion vide : lire le premier bloc de TEXTE, pas content[0]
+  const textBlock = msg.content.find((b) => b.type === "text");
+  const raw = textBlock && textBlock.type === "text" ? textBlock.text.trim() : "";
   if (!raw) throw new Error("Traduction vide.");
+  // Une traduction coupée par la limite de longueur ne doit jamais être enregistrée
+  if (msg.stop_reason === "max_tokens") throw new Error("Traduction coupée avant la fin.");
   return raw.replace(/^["«»"]+|["«»"]+$/g, "").trim();
 }

@@ -610,15 +610,15 @@ export async function descriptionFromFacts(facts: DescriptionFacts, original: st
   let note = "Rédaction à partir des faits : aucun essai valide.";
   if (process.env.ANTHROPIC_API_KEY) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const msg = await anthropic.messages.create({
-          model: "claude-sonnet-5-5",
+          model: "claude-haiku-5-5",
           max_tokens: 2000,
           system: [{ type: "text", text: FACTS_SYSTEM, cache_control: { type: "ephemeral" } }],
           messages: [{ role: "user", content: `<faits>\n${JSON.stringify(facts)}\n</faits>${attempt > 1 ? `\n\nATTENTION : ${note} Corrige-le.` : ""}` }],
         });
-        addUsage("description", "sonnet", msg.usage);
+        addUsage("description", "haiku", msg.usage);
         const text = cleanDescription(textOf(msg)).trim();
         if (text.length < 40) { note = "Texte trop court."; continue; }
         if (msg.stop_reason === "max_tokens" || !looksComplete(text)) { note = "Texte coupé avant la fin."; continue; }
@@ -649,7 +649,7 @@ export async function rewriteDescription(original: string | null, facts?: Descri
   const originalNumbers = numbersIn(original);
   let best: { text: string; overlap: number } | null = null;
   let note = "Aucune réécriture valide.";
-  const MAX_ATTEMPTS_REWRITE = 4;
+  const MAX_ATTEMPTS_REWRITE = 2;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS_REWRITE; attempt++) {
     // Chaque reprise dit précisément ce qui n'allait pas dans l'essai précédent
