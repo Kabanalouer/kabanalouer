@@ -332,6 +332,34 @@ async function prepareImage(url: string): Promise<PreparedPhoto | null> {
   }
 }
 
+// ── Mesure de la consommation d'IA ───────────────────────────────────────────
+// Chaque appel d'IA de l'import ajoute ses jetons à ce compteur (réinitialisé au début de chaque ligne de la
+// file, une seule ligne à la fois) ; le total est noté dans import_raw_data.ia_usage pour mesurer le coût réel
+// par fiche. Le coût en dollars est une ESTIMATION (tarifs publics approximatifs par million de jetons).
+type Usage = { calls: number; input: number; output: number };
+const usageTally: Record<string, Usage> = {};
+let cacheHits = 0;
+function addUsage(kind: string, model: string, usage?: { input_tokens?: number; output_tokens?: number } | null) {
+  const key = `${kind}:${model.includes("haiku") ? "haiku" : "sonnet"}`;
+  const u = (usageTally[key] ??= { calls: 0, input: 0, output: 0 });
+  u.calls += 1;
+  u.input += usage?.input_tokens ?? 0;
+  u.output += usage?.output_tokens ?? 0;
+}
+const PRICE_PER_MILLION: Record<string, { in: number; out: number }> = { sonnet: { in: 3, out: 15 }, haiku: { in: 1, out: 5 } };
+function usageSnapshot() {
+  let cost = 0;
+  for (const [key, u] of Object.entries(usageTally)) {
+    const p = PRICE_PER_MILLION[key.split(":")[1]];
+    cost += (u.input * p.in + u.output * p.out) / 1_000_000;
+  }
+  return { ...JSON.parse(JSON.stringify(usageTally)), cache_hits: cacheHits, cout_estime_usd: Math.round(cost * 1000) / 1000 };
+}
+function resetUsage() {
+  for (const k of Object.keys(usageTally)) delete usageTally[k];
+  cacheHits = 0;
+}
+
 // ── Filigranes ──────────────────────────────────────────────────────────────
 // Les photos des sites sources portent souvent un filigrane (« ChaletsAuQuebec.com », logo de
 // photographe…). Règle de Simon (2026-10-19) : jamais en ligne. Pour économiser l'IA (2026-10-20) :
@@ -391,6 +419,7 @@ export async function detectWatermark(webp: Buffer, model: string = MODEL_STRONG
           },
         ],
       });
+      addUsage("filigrane", model, msg.usage);
       const text = textOf(msg);
       const o = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)) as Record<string, unknown>;
       const found = o.watermark === true;
@@ -440,6 +469,7 @@ export async function cleanPhoto(webp: Buffer, cache?: AdminLike): Promise<Buffe
   const key = `wm:${createHash("sha1").update(webp).digest("hex")}`;
   const cached = await cacheGet<Decision>(cache, key);
   if (cached) {
+    cacheHits += 1;
     if (cached.kind === "keep") return webp;
     if (cached.kind === "drop") return null;
     return applyCrop(webp, cached.fraction);
@@ -588,6 +618,7 @@ export async function descriptionFromFacts(facts: DescriptionFacts, original: st
           system: [{ type: "text", text: FACTS_SYSTEM, cache_control: { type: "ephemeral" } }],
           messages: [{ role: "user", content: `<faits>\n${JSON.stringify(facts)}\n</faits>${attempt > 1 ? `\n\nATTENTION : ${note} Corrige-le.` : ""}` }],
         });
+        addUsage("description", "sonnet", msg.usage);
         const text = cleanDescription(textOf(msg)).trim();
         if (text.length < 40) { note = "Texte trop court."; continue; }
         if (msg.stop_reason === "max_tokens" || !looksComplete(text)) { note = "Texte coupé avant la fin."; continue; }
@@ -630,6 +661,7 @@ export async function rewriteDescription(original: string | null, facts?: Descri
         system: [{ type: "text", text: REWRITE_SYSTEM, cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: `<texte_origine>\n${original.slice(0, 6000)}\n</texte_origine>${retry}` }],
       });
+      addUsage("description", "sonnet", msg.usage);
       const text = cleanDescription(textOf(msg)).trim();
       if (text.length < 40) { note = "Texte trop court."; continue; }
       if (msg.stop_reason === "max_tokens" || !looksComplete(text)) { note = "Texte coupé avant la fin."; continue; }
@@ -677,6 +709,7 @@ async function reject(admin: Admin, row: QueueRow, error: string) {
 // Une ligne de la file → une fiche non revendiquée non publiée. Les erreurs passagères
 // (photos, IA) laissent la ligne 'pending' jusqu'à MAX_ATTEMPTS essais.
 export async function importQueueRow(admin: Admin, row: QueueRow, systemId: string): Promise<{ outcome: "imported" | "rejected" | "retry"; error?: string }> {
+  resetUsage();
   const uploaded: string[] = [];
   try {
     const parsed = normalizePayload(row.payload);
@@ -819,6 +852,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         description_ia: { overlap: description.overlap, attempts: description.attempts, note: description.note },
         equipements_non_reconnus: d.unmatchedAmenities,
         photos_filigrane_verifiees: true,
+        ia_usage: usageSnapshot(),
         photos_ecartees_filigrane: checked.dropped,
         photos_agrandies: upscaled.enhanced,
         photos_importees: photos.length,
