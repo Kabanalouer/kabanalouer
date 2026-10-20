@@ -152,7 +152,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   {
     id: "claim-invitation-reminder", category: "proprio", group: "Fiches non revendiquées",
     name: "Relance de l’invitation (3 jours plus tard)",
-    when: "Chaque jour vers 10 h, pour les adresses invitées il y a 3 jours ou plus dont la fiche n’est pas revendiquée.",
+    when: "Chaque jour à 8 h (heure de Montréal), pour les adresses invitées il y a 3 jours ou plus dont la fiche n’est pas revendiquée.",
     conditions: "Une seule relance par adresse (30 par jour au plus). Elle apparaît aussi dans Admin → Invitations, où tu peux l’envoyer à la main.",
     mechanism: "daily", dailyAt: "8 h", testable: true,
   },

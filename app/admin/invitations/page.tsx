@@ -55,7 +55,7 @@ export default async function AdminInvitationsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-charcoal-800">Invitations</h1>
         <p className="text-sm text-charcoal-400 mt-0.5">
-          Invitations à activer leur fiche, envoyées aux propriétaires des fiches non revendiquées publiées. L’envoi est automatique chaque jour vers 10 h (invitation, puis une relance après {REMINDER_DELAY_DAYS} jours, une seule de chaque par adresse) ; les boutons ci-dessous permettent d’envoyer à la main avant.
+          Invitations à activer leur fiche, envoyées aux propriétaires des fiches non revendiquées publiées. L’invitation part automatiquement dès que la fiche est en ligne, puis une relance après {REMINDER_DELAY_DAYS} jours (à 8 h, heure de Montréal), une seule de chaque par adresse ; les boutons ci-dessous permettent d’envoyer à la main.
         </p>
       </div>
 

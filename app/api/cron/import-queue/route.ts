@@ -8,7 +8,7 @@ export const maxDuration = 300;
 // ré-encodage des photos + appels à l'IA, de 30 s à 1 min).
 const START_BUDGET_MS = 200_000;
 
-// GET — appelé par le cron Vercel (toutes les 15 minutes) : transforme les lignes
+// GET — appelé par le cron Vercel (toutes les 5 minutes) : transforme les lignes
 // 'pending' de listing_import_queue en fiches non revendiquées, non publiées, détenues
 // par le compte système. Voir lib/importQueue.ts. La publication (15 par jour) est faite
 // par /api/cron/publish-unclaimed.
