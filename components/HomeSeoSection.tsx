@@ -33,17 +33,17 @@ export default async function HomeSeoSection() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 w-full">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
-      <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-5 max-w-3xl">{t("title")}</h2>
-      <div className="max-w-3xl space-y-4 text-base leading-relaxed text-charcoal-600">
+      <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-6">{t("title")}</h2>
+      <div className="space-y-5 text-base leading-relaxed text-charcoal-600">
         <p>{t("p1")}</p>
         <p>{t("p2")}</p>
       </div>
 
       {regionLinks.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-2" aria-label={t("regionsLabel")}>
+        <ul className="mt-10 flex flex-wrap gap-3" aria-label={t("regionsLabel")}>
           {regionLinks.map((l) => (
             <li key={l.href}>
               <Link href={l.href} className="inline-block rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-300 hover:text-charcoal-800 transition-colors">
@@ -53,16 +53,16 @@ export default async function HomeSeoSection() {
           ))}
         </ul>
       )}
-      <p className="mt-4 text-base">
+      <p className="mt-8 text-base">
         <Link href={localePath("/chalets", locale)} className="font-semibold text-primary underline underline-offset-4 hover:text-primary-dark">
           {t("browseAll")}
         </Link>
       </p>
 
-      <h3 className="mt-12 mb-4 text-heading-3 font-semibold text-charcoal-800">{t("faqTitle")}</h3>
-      <div className="max-w-3xl divide-y divide-[#ebebeb] border-y border-[#ebebeb]">
+      <h2 className="mt-20 text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-8">{t("faqTitle")}</h2>
+      <div className="divide-y divide-[#ebebeb] border-y border-[#ebebeb]">
         {faq.map((f) => (
-          <details key={f.question} className="group py-4">
+          <details key={f.question} className="group py-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-charcoal-800">
               {f.question}
               <svg className="h-5 w-5 shrink-0 text-charcoal-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
