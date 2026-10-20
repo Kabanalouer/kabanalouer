@@ -40,7 +40,7 @@ export async function sendUnclaimedPublishedNotice({
       ...lines,
       "",
       waiting > 0 ? `Encore ${waiting} fiche(s) importée(s) en attente de publication.` : null,
-      "Les invitations aux propriétaires partent automatiquement à 8 h (heure de Montréal).",
+      "Les invitations aux propriétaires partent tout de suite après la mise en ligne.",
       `Suivi : ${ADMIN_URL}`,
     ].filter((l) => l !== null).join("\n"),
   });

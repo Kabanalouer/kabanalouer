@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createClient as createAdminClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { PhotoItem } from "@/lib/photo";
 import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendUnclaimedPublishedNotice } from "@/lib/emails/unclaimedPublished";
+import { AUTO_INVITATIONS_ENABLED, listInvitationCandidates, sendInvitation } from "@/lib/claims/invitations";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
+
+// Invitations envoyées par passage (limite d'envoi de Resend : une toutes les 650 ms).
+const MAX_INVITES_PER_RUN = 30;
+const INVITE_DELAY_MS = 650;
 
 // Nombre maximal de fiches non revendiquées mises en ligne par jour (heure de Montréal).
 const PUBLISH_PER_DAY = 15;
@@ -38,19 +43,53 @@ function montrealParts(now: Date): { date: string; hour: number } {
 // Une fiche est publiable si : non revendiquée, ni de test ni retirée, CITQ à 6 chiffres
 // et adresse de contact connus (la base l'exige aussi, voir listings_unclaimed_publish_check),
 // un titre, une description, au moins 5 photos et la vérification des filigranes faite (import_raw_data.photos_filigrane_verifiees). Rien d'autre n'est jamais publié par ce cron.
+//
+// Invitations (règle de Simon, 2026-10-20) : le propriétaire reçoit son invitation dès que
+// sa fiche est en ligne, sans heure fixe. À chaque passage, après la publication, on envoie
+// l'invitation à toute adresse qui a une fiche non revendiquée publiée et pas encore
+// d'invitation (même si la fiche a été publiée à la main). Mêmes règles et même clé unique
+// que send-invitations et Admin → Invitations : jamais deux invitations par adresse.
+// Les relances (3 jours après) restent dans send-invitations.
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { date: today, hour } = montrealParts(new Date());
-  if (hour < EARLIEST_HOUR) return NextResponse.json({ ok: true, skipped: "Trop tôt." });
-
   const admin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  const publish = await publishToday(admin);
+  if ("error" in publish) return NextResponse.json({ error: publish.error }, { status: 500 });
+
+  let invites = { sent: 0, skipped: 0, errors: 0 };
+  if (AUTO_INVITATIONS_ENABLED) invites = await sendNewInvitations(admin);
+
+  return NextResponse.json({ ok: true, ...publish, invites });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Admin = SupabaseClient<any, "public", "public", any, any>;
+
+async function sendNewInvitations(admin: Admin) {
+  const candidates = await listInvitationCandidates(admin, "invite");
+  const batch = candidates.slice(0, MAX_INVITES_PER_RUN);
+  const out = { sent: 0, skipped: 0, errors: 0 };
+  for (let i = 0; i < batch.length; i++) {
+    const r = await sendInvitation(admin, batch[i], "invite");
+    if (r === "sent") out.sent++;
+    else if (r === "skipped") out.skipped++;
+    else out.errors++;
+    if (i < batch.length - 1) await new Promise((res) => setTimeout(res, INVITE_DELAY_MS));
+  }
+  return out;
+}
+
+async function publishToday(admin: Admin): Promise<{ error: string } | { published: number; waiting?: number; skipped?: string; pending?: number }> {
+  const { date: today, hour } = montrealParts(new Date());
+  if (hour < EARLIEST_HOUR) return { published: 0, skipped: "Trop tôt." };
 
   // Plafond quotidien : fiches déjà mises en ligne aujourd'hui par ce cron
   const { count: publishedToday, error: countError } = await admin
@@ -60,10 +99,10 @@ export async function GET(request: NextRequest) {
     .eq("import_raw_data->>publie_le", today);
   if (countError) {
     console.error("[cron publish-unclaimed]", countError.message);
-    return NextResponse.json({ error: "Query failed" }, { status: 500 });
+    return { error: "Query failed" };
   }
   const remaining = PUBLISH_PER_DAY - (publishedToday ?? 0);
-  if (remaining <= 0) return NextResponse.json({ ok: true, skipped: "Plafond du jour atteint." });
+  if (remaining <= 0) return { published: 0, skipped: "Plafond du jour atteint." };
 
   // On attend la fin de l'import du lot du jour (une seule mise en ligne et un seul avis)
   if (hour < DEADLINE_HOUR) {
@@ -72,7 +111,7 @@ export async function GET(request: NextRequest) {
       .select("id", { count: "exact", head: true })
       .eq("status", "pending")
       .lt("attempts", 5);
-    if ((pending ?? 0) > 0) return NextResponse.json({ ok: true, skipped: "Import en cours.", pending });
+    if ((pending ?? 0) > 0) return { published: 0, skipped: "Import en cours.", pending: pending ?? 0 };
   }
 
   const { data: candidates, error } = await admin
@@ -88,7 +127,7 @@ export async function GET(request: NextRequest) {
     .limit(200);
   if (error) {
     console.error("[cron publish-unclaimed]", error.message);
-    return NextResponse.json({ error: "Query failed" }, { status: 500 });
+    return { error: "Query failed" };
   }
 
   const ready = (candidates ?? [])
@@ -103,7 +142,7 @@ export async function GET(request: NextRequest) {
     )
     .slice(0, remaining);
 
-  if (ready.length === 0) return NextResponse.json({ ok: true, published: 0, waiting: candidates?.length ?? 0 });
+  if (ready.length === 0) return { published: 0, waiting: candidates?.length ?? 0 };
 
   // Une mise à jour par fiche : on ajoute publie_le à import_raw_data sans écraser le reste
   const published: typeof ready = [];
@@ -148,5 +187,5 @@ export async function GET(request: NextRequest) {
     if (mailError) console.error("[cron publish-unclaimed] avis non envoyé", mailError.message);
   }
 
-  return NextResponse.json({ ok: true, published: published.length, waiting });
+  return { published: published.length, waiting };
 }

@@ -145,9 +145,9 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
   {
     id: "claim-invitation", category: "proprio", group: "Fiches non revendiquées",
     name: "Invitation à activer sa fiche",
-    when: "Chaque jour à 8 h, après la publication des fiches du matin ; tu peux aussi l’envoyer à la main depuis Admin → Invitations.",
+    when: "Dès que la fiche est en ligne (vérifié aux 10 minutes le jour, avec rattrapage à 8 h) ; tu peux aussi l’envoyer à la main depuis Admin → Invitations.",
     conditions: "Part de info@kabanalouer.ca, seulement pour une fiche non revendiquée et publiée, une seule invitation par adresse (30 par jour au plus). Contient le lien de la fiche, « Activer ma fiche » (gratuitement tant que l’offre de lancement est en cours) et « Retirer ma fiche ». Un pixel invisible compte les ouvertures (indicatif).",
-    mechanism: "daily", dailyAt: "8 h", testable: true,
+    mechanism: "event", testable: true,
   },
   {
     id: "claim-invitation-reminder", category: "proprio", group: "Fiches non revendiquées",
