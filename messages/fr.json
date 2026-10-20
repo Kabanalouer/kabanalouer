@@ -834,8 +834,8 @@
   },
   "home": {
     "badge": "La marketplace de la location de chalet au Québec",
-    "heroTitle": "Payez moins cher pour votre location de chalet au Québec.",
-    "heroSubtitle": "Contactez les propriétaires directement.",
+    "heroTitle": "Location de chalet au Québec",
+    "heroSubtitle": "Payez moins cher : contactez les propriétaires directement.",
     "featuredTitle": "Chalets en vedette",
     "pickLabel": "Tout juste arrivés",
     "pickTitle": "Les nouveaux chalets sur Kabanalouer",
@@ -864,10 +864,10 @@
     "ownersDesc": "Votre première année est gratuite pour toute annonce publiée avant la date limite.",
     "ownersDescRegular": "{price} par année. Aucune commission sur vos réservations, aucuns frais de transaction.",
     "ownersDeadline": "Jusqu’au {date}",
-    "metaTitle": "Chalets à louer au Québec",
-    "metaDesc": "Chalets à louer au Québec : spa, bord de l'eau, chiens acceptés. Contact direct avec les propriétaires, aucuns frais de service pour les voyageurs.",
-    "ogTitle": "Kabanalouer — Location de chalets au Québec",
-    "ogDesc": "Chalets à louer au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs."
+    "metaTitle": "Location de chalet au Québec",
+    "metaDesc": "Location de chalet au Québec : spa, bord de l’eau, chiens acceptés. Contact direct avec les propriétaires, aucuns frais de service pour les voyageurs.",
+    "ogTitle": "Kabanalouer — Location de chalet au Québec",
+    "ogDesc": "Location de chalet au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs."
   },
   "chaletsPage": {
     "metaTitle": "Chalets au Québec — Recherche",

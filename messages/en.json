@@ -834,8 +834,8 @@
   },
   "home": {
     "badge": "Quebec's cabin rental marketplace",
-    "heroTitle": "Pay less for your Quebec cabin rental.",
-    "heroSubtitle": "Contact owners directly.",
+    "heroTitle": "Cabin rentals in Quebec",
+    "heroSubtitle": "Pay less: contact owners directly.",
     "featuredTitle": "Featured cabins",
     "pickLabel": "Just arrived",
     "pickTitle": "New cabins on Kabanalouer",
@@ -864,10 +864,10 @@
     "ownersDesc": "Your first year is free for every listing published before the deadline.",
     "ownersDescRegular": "{price} per year. No commission on your bookings, no transaction fees.",
     "ownersDeadline": "Until {date}",
-    "metaTitle": "Quebec Cabin Rentals",
-    "metaDesc": "Cabins for rent in Quebec: hot tub, waterfront, dog-friendly. Direct contact with owners, no service fees for travellers.",
-    "ogTitle": "Kabanalouer — Quebec Cabin Rentals",
-    "ogDesc": "Cabins for rent in Quebec, in direct contact with the owners. No service fees for travellers."
+    "metaTitle": "Cabin Rentals in Quebec",
+    "metaDesc": "Cabin rentals in Quebec: hot tub, waterfront, dog-friendly. Direct contact with owners, no service fees for travellers.",
+    "ogTitle": "Kabanalouer — Cabin Rentals in Quebec",
+    "ogDesc": "Cabin rentals in Quebec, in direct contact with the owners. No service fees for travellers."
   },
   "chaletsPage": {
     "metaTitle": "Quebec Cabins — Search",

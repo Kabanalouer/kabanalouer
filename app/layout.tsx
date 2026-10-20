@@ -44,12 +44,12 @@ export async function generateMetadata(): Promise<Metadata> {
     title: {
       default: isEn
         ? "Kabanalouer — Cabin rentals in Quebec"
-        : "Kabanalouer — Location de chalets au Québec",
+        : "Kabanalouer — Location de chalet au Québec",
       template: "%s | Kabanalouer",
     },
     description: isEn
       ? "Cabins for rent in Quebec, in direct contact with the owners. No service fees for travellers."
-      : "Chalets à louer au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs.",
+      : "Location de chalet au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs.",
     keywords: isEn
       ? ["cabin", "Quebec", "rental", "vacation", "nature", "Laurentians", "Charlevoix", "Eastern Townships"]
       : ["chalet", "Québec", "location", "vacances", "nature", "Laurentides", "Charlevoix", "Estrie"],
