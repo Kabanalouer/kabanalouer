@@ -129,7 +129,7 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
       (l) =>
         /^[0-9]{6}$/.test((l.citq_number as string) ?? "") &&
         ((l.title as string | null) ?? "").trim().length > 0 &&
-        ((l.description as string | null) ?? "").trim().length >= 40 && // jamais en ligne sans description
+        /[.!?…»)]$/.test(((l.description as string | null) ?? "").trim()) && ((l.description as string | null) ?? "").trim().length >= 40 && // jamais en ligne sans description complète (finit par une fin de phrase)
         ((l.photos ?? []) as PhotoItem[]).length >= 5 &&
         // Jamais en ligne sans la vérification des filigranes (lib/importQueue.ts, cleanPhoto)
         (l.import_raw_data as { photos_filigrane_verifiees?: boolean } | null)?.photos_filigrane_verifiees === true
