@@ -6,8 +6,26 @@ import Image from "next/image";
 import { getScoreLevel } from "@/lib/listingScore";
 import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 
+export type Origin = "created" | "claimed" | "unclaimed" | "removed";
+
+export const ORIGIN_LABELS: Record<Origin, string> = {
+  created: "Créées par le proprio",
+  claimed: "Revendiquées",
+  unclaimed: "Non revendiquées",
+  removed: "Retirées",
+};
+const ORIGIN_BADGE: Record<Origin, { label: string; className: string }> = {
+  created: { label: "Créée par le proprio", className: "bg-charcoal-100 text-charcoal-600" },
+  claimed: { label: "Revendiquée", className: "bg-primary/10 text-primary" },
+  unclaimed: { label: "Non revendiquée", className: "bg-warning-50 text-warning-700" },
+  removed: { label: "Retirée par son proprio", className: "bg-error-50 text-error-700" },
+};
+const ORIGIN_ORDER: Record<Origin, number> = { created: 0, claimed: 1, unclaimed: 2, removed: 3 };
+
 export type ListingRow = {
   id: string;
+  origin: Origin;
+  isTest: boolean;
   title: string;
   region: string;
   photoUrl: string | null;
@@ -17,7 +35,7 @@ export type ListingRow = {
   hostName: string;
 };
 
-type SortKey = "createdAt" | "score" | "status";
+type SortKey = "createdAt" | "score" | "status" | "origin";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 20;
@@ -40,6 +58,7 @@ export default function AdminListingsClient({
   defaultSearch?: string;
 }) {
   const [status, setStatus] = useState<"all" | "published" | "draft">("all");
+  const [origin, setOrigin] = useState<"all" | Origin>("all");
   const [region, setRegion] = useState("");
   const [search, setSearch] = useState(defaultSearch);
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
@@ -62,6 +81,7 @@ export default function AdminListingsClient({
       .filter((l) => {
         if (status === "published" && !l.isPublished) return false;
         if (status === "draft" && l.isPublished) return false;
+        if (origin !== "all" && l.origin !== origin) return false;
         if (region && l.region !== region) return false;
         if (q && !l.title.toLowerCase().includes(q) && !l.hostName.toLowerCase().includes(q)) return false;
         return true;
@@ -71,9 +91,16 @@ export default function AdminListingsClient({
         if (sortKey === "createdAt") cmp = a.createdAt.localeCompare(b.createdAt);
         else if (sortKey === "score") cmp = a.score - b.score;
         else if (sortKey === "status") cmp = Number(a.isPublished) - Number(b.isPublished);
+        else if (sortKey === "origin") cmp = ORIGIN_ORDER[a.origin] - ORIGIN_ORDER[b.origin] || b.createdAt.localeCompare(a.createdAt);
         return sortDir === "asc" ? cmp : -cmp;
       });
-  }, [listings, status, region, search, sortKey, sortDir]);
+  }, [listings, status, origin, region, search, sortKey, sortDir]);
+
+  const originCounts = useMemo(() => {
+    const c: Record<Origin, number> = { created: 0, claimed: 0, unclaimed: 0, removed: 0 };
+    for (const l of listings) c[l.origin]++;
+    return c;
+  }, [listings]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -95,6 +122,25 @@ export default function AdminListingsClient({
 
   return (
     <div>
+      {/* Origine : créées par le proprio / revendiquées / non revendiquées (importées) / retirées */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {(["all", "created", "claimed", "unclaimed", "removed"] as const).map((o) => {
+          const n = o === "all" ? listings.length : originCounts[o];
+          if (o === "removed" && n === 0) return null;
+          return (
+            <button
+              key={o}
+              onClick={() => handleFilterChange(() => setOrigin(o))}
+              className={`text-sm px-4 py-2 rounded-full font-semibold border transition-colors ${
+                origin === o ? "bg-charcoal-800 text-white border-charcoal-800" : "bg-white text-charcoal-700 border-[#ebebeb] hover:border-charcoal-300"
+              }`}
+            >
+              {o === "all" ? "Toutes" : ORIGIN_LABELS[o]} <span className={origin === o ? "text-white/70" : "text-charcoal-400"}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         {/* Status pills */}
@@ -145,31 +191,37 @@ export default function AdminListingsClient({
       {/* Table */}
       <div className="bg-white rounded-2xl border border-[#ebebeb] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="border-b border-[#ebebeb]">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide w-14">Photo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Titre</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Région</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide w-14">Photo</th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Titre</th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
+                  className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
+                  onClick={() => toggleSort("origin")}
+                >
+                  Origine <SortIcon active={sortKey === "origin"} dir={sortDir} />
+                </th>
+                <th className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Région</th>
+                <th
+                  className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
                   onClick={() => toggleSort("score")}
                 >
                   Score <SortIcon active={sortKey === "score"} dir={sortDir} />
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600"
+                  className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600"
                   onClick={() => toggleSort("status")}
                 >
                   Statut <SortIcon active={sortKey === "status"} dir={sortDir} />
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
+                  className="text-left px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
                   onClick={() => toggleSort("createdAt")}
                 >
                   Créée le <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
                 </th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Actions</th>
+                <th className="text-right px-3 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -178,7 +230,7 @@ export default function AdminListingsClient({
                 return (
                   <tr key={l.id} className="border-b border-[#ebebeb] last:border-0 hover:bg-charcoal-50 transition-colors">
                     {/* Photo */}
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <div className="w-10 h-10 rounded-lg bg-charcoal-100 overflow-hidden shrink-0">
                         {l.photoUrl ? (
                           <Image src={l.photoUrl} alt={l.title} width={40} height={40} className="w-full h-full object-cover" />
@@ -193,21 +245,29 @@ export default function AdminListingsClient({
                     </td>
 
                     {/* Titre + proprio */}
-                    <td className="px-4 py-3 max-w-[220px]">
+                    <td className="px-3 py-3 max-w-[190px]">
                       <p className="font-medium text-charcoal-800 truncate">{l.title || "Sans titre"}</p>
                       <p className="text-xs text-charcoal-400 truncate">{l.hostName}</p>
                     </td>
 
+                    {/* Origine */}
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${ORIGIN_BADGE[l.origin].className}`}>
+                        {ORIGIN_BADGE[l.origin].label}
+                      </span>
+                      {l.isTest && <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-charcoal-100 text-charcoal-500">Test</span>}
+                    </td>
+
                     {/* Région */}
-                    <td className="px-4 py-3 text-charcoal-500 whitespace-nowrap">{l.region || "—"}</td>
+                    <td className="px-3 py-3 text-charcoal-500 whitespace-nowrap">{l.region || "—"}</td>
 
                     {/* Score */}
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <span className="text-sm font-semibold" style={{ color }}>{l.score}</span>
                     </td>
 
                     {/* Statut */}
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                         l.isPublished ? "bg-success-50 text-success-700" : "bg-charcoal-100 text-charcoal-500"
                       }`}>
@@ -216,12 +276,12 @@ export default function AdminListingsClient({
                     </td>
 
                     {/* Date */}
-                    <td className="px-4 py-3 text-charcoal-400 whitespace-nowrap">
+                    <td className="px-3 py-3 text-charcoal-400 whitespace-nowrap">
                       {new Date(l.createdAt).toLocaleDateString("fr-CA", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <td className="px-3 py-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-3">
                         <Link
                           href={`/dashboard/listings/${l.id}/edit`}
@@ -235,7 +295,7 @@ export default function AdminListingsClient({
                             target="_blank"
                             className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors"
                           >
-                            Voir la fiche ↗
+                            Voir ↗
                           </Link>
                         )}
                       </div>
@@ -245,7 +305,7 @@ export default function AdminListingsClient({
               })}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-charcoal-400">
+                  <td colSpan={8} className="px-4 py-10 text-center text-charcoal-400">
                     Aucune annonce ne correspond aux filtres sélectionnés.
                   </td>
                 </tr>

@@ -33,6 +33,13 @@ export default async function AdminListingsPage({
     // Lien iCal : colonne privée (lib/listingColumns.ts)
     adminSupabase().from("listings").select("id, ical_url"),
   ]);
+  // Profils des proprios lus avec le client service : depuis l'audit du 2026-09-04, la table users n'est plus
+  // lisible par une session (même admin), l'embed ci-dessus revenait vide et tous les noms s'affichaient « — ».
+  const hostIds = [...new Set((listings ?? []).map((l) => l.host_id as string).filter(Boolean))];
+  const { data: hostRows } = hostIds.length
+    ? await adminSupabase().from("users").select("id, name, bio, avatar_url").in("id", hostIds)
+    : { data: [] };
+  const hostById = new Map((hostRows ?? []).map((h) => [h.id as string, h as { name: string; bio: string | null; avatar_url: string | null }]));
   const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
 
   // Build lookup structures
@@ -58,8 +65,7 @@ export default async function AdminListingsPage({
   const rows: ListingRow[] = (listings ?? []).map((listing) => {
     const id = listing.id as string;
 
-    const hostRaw = listing.host;
-    const host = Array.isArray(hostRaw) ? (hostRaw[0] as { name: string; bio: string | null; avatar_url: string | null } | undefined) : (hostRaw as { name: string; bio: string | null; avatar_url: string | null } | null);
+    const host = hostById.get(listing.host_id as string);
 
     const photoList = Array.isArray(listing.photos) ? listing.photos as string[] : [];
     const listingRooms = roomsPerListing.get(id) ?? [];
@@ -82,15 +88,22 @@ export default async function AdminListingsPage({
       recentReviewCount: rc.recent,
     });
 
+    // Origine : créée par le proprio (claim_status NULL), revendiquée, non revendiquée (importée), retirée par son proprio
+    const claimStatus = listing.claim_status as string | null;
+    const origin: ListingRow["origin"] =
+      claimStatus === "unclaimed" ? "unclaimed" : claimStatus === "claimed" ? "claimed" : claimStatus === "removed" ? "removed" : "created";
+
     return {
       id,
+      origin,
+      isTest: listing.is_test === true,
       title: (listing.title as string) ?? "",
       region: (listing.region as string) ?? "",
       photoUrl: firstPhotoUrl(listing.photos) ?? null,
       isPublished: !!(listing.is_published as boolean),
       createdAt: (listing.created_at as string) ?? "",
       score,
-      hostName: host?.name ?? "—",
+      hostName: origin === "unclaimed" || origin === "removed" ? "—" : host?.name ?? "—",
     };
   });
 
