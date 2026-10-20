@@ -83,6 +83,7 @@ export default async function Footer() {
               {t("travelers.title")}
             </h2>
             <ul className="text-sm md:space-y-3">
+              <FooterLink href={localePath("/", locale)} label={t("travelers.home")} />
               <FooterLink href={localePath("/chalets", locale)} label={t("travelers.browse")} />
               {/* Liens thématiques masqués tant que la page a trop peu de chalets (voir lib/themeLinks.ts) */}
               {show.regions && <FooterLink href={localePath("/regions", locale)} label={t("travelers.regions")} />}

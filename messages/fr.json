@@ -869,6 +869,24 @@
     "ogTitle": "Kabanalouer — Location de chalet au Québec",
     "ogDesc": "Location de chalet au Québec, en contact direct avec les propriétaires. Aucuns frais de service pour les voyageurs."
   },
+  "homeSeo": {
+    "title": "Louer un chalet au Québec, directement avec le propriétaire",
+    "p1": "Kabanalouer est la plateforme de location de chalet au Québec où vous écrivez directement aux propriétaires. Aucuns frais de service pour les voyageurs et aucune commission sur les réservations : vous discutez du prix, des dates et des détails avec la personne qui vous accueille.",
+    "p2": "Que vous cherchiez un chalet avec spa pour un week-end, un chalet au bord de l’eau pour l’été ou un chalet qui accepte les chiens, utilisez la recherche pour filtrer par région, dates, nombre de voyageurs et équipements. Chaque fiche présente les équipements, les chambres, les règlements et les activités à proximité.",
+    "regionsLabel": "Location de chalet par région",
+    "browseAll": "Voir tous les chalets à louer au Québec →",
+    "faqTitle": "Questions fréquentes sur la location de chalet",
+    "q1": "Comment louer un chalet au Québec avec Kabanalouer ?",
+    "q1a": "Choisissez un chalet, indiquez vos dates et le nombre de voyageurs, puis envoyez une demande de prix. Le propriétaire vous répond directement, par la messagerie ou par courriel, et vous vous entendez avec lui sur la réservation.",
+    "q2": "Y a-t-il des frais de service pour les voyageurs ?",
+    "q2a": "Non. Kabanalouer ne facture ni frais de service aux voyageurs ni commission sur les réservations. Ce sont les propriétaires qui paient un abonnement annuel pour afficher leur chalet.",
+    "q3": "Faut-il créer un compte pour demander un prix ?",
+    "q3a": "Non. Il suffit d’indiquer votre prénom et votre courriel en envoyant votre demande. Vous pouvez ensuite suivre la conversation, ou répondre directement au courriel de confirmation.",
+    "q4": "Peut-on trouver un chalet qui accepte les chiens, avec spa ou au bord de l’eau ?",
+    "q4a": "Oui. Les filtres de la recherche permettent de cibler les chalets qui acceptent les chiens, avec spa, avec sauna, au bord de l’eau et plus encore.",
+    "q5": "Dans quelles régions du Québec trouve-t-on des chalets ?",
+    "q5a": "Les chalets se trouvent dans plusieurs régions du Québec, dont les Laurentides, Charlevoix, l’Estrie, Lanaudière, l’Outaouais et la Mauricie. Les chalets disponibles varient selon la région : consultez la page de chaque région pour voir les fiches en ligne."
+  },
   "chaletsPage": {
     "metaTitle": "Chalets au Québec — Recherche",
     "metaDesc": "Trouvez votre chalet idéal au Québec. Filtrez par région, dates et équipements. Disponibilités en temps réel.",
@@ -1193,6 +1211,7 @@
     "brandDesc": "Payez votre location de chalet moins cher en contactant les propriétaires directement, sans commissions, ni frais de service.",
     "travelers": {
       "title": "Voyageurs",
+      "home": "Location de chalet au Québec",
       "browse": "Parcourir les chalets",
       "regions": "Toutes les régions",
       "deals": "Chalets pas chers",

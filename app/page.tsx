@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
 import RegionsExplorer from "@/components/RegionsExplorer";
+import HomeSeoSection from "@/components/HomeSeoSection";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { normalizePhotos } from "@/lib/photo";
@@ -304,6 +305,9 @@ export default async function HomePage() {
 
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />
+
+      {/* ── Présentation et FAQ (référencement « location de chalet au Québec ») ── */}
+      <HomeSeoSection />
 
       {/* ── Pour les propriétaires ── */}
       <OwnersSection />

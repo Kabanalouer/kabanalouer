@@ -869,6 +869,24 @@
     "ogTitle": "Kabanalouer — Cabin Rentals in Quebec",
     "ogDesc": "Cabin rentals in Quebec, in direct contact with the owners. No service fees for travellers."
   },
+  "homeSeo": {
+    "title": "Rent a cabin in Quebec, directly from the owner",
+    "p1": "Kabanalouer is the Quebec cabin rental platform where you write directly to owners. No service fees for travellers and no commission on bookings: you discuss price, dates and details with the person who is hosting you.",
+    "p2": "Whether you’re looking for a cabin with a hot tub for a weekend, a waterfront cabin for the summer or a dog-friendly cabin, use the search to filter by region, dates, number of guests and amenities. Each listing shows the amenities, bedrooms, house rules and nearby activities.",
+    "regionsLabel": "Cabin rentals by region",
+    "browseAll": "See all cabins for rent in Quebec →",
+    "faqTitle": "Frequently asked questions about cabin rentals",
+    "q1": "How do I rent a cabin in Quebec with Kabanalouer?",
+    "q1a": "Pick a cabin, enter your dates and number of guests, then send a price request. The owner replies to you directly, by message or by email, and you agree with them on the booking.",
+    "q2": "Are there service fees for travellers?",
+    "q2a": "No. Kabanalouer charges travellers no service fees and takes no commission on bookings. Owners pay an annual subscription to list their cabin.",
+    "q3": "Do I need an account to ask for a price?",
+    "q3a": "No. You only need to give your first name and email when you send your request. You can then follow the conversation, or reply directly to the confirmation email.",
+    "q4": "Can I find a cabin that accepts dogs, with a hot tub or on the water?",
+    "q4a": "Yes. The search filters let you target cabins that accept dogs, with a hot tub, with a sauna, on the waterfront and more.",
+    "q5": "Which regions of Quebec have cabins?",
+    "q5a": "Cabins are located in several regions of Quebec, including the Laurentians, Charlevoix, the Eastern Townships, Lanaudière, the Outaouais and the Mauricie. Available cabins vary by region: see each region’s page for the listings that are online."
+  },
   "chaletsPage": {
     "metaTitle": "Quebec Cabins — Search",
     "metaDesc": "Find your ideal cabin in Quebec. Filter by region, dates and amenities. Real-time availability.",
@@ -1193,6 +1211,7 @@
     "brandDesc": "Pay less for your cabin rental by contacting owners directly — no commissions, no service fees.",
     "travelers": {
       "title": "Travelers",
+      "home": "Cabin rentals in Quebec",
       "browse": "Browse cabins",
       "regions": "All regions",
       "deals": "Cabin deals",
