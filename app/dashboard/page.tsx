@@ -9,6 +9,8 @@ import { computeScore } from "@/lib/listingScore";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { localePath } from "@/lib/localePath";
 import ListingsClient from "@/components/dashboard/ListingsClient";
+import UnclaimedMatchBanner from "@/components/dashboard/UnclaimedMatchBanner";
+import { findUnclaimedByEmail } from "@/lib/claims/lookup";
 
 export async function generateMetadata() {
   const locale = await getLocale();
@@ -36,6 +38,9 @@ export default async function DashboardPage() {
     // Lien iCal : colonne privée, lue avec le client service (voir lib/listingColumns.ts)
     adminSupabase().from("listings").select("id, ical_url").eq("host_id", userId),
   ]);
+
+  // Fiches non activées au même courriel que ce compte : bandeau « activez-les au lieu d'en créer »
+  const unclaimedMatches = user.email ? await findUnclaimedByEmail(user.email, locale === "en" ? "en" : "fr") : [];
 
   const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
   const listingIds = (listings ?? []).map((l) => l.id as string);
@@ -112,6 +117,8 @@ export default async function DashboardPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t("greeting", { firstName })}</h1>
         <p className="text-charcoal-400 mt-1 text-sm">{dateDisplay}</p>
       </div>
+
+      <UnclaimedMatchBanner matches={unclaimedMatches} />
 
       {/* ── Brouillons : rappel qu'ils sont invisibles pour les voyageurs ── */}
       {drafts.length > 0 && (

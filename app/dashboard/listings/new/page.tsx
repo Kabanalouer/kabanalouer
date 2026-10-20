@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { localePath } from "@/lib/localePath";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import NewListingStepZero from "@/components/dashboard/NewListingStepZero";
+import NewListingEntry from "@/components/dashboard/NewListingEntry";
 import { normalizeAirbnbInput } from "@/lib/pendingAirbnbImport";
 
 export async function generateMetadata() {
@@ -33,7 +33,7 @@ export default async function NewListingPage({
 
   return (
     <div className="max-w-3xl">
-      <NewListingStepZero initialImportUrl={initialImportUrl} />
+      <NewListingEntry initialImportUrl={initialImportUrl} />
     </div>
   );
 }

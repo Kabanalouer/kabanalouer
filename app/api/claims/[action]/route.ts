@@ -12,12 +12,14 @@ import {
 } from "@/lib/claims/tokens";
 import { claimListingsForUser, removeUnclaimedListing, reportClaimProblem } from "@/lib/claims/actions";
 import { sendClaimAdminAlert, sendClaimLinkEmail } from "@/lib/emails/unclaimedOwner";
+import { findUnclaimedByCitq } from "@/lib/claims/lookup";
 
 // Actions publiques des fiches non revendiquées (supabase/add-unclaimed-listings.sql) :
 //   send-link : « Envoyer le lien à l'adresse que vous avez » (option A, sans connexion)
 //   claim     : revendiquer avec un jeton (connexion obligatoire)
 //   remove    : « Retirer ma fiche » (jeton, sans connexion)
 //   report    : « Signaler un problème » après une activation (jeton)
+//   lookup    : « Votre chalet est peut-être déjà ici ? » : fiches non revendiquées d'un CITQ (connexion obligatoire)
 //   request   : demande de vérification manuelle avec preuve (option B, connexion obligatoire)
 // Toutes lisent et écrivent avec le client service ; rien n'est exposé à une session.
 
@@ -46,6 +48,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return remove(request, locale);
     case "report":
       return report(request, locale);
+    case "lookup":
+      return lookup(request, locale);
     case "request":
       return proofRequest(request, locale);
     default:
@@ -105,6 +109,18 @@ async function sendLink(request: NextRequest, locale: "fr" | "en") {
   }
   await logOwnerEmail(admin, { claimEmail: email, listingId: listing.id as string, kind: "link" });
   return NextResponse.json({ ok: true });
+}
+
+// Étape facultative au début de « Inscrire mon chalet » : un proprio connecté entre son CITQ et voit
+// les fiches non activées qui le portent (jamais bloquant : aucune fiche = il crée son annonce).
+async function lookup(request: NextRequest, locale: "fr" | "en") {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return bad(locale, "Non authentifié", "Not authenticated", 401);
+  const body = await request.json().catch(() => ({}));
+  const citq = String(body.citq ?? "").replace(/\s/g, "");
+  if (!/^\d{6}$/.test(citq)) return bad(locale, "Le numéro CITQ compte 6 chiffres.", "The CITQ number has 6 digits.");
+  return NextResponse.json({ matches: await findUnclaimedByCitq(citq, locale) });
 }
 
 async function claim(request: NextRequest, locale: "fr" | "en") {
