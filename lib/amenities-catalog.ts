@@ -67,16 +67,17 @@ export interface AmenityValue {
   details?: Record<string, unknown>;
 }
 
+// Ordre d'affichage (choix de Simon, 2026-10-21) : fenêtre « Ce que propose ce chalet » et sélecteur du tableau de bord.
 export const AMENITY_CATEGORIES: AmenityCategory[] = [
-  { id: "cuisine-et-repas", label: "Cuisine et repas", labelEn: "Kitchen and dining" },
-  { id: "emplacement", label: "Emplacement", labelEn: "Location" },
-  { id: "divertissement", label: "Divertissement", labelEn: "Entertainment" },
   { id: "exterieur", label: "Extérieur", labelEn: "Outdoor" },
+  { id: "divertissement", label: "Divertissement", labelEn: "Entertainment" },
+  { id: "emplacement", label: "Emplacement", labelEn: "Location" },
+  { id: "cuisine-et-repas", label: "Cuisine et repas", labelEn: "Kitchen and dining" },
   { id: "essentiels", label: "Essentiels", labelEn: "Essentials" },
-  { id: "chauffage-et-climatisation", label: "Chauffage et climatisation", labelEn: "Heating and cooling" },
   { id: "stationnement", label: "Stationnement", labelEn: "Parking" },
-  { id: "securite", label: "Sécurité", labelEn: "Safety" },
+  { id: "chauffage-et-climatisation", label: "Chauffage et climatisation", labelEn: "Heating and cooling" },
   { id: "services", label: "Services", labelEn: "Services" },
+  { id: "securite", label: "Sécurité", labelEn: "Safety" },
 ];
 
 export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
@@ -642,11 +643,7 @@ export function summarizeAmenityDetails(
 export function groupAmenitiesByCategory(
   amenities: AmenityValue[]
 ): { category: AmenityCategory; items: AmenityValue[] }[] {
-  // Ordre d'affichage de la fenêtre « Ce que propose ce chalet » (choix de Simon, 2026-10-21) ;
-  // l'ordre de AMENITY_CATEGORIES, lui, reste celui du sélecteur du tableau de bord.
-  const order = ["exterieur", "divertissement", "emplacement", "cuisine-et-repas", "essentiels", "stationnement", "chauffage-et-climatisation", "services", "securite"];
-  const rank = (id: string) => (order.includes(id) ? order.indexOf(id) : order.length);
-  return [...AMENITY_CATEGORIES].sort((a, b) => rank(a.id) - rank(b.id)).map((category) => ({
+  return AMENITY_CATEGORIES.map((category) => ({
     category,
     items: amenities.filter((a) => getAmenityCatalogEntry(a.id)?.categoryId === category.id),
   })).filter((group) => group.items.length > 0);
