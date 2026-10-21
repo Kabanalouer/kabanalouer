@@ -312,6 +312,31 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     ],
   },
   {
+    id: "embarcations",
+    label: "Embarcations",
+    labelEn: "Boats and paddle craft",
+    categoryId: "exterieur",
+    icon: "SailBoat",
+    detailSchema: [
+      {
+        key: "types", type: "multi-select", label: "Embarcations disponibles", labelEn: "Available boats",
+        options: ["Canot", "Kayak", "Paddleboard", "Pédalo", "Chaloupe"],
+        optionsEn: ["Canoe", "Kayak", "Paddleboard", "Paddle boat", "Rowboat"],
+      },
+      {
+        key: "gratuitPayant", type: "single-select", label: "Gratuit ou payant", labelEn: "Free or paid",
+        options: ["Gratuit", "Payant"], optionsEn: ["Free", "Paid"],
+        summaryLabels: ["Gratuites", "Payantes"], summaryLabelsEn: ["Free", "Paid"],
+      },
+      {
+        key: "gilets", type: "single-select", label: "Gilets de sauvetage", labelEn: "Life jackets",
+        options: ["Inclus", "Non inclus"], optionsEn: ["Included", "Not included"],
+        summaryLabels: ["Gilets de sauvetage inclus", "Gilets de sauvetage non inclus"],
+        summaryLabelsEn: ["Life jackets included", "Life jackets not included"],
+      },
+    ],
+  },
+  {
     id: "patinoire",
     label: "Patinoire extérieure",
     labelEn: "Outdoor skating rink",
@@ -475,7 +500,7 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
 // leur pouvoir différenciateur.
 export const AMENITY_PRIORITY_ORDER: string[] = [
   "bord-eau", "piscine-interieure", "ski-in-ski-out", "spa", "sauna", "piscine-exterieure",
-  "acces-lac", "table-billard", "terrain-tennis", "terrain-pickleball", "gym",
+  "acces-lac", "embarcations", "table-billard", "terrain-tennis", "terrain-pickleball", "gym",
   "chalet-bois-rond", "babyfoot", "table-ping-pong", "arcades", "foyer-interieur-bois",
   "foyer-exterieur", "module-jeux-enfant", "situe-resort", "bbq", "terrasse",
   "borne-recharge-vr", "sentiers-randonnee", "acces-motoneige-vtt", "patinoire",
@@ -617,7 +642,11 @@ export function summarizeAmenityDetails(
 export function groupAmenitiesByCategory(
   amenities: AmenityValue[]
 ): { category: AmenityCategory; items: AmenityValue[] }[] {
-  return AMENITY_CATEGORIES.map((category) => ({
+  // Ordre d'affichage de la fenêtre « Ce que propose ce chalet » (choix de Simon, 2026-10-21) ;
+  // l'ordre de AMENITY_CATEGORIES, lui, reste celui du sélecteur du tableau de bord.
+  const order = ["exterieur", "divertissement", "emplacement", "cuisine-et-repas", "essentiels", "stationnement", "chauffage-et-climatisation", "services", "securite"];
+  const rank = (id: string) => (order.includes(id) ? order.indexOf(id) : order.length);
+  return [...AMENITY_CATEGORIES].sort((a, b) => rank(a.id) - rank(b.id)).map((category) => ({
     category,
     items: amenities.filter((a) => getAmenityCatalogEntry(a.id)?.categoryId === category.id),
   })).filter((group) => group.items.length > 0);
