@@ -377,7 +377,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
               ? `Discover ${content?.region_en ?? displayRegionName}`
               : `Découvrez ${content?.region_fr ?? displayRegionName}`}
           </h2>
-          <div className="max-w-3xl space-y-4">
+          <div className="space-y-4">
             {(isEn
               ? content?.description_en ?? [
                   `${displayRegionName} is one of Quebec's regions to explore by cabin, with lakes, forests and small towns to discover in every season.`,
@@ -421,7 +421,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
               {isEn ? "Frequently asked questions" : "Questions fréquentes"}
             </h2>
-            <div className="max-w-3xl space-y-6">
+            <div className="space-y-6">
               {faqItems.map((item, i) => (
                 <div key={i}>
                   <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-2">{item.question}</h3>

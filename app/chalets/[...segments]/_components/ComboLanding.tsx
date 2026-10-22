@@ -381,7 +381,7 @@ export default async function ComboLanding({ theme, regionConfig, cityName }: { 
       {/* ── FAQ ── */}
       <section className="bg-charcoal-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
+          <div>
             <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
               {isEn ? "Frequently asked questions" : "Questions fréquentes"}
             </h2>

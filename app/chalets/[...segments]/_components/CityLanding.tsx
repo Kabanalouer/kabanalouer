@@ -281,7 +281,7 @@ export default async function CityLanding({
       {/* ── À propos + FAQ (contenu calculé sur les annonces) ── */}
       <section className="bg-charcoal-50 border-y border-[#ebebeb] py-16 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
+          <div>
         <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
           {isEn ? `Cabin rentals in ${cityName}` : `Location de chalet à ${cityName}`}
         </h2>

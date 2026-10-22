@@ -330,7 +330,7 @@ export default async function DogFriendlyLanding() {
       {/* ── Tips ── */}
       <section className="bg-charcoal-50 py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl">
+          <div>
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Before renting a cabin with your dog" : "Avant de louer un chalet avec votre chien"}
           </h2>
@@ -349,7 +349,7 @@ export default async function DogFriendlyLanding() {
       {/* ── FAQ ── */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
+          <div>
           <h2 className="text-heading-2 font-bold text-charcoal-800 mb-8">
             {isEn ? "Frequently asked questions" : "Questions fréquentes"}
           </h2>
