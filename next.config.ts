@@ -46,6 +46,9 @@ const nextConfig: NextConfig = {
       // (≤ 10 min), qui les rapatrie sur Supabase Storage. Sans cette entrée,
       // elles seraient cassées pendant ce délai.
       { protocol: "https", hostname: "*.muscache.com" },
+      // Photo de profil des comptes créés avec Google (lh3.googleusercontent.com) : sans cette entrée,
+      // l'optimiseur d'images répond 400 et la photo du proprio s'affiche en image cassée.
+      { protocol: "https", hostname: "*.googleusercontent.com" },
     ],
   },
   async headers() {
