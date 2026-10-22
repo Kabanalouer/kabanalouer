@@ -50,7 +50,7 @@ export default async function ThemesExplorer() {
   if (visible.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 w-full">
       <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-8">
         {isEn ? "Explore by theme" : "Explorer par thème"}
       </h2>
