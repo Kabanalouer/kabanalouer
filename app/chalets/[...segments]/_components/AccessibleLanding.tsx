@@ -3,6 +3,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import LandingSearchCta from "./LandingSearchCta";
 import ComboLinkChips from "./ComboLinkChips";
 import { activeCitiesForTheme, activeRegionsForTheme, comboPath, getComboIndex } from "@/lib/comboLandings";
+import ThemeHero from "@/components/ThemeHero";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -229,31 +230,18 @@ export default async function AccessibleLanding() {
       <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
-      <section className="bg-charcoal-50 border-b border-charcoal-100 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
-            <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
-              {isEn ? "Cabins" : "Chalets"}
-            </Link>
-            <span>›</span>
-            <span className="text-charcoal-600">{isEn ? "Accessible" : "Mobilité réduite"}</span>
-          </nav>
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-            <AccessibilityIcon className="w-6 h-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-charcoal-900 mb-3">
-            {isEn ? "Accessible cabin rentals for people with reduced mobility" : "Location de chalet accessible aux personnes à mobilité réduite"}
-          </h1>
-          <p className="text-base text-charcoal-500 mb-8">
-            {isEn
-              ? "Cabins in Quebec adapted to people with reduced mobility. Every listing details the entrance, bathroom, bedroom and circulation, with measurements."
-              : "Des chalets au Québec adaptés aux personnes à mobilité réduite. Chaque fiche détaille l'entrée, la salle de bain, la chambre et la circulation, avec les mesures."}
-          </p>
-          <div className="flex justify-center">
-            <SearchBar />
-          </div>
-        </div>
-      </section>
+      <ThemeHero
+        themeKey="accessible"
+        isEn={isEn}
+        crumbs={[{ label: isEn ? "Cabins" : "Chalets", href: localePath("/chalets", locale) }, { label: isEn ? "Accessible" : "Mobilité réduite" }]}
+        title={isEn ? "Accessible cabin rentals for people with reduced mobility" : "Location de chalet accessible aux personnes à mobilité réduite"}
+        intro={isEn
+          ? "Cabins in Quebec adapted to people with reduced mobility. Every listing details the entrance, bathroom, bedroom and circulation, with measurements."
+          : "Des chalets au Québec adaptés aux personnes à mobilité réduite. Chaque fiche détaille l'entrée, la salle de bain, la chambre et la circulation, avec les mesures."}
+        icon={<AccessibilityIcon className="w-6 h-6" />}
+      >
+        <SearchBar />
+      </ThemeHero>
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">

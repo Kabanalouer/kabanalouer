@@ -9,7 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // Noindex, hors sitemap et lien du pied de page masqué sous
 // MIN_CHALETS_FOR_INDEX (voir page.tsx, app/sitemap.ts, lib/themeLinks.ts).
 
-export type AmenityLandingKey = "spa" | "waterfront" | "pool-table" | "ev-charger" | "remote-work";
+export type AmenityLandingKey = "spa" | "sauna" | "waterfront" | "pool-table" | "ev-charger" | "remote-work";
 
 type Tip = { title: string; body: string };
 
@@ -89,6 +89,41 @@ export const AMENITY_LANDINGS: AmenityLanding[] = [
       { title: "Check the access", body: "Some hot tubs are private to the cabin, others are shared. Access is shown on the listing when the owner has specified it." },
       { title: "Look at the capacity", body: "The number of people the hot tub can fit is shown on the listing when available: handy for group stays." },
       { title: "Travelling in winter?", body: "Some hot tubs are only open in season. If you are going in winter, confirm with the owner that it will be available on your dates." },
+    ],
+  }),
+  landing({
+    key: "sauna",
+    amenityIds: ["sauna"],
+    icon: "Thermometer",
+    slugFr: "avec-sauna",
+    slugEn: "sauna",
+    h1Fr: "Location de chalet avec sauna au Québec",
+    h1En: "Cabin rentals with a sauna in Quebec",
+    metaTitleFr: "Location de chalet avec sauna au Québec",
+    metaTitleEn: "Cabin rentals with a sauna in Quebec",
+    metaDescriptionFr: "Trouvez un chalet à louer avec sauna au Québec. Accès privé ou partagé indiqué sur chaque fiche. Contact direct avec les propriétaires, aucuns frais de service.",
+    metaDescriptionEn: "Find a cabin for rent with a sauna in Quebec. Private or shared access shown on each listing. Direct contact with owners, no service fees.",
+    linkFr: "Chalets avec sauna",
+    linkEn: "Cabins with a sauna",
+    nounFr: ["chalet avec sauna", "chalets avec sauna"],
+    nounEn: ["cabin with a sauna", "cabins with a sauna"],
+    introFr: "Des chalets avec sauna, partout au Québec, pour se réchauffer après une journée de ski, de randonnée ou de baignade dans le lac.",
+    introEn: "Cabins with a sauna everywhere in Quebec, to warm up after a day of skiing, hiking or a dip in the lake.",
+    allHaveFr: "Tous les chalets de cette page ont un sauna",
+    allHaveEn: "Every cabin on this page has a sauna",
+    accessQuestionFr: "Le sauna est-il privé ?",
+    accessQuestionEn: "Is the sauna private?",
+    tipsTitleFr: "Avant de louer un chalet avec sauna",
+    tipsTitleEn: "Before renting a cabin with a sauna",
+    tipsFr: [
+      { title: "Vérifiez l'accès", body: "Certains saunas sont réservés au chalet, d'autres sont partagés. L'accès est indiqué sur la fiche quand le propriétaire l'a précisé." },
+      { title: "Posez la question du chauffage", body: "Le temps de chauffe et le fonctionnement varient d'un sauna à l'autre : demandez au propriétaire comment l'utiliser à votre arrivée." },
+      { title: "Pensez à l'hiver", body: "Un sauna se savoure surtout après une journée de ski, de raquette ou de plein air. Confirmez qu'il sera accessible à vos dates." },
+    ],
+    tipsEn: [
+      { title: "Check the access", body: "Some saunas are private to the cabin, others are shared. Access is shown on the listing when the owner has specified it." },
+      { title: "Ask about heating", body: "Heating time and operation vary from one sauna to another: ask the owner how to use it when you arrive." },
+      { title: "Think about winter", body: "A sauna is best enjoyed after a day of skiing, snowshoeing or time outdoors. Confirm it will be available on your dates." },
     ],
   }),
   landing({

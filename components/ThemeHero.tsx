@@ -25,7 +25,7 @@ export default function ThemeHero({
   intro: string;
   icon: ReactNode;
   isEn: boolean;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const image = themeImage(themeKey);
   const link = image
@@ -53,8 +53,8 @@ export default function ThemeHero({
         <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">{icon}</div>
       )}
       <h1 className={`text-3xl md:text-4xl font-bold mb-3 ${image ? "lg:text-5xl leading-tight" : "text-charcoal-900"}`}>{title}</h1>
-      <p className={`mb-8 ${image ? "text-lg text-white/85" : "text-base text-charcoal-500"}`}>{intro}</p>
-      <div className="flex justify-center">{children}</div>
+      <p className={`${children ? "mb-8" : ""} ${image ? "text-lg text-white/85" : "text-base text-charcoal-500"}`}>{intro}</p>
+      {children && <div className="flex justify-center">{children}</div>}
     </div>
   );
 

@@ -1260,6 +1260,7 @@
     "byType": "By type",
     "types": {
       "spa": "Cabins with a hot tub",
+      "sauna": "Cabins with a sauna",
       "waterfront": "Waterfront cabins",
       "poolTable": "Cabins with a pool table",
       "evCharger": "Cabins with an EV charger",

@@ -14,6 +14,7 @@ import { AMENITY_LANDINGS, type AmenityLandingKey } from "@/lib/amenityLandings"
 // Clé de traduction (footer.types.*) de chaque page thématique par équipement
 const AMENITY_TYPE_MESSAGE_KEY: Record<AmenityLandingKey, string> = {
   spa: "spa",
+  sauna: "sauna",
   waterfront: "waterfront",
   "pool-table": "poolTable",
   "ev-charger": "evCharger",

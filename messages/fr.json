@@ -1260,6 +1260,7 @@
     "byType": "Par type",
     "types": {
       "spa": "Chalets avec spa",
+      "sauna": "Chalets avec sauna",
       "waterfront": "Chalets au bord de l'eau",
       "poolTable": "Chalets avec table de billard",
       "evCharger": "Chalets avec borne de recharge",
