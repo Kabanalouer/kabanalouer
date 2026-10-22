@@ -65,6 +65,10 @@ type FormState = {
   accessibility_features: AccessibilityFeatureId[];
   smoking_allowed: boolean;
   min_age: number;
+  cleaning_fee_included: boolean | null;
+  cleaning_fee_amount: number | null;
+  min_nights: number;
+  max_nights: number | null;
   checkin_type: "autonomous" | "in_person";
   nearby_activities: string[];
   price_on_request: boolean;
@@ -143,7 +147,7 @@ const SECTION_FIELDS: Record<SectionId, (keyof FormState)[]> = {
   calendrier:   [],
   localisation: [],
   tarifs:       ["price_low", "price_on_request"],
-  infos:        ["citq_number", "checkin_time", "checkout_time", "dogs_allowed", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "reduced_mobility", "accessibility_features", "smoking_allowed", "min_age", "checkin_type"],
+  infos:        ["citq_number", "checkin_time", "checkout_time", "dogs_allowed", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "reduced_mobility", "accessibility_features", "smoking_allowed", "min_age", "checkin_type", "cleaning_fee_included", "cleaning_fee_amount", "min_nights", "max_nights"],
   lienPersonnalise: [],
   promotions:   [],
   analyse:      [],
@@ -258,6 +262,10 @@ export default function EditListingForm({
     accessibility_features: [],
     smoking_allowed: false,
     min_age: 21,
+    cleaning_fee_included: null,
+    cleaning_fee_amount: null,
+    min_nights: 1,
+    max_nights: null,
     checkin_type: "autonomous" as const,
     nearby_activities: [],
     price_on_request: true,
@@ -540,6 +548,18 @@ export default function EditListingForm({
       setSaveError(tEdit("dogsIncompleteError"));
       return false;
     }
+    if (sectionId === "infos" && form.cleaning_fee_included === false && !(form.cleaning_fee_amount && form.cleaning_fee_amount > 0)) {
+      setSaveError(tEdit("cleaningFeeAmountError"));
+      return false;
+    }
+    if (
+      sectionId === "infos" &&
+      (form.min_nights < 1 || form.min_nights > 365 ||
+        (form.max_nights !== null && (form.max_nights < 1 || form.max_nights > 365 || form.max_nights < form.min_nights)))
+    ) {
+      setSaveError(tEdit("nightsError"));
+      return false;
+    }
 
     setSaving(true);
     setSaveError("");
@@ -560,6 +580,8 @@ export default function EditListingForm({
         payload.dogs_fee_amount = null;
       }
       if (!form.reduced_mobility) payload.accessibility_features = [];
+      // Montant du ménage jamais gardé quand il est inclus (ou non précisé)
+      if (form.cleaning_fee_included !== false) payload.cleaning_fee_amount = null;
     }
 
     const { error } = await supabase
@@ -1702,6 +1724,79 @@ export default function EditListingForm({
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{tEdit("checkinTypeLabel")} <Req /></label>
                     <CheckinTypeField value={form.checkin_type} onChange={(v) => set("checkin_type", v)} tEdit={tEdit} />
                   </div>
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockNights")}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal-700 mb-1.5" htmlFor="min-nights">{tEdit("minNightsLabel")}</label>
+                      <input
+                        id="min-nights"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.min_nights || ""}
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value.replace(/\D/g, "").slice(0, 3));
+                          set("min_nights", Number.isFinite(n) ? Math.min(365, n) : 0);
+                        }}
+                        onBlur={() => { if (form.min_nights < 1) set("min_nights", 1); }}
+                        className={`${inputCls} sm:max-w-[10rem]`}
+                        placeholder="1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal-700 mb-1.5" htmlFor="max-nights">{tEdit("maxNightsLabel")}</label>
+                      <input
+                        id="max-nights"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.max_nights ?? ""}
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value.replace(/\D/g, "").slice(0, 3));
+                          set("max_nights", Number.isFinite(n) ? Math.min(365, n) : null);
+                        }}
+                        className={`${inputCls} sm:max-w-[10rem]`}
+                        placeholder={tEdit("maxNightsPlaceholder")}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-sm text-charcoal-400">{tEdit("nightsHint")}</p>
+                </InfoBlock>
+
+                <InfoBlock title={tEdit("infoBlockCleaning")}>
+                  <SettingRow label={tEdit("cleaningFeeLabel")}>
+                    <div className="flex rounded-xl border border-[#ebebeb] overflow-hidden text-sm w-fit">
+                      <button type="button" onClick={() => set("cleaning_fee_included", false)}
+                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === false ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+                        {tEdit("cleaningNotIncluded")}
+                      </button>
+                      <button type="button" onClick={() => set("cleaning_fee_included", true)}
+                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === true ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+                        {tEdit("cleaningIncluded")}
+                      </button>
+                    </div>
+                  </SettingRow>
+                  {form.cleaning_fee_included === false && (
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal-700 mb-1.5" htmlFor="cleaning-fee">{tEdit("cleaningFeeAmountLabel")} <Req /></label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-28">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">$</span>
+                          <input
+                            id="cleaning-fee"
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={5}
+                            value={form.cleaning_fee_amount ?? ""}
+                            onChange={(e) => set("cleaning_fee_amount", parseInt(e.target.value.replace(/\D/g, "").slice(0, 5)) || null)}
+                            className={`${inputCls} pl-7`}
+                            placeholder="75"
+                          />
+                        </div>
+                        <span className="text-sm text-charcoal-600">{tEdit("cleaningFeePerStay")}</span>
+                      </div>
+                    </div>
+                  )}
                 </InfoBlock>
 
                 <InfoBlock title={tEdit("infoBlockRules")}>

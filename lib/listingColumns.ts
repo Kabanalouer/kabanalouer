@@ -19,7 +19,7 @@ export const LISTING_PUBLIC_COLUMNS = [
   "slug_fr", "slug_en", "unpublished_reason", "unpublished_at", "reminder_winback_3d_sent",
   "reminder_winback_14d_sent", "import_source", "import_status", "photos_rights_confirmed",
   "quote_inclusions", "quote_exclusions", "quote_booking_instructions", "listing_number", "custom_slug",
-  "previous_custom_slug", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount",
+  "previous_custom_slug", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "cleaning_fee_included", "cleaning_fee_amount", "min_nights", "max_nights",
   "reduced_mobility", "accessibility_features", "draft_reminder_sent_at", "content_updated_at",
   "claim_status", "is_test",
 ].join(", ") as "*";

@@ -606,6 +606,8 @@ Même patron que « Chiens acceptés » ci-dessus.
 
 ### Dashboard « Infos générales » — découpée en 5 blocs (2026-09-26)
 
+**Mise à jour 2026-10-22** : deux blocs ajoutés après « Arrivée et départ » — **Nombre de nuits minimum** (minimum 1 par défaut, maximum facultatif, jamais plus de 365, maximum ≥ minimum) et **Frais de ménage** (Inclus / Non inclus ; non inclus = prix par location obligatoire). Colonnes `min_nights`, `max_nights`, `cleaning_fee_included`, `cleaning_fee_amount` (voir section 12), dans `LISTING_PUBLIC_COLUMNS`. Fiche publique (« Informations pratiques ») : affichés seulement si renseignés (`NULL` = rien, donc aucune fiche existante ni importée n'affiche rien tant que le proprio n'a pas enregistré cette section). Pas encore de contrôle des dates demandées contre le minimum de nuits.
+
 Une seule entrée de menu (choix de Simon, plutôt que de nouvelles entrées), divisée en blocs `InfoBlock` (cadre léger + titre H3) : **Permis** (CITQ), **Arrivée et départ** (heures + type d'arrivée), **Règlements du chalet** (âge minimum, fumeur accepté), **Chiens**, **Accessibilité**. Les Oui/Non et le compteur d'âge sont sur une ligne (`SettingRow` : question à gauche, contrôle à droite). Mêmes champs dans `SECTION_FIELDS.infos`, même autosave.
 
 ### Cartes Google publiques — Map ID et points d'intérêt masqués (2026-09-26)
@@ -730,6 +732,7 @@ Ces fichiers sont dans `/supabase/` et doivent être exécutés manuellement :
 | `add-no-availability-template-closing-column.sql` | Ajoute `users.no_availability_template_closing` (modèle réutilisable pour la réponse rapide "Indisponible", même principe que `quote_template_closing`) — voir section 13, session du 2026-09-23 | Exécutée et confirmée en prod le 2026-09-23 |
 | `add-dog-policy.sql` | Renomme `listings.pets_allowed` → `dogs_allowed`, ajoute `dogs_max`/`dogs_size_limit`/`dogs_fee_type`/`dogs_fee_amount` (+ contraintes CHECK, index partiel) et donne des valeurs par défaut à la fiche test (2 chiens, tous, gratuit) | Exécutée et confirmée en prod le 2026-09-26 |
 | `add-reduced-mobility.sql` | Ajoute `listings.reduced_mobility`/`accessibility_features` (+ contrainte CHECK des 9 ids, index partiel) | Exécutée et confirmée en prod le 2026-09-26 |
+| `add-cleaning-fee-and-night-limits.sql` (+ `_rollback.sql`) | `listings.cleaning_fee_included`/`cleaning_fee_amount`/`min_nights`/`max_nights` (+ contraintes 1 à 365, maximum ≥ minimum, montant seulement si ménage non inclus) et `GRANT SELECT` | Exécutée et vérifiée en prod le 2026-10-22 |
 | `promotions-date-basis.sql` | Ajoute `promotions.date_basis` (`stay` = dates de séjour, `booking` = dates de réservation) | Exécutée et confirmée en prod le 2026-09-28 |
 | `reviews-translation-columns.sql` | Colonnes de traduction automatique FR⇆EN des avis et des réponses des proprios | Exécutée et confirmée en prod le 2026-09-28 |
 | `push-subscriptions.sql` | Crée la table `push_subscriptions` (Web Push, un abonnement par appareil, RLS) | Exécutée et confirmée en prod le 2026-09-28 |

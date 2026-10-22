@@ -212,6 +212,10 @@ export default async function EditListingPage({ params, searchParams }: Props) {
           nearby_activities: Array.isArray(listing.nearby_activities) ? listing.nearby_activities as string[] : [],
           price_on_request: (listing.price_on_request as boolean | null) ?? true,
           min_age: (listing.min_age as number | null) ?? 21,
+          cleaning_fee_included: (listing.cleaning_fee_included as boolean | null) ?? null,
+          cleaning_fee_amount: (listing.cleaning_fee_amount as number | null) ?? null,
+          min_nights: (listing.min_nights as number | null) ?? 1,
+          max_nights: (listing.max_nights as number | null) ?? null,
         }}
       />
     </div>
