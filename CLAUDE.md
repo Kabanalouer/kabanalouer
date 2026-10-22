@@ -432,6 +432,7 @@ Le visiteur non connecté n'a plus de fenêtre d'inscription : le formulaire de 
 
 ### Côté voyageur
 - **Recherche** : filtres, Google Maps split-view sur `/chalets`
+- **Liste de recherche /chalets (2026-10-22)** : charge jusqu'à 200 fiches d'un coup (page et `/api/listings/geo`, `MAX_LOADED`/`limit(200)` ; avant 48, donc les suivantes n'étaient jamais atteignables et le compteur affichait 48 au lieu du vrai total) ; la liste en montre 48 à la fois avec « Afficher plus de chalets » (`PAGE_SIZE`, `ChaletsMapLayout.tsx`), la carte épingle toutes les fiches chargées. Au-delà de 200 fiches, il faudra une vraie pagination côté serveur (le compteur serait tronqué à 200).
 - **Messagerie** directe proprio ↔ voyageur
 - **Avis** avec réponse proprio + notification email Resend
 - **Favoris**
