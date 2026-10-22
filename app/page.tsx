@@ -304,11 +304,11 @@ export default async function HomePage() {
       {/* ── Explorer par région (seulement les régions avec chalets) ── */}
       <RegionsExplorer />
 
-      {/* ── Explorer par thème (spa, bord de l'eau, chiens…, seulement les thèmes avec chalets) ── */}
-      <ThemesExplorer />
-
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />
+
+      {/* ── Explorer par thème (spa, bord de l'eau, chiens…, seulement les thèmes avec chalets) ── */}
+      <ThemesExplorer />
 
       {/* ── Présentation et FAQ (référencement « location de chalet au Québec ») ── */}
       <HomeSeoSection />
