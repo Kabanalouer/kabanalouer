@@ -19,7 +19,7 @@ export const REGIONS: RegionConfig[] = [
     dbValue: "Laurentides",
     locative: "dans les Laurentides",
     genitive: "des Laurentides",
-    heroImage: "/images/regions/laurentides.webp",
+    heroImage: "/images/regions/laurentides-v2.webp",
     seoText: [
       "Les Laurentides constituent la destination de chalet la plus populaire du Québec, et pour cause : ski alpin à Mont-Tremblant et Saint-Sauveur, randonnée pédestre, lacs cristallins et vélo de montagne rythment les quatre saisons. À moins de deux heures de Montréal, cette région enchante autant les familles en quête de calme que les groupes d'amis en mode aventure.",
       "Louer un chalet dans les Laurentides, c'est choisir entre des propriétés au bord du lac idéales pour la baignade et le kayak, des refuges boisés avec jacuzzi au fond des bois, ou des chalets de luxe à deux pas des remontées mécaniques. L'hébergement s'adapte à tous les budgets et tous les styles de vacances.",
@@ -34,7 +34,7 @@ export const REGIONS: RegionConfig[] = [
     dbValue: "Charlevoix",
     locative: "dans Charlevoix",
     genitive: "de Charlevoix",
-    heroImage: "/images/regions/charlevoix.webp",
+    heroImage: "/images/regions/charlevoix-v2.webp",
     seoText: [
       "Charlevoix est l'une des régions les plus spectaculaires du Québec, avec ses panoramas sur le fleuve Saint-Laurent, ses montagnes abruptes et ses villages de charme comme Baie-Saint-Paul et La Malbaie. Classé Réserve mondiale de la biosphère par l'UNESCO, Charlevoix attire les amateurs de nature, de gastronomie et d'art depuis des décennies.",
       "Un chalet dans Charlevoix, c'est le privilège de se réveiller face au fleuve ou en altitude, d'observer les bélugas depuis la rive, et de dîner dans des restaurants qui valorisent les produits locaux — agneau de l'île aux Coudres, fromages fins, bières artisanales. Le Massif de Charlevoix offre l'une des meilleures descentes à ski de l'est du Canada.",
@@ -49,7 +49,7 @@ export const REGIONS: RegionConfig[] = [
     dbValue: "Estrie (Cantons-de-l'Est)",
     locative: "dans les Cantons-de-l'Est",
     genitive: "des Cantons-de-l'Est",
-    heroImage: "/images/regions/cantons-de-lest.webp",
+    heroImage: "/images/regions/cantons-de-lest-v2.webp",
     seoText: [
       "Les Cantons-de-l'Est (Estrie) sont une région de collines verdoyantes, de lacs pittoresques et de vignobles florissants, à moins d'une heure et demie de Montréal. Les chalets au bord du lac Memphrémagog, de l'Orford ou du Massawippi offrent un cadre bucolique en toute saison.",
       "En été, on pratique le vélo, la randonnée sur les sentiers de l'Appalachian Trail, la planche à pagaie et la baignade. À l'automne, la région se couvre de feuillage flamboyant — les Cantons sont réputés comme l'une des plus belles destinations au Québec pour les couleurs. L'hiver, le mont Orford et le Sutton attirent les skieurs.",
@@ -79,7 +79,7 @@ export const REGIONS: RegionConfig[] = [
     dbValue: "Mauricie",
     locative: "en Mauricie",
     genitive: "de la Mauricie",
-    heroImage: "/images/regions/mauricie.webp",
+    heroImage: "/images/regions/mauricie-v2.webp",
     seoText: [
       "La Mauricie est une région de nature grandiose, dominée par le parc national de la Mauricie — 536 km² de forêts, de lacs et de rivières. Ce parc est l'un des plus beaux du Québec pour le canot-camping, la randonnée et l'observation de la faune. La rivière Saint-Maurice et ses paysages sauvages complètent le tableau.",
       "Louer un chalet en Mauricie, c'est profiter d'un accès direct aux sentiers du parc national, aux rivières à truites, aux forêts où rôdent l'orignal et l'ours. Shawinigan, réinventée en ville de culture et de plein air, est une base idéale pour explorer la région.",
@@ -109,7 +109,7 @@ export const REGIONS: RegionConfig[] = [
     dbValue: "Saguenay–Lac-Saint-Jean",
     locative: "au Saguenay–Lac-Saint-Jean",
     genitive: "du Saguenay–Lac-Saint-Jean",
-    heroImage: "/images/regions/saguenay-lac-saint-jean.webp",
+    heroImage: "/images/regions/saguenay-lac-saint-jean-v2.webp",
     seoText: [
       "Le Saguenay–Lac-Saint-Jean est une région de caractère, fière de son identité bleuette et de ses paysages spectaculaires. Le fjord du Saguenay, l'un des plus impressionnants en Amérique du Nord, contraste avec les grandes étendues plates et agricoles du Lac-Saint-Jean.",
       "Le tour du Lac-Saint-Jean à vélo (250 km) est une expérience légendaire. La pêche au doré, à l'omble de fontaine et au brochet est réputée dans la région. L'été, les myrtilles sauvages envahissent les sous-bois. Le parc national du Fjord-du-Saguenay et le parc national de la Pointe-Taillon offrent des expériences de plein air inoubliables.",
