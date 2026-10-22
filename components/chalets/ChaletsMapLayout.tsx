@@ -15,6 +15,9 @@ export interface ListingForMap extends Listing {
   lng: number | null;
 }
 
+// Cartes affichées d'un coup dans la liste ; les suivantes s'ouvrent avec « Afficher plus ».
+const PAGE_SIZE = 48;
+
 const ChaletsMap = dynamic(() => import("./ChaletsMap"), { ssr: false });
 
 interface Props {
@@ -42,6 +45,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
   const destination = filters.city || regionLabel || null;
   const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -88,7 +92,10 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         locale,
       });
       const res = await fetch(`/api/listings/geo?${params}`);
-      if (res.ok) setListings(await res.json());
+      if (res.ok) {
+        setListings(await res.json());
+        setVisibleCount(PAGE_SIZE);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +136,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       ) : listings.length === 0 ? (
         <EmptyState />
       ) : (
-        listings.map((listing, i) => (
+        listings.slice(0, visibleCount).map((listing, i) => (
           <div
             key={listing.id}
             onMouseEnter={() => setHoveredId(listing.id)}
@@ -142,6 +149,18 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ))
       )}
     </div>
+    {!isLoading && listings.length > visibleCount && (
+      <div className="mt-10 flex flex-col items-center gap-2">
+        <p className="text-sm text-charcoal-500">{t("shownOf", { shown: visibleCount, total: listings.length })}</p>
+        <button
+          type="button"
+          onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+          className="rounded-full border border-charcoal-300 bg-white px-6 py-3 text-sm font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors"
+        >
+          {t("showMore")}
+        </button>
+      </div>
+    )}
     </>
   );
 

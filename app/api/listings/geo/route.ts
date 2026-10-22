@@ -47,7 +47,7 @@ export async function GET(req: Request) {
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(200);
 
   if (!isNaN(minLat) && !isNaN(maxLat) && !isNaN(minLng) && !isNaN(maxLng)) {
     query = query

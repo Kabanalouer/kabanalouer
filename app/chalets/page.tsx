@@ -86,6 +86,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   };
 }
 
+// Fiches chargées d'un coup (liste + épingles de la carte). Avant : 48, donc les suivantes n'étaient jamais atteignables.
+const MAX_LOADED = 200;
+
 interface PageProps {
   searchParams: Promise<{
     region?: string;
@@ -131,7 +134,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("created_at", { ascending: false })
-    .limit(48);
+    .limit(MAX_LOADED); // la liste en montre 48 à la fois (« Afficher plus »), la carte les épingle toutes
 
   if (region) query = query.eq("region", region);
   if (city) query = query.eq("city", city);

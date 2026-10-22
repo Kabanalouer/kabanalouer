@@ -1088,6 +1088,8 @@
     "dogsFilter": "Dogs allowed",
     "accessibleFilter": "Reduced mobility",
     "resultCount": "{count, plural, one {{count} result} other {{count} results}}",
+    "showMore": "Show more cabins",
+    "shownOf": "Showing {shown} of {total} cabins",
     "noResults": "No cabins found",
     "noResultsHint": "Try different filters or move the map.",
     "showMap": "View map",

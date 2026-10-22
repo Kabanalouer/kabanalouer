@@ -1088,6 +1088,8 @@
     "dogsFilter": "Chiens acceptés",
     "accessibleFilter": "Mobilité réduite",
     "resultCount": "{count, plural, one {{count} résultat} other {{count} résultats}}",
+    "showMore": "Afficher plus de chalets",
+    "shownOf": "{shown} chalets affichés sur {total}",
     "noResults": "Aucun chalet trouvé",
     "noResultsHint": "Essayez d'autres filtres ou déplacez la carte.",
     "showMap": "Voir la carte",
