@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
 import RegionsExplorer from "@/components/RegionsExplorer";
+import ThemesExplorer from "@/components/ThemesExplorer";
 import HomeSeoSection from "@/components/HomeSeoSection";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -302,6 +303,9 @@ export default async function HomePage() {
 
       {/* ── Explorer par région (seulement les régions avec chalets) ── */}
       <RegionsExplorer />
+
+      {/* ── Explorer par thème (spa, bord de l'eau, chiens…, seulement les thèmes avec chalets) ── */}
+      <ThemesExplorer />
 
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />
