@@ -11,6 +11,8 @@
 import { AMENITY_CATALOG, type AmenityValue } from "@/lib/amenities-catalog";
 import { REGIONS } from "@/lib/regions";
 import { truncateToLastWord } from "@/lib/aiText";
+import { slugify } from "@/lib/slugify";
+import { getMunicipalityBySlug } from "@/lib/municipalities";
 
 // Doit rester synchronisé avec CAPTION_MAX dans components/dashboard/PhotoUpload.tsx.
 const CAPTION_MAX_LENGTH = 200;
@@ -144,6 +146,19 @@ export function matchRegion(candidate: string | null): string | null {
   return found ? found.dbValue : null;
 }
 
+// Région d'une annonce importée à partir de sa VILLE : le dernier élément du fil d'Ariane d'Airbnb est
+// souvent la ville (« La Malbaie »), jamais une région, d'où une région vide (annonce « Tod Shack »,
+// 2026-10-22). Même règle que la fiche de localisation du tableau de bord : la municipalité officielle
+// (répertoire MAMH, lib/municipalities.json) porte sa région. Tolère « La Malbaie, Québec, Canada ».
+export function regionFromCity(city: string | null): string | null {
+  if (!city) return null;
+  for (const part of city.split(",")) {
+    const m = getMunicipalityBySlug(slugify(part));
+    if (m) return m.region;
+  }
+  return null;
+}
+
 function toNumberOrNull(value: unknown): number | null {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -220,7 +235,7 @@ export function mapAirbnbItem(item: Record<string, unknown>): ImportedListingDat
     bathrooms: bathroomsMatch ? Number(bathroomsMatch[1]) : null,
     amenities: matched,
     city: typeof item.location === "string" ? item.location : null,
-    region: matchRegion(regionCandidate),
+    region: matchRegion(regionCandidate) ?? regionFromCity(typeof item.location === "string" ? item.location : null),
     latitude: toNumberOrNull(coordinates.latitude),
     longitude: toNumberOrNull(coordinates.longitude),
     priceLow,
@@ -288,7 +303,7 @@ export function mapVrboItem(flatItem: Record<string, unknown>): ImportedListingD
     // VRBO ne fournit pas de nom de région (Laurentides, Charlevoix, etc.),
     // seulement une adresse ville/province — le mapping échoue le plus
     // souvent, volontairement laissé à la révision manuelle.
-    region: matchRegion(city),
+    region: matchRegion(city) ?? regionFromCity(city),
     latitude: toNumberOrNull(location.latitude),
     longitude: toNumberOrNull(location.longitude),
     priceLow,

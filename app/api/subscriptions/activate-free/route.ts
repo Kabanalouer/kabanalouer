@@ -38,13 +38,18 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, title_en, import_status")
+    .select("id, title, title_en, import_status, region")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
 
   if (!listing) {
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
+  }
+
+  // Jamais d'annonce en ligne sans région : elle n'apparaîtrait sur aucune page région ni dans le fil d'Ariane.
+  if (!(listing.region as string | null)?.trim()) {
+    return NextResponse.json({ error: t2(locale, "Choisissez la région de votre chalet (section Localisation) avant de publier.", "Choose your cabin's region (Location section) before publishing.") }, { status: 400 });
   }
 
   // Éligibilité par ANNONCE, pas par proprio : l'existence d'une ligne

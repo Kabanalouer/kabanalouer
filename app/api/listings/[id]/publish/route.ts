@@ -14,13 +14,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const { data: ownedListing } = await supabase
     .from("listings")
-    .select("id, import_status")
+    .select("id, import_status, region")
     .eq("id", id)
     .eq("host_id", user.id)
     .maybeSingle();
 
   if (!ownedListing) {
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
+  }
+
+  if (!(ownedListing.region as string | null)?.trim()) {
+    return NextResponse.json({ error: t2(locale, "Choisissez la région de votre chalet (section Localisation) avant de publier.", "Choose your cabin's region (Location section) before publishing.") }, { status: 400 });
   }
 
   const { data: subscription } = await supabase
