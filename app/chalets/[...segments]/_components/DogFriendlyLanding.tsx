@@ -3,6 +3,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import LandingSearchCta from "./LandingSearchCta";
 import ComboLinkChips from "./ComboLinkChips";
 import { activeCitiesForTheme, activeRegionsForTheme, comboPath, getComboIndex } from "@/lib/comboLandings";
+import ThemeHero from "@/components/ThemeHero";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -231,31 +232,18 @@ export default async function DogFriendlyLanding() {
       <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
-      <section className="bg-charcoal-50 border-b border-charcoal-100 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
-            <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
-              {isEn ? "Cabins" : "Chalets"}
-            </Link>
-            <span>›</span>
-            <span className="text-charcoal-600">{isEn ? "Dog-friendly" : "Chiens acceptés"}</span>
-          </nav>
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-            <PawIcon className="w-6 h-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-charcoal-900 mb-3">
-            {isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet avec chien au Québec"}
-          </h1>
-          <p className="text-base text-charcoal-500 mb-8">
-            {isEn
-              ? "Cabins where your dog is welcome, everywhere in Quebec. Every listing shows the maximum number of dogs, weight limits and fees. Direct contact with owners, no service fees."
-              : "Des chalets où votre chien est le bienvenu, partout au Québec. Chaque fiche indique le nombre maximum de chiens, les restrictions de poids et les frais. Contact direct avec les propriétaires, aucuns frais de service."}
-          </p>
-          <div className="flex justify-center">
-            <SearchBar initialPets={1} />
-          </div>
-        </div>
-      </section>
+      <ThemeHero
+        themeKey="dogs"
+        isEn={isEn}
+        crumbs={[{ label: isEn ? "Cabins" : "Chalets", href: localePath("/chalets", locale) }, { label: isEn ? "Dog-friendly" : "Chiens acceptés" }]}
+        title={isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet avec chien au Québec"}
+        intro={isEn
+          ? "Cabins where your dog is welcome, everywhere in Quebec. Every listing shows the maximum number of dogs, weight limits and fees. Direct contact with owners, no service fees."
+          : "Des chalets où votre chien est le bienvenu, partout au Québec. Chaque fiche indique le nombre maximum de chiens, les restrictions de poids et les frais. Contact direct avec les propriétaires, aucuns frais de service."}
+        icon={<PawIcon className="w-6 h-6" />}
+      >
+        <SearchBar initialPets={1} />
+      </ThemeHero>
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">

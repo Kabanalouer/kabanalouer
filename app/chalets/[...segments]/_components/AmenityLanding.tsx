@@ -3,6 +3,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import LandingSearchCta from "./LandingSearchCta";
 import ComboLinkChips from "./ComboLinkChips";
 import { activeCitiesForTheme, activeRegionsForTheme, comboPath, getComboIndex } from "@/lib/comboLandings";
+import ThemeHero from "@/components/ThemeHero";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OwnersSection from "@/components/OwnersSection";
@@ -244,29 +245,16 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
       <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
-      <section className="bg-charcoal-50 border-b border-charcoal-100 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
-            <Link href={localePath("/chalets", locale)} className="inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors">
-              {isEn ? "Cabins" : "Chalets"}
-            </Link>
-            <span>›</span>
-            <span className="text-charcoal-600">{linkLabel}</span>
-          </nav>
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-            <AmenityIcon name={config.icon} className="w-6 h-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-charcoal-900 mb-3">
-            {isEn ? config.h1En : config.h1Fr}
-          </h1>
-          <p className="text-base text-charcoal-500 mb-8">
-            {isEn ? config.introEn : config.introFr}
-          </p>
-          <div className="flex justify-center">
-            <SearchBar />
-          </div>
-        </div>
-      </section>
+      <ThemeHero
+        themeKey={config.key}
+        isEn={isEn}
+        crumbs={[{ label: isEn ? "Cabins" : "Chalets", href: localePath("/chalets", locale) }, { label: linkLabel }]}
+        title={isEn ? config.h1En : config.h1Fr}
+        intro={isEn ? config.introEn : config.introFr}
+        icon={<AmenityIcon name={config.icon} className="w-6 h-6" />}
+      >
+        <SearchBar />
+      </ThemeHero>
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">

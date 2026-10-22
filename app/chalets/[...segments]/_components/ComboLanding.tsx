@@ -4,6 +4,7 @@ import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
 import LandingSearchCta from "./LandingSearchCta";
 import ComboLinkChips from "./ComboLinkChips";
 import { parseAccess } from "./AmenityLanding";
+import ThemeHero from "@/components/ThemeHero";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OwnersSection from "@/components/OwnersSection";
@@ -298,7 +299,6 @@ export default async function ComboLanding({ theme, regionConfig, cityName }: { 
     mainEntity: faq.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
   };
 
-  const crumbLinkClass = "inline-block py-2 -my-2 hover:text-primary hover:underline transition-colors";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -309,36 +309,26 @@ export default async function ComboLanding({ theme, regionConfig, cityName }: { 
       <main className="flex flex-1 flex-col">
 
       {/* ── Hero ── */}
-      <section className="bg-charcoal-50 border-b border-charcoal-100 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <nav className="text-sm text-charcoal-400 mb-4 flex items-center justify-center gap-1.5 flex-wrap" aria-label={isEn ? "Breadcrumb" : "Fil d’Ariane"}>
-            <Link href={isEn ? "/en/cabins" : "/chalets"} className={crumbLinkClass}>{isEn ? "Cabins" : "Chalets"}</Link>
-            <span>›</span>
-            <Link href={regionPath} className={crumbLinkClass}>{regionName}</Link>
-            {cityName && cityPath && (
-              <>
-                <span>›</span>
-                <Link href={cityPath} className={crumbLinkClass}>{cityName}</Link>
-              </>
-            )}
-            <span>›</span>
-            <span className="text-charcoal-600">{themeLabel}</span>
-          </nav>
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-            <ThemeIcon theme={theme} className="w-6 h-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-charcoal-900 mb-3">{h1}</h1>
-          <p className="text-base text-charcoal-500 mb-8">{intro}</p>
-          <div className="flex justify-center">
-            <SearchBar
-              initialRegion={cityName ? undefined : regionConfig.dbValue}
-              initialCity={cityName ?? undefined}
-              initialPets={theme.key === "dogs" ? 1 : undefined}
-              preserveParams={theme.key === "dogs" ? undefined : theme.searchParams}
-            />
-          </div>
-        </div>
-      </section>
+      <ThemeHero
+        themeKey={theme.key}
+        isEn={isEn}
+        crumbs={[
+          { label: isEn ? "Cabins" : "Chalets", href: isEn ? "/en/cabins" : "/chalets" },
+          { label: regionName, href: regionPath },
+          ...(cityName && cityPath ? [{ label: cityName, href: cityPath }] : []),
+          { label: themeLabel },
+        ]}
+        title={h1}
+        intro={intro}
+        icon={<ThemeIcon theme={theme} className="w-6 h-6" />}
+      >
+        <SearchBar
+          initialRegion={cityName ? undefined : regionConfig.dbValue}
+          initialCity={cityName ?? undefined}
+          initialPets={theme.key === "dogs" ? 1 : undefined}
+          preserveParams={theme.key === "dogs" ? undefined : theme.searchParams}
+        />
+      </ThemeHero>
 
       {/* ── Listings ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
