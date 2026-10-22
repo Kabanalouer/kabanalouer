@@ -232,10 +232,6 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             {isEn
               ? `Find your perfect cabin ${content?.locative_en ?? "in Quebec"}.`
               : `Trouvez votre chalet idéal ${regionConfig.locative}.`}
-            <br />
-            {isEn
-              ? "Direct contact with local owners. No service fees."
-              : "Contact direct avec les propriétaires."}
           </p>
           <SearchBar initialRegion={regionConfig.dbValue} />
         </div>

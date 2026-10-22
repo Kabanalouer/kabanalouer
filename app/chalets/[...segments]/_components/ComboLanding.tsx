@@ -161,8 +161,8 @@ export default async function ComboLanding({ theme, regionConfig, cityName }: { 
   const topCities = cities.slice(0, 5).map(([c]) => c);
 
   const intro = isEn
-    ? `${count} ${noun(count)} ${place}${!cityName && topCities.length ? `, in ${joinList(topCities, true)}` : ""}${capacityText ? `, for ${capacityText}` : ""}. Direct contact with owners, no service fees.`
-    : `${count} ${noun(count)} ${place}${!cityName && topCities.length ? `, à ${joinList(topCities, false)}` : ""}${capacityText ? `, pour ${capacityText}` : ""}. Contact direct avec les propriétaires, aucuns frais de service.`;
+    ? `${count} ${noun(count)} ${place}${!cityName && topCities.length ? `, in ${joinList(topCities, true)}` : ""}${capacityText ? `, for ${capacityText}` : ""}.`
+    : `${count} ${noun(count)} ${place}${!cityName && topCities.length ? `, à ${joinList(topCities, false)}` : ""}${capacityText ? `, pour ${capacityText}` : ""}.`;
 
   // ── FAQ ──
   const faq: { question: string; answer: string }[] = [];

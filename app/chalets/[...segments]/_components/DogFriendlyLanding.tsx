@@ -238,8 +238,8 @@ export default async function DogFriendlyLanding() {
         crumbs={[{ label: isEn ? "Cabins" : "Chalets", href: localePath("/chalets", locale) }, { label: isEn ? "Dog-friendly" : "Chiens acceptés" }]}
         title={isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet avec chien au Québec"}
         intro={isEn
-          ? "Cabins where your dog is welcome, everywhere in Quebec. Every listing shows the maximum number of dogs, weight limits and fees. Direct contact with owners, no service fees."
-          : "Des chalets où votre chien est le bienvenu, partout au Québec. Chaque fiche indique le nombre maximum de chiens, les restrictions de poids et les frais. Contact direct avec les propriétaires, aucuns frais de service."}
+          ? "Cabins where your dog is welcome, everywhere in Quebec. Every listing shows the maximum number of dogs, weight limits and fees."
+          : "Des chalets où votre chien est le bienvenu, partout au Québec. Chaque fiche indique le nombre maximum de chiens, les restrictions de poids et les frais."}
         icon={<PawIcon className="w-6 h-6" />}
       >
         <SearchBar initialPets={1} />

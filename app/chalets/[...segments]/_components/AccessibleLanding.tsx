@@ -246,8 +246,8 @@ export default async function AccessibleLanding() {
           </h1>
           <p className="text-base text-charcoal-500 mb-8">
             {isEn
-              ? "Cabins in Quebec adapted to people with reduced mobility. Every listing details the entrance, bathroom, bedroom and circulation, with measurements. Direct contact with owners, no service fees."
-              : "Des chalets au Québec adaptés aux personnes à mobilité réduite. Chaque fiche détaille l'entrée, la salle de bain, la chambre et la circulation, avec les mesures. Contact direct avec les propriétaires, aucuns frais de service."}
+              ? "Cabins in Quebec adapted to people with reduced mobility. Every listing details the entrance, bathroom, bedroom and circulation, with measurements."
+              : "Des chalets au Québec adaptés aux personnes à mobilité réduite. Chaque fiche détaille l'entrée, la salle de bain, la chambre et la circulation, avec les mesures."}
           </p>
           <div className="flex justify-center">
             <SearchBar />

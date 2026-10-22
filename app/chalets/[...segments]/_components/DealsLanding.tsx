@@ -288,8 +288,8 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
           </h1>
           <p className="text-base text-charcoal-500">
             {isEn
-              ? "All the cabins with a deal right now: discounts, free nights and last-minute offers. Direct contact with owners, no service fees."
-              : "Tous les chalets en promo en ce moment : rabais, nuit gratuite et offres de dernière minute. Contact direct avec les propriétaires, aucuns frais de service."}
+              ? "All the cabins with a deal right now: discounts, free nights and last-minute offers."
+              : "Tous les chalets en promo en ce moment : rabais, nuit gratuite et offres de dernière minute."}
           </p>
         </div>
       </section>
