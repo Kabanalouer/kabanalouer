@@ -1798,6 +1798,7 @@
     "claimTitle": "Activez {count, plural, one {votre fiche} other {vos # fiches}}",
     "claimIntro": "Créez un compte ou connectez-vous pour devenir le propriétaire de {count, plural, one {cette fiche} other {ces fiches}}. L’adresse de votre compte peut être différente de celle où vous avez reçu ce lien.",
     "claimListingsTitle": "Fiches à activer",
+    "viewListing": "Voir l’annonce",
     "signedInAs": "Connecté en tant que {email}",
     "activateButton": "{count, plural, one {Activer la fiche} other {Activer les # fiches}}",
     "activating": "Activation en cours…",

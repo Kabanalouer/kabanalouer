@@ -1797,6 +1797,7 @@
     "usedBody": "If you activated your listing, sign in to find it in your dashboard.",
     "claimTitle": "Activate {count, plural, one {your listing} other {your # listings}}",
     "claimIntro": "Create an account or sign in to become the owner of {count, plural, one {this listing} other {these listings}}. Your account’s email can be different from the one where you received this link.",
+    "viewListing": "View listing",
     "claimListingsTitle": "Listings to activate",
     "signedInAs": "Signed in as {email}",
     "activateButton": "{count, plural, one {Activate the listing} other {Activate all # listings}}",
