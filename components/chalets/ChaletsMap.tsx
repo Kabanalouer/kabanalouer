@@ -46,6 +46,16 @@ function ScaleBar({ zoom, lat }: { zoom: number; lat: number }) {
   );
 }
 
+// Vignettes de la carte : une photo de fiche fait 300 à 650 Ko, et la carte en affiche des dizaines dans des
+// ronds de 56 px (26 Mo au total pour 76 fiches, lenteur de départ constatée le 2026-10-23). Elles passent par
+// l'optimiseur d'images du site (AVIF/WebP, quelques Ko), comme les cartes de la liste. Largeurs et qualité
+// autorisées par next.config.ts (imageSizes, qualities) ; hors stockage du site, l'adresse reste telle quelle.
+function thumb(url: string, width: 128 | 384): string {
+  return url.includes(".supabase.co/storage/")
+    ? `/_next/image?url=${encodeURIComponent(url)}&w=${width}&q=75`
+    : url;
+}
+
 // ── Inner component (must live inside <Map> to use useMap) ────────────────────
 
 function MapContent({
@@ -180,7 +190,7 @@ function MapContent({
             >
               {listing.photos[0] ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={listing.photos[0]} alt="" className="w-full h-full object-cover" width={56} height={56} loading="lazy" draggable={false} />
+                <img src={thumb(listing.photos[0], 128)} alt="" className="w-full h-full object-cover" width={56} height={56} loading="lazy" draggable={false} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-charcoal-50">
                   <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
@@ -203,7 +213,7 @@ function MapContent({
             {selected.photos[0] && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={selected.photos[0]}
+                src={thumb(selected.photos[0], 384)}
                 alt={selected.title}
                 className="w-full h-28 object-cover rounded-lg mb-2"
                 style={{ display: "block" }}
