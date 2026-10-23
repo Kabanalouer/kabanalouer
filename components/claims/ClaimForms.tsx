@@ -52,8 +52,8 @@ export function ClaimForm({
   if (status === "done") {
     return (
       <div role="status">
-        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("doneTitle")}</h2>
-        <p className="mt-2 text-base text-charcoal-600">{t("doneBody")}</p>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("doneTitle", { count })}</h2>
+        <p className="mt-2 text-base text-charcoal-600">{t("doneBody", { count })}</p>
         <Link href={dashboardHref} className={`${PRIMARY_BUTTON} mt-6`}>{t("goDashboard")}</Link>
       </div>
     );
