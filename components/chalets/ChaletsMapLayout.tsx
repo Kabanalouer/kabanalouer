@@ -1,7 +1,7 @@
 "use client";
 
 import ListYourCabinPromo from "@/components/ListYourCabinPromo";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { getRegionByDbValue } from "@/lib/regions";
 import ListingCard, { type Listing } from "@/components/ListingCard";
@@ -70,7 +70,12 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     return () => observer.disconnect();
   }, []);
 
+  // Numéro de la dernière recherche lancée : une réponse plus lente d'un ancien déplacement ne doit jamais
+  // écraser la liste d'un déplacement plus récent.
+  const lastRequest = useRef(0);
+
   const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
+    const requestId = ++lastRequest.current;
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -93,11 +98,13 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
       });
       const res = await fetch(`/api/listings/geo?${params}`);
       if (res.ok) {
-        setListings(await res.json());
+        const next = await res.json();
+        if (requestId !== lastRequest.current) return;
+        setListings(next);
         setVisibleCount(PAGE_SIZE);
       }
     } finally {
-      setIsLoading(false);
+      if (requestId === lastRequest.current) setIsLoading(false);
     }
   }, [filters]);
 
@@ -130,11 +137,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     <>
     {/* Titre invisible : garde l'ordre des titres (h1 → h2 → h3 des cartes) pour les lecteurs d'écran */}
     <h2 className="sr-only">{locale === "en" ? "Results" : "Résultats"}</h2>
-    <div className={`grid ${cols} gap-x-5 gap-y-8`}>
-      {isLoading ? (
-        [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
-      ) : listings.length === 0 ? (
-        <EmptyState />
+    <div className={`grid ${cols} gap-x-5 gap-y-8 transition-opacity ${isLoading && listings.length > 0 ? "opacity-60" : ""}`}>
+      {listings.length === 0 ? (
+        isLoading ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />) : <EmptyState />
       ) : (
         listings.slice(0, visibleCount).map((listing, i) => (
           <div
@@ -149,7 +154,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         ))
       )}
     </div>
-    {!isLoading && listings.length > visibleCount && (
+    {listings.length > visibleCount && (
       <div className="mt-10 flex flex-col items-center gap-2">
         <p className="text-sm text-charcoal-500">{t("shownOf", { shown: visibleCount, total: listings.length })}</p>
         <button
@@ -208,11 +213,9 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 version ordinateur garde un titre de niveau 1 pour les lecteurs
                 d'écran (l'autre est masqué), sans dupliquer la balise. */}
             <div role="heading" aria-level={1} className="text-2xl font-bold text-charcoal-800">{pageTitle}</div>
-            {!isLoading && (
-              <span className="text-sm text-charcoal-400 mt-0.5 block">
-                {t("resultCount", { count: listings.length })}
-              </span>
-            )}
+            <span className="text-sm text-charcoal-400 mt-0.5 block">
+              {t("resultCount", { count: listings.length })}
+            </span>
           </div>
           {listGrid("grid-cols-2")}
         </div>
@@ -231,7 +234,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         <div className="px-4 pt-5 pb-28">
           <div className="mb-5">
             <h1 className="text-2xl font-bold text-charcoal-800">{pageTitle}</h1>
-            {!isLoading && listings.length > 0 && (
+            {listings.length > 0 && (
               <span className="text-sm text-charcoal-400 mt-0.5 block">
                 {t("resultCount", { count: listings.length })}
               </span>

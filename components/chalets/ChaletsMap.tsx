@@ -260,20 +260,20 @@ export default function ChaletsMap({
   const tMap = useTranslations("chaletsMap");
   const isEn = useLocale() === "en";
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-  const [hasMoved, setHasMoved] = useState(false);
-  const [pendingBounds, setPendingBounds] = useState<MapBounds | null>(null);
   const [mapState, setMapState] = useState({ zoom: 9, lat: 46.8 });
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const handleMapReady = useCallback((m: google.maps.Map) => { mapRef.current = m; }, []);
   const handleMapStateChange = useCallback((s: { zoom: number; lat: number }) => setMapState(s), []);
-  const handlePendingBoundsChange = useCallback((b: MapBounds) => { setPendingBounds(b); setHasMoved(true); }, []);
-
-  const handleSearchHere = () => {
-    if (!pendingBounds) return;
-    onBoundsChange(pendingBounds);
-    setHasMoved(false);
-  };
+  // Comme Airbnb : la liste suit la carte. Chaque déplacement ou zoom de l'utilisateur (jamais le cadrage
+  // initial fait par le code) relance la recherche dans la zone visible, après une courte pause pour
+  // regrouper les clics rapides sur + et −.
+  const boundsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handlePendingBoundsChange = useCallback((b: MapBounds) => {
+    if (boundsTimer.current) clearTimeout(boundsTimer.current);
+    boundsTimer.current = setTimeout(() => onBoundsChange(b), 350);
+  }, [onBoundsChange]);
+  useEffect(() => () => { if (boundsTimer.current) clearTimeout(boundsTimer.current); }, []);
 
   const zoomIn = () => { const m = mapRef.current; if (m) m.setZoom((m.getZoom() ?? 9) + 1); };
   const zoomOut = () => { const m = mapRef.current; if (m) m.setZoom((m.getZoom() ?? 9) - 1); };
@@ -314,21 +314,6 @@ export default function ChaletsMap({
             destination={destination}
           />
         </Map>
-
-        {/* "Rechercher dans cette zone" */}
-        {hasMoved && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
-            <button
-              onClick={handleSearchHere}
-              className="flex items-center gap-2 bg-white text-charcoal-800 text-sm font-semibold px-4 py-2 rounded-full shadow-lg border border-[#e0e0e0] hover:bg-charcoal-50 transition-colors"
-            >
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              {isEn ? "Search this area" : "Rechercher dans cette zone"}
-            </button>
-          </div>
-        )}
 
         {/* Controls: ↗/✕ · + · − stacked at top-right */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
