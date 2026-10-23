@@ -205,7 +205,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             fill
             priority
             fetchPriority="high"
-            quality={60}
+            quality={85}
             sizes="100vw"
             className="object-cover object-center"
           />

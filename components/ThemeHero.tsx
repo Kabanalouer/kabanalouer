@@ -66,7 +66,7 @@ export default function ThemeHero({
     <section className="relative min-h-[460px] z-10 flex items-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* next/image en priorité plutôt qu'un fond CSS : élément LCP de la page, découvert dès le HTML */}
-        <Image src={image} alt="" fill priority fetchPriority="high" quality={60} sizes="100vw" className="object-cover object-center" />
+        <Image src={image} alt="" fill priority fetchPriority="high" quality={85} sizes="100vw" className="object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/75" />
       </div>
       <div className="relative w-full">{content}</div>
