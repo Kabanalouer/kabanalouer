@@ -88,10 +88,24 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "daily", dailyAt: "11 h", testable: true, ...BOOST_PAUSE,
   },
   {
-    id: "sms-invite", category: "proprio", group: "Publication",
+    id: "profile-tip", category: "proprio", group: "Après la publication",
+    name: "Photo de profil et présentation",
+    when: "24 h après la première publication ou la revendication du proprio.",
+    conditions: "Une seule séquence par proprio (pas par chalet). Seulement s’il manque la photo de profil ou la présentation (le courriel nomme ce qui manque). Fenêtre de 24 h à 4 jours.",
+    mechanism: "daily", dailyAt: "11 h", testable: true,
+  },
+  {
+    id: "rooms-tip", category: "proprio", group: "Après la publication",
+    name: "Remplir la section Chambres",
+    when: "4 jours après la première publication ou la revendication du proprio.",
+    conditions: "Une seule fois par proprio. Seulement s’il a au moins un chalet publié sans aucune chambre (le courriel nomme le chalet et « et N autres »). Fenêtre de 4 à 8 jours.",
+    mechanism: "daily", dailyAt: "11 h", testable: true,
+  },
+  {
+    id: "sms-invite", category: "proprio", group: "Après la publication",
     name: "Recevoir ses demandes par texto",
-    when: "96 h après la première publication du proprio.",
-    conditions: "Une seule fois par proprio. Sauté s’il reçoit déjà les textos.",
+    when: "8 jours après la première publication ou la revendication du proprio.",
+    conditions: "Une seule fois par proprio. Sauté s’il reçoit déjà les textos. Fenêtre de 8 à 14 jours.",
     mechanism: "daily", dailyAt: "11 h", testable: true,
   },
   {

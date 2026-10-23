@@ -2,7 +2,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
-import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
+import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail, sendProfileTipEmail, sendRoomsTipEmail } from "@/lib/emails/hostOnboarding";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
@@ -65,6 +65,8 @@ export function emailTestSenders(): Record<string, Sender> {
     "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE, isFreeLaunch: true }),
     "draft-reminder": (to, lang) => sendDraftReminderEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
     "boost-invite": (to, lang) => sendBoostInviteEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
+    "profile-tip": (to, lang) => sendProfileTipEmail({ email: to, lang, firstName: "Simon", missingPhoto: true, missingBio: true }),
+    "rooms-tip": (to, lang) => sendRoomsTipEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID, otherCount: 0 }),
     "sms-invite": (to, lang) => sendSmsInviteEmail({ email: to, lang, firstName: "Simon" }),
     "new-message-host": (to, lang) => sendNewMessageNotificationEmail(admin, {
       email: to, preferredLanguage: lang, recipientFirstName: "Simon", recipientId: HOST_ID,

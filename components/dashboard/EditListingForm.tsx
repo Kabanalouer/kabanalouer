@@ -277,6 +277,7 @@ export default function EditListingForm({
     BOOSTS_ENABLED && searchParams.get("section") === "vedette" ? "vedette"
       : searchParams.get("section") === "calendrier" ? "calendrier"
       : searchParams.get("section") === "publier" ? "publier"
+      : searchParams.get("section") === "chambres" ? "chambres"
       : "titre"
   );
   const [saving, setSaving] = useState(false);

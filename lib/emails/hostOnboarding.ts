@@ -10,9 +10,11 @@ import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 
 // Courriels d'accueil des proprios, envoyés par le cron host-onboarding-emails :
 // - 48 h après la création d'un brouillon jamais publié : rappel de le compléter
-// Après la première publication :
-// - 48 h : invitation à booster l'annonce (vedette région / accueil)
-// - 96 h : invitation à recevoir les demandes et messages par texto
+// Après la première publication ou la revendication (une seule séquence par proprio, jamais par chalet) :
+// - 24 h : photo de profil et présentation (seulement ce qui manque encore)
+// - 48 h : invitation à booster l'annonce (vedette région / accueil) — boosts désactivés
+// - 4 jours : remplir la section Chambres (seulement s'il reste un chalet sans chambre)
+// - 8 jours : invitation à recevoir les demandes et messages par texto (sauté s'il les reçoit déjà)
 // Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* ci-dessous =
 // textes par défaut, lib/emailTemplates).
 
@@ -122,6 +124,91 @@ export async function sendSmsInviteEmail({
 
   const text = await resolveEmailText(TEMPLATE_SMS_INVITE, lang, { prenom: firstName?.trim(), etapes: howTo });
   const html = renderEmail({ lang, ...text, buttonUrl: `${SITE_URL}${profilePath}` });
+  const { error } = await sendEmail({ from: FROM, to: [email], subject: text.subject, html });
+  return { error: error ? new Error(error.message) : null };
+}
+
+export const TEMPLATE_PROFILE_TIP: EmailTemplateDef = {
+  id: "profile-tip",
+  placeholders: [
+    { key: "prenom", label: "Prénom du proprio" },
+    { key: "manque", label: "Ce qu’il reste à ajouter : « ta photo de profil et ta présentation », « ta photo de profil » ou « ta présentation »" },
+  ],
+  defaults: {
+    fr: {
+      subject: "Présente-toi à tes voyageurs",
+      greeting: "Bonjour {prenom} !",
+      heading: "Les voyageurs aiment savoir qui les accueille",
+      body: "Avant d’envoyer une demande, un voyageur regarde qui est derrière l’annonce. Une vraie photo et quelques lignes sur toi donnent confiance et rendent la conversation plus chaleureuse.\n\nIl te manque encore {manque}. Ça prend moins de deux minutes.",
+      buttonLabel: "Compléter mon profil",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "Introduce yourself to your travelers",
+      greeting: "Hi {prenom}!",
+      heading: "Travelers like to know who is welcoming them",
+      body: "Before sending a request, a traveler looks at who is behind the listing. A real photo and a few lines about you build trust and make the conversation warmer.\n\nYou’re still missing {manque}. It takes less than two minutes.",
+      buttonLabel: "Complete my profile",
+      footerNote: FOOTER_QUESTION_EN,
+    },
+  },
+};
+
+export async function sendProfileTipEmail({
+  email, lang, firstName, missingPhoto, missingBio,
+}: {
+  email: string; lang: Lang; firstName?: string | null; missingPhoto: boolean; missingBio: boolean;
+}): Promise<{ error: Error | null }> {
+  const fr = lang === "fr";
+  const manque = missingPhoto && missingBio
+    ? (fr ? "ta photo de profil et ta présentation" : "your profile photo and your bio")
+    : missingPhoto
+      ? (fr ? "ta photo de profil" : "your profile photo")
+      : (fr ? "ta présentation" : "your bio");
+  const text = await resolveEmailText(TEMPLATE_PROFILE_TIP, lang, { prenom: firstName?.trim(), manque });
+  const html = renderEmail({ lang, ...text, buttonUrl: `${SITE_URL}${fr ? "" : "/en"}/dashboard/profile` });
+  const { error } = await sendEmail({ from: FROM, to: [email], subject: text.subject, html });
+  return { error: error ? new Error(error.message) : null };
+}
+
+export const TEMPLATE_ROOMS_TIP: EmailTemplateDef = {
+  id: "rooms-tip",
+  placeholders: [
+    { key: "prenom", label: "Prénom du proprio" },
+    { key: "titreChalet", label: "Titre du chalet sans chambres (« et N autres chalets » s’il y en a plusieurs)" },
+  ],
+  defaults: {
+    fr: {
+      subject: "Montre où dormiront tes voyageurs",
+      greeting: "Bonjour {prenom} !",
+      heading: "Décris tes chambres",
+      body: "Pour **{titreChalet}**, la section Chambres est encore vide. Les voyageurs veulent savoir où chacun va dormir : nombre de chambres, types de lits, divan-lit au salon. Une fiche précise évite les questions répétées et donne envie de réserver.\n\nAjoute tes chambres en quelques clics, avec les lits de chacune.",
+      buttonLabel: "Ajouter mes chambres",
+      footerNote: FOOTER_QUESTION_FR,
+    },
+    en: {
+      subject: "Show where your travelers will sleep",
+      greeting: "Hi {prenom}!",
+      heading: "Describe your bedrooms",
+      body: "For **{titreChalet}**, the Rooms section is still empty. Travelers want to know where everyone will sleep: number of bedrooms, bed types, sofa bed in the living room. A precise listing avoids repeated questions and makes people want to book.\n\nAdd your rooms in a few clicks, with the beds in each one.",
+      buttonLabel: "Add my rooms",
+      footerNote: FOOTER_QUESTION_EN,
+    },
+  },
+};
+
+export async function sendRoomsTipEmail({
+  email, lang, firstName, listingTitle, listingId, otherCount,
+}: {
+  email: string; lang: Lang; firstName?: string | null; listingTitle: string; listingId: string; otherCount: number;
+}): Promise<{ error: Error | null }> {
+  const fr = lang === "fr";
+  const titre = otherCount > 0
+    ? fr ? `${listingTitle} et ${otherCount} autre${otherCount > 1 ? "s" : ""} chalet${otherCount > 1 ? "s" : ""}` : `${listingTitle} and ${otherCount} other cabin${otherCount > 1 ? "s" : ""}`
+    : listingTitle;
+  const path = `${fr ? "" : "/en"}/dashboard/listings/${listingId}/edit?section=chambres`;
+  const text = await resolveEmailText(TEMPLATE_ROOMS_TIP, lang, { prenom: firstName?.trim(), titreChalet: titre });
+  const html = renderEmail({ lang, ...text, buttonUrl: `${SITE_URL}${path}` });
   const { error } = await sendEmail({ from: FROM, to: [email], subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };
 }

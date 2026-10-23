@@ -1,5 +1,5 @@
 import type { EmailTemplateDef } from "./types";
-import { TEMPLATE_BOOST_INVITE, TEMPLATE_DRAFT_REMINDER, TEMPLATE_SMS_INVITE } from "@/lib/emails/hostOnboarding";
+import { TEMPLATE_BOOST_INVITE, TEMPLATE_DRAFT_REMINDER, TEMPLATE_SMS_INVITE, TEMPLATE_PROFILE_TIP, TEMPLATE_ROOMS_TIP } from "@/lib/emails/hostOnboarding";
 import { TEMPLATE_WELCOME_SUBSCRIPTION } from "@/lib/emails/welcomeSubscription";
 import { TEMPLATE_IMPORT_PUBLISHED } from "@/lib/emails/importPublished";
 import { TEMPLATE_WINBACK_3, TEMPLATE_WINBACK_14 } from "@/lib/emails/winbackReminder";
@@ -36,6 +36,8 @@ const ALL: EmailTemplateDef[] = [
   TEMPLATE_WELCOME_SUBSCRIPTION,
   TEMPLATE_IMPORT_PUBLISHED,
   TEMPLATE_BOOST_INVITE,
+  TEMPLATE_PROFILE_TIP,
+  TEMPLATE_ROOMS_TIP,
   TEMPLATE_SMS_INVITE,
   TEMPLATE_NEW_MESSAGE_HOST,
   TEMPLATE_REVIEW_RECEIVED,
