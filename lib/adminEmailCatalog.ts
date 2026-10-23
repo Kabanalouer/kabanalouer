@@ -171,6 +171,20 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "daily", dailyAt: "8 h", testable: true,
   },
   {
+    id: "claim-invitation-multi", category: "proprio", group: "Fiches non revendiquées",
+    name: "Invitation à activer ses fiches — plusieurs chalets",
+    when: "Même moment que l’invitation, quand la même adresse a 2 chalets ou plus.",
+    conditions: "Une seule invitation pour tous les chalets de l’adresse, envoyée quand tous ses chalets du jour sont en ligne (10 h au plus tard). Textes au pluriel avec le nombre de chalets, liste à puces des fiches et un lien « Retirer » par chalet.",
+    mechanism: "event", testable: true,
+  },
+  {
+    id: "claim-invitation-reminder-multi", category: "proprio", group: "Fiches non revendiquées",
+    name: "Relance de l’invitation — plusieurs chalets (3 jours plus tard)",
+    when: "Même moment que la relance, quand la même adresse a 2 chalets ou plus.",
+    conditions: "Une seule relance par adresse. Même présentation que l’invitation pour plusieurs chalets.",
+    mechanism: "daily", dailyAt: "8 h", testable: true,
+  },
+  {
     id: "review-received", category: "proprio", group: "Demandes et avis",
     name: "Nouvel avis reçu",
     when: "Dès qu’un voyageur publie un avis sur le chalet.",

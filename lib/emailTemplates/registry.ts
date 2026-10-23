@@ -26,7 +26,7 @@ import {
   TEMPLATE_CLAIM_APPROVED,
   TEMPLATE_CLAIM_REFUSED,
 } from "@/lib/emails/unclaimedOwner";
-import { TEMPLATE_CLAIM_INVITATION, TEMPLATE_CLAIM_INVITATION_REMINDER } from "@/lib/emails/claimInvitation";
+import { TEMPLATE_CLAIM_INVITATION, TEMPLATE_CLAIM_INVITATION_REMINDER, TEMPLATE_CLAIM_INVITATION_MULTI, TEMPLATE_CLAIM_INVITATION_REMINDER_MULTI } from "@/lib/emails/claimInvitation";
 
 // Courriels dont les textes sont modifiables dans Admin → Séquences courriel,
 // par id du catalogue (lib/adminEmailCatalog.ts). Tout nouveau courriel proprio
@@ -66,6 +66,8 @@ const ALL: EmailTemplateDef[] = [
   TEMPLATE_CLAIM_REFUSED,
   TEMPLATE_CLAIM_INVITATION,
   TEMPLATE_CLAIM_INVITATION_REMINDER,
+  TEMPLATE_CLAIM_INVITATION_MULTI,
+  TEMPLATE_CLAIM_INVITATION_REMINDER_MULTI,
 ];
 
 export const EMAIL_TEMPLATES: Record<string, EmailTemplateDef> = Object.fromEntries(ALL.map((d) => [d.id, d]));

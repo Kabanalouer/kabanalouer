@@ -60,6 +60,10 @@ export function emailTestSenders(): Record<string, Sender> {
       ? "Bonjour ! Nous sommes une famille de 4 et aimerions réserver du 10 au 13 octobre. Le spa est-il disponible ?"
       : "Hi! We’re a family of 4 and would like to book October 10 to 13. Is the hot tub available?";
 
+  const MULTI_TITLES = [TITLE, "Chalet exemple 2", "Chalet exemple 3"];
+  const MULTI_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, path: lang === "en" ? `/en/cabins/laurentians/mille-isles/4834${7 + i}` : `/chalets/laurentides/mille-isles/4834${7 + i}` }));
+  const MULTI_REMOVE = (lang: Lang) => MULTI_TITLES.map((title) => ({ title, url: removeLink(lang, "exemple") }));
+
   return {
     "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
     "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE, isFreeLaunch: true }),
@@ -182,6 +186,14 @@ export function emailTestSenders(): Record<string, Sender> {
       to, lang, kind: "reminder",
       listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
       claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
+    }),
+    "claim-invitation-multi": (to, lang) => sendClaimInvitationEmail({
+      to, lang, kind: "invite", listings: MULTI_LISTINGS(lang),
+      claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+    }),
+    "claim-invitation-reminder-multi": (to, lang) => sendClaimInvitationEmail({
+      to, lang, kind: "reminder", listings: MULTI_LISTINGS(lang),
+      claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], firstName: "Marie", approved: true }),
