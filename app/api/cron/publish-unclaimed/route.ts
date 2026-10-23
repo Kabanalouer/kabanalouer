@@ -4,7 +4,7 @@ import type { PhotoItem } from "@/lib/photo";
 import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendUnclaimedPublishedNotice } from "@/lib/emails/unclaimedPublished";
-import { AUTO_INVITATIONS_ENABLED, listInvitationCandidates, sendInvitation } from "@/lib/claims/invitations";
+import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listInvitationCandidates, sendInvitation, withoutWaiting } from "@/lib/claims/invitations";
 
 export const maxDuration = 120;
 
@@ -51,6 +51,8 @@ function montrealParts(now: Date): { date: string; hour: number } {
 // l'invitation à toute adresse qui a une fiche non revendiquée publiée et pas encore
 // d'invitation (même si la fiche a été publiée à la main). Mêmes règles et même clé unique
 // que send-invitations et Admin → Invitations : jamais deux invitations par adresse.
+// Plusieurs chalets, une seule invitation (règle de Simon, 2026-10-23) : avant 10 h, on
+// attend que toutes les fiches de l'adresse soient importées et en ligne (emailsStillImporting).
 // Les relances (3 jours après) restent dans send-invitations.
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -78,7 +80,9 @@ export async function GET(request: NextRequest) {
 type Admin = SupabaseClient<any, "public", "public", any, any>;
 
 async function sendNewInvitations(admin: Admin) {
-  const candidates = await listInvitationCandidates(admin, "invite");
+  const { hour } = montrealParts(new Date());
+  const waiting = hour < DEADLINE_HOUR ? await emailsStillImporting(admin) : new Set<string>();
+  const candidates = withoutWaiting(await listInvitationCandidates(admin, "invite"), waiting);
   const batch = candidates.slice(0, MAX_INVITES_PER_RUN);
   const out = { sent: 0, skipped: 0, errors: 0 };
   for (let i = 0; i < batch.length; i++) {

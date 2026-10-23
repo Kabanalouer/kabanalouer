@@ -78,6 +78,45 @@ function group(rows: Row[], only?: Set<string>, exclude?: Set<string>): Invitati
   }));
 }
 
+// Clés acceptées pour l'adresse du propriétaire dans un lot d'import (mêmes noms que normalizePayload, lib/importQueue.ts).
+const PAYLOAD_EMAIL_KEYS = ["claim_email", "courriel", "email", "courriel_contact", "contact_email"];
+
+// Un proprio de plusieurs chalets reçoit UNE SEULE invitation qui les liste tous (règle de Simon, 2026-10-23) :
+// adresses (en minuscules) qui ont encore des fiches en cours d'import ou pas encore en ligne — ligne de la
+// file d'import en attente, ou fiche non revendiquée non publiée créée dans les dernières 24 h. Avant 10 h
+// (heure de Montréal), ces adresses sont exclues de l'envoi : publish-unclaimed (qui envoie dès que tout est
+// en ligne, 10 h au plus tard) et send-invitations (rattrapage de 8 h) appliquent la même règle.
+// L'envoi manuel d'Admin → Invitations ne l'applique pas : c'est un geste volontaire de l'admin.
+export async function emailsStillImporting(admin: AdminClient): Promise<Set<string>> {
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  const [{ data: queued }, { data: unpublished }] = await Promise.all([
+    admin.from("listing_import_queue").select("payload").eq("status", "pending").lt("attempts", 5),
+    admin
+      .from("listings")
+      .select("claim_email")
+      .eq("claim_status", "unclaimed")
+      .eq("is_published", false)
+      .eq("is_test", false)
+      .not("claim_email", "is", null)
+      .gte("created_at", since),
+  ]);
+  const emails = new Set<string>();
+  for (const r of (queued ?? []) as { payload: unknown }[]) {
+    const payload = r.payload && typeof r.payload === "object" ? (r.payload as Record<string, unknown>) : {};
+    for (const key of PAYLOAD_EMAIL_KEYS) {
+      const v = payload[key];
+      if (typeof v === "string" && v.trim()) { emails.add(v.trim().toLowerCase()); break; }
+    }
+  }
+  for (const r of (unpublished ?? []) as { claim_email: string }[]) emails.add(String(r.claim_email).trim().toLowerCase());
+  return emails;
+}
+
+// Retire des candidats les adresses qui attendent encore des fiches.
+export function withoutWaiting(candidates: InvitationCandidate[], waiting: Set<string>): InvitationCandidate[] {
+  return waiting.size === 0 ? candidates : candidates.filter((c) => !waiting.has(c.claimEmail.trim().toLowerCase()));
+}
+
 // À inviter : adresses avec au moins une fiche non revendiquée publiée et aucune invitation.
 // À relancer : invitée il y a REMINDER_DELAY_DAYS jours ou plus, pas revendiquée, pas encore relancée,
 // et au moins une fiche toujours non revendiquée et publiée.

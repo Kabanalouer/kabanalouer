@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { AUTO_INVITATIONS_ENABLED, listInvitationCandidates, sendInvitation, type InvitationKind } from "@/lib/claims/invitations";
+import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listInvitationCandidates, sendInvitation, withoutWaiting, type InvitationKind } from "@/lib/claims/invitations";
 
 export const maxDuration = 120;
 
@@ -22,7 +22,8 @@ function montrealHour(now: Date): number {
 // publication du matin par publish-unclaimed) :
 // envoie l'invitation aux adresses qui ont une fiche non revendiquée publiée et qui n'en
 // ont pas encore reçu, puis la relance (une seule) à celles invitées il y a 3 jours ou plus
-// qui n'ont toujours pas revendiqué. Mêmes règles et même clé unique que l'envoi manuel
+// qui n'ont toujours pas revendiqué. Une adresse dont des fiches sont encore en cours d'import n'est pas invitée
+// à 8 h (une seule invitation pour tous ses chalets, voir emailsStillImporting). Mêmes règles et même clé unique que l'envoi manuel
 // d'Admin → Invitations (lib/claims/invitations.ts) : jamais deux invitations, ni deux
 // relances, par adresse. Interrupteur : AUTO_INVITATIONS_ENABLED.
 export async function GET(request: NextRequest) {
@@ -37,7 +38,10 @@ export async function GET(request: NextRequest) {
   const result: Record<string, { sent: number; skipped: number; errors: number; remaining: number }> = {};
 
   for (const [kind, max] of [["invite", MAX_INVITES_PER_RUN], ["reminder", MAX_REMINDERS_PER_RUN]] as [InvitationKind, number][]) {
-    const candidates = await listInvitationCandidates(admin, kind);
+    // Plusieurs chalets, une seule invitation : à 8 h (avant l'échéance de 10 h de publish-unclaimed), une adresse
+    // dont des fiches sont encore en cours d'import attend que tout soit en ligne ; publish-unclaimed l'enverra.
+    const all = await listInvitationCandidates(admin, kind);
+    const candidates = kind === "invite" ? withoutWaiting(all, await emailsStillImporting(admin)) : all;
     const batch = candidates.slice(0, max);
     let sent = 0;
     let skipped = 0;
