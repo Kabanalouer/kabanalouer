@@ -327,7 +327,7 @@ export async function sendListingRemovedNotice(input: {
 <p>Fiche : ${escapeHtml(input.title)}<br/>Adresse : ${escapeHtml(input.claimEmail)}</p>
 <p><strong>Fait automatiquement</strong></p>
 <ul>
-<li>Fiche hors ligne (le lien direct répond « introuvable »).</li>
+<li>Fiche hors ligne (la page répond « introuvable »). Les liens directs des photos peuvent répondre encore jusqu’à une heure (mémoire du réseau de distribution), puis ils s’éteignent.</li>
 <li>${input.photosRemoved} photo${input.photosRemoved > 1 ? "s" : ""} supprimée${input.photosRemoved > 1 ? "s" : ""} du stockage.</li>
 <li>Textes, adresse et coordonnées supprimés${input.titleKept ? " (le titre est gardé : des voyageurs ont écrit sur cette fiche)" : ""}.</li>
 <li>Exclue de l’import et des invitations : on ne lui écrit plus jamais.</li>
