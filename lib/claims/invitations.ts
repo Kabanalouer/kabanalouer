@@ -120,8 +120,17 @@ export function withoutWaiting(candidates: InvitationCandidate[], waiting: Set<s
 // À inviter : adresses avec au moins une fiche non revendiquée publiée et aucune invitation.
 // À relancer : invitée il y a REMINDER_DELAY_DAYS jours ou plus, pas revendiquée, pas encore relancée,
 // et au moins une fiche toujours non revendiquée et publiée.
+// Adresses (en minuscules) d'un propriétaire qui a retiré une de ses fiches (« Retirer ma fiche », claim_status
+// 'removed') : on ne lui écrit plus jamais, même si une autre fiche de la même adresse existe ou arrive plus tard
+// (règle de Simon, 2026-10-24, après le retrait de la Maison du Cerf). Ni invitation ni relance.
+export async function removedOwnerEmails(admin: AdminClient): Promise<Set<string>> {
+  const { data } = await admin.from("listings").select("claim_email").eq("claim_status", "removed").not("claim_email", "is", null);
+  return new Set<string>(((data ?? []) as { claim_email: string }[]).map((r) => r.claim_email.trim().toLowerCase()));
+}
+
 export async function listInvitationCandidates(admin: AdminClient, kind: InvitationKind, testMode = false): Promise<InvitationCandidate[]> {
-  const rows = await unclaimedPublished(admin, testMode);
+  const removed = testMode ? new Set<string>() : await removedOwnerEmails(admin);
+  const rows = (await unclaimedPublished(admin, testMode)).filter((r) => !removed.has(r.claim_email.trim().toLowerCase()));
 
   if (kind === "invite") {
     const { data } = await admin.from("listing_invitations").select("claim_email").eq("kind", "invite");

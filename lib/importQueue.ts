@@ -723,6 +723,16 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     ]);
     if ((byUrl ?? []).length > 0 || (byCitq ?? []).length > 0) return await reject(admin, row, "Fiche exclue (retirée ou supprimée par son propriétaire).");
 
+    // Propriétaire qui a déjà retiré une de ses fiches : on n'importe plus aucune de ses fiches et on ne lui écrit plus
+    // (claim_email est mis en minuscules à l'import, la comparaison est exacte).
+    const { data: removedOwner } = await admin
+      .from("listings")
+      .select("id")
+      .eq("claim_status", "removed")
+      .eq("claim_email", d.claimEmail)
+      .limit(1);
+    if ((removedOwner ?? []).length > 0) return await reject(admin, row, "Adresse exclue : le propriétaire a demandé le retrait d'une fiche.");
+
     // Doublon : même adresse d'origine déjà importée
     const { data: dup } = await admin
       .from("listings")
