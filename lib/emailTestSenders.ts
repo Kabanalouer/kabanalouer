@@ -28,6 +28,7 @@ import {
   sendClaimDecisionEmail,
   sendClaimWelcomeEmail,
   sendClaimAdminAlert,
+  sendListingRemovedNotice,
   sendImportDuplicateAlert,
 } from "@/lib/emails/unclaimedOwner";
 import { claimLink, removeLink, reportLink } from "@/lib/claims/tokens";
@@ -203,6 +204,10 @@ export function emailTestSenders(): Record<string, Sender> {
     }),
     "import-duplicate-alert": async () => {
       await sendImportDuplicateAlert({ listingId: LISTING_ID, title: "Pourvoirie du Lac Exemple", citq: "123456", matches: [{ id: LISTING_ID, title: TITLE, claim_status: null }] });
+      return { error: null };
+    },
+    "listing-removed-notice": async () => {
+      await sendListingRemovedNotice({ title: TITLE, claimEmail: "proprio@exemple.com", listingId: LISTING_ID, photosRemoved: 30, titleKept: false });
       return { error: null };
     },
     "claim-admin-alert": async () => {

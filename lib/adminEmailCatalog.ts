@@ -345,7 +345,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "Immédiatement quand un propriétaire envoie une preuve (option B) ou signale un problème après une activation.",
     conditions: "Le contenu du message est échappé. Mène à Admin → Revendications.",
     mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+  },  {
+    id: "listing-removed-notice", category: "interne", group: "Équipe",
+    name: "Fiche retirée par son propriétaire",
+    when: "Dès qu’un propriétaire clique « Retirer ma fiche » et confirme.",
+    conditions: "Dit ce que le site a fait tout seul (fiche hors ligne, photos et textes supprimés, adresse exclue) et ce qui reste à faire à la main : fichier de prospection et copies d’images de Vercel.",
+    mechanism: "event", testable: true,
   },
+
   {
     id: "import-duplicate-alert", category: "interne", group: "Équipe",
     name: "Doublon possible à l’import",

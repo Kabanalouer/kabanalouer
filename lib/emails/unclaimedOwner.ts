@@ -313,6 +313,37 @@ export async function sendImportDuplicateAlert(input: {
   if (error) console.error("sendImportDuplicateAlert: échec envoi", error);
 }
 
+// Avis à Simon quand un propriétaire retire sa fiche : ce que le site a fait tout seul, et ce qui reste à faire à la
+// main (fichier de prospection hors du site, copies d'images de Vercel). Texte simple, jamais bloquant.
+export async function sendListingRemovedNotice(input: {
+  title: string;
+  claimEmail: string;
+  listingId: string;
+  photosRemoved: number;
+  titleKept: boolean;
+}): Promise<void> {
+  try {
+    const html = `<p><strong>Fiche retirée par son propriétaire</strong></p>
+<p>Fiche : ${escapeHtml(input.title)}<br/>Adresse : ${escapeHtml(input.claimEmail)}</p>
+<p><strong>Fait automatiquement</strong></p>
+<ul>
+<li>Fiche hors ligne (le lien direct répond « introuvable »).</li>
+<li>${input.photosRemoved} photo${input.photosRemoved > 1 ? "s" : ""} supprimée${input.photosRemoved > 1 ? "s" : ""} du stockage.</li>
+<li>Textes, adresse et coordonnées supprimés${input.titleKept ? " (le titre est gardé : des voyageurs ont écrit sur cette fiche)" : ""}.</li>
+<li>Exclue de l’import et des invitations : on ne lui écrit plus jamais.</li>
+</ul>
+<p><strong>À faire de ton côté</strong></p>
+<ul>
+<li>Retirer cette adresse de la feuille « Proprios » du fichier de prospection et l’ajouter à la feuille « Ne plus contacter ».</li>
+<li>Si la fiche est restée en ligne plus que quelques minutes : demander à Claude de purger les copies de photos gardées en mémoire par Vercel.</li>
+</ul>`;
+    const { error } = await sendEmail({ from: FROM_NOREPLY, to: [ADMIN_EMAIL], subject: `Fiche retirée : ${input.title}`, html });
+    if (error) console.error("sendListingRemovedNotice: échec envoi", error);
+  } catch (e) {
+    console.error("sendListingRemovedNotice: erreur", e);
+  }
+}
+
 // Alerte immédiate à l'équipe : demande de vérification ou signalement (texte
 // simple, contenu des utilisateurs échappé). Jamais bloquant pour l'appelant.
 export async function sendClaimAdminAlert(input: {

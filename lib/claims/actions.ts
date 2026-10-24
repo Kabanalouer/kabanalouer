@@ -9,13 +9,13 @@ import {
   reportLink,
   type ClaimTokenRow,
 } from "@/lib/claims/tokens";
-import { sendClaimActivatedEmail, sendClaimAdminAlert, sendClaimWelcomeEmail, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
+import { sendClaimActivatedEmail, sendClaimAdminAlert, sendClaimWelcomeEmail, sendListingRemovedNotice, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
 
 // Actions serveur des fiches non revendiquées. Toutes utilisent le client
 // service : les colonnes claim_* et les tables de jetons ne sont jamais
 // accessibles depuis une session (supabase/add-unclaimed-listings.sql).
 
-type AdminClient = { from: (table: string) => any; rpc: (fn: string, args: Record<string, unknown>) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+type AdminClient = { from: (table: string) => any; rpc: (fn: string, args: Record<string, unknown>) => any; storage: { from: (bucket: string) => any } }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type ClaimedRow = { out_listing_id: string; out_claim_email: string | null };
 
@@ -127,7 +127,7 @@ export async function removeUnclaimedListing(
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, claim_status, citq_number, import_source_url")
+    .select("id, host_id, title, claim_email, claim_status, citq_number, import_source_url")
     .eq("id", token.listing_id)
     .maybeSingle();
   if (!listing || listing.claim_status !== "unclaimed") return { ok: false, error: "Fiche indisponible" };
@@ -160,7 +160,69 @@ export async function removeUnclaimedListing(
     }
   }
   await admin.from("listing_claim_tokens").update({ used_at: new Date().toISOString() }).eq("id", token.id);
+
+  // Retrait complet : photos et textes supprimés du serveur (jamais bloquant pour le propriétaire)
+  const purge = await purgeRemovedListing(admin, listing).catch((e) => {
+    console.error("removeUnclaimedListing: purge", e);
+    return { photosRemoved: 0, titleKept: false };
+  });
+  await sendListingRemovedNotice({
+    title: (listing.title as string | null) ?? "(sans titre)",
+    claimEmail: (listing.claim_email as string | null) ?? "",
+    listingId: listing.id as string,
+    photosRemoved: purge.photosRemoved,
+    titleKept: purge.titleKept,
+  });
   return { ok: true };
+}
+
+// Règle de Simon (2026-10-24) : quand un propriétaire retire sa fiche, on supprime ses photos (fichiers du
+// stockage : plus aucun lien direct) et ses textes. On garde seulement de quoi ne plus jamais lui écrire ni
+// réimporter la fiche : claim_email, claim_status 'removed', adresse d'origine, CITQ (voir CLAUDE.md). Le titre est
+// gardé seulement si des voyageurs ont déjà écrit sur cette fiche (la messagerie en a besoin).
+async function purgeRemovedListing(
+  admin: AdminClient,
+  listing: { id: string; host_id: string | null; import_source_url: string | null }
+): Promise<{ photosRemoved: number; titleKept: boolean }> {
+  const { count: messageCount } = await admin.from("messages").select("id", { count: "exact", head: true }).eq("listing_id", listing.id);
+  const titleKept = (messageCount ?? 0) > 0;
+
+  let photosRemoved = 0;
+  if (listing.host_id) {
+    const folder = `${listing.host_id}/${listing.id}`;
+    const bucket = admin.storage.from("listing-photos");
+    const { data: files } = await bucket.list(folder, { limit: 1000 });
+    const paths = ((files ?? []) as { name: string }[]).map((f) => `${folder}/${f.name}`);
+    if (paths.length > 0) {
+      const { data: removed, error } = await bucket.remove(paths);
+      if (error) console.error("purgeRemovedListing: suppression des photos", error);
+      else photosRemoved = (removed ?? []).length;
+    }
+  }
+
+  const { error } = await admin
+    .from("listings")
+    .update({
+      ...(titleKept ? {} : { title: null, title_en: null }),
+      description: null, description_en: null,
+      photos: [], amenities: [], amenities_en: null, nearby_activities: [], nearby_activities_en: null,
+      address: null, latitude: null, longitude: null, city: null, region: null,
+      price_low: null, price_high: null, price_peak: null,
+      custom_slug: null, previous_custom_slug: null, slug_fr: null, slug_en: null,
+      import_raw_data: { retiree: true, retiree_le: new Date().toISOString().slice(0, 10), raison: "Le propriétaire a demandé le retrait de sa fiche" },
+    })
+    .eq("id", listing.id)
+    .eq("claim_status", "removed");
+  if (error) console.error("purgeRemovedListing: vidage de la fiche", error);
+
+  if (listing.import_source_url) {
+    // La ligne reste (l'adresse d'origine ne peut pas être remise en file), son contenu part
+    await admin
+      .from("listing_import_queue")
+      .update({ payload: { retiree: true, raison: "Le propriétaire a demandé le retrait de sa fiche" } })
+      .eq("import_source_url", listing.import_source_url);
+  }
+  return { photosRemoved, titleKept };
 }
 
 // « Signaler un problème » après une activation : une demande par fiche dans la
