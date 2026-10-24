@@ -5,16 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const intlMiddleware = createMiddleware(routing);
 
-// Photos des fiches retirées par leur propriétaire (2026-10-24) : fichiers supprimés du stockage, mais Vercel garde des
-// copies optimisées qu'il sert « périmées » même après invalidation. Toute adresse d'image qui mentionne l'une de ces
-// fiches est refusée ici, avant le cache. Le matcher de `config` (en bas, ids de fiches en toutes lettres : Next
-// n'accepte pas de valeur calculée) est étroit : condition sur le paramètre `url`, donc le middleware ne tourne PAS pour
-// les autres images. À compléter avec l'id de chaque nouvelle fiche retirée dont les photos ont déjà été affichées
-// (CLAUDE.md, « Propriétaire qui retire sa fiche »).
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === "/_next/image") {
-    return new NextResponse(null, { status: 404 });
-  }
   // Admin routes: pas de locale, pas de refresh session — AdminLayout gère l'auth directement
   // Auth routes (ex. /auth/callback) : pas d'équivalent sous app/[locale], la réécriture i18n causait un 404
   if (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/auth/")) {
@@ -114,7 +105,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    { source: "/_next/image", has: [{ type: "query", key: "url", value: ".*(24fcaaa5-a9a6-43fc-b453-bcef1617c396|2c6ff3f6-a37f-471c-a6cb-557ea8f071b3|d37fccbc-7361-4375-8de9-18e2ab19a74e).*" }] },
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|ico|webmanifest)$).*)",
   ],
 };
