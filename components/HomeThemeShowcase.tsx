@@ -42,22 +42,30 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
 
   // 1re passe : jamais le même chalet deux fois. 2e passe : un thème qui n'a pas ses 3 chalets reprend, dans
   // l'ordre du classement, des chalets déjà présentés ailleurs (décision de Simon, 2026-10-25).
+  // Bord de l'eau : directement sur l'eau (bord-eau) avant ceux qui ont seulement un accès (tri stable).
+  const candidatesFor = (key: string) => {
+    const landing = AMENITY_LANDINGS.find((l) => l.key === key)!;
+    const rows = (ranked ?? []).filter((r) => listingMatchesLanding(r.amenities, landing));
+    if (key !== "waterfront") return rows;
+    const direct = (r: { amenities: unknown }) => (Array.isArray(r.amenities) && (r.amenities as { id?: string }[]).some((a) => a?.id === "bord-eau") ? 0 : 1);
+    return [...rows].sort((a, b) => direct(a) - direct(b));
+  };
   const used = new Set<string>();
-  const lists = SHOWCASE_THEMES.map((key) => ({ key, landing: AMENITY_LANDINGS.find((l) => l.key === key)!, ids: [] as string[] }));
+  const lists = SHOWCASE_THEMES.map((key) => ({ key, landing: AMENITY_LANDINGS.find((l) => l.key === key)!, ids: [] as string[], rows: candidatesFor(key) }));
   for (const list of lists) {
-    for (const row of ranked ?? []) {
+    for (const row of list.rows) {
       if (list.ids.length >= PER_THEME) break;
       const id = row.id as string;
-      if (used.has(id) || !listingMatchesLanding(row.amenities, list.landing)) continue;
+      if (used.has(id)) continue;
       list.ids.push(id);
       used.add(id);
     }
   }
   for (const list of lists) {
-    for (const row of ranked ?? []) {
+    for (const row of list.rows) {
       if (list.ids.length >= PER_THEME) break;
       const id = row.id as string;
-      if (list.ids.includes(id) || !listingMatchesLanding(row.amenities, list.landing)) continue;
+      if (list.ids.includes(id)) continue;
       list.ids.push(id);
     }
   }

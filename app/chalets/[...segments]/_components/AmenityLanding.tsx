@@ -73,7 +73,8 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
   const listings: AmenityListing[] = [];
   for (const l of rawListings ?? []) {
     const amenities = Array.isArray(l.amenities) ? (l.amenities as AmenityValue[]) : [];
-    const matched = amenities.find((a) => config.amenityIds.includes(a?.id));
+    // Le premier équipement de la config l'emporte (bord de l'eau avant accès à un lac)
+    const matched = config.amenityIds.map((id) => amenities.find((a) => a?.id === id)).find(Boolean);
     if (!matched) continue;
     const catalogEntry = getAmenityCatalogEntry(matched.id);
     const summary = catalogEntry ? summarizeAmenityDetails(catalogEntry, matched.details, locale) : null;
@@ -94,6 +95,13 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
       featureLine: summary ? `${label} · ${summary}` : label,
       privateAccess: parseAccess(matched.details),
     });
+  }
+
+  // Bord de l'eau : les chalets directement sur l'eau d'abord, puis ceux qui ont seulement un accès (tri stable :
+  // revendiquées, score et date restent l'ordre à l'intérieur de chaque groupe).
+  if (config.key === "waterfront") {
+    const direct = (l: AmenityListing) => (l.featureLine?.startsWith(getAmenityLabel("bord-eau", locale)) ? 0 : 1);
+    listings.sort((a, b) => direct(a) - direct(b));
   }
 
   const count = listings.length;
