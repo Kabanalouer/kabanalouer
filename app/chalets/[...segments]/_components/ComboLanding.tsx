@@ -77,6 +77,7 @@ export default async function ComboLanding({ theme, regionConfig, cityName }: { 
     .select(`id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug, reduced_mobility, ${DOG_POLICY_COLUMNS}`)
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
+    .order("unclaimed_rank", { ascending: true })
     .order("created_at", { ascending: false });
   if (cityName) query = query.eq("city", cityName);
   const { data: rawListings } = await query;

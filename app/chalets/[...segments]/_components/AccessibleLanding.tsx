@@ -58,6 +58,7 @@ export default async function AccessibleLanding() {
     )
     .eq("is_published", true)
     .eq("reduced_mobility", true)
+    .order("unclaimed_rank", { ascending: true })
     .order("created_at", { ascending: false });
 
   const listings: AccessibleListing[] = (rawListings ?? []).map((l) => ({
