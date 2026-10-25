@@ -31,7 +31,7 @@ import type { AmenityLanding as AmenityLandingConfig } from "@/lib/amenityLandin
 // vraies fiches (nombre, régions, prix de départ, accès privé) — jamais un
 // chiffre inventé.
 
-type AmenityListing = Listing & { featureLine: string | null; privateAccess: boolean | null };
+type AmenityListing = Listing & { featureLine: string | null; privateAccess: boolean | null; rank: number };
 
 function plural(n: number, one: string, other: string) {
   return n > 1 ? other : one;
@@ -64,7 +64,7 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
   // Filtre côté JS (voir countAmenityLandingsWith dans lib/amenityLandings.ts)
   const { data: rawListings } = await supabase
     .from("listings")
-    .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
+    .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug, unclaimed_rank")
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("score", { ascending: false })
@@ -94,14 +94,15 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
       tags: getAmenityLabels(amenities, locale).slice(0, 3),
       featureLine: summary ? `${label} · ${summary}` : label,
       privateAccess: parseAccess(matched.details),
+      rank: (l.unclaimed_rank as number) ?? 0,
     });
   }
 
-  // Bord de l'eau : les chalets directement sur l'eau d'abord, puis ceux qui ont seulement un accès (tri stable :
-  // revendiquées, score et date restent l'ordre à l'intérieur de chaque groupe).
+  // Bord de l'eau : revendiquées d'abord (même avec seulement un accès), puis dans chaque groupe directement sur
+  // l'eau avant accès seulement ; score et date restent l'ordre à égalité (tri stable).
   if (config.key === "waterfront") {
     const direct = (l: AmenityListing) => (l.featureLine?.startsWith(getAmenityLabel("bord-eau", locale)) ? 0 : 1);
-    listings.sort((a, b) => direct(a) - direct(b));
+    listings.sort((a, b) => a.rank - b.rank || direct(a) - direct(b));
   }
 
   const count = listings.length;

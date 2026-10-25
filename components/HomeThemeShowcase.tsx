@@ -32,7 +32,7 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
   // Léger d'abord (id + équipements) : on choisit les 9 gagnants avant de charger les photos.
   const { data: ranked } = await supabase
     .from("listings")
-    .select("id, amenities")
+    .select("id, amenities, unclaimed_rank")
     .eq("is_published", true)
     .eq("is_test", false)
     .order("unclaimed_rank", { ascending: true })
@@ -42,13 +42,14 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
 
   // 1re passe : jamais le même chalet deux fois. 2e passe : un thème qui n'a pas ses 3 chalets reprend, dans
   // l'ordre du classement, des chalets déjà présentés ailleurs (décision de Simon, 2026-10-25).
-  // Bord de l'eau : directement sur l'eau (bord-eau) avant ceux qui ont seulement un accès (tri stable).
+  // Bord de l'eau : revendiquées d'abord (même avec seulement un accès), puis dans chaque groupe directement sur l'eau
+  // (bord-eau) avant accès seulement ; le score et la date restent l'ordre à égalité (tri stable).
   const candidatesFor = (key: string) => {
     const landing = AMENITY_LANDINGS.find((l) => l.key === key)!;
     const rows = (ranked ?? []).filter((r) => listingMatchesLanding(r.amenities, landing));
     if (key !== "waterfront") return rows;
     const direct = (r: { amenities: unknown }) => (Array.isArray(r.amenities) && (r.amenities as { id?: string }[]).some((a) => a?.id === "bord-eau") ? 0 : 1);
-    return [...rows].sort((a, b) => direct(a) - direct(b));
+    return [...rows].sort((a, b) => (a.unclaimed_rank as number) - (b.unclaimed_rank as number) || direct(a) - direct(b));
   };
   const used = new Set<string>();
   const lists = SHOWCASE_THEMES.map((key) => ({ key, landing: AMENITY_LANDINGS.find((l) => l.key === key)!, ids: [] as string[], rows: candidatesFor(key) }));
