@@ -46,6 +46,7 @@ export async function GET(req: Request) {
     .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug")
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
+    .order("score", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(200);
 

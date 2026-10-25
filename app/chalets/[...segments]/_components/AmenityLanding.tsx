@@ -67,6 +67,7 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
     .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
+    .order("score", { ascending: false })
     .order("created_at", { ascending: false });
 
   const listings: AmenityListing[] = [];

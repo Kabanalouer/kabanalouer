@@ -92,6 +92,7 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
         .eq("is_published", true)
         .in("id", [...promoByListing.keys()])
         .order("unclaimed_rank", { ascending: true })
+        .order("score", { ascending: false })
         .order("created_at", { ascending: false })
     : { data: [] as Record<string, unknown>[] };
 
@@ -130,6 +131,7 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
         .select(LISTING_COLUMNS)
         .eq("is_published", true)
         .order("unclaimed_rank", { ascending: true })
+        .order("score", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(6)
     : { data: [] as Record<string, unknown>[] };

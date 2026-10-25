@@ -39,6 +39,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
     .eq("is_published", true)
     .eq("region", regionConfig.dbValue)
     .order("unclaimed_rank", { ascending: true })
+    .order("score", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(24);
 

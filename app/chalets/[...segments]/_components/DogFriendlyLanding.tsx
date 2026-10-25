@@ -58,6 +58,7 @@ export default async function DogFriendlyLanding() {
     .eq("is_published", true)
     .eq("dogs_allowed", true)
     .order("unclaimed_rank", { ascending: true })
+    .order("score", { ascending: false })
     .order("created_at", { ascending: false });
 
   const listings: DogListing[] = (rawListings ?? []).map((l) => ({
