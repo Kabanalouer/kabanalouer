@@ -252,7 +252,7 @@ export async function sendClaimWelcomeEmail(input: {
   freeYear: boolean;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
-  const offre = input.freeYear ? `<strong>${fr ? "Votre première année est gratuite." : "Your first year is free."}</strong><br/><br/>` : "";
+  const offre = input.freeYear ? `<strong>${fr ? "C’est gratuit." : "It’s free."}</strong><br/><br/>` : "";
   const text = await resolveEmailText(TEMPLATE_CLAIM_WELCOME, input.lang, {
     prenom: input.firstName?.trim(),
     titresFiches: titlesHtml(input.listingTitles),

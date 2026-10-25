@@ -8,6 +8,7 @@
 // d'une valeur recopiée à la main.
 
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
+import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
 
 export type EmailCategory = "proprio" | "voyageur" | "compte" | "interne";
 
@@ -54,6 +55,10 @@ export const CATEGORY_LABELS: Record<EmailCategory, { title: string; description
   compte: { title: "Connexion et compte", description: "Envoyés par Supabase (Send Email Hook) — à tester par le vrai parcours sur le site." },
   interne: { title: "Notifications internes", description: "Envoyées à l’équipe Kabanalouer, jamais aux utilisateurs." },
 };
+
+const FREE_YEAR_PAUSE = FREE_YEAR_REMINDERS_ENABLED
+  ? {}
+  : { paused: true, pausedReason: "Rappels de fin d’année gratuite en pause (lib/siteIsFree.ts) — le site ne parle plus d’une durée." };
 
 const BOOST_PAUSE = BOOSTS_ENABLED
   ? {}
@@ -140,7 +145,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "claim-welcome", category: "proprio", group: "Fiches non revendiquées",
     name: "Bienvenue après la revendication",
     when: "Dès qu’un propriétaire active sa fiche avec le lien reçu par courriel (après une approbation manuelle, le courriel « Demande approuvée » joue ce rôle).",
-    conditions: "Un seul courriel même s’il active plusieurs fiches. Liste ses fiches, mentionne l’année gratuite tant que l’offre de lancement est en cours et propose 3 prochaines étapes : photos, détails, numéro de cellulaire.",
+    conditions: "Un seul courriel même s’il active plusieurs fiches. Liste ses fiches, dit que c’est gratuit et propose 3 prochaines étapes : photos, détails, numéro de cellulaire.",
     mechanism: "event", testable: true,
   },
   {
@@ -213,21 +218,21 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     name: "Offre gratuite — rappel 30 jours",
     when: "30 jours avant la fin de l’année gratuite.",
     conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true,
+    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE,
   },
   {
     id: "reminder-10", category: "proprio", group: "Offre gratuite et abonnement",
     name: "Offre gratuite — rappel 10 jours",
     when: "10 jours avant la fin de l’année gratuite.",
     conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true,
+    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE,
   },
   {
     id: "reminder-3", category: "proprio", group: "Offre gratuite et abonnement",
     name: "Offre gratuite — rappel 3 jours",
     when: "3 jours avant la fin de l’année gratuite.",
     conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true,
+    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE,
   },
   {
     id: "auto-renewal", category: "proprio", group: "Offre gratuite et abonnement",

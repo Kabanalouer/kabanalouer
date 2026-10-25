@@ -2,7 +2,8 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { renderEmail } from "./renderEmail";
 import { sendEmail } from "./send";
 import { PRIX_VEDETTE_HOME, PRIX_VEDETTE_REGION } from "@/lib/featuredConfig";
-import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { resolveEmailText } from "@/lib/emailTemplates/resolve";
@@ -250,15 +251,15 @@ export async function sendDraftReminderEmail({
   const title = listingTitle?.trim() ?? "";
   const path = `${fr ? "" : "/en"}/dashboard/listings/${listingId}/edit`;
 
-  // Offre de lancement (lib/launchOffer.ts) : gratuité + date limite ; sinon prix annuel.
-  const offerEnd = isLaunchOfferActive() ? formatLaunchOfferEnd(lang) : null;
+  // « Gratuit » sans durée ni date (lib/siteIsFree.ts) ; sinon prix annuel.
+  const isFree = SITE_IS_FREE;
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, lang);
   const pricing = fr
-    ? offerEnd
-      ? `C’est gratuit la première année pour toute annonce publiée d’ici le <strong>${escapeHtml(offerEnd)}</strong>.`
+    ? isFree
+      ? "C’est gratuit de publier ton annonce."
       : `L’abonnement est de ${regularPrice} par année, sans aucune commission sur tes réservations.`
-    : offerEnd
-      ? `It’s free for the first year for any listing published by <strong>${escapeHtml(offerEnd)}</strong>.`
+    : isFree
+      ? "It’s free to publish your listing."
       : `The subscription is ${regularPrice} per year, with no commission on your bookings.`;
 
   const text = await resolveEmailText(TEMPLATE_DRAFT_REMINDER, lang, {

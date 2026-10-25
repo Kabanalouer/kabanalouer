@@ -21,7 +21,7 @@ export const TEMPLATE_IMPORT_PUBLISHED: EmailTemplateDef = {
     { key: "titreChalet", label: "Titre du chalet" },
     {
       key: "anneeGratuite",
-      label: "Bout de phrase « , et ta première année d’accès est gratuite » (vide si l’offre de lancement ne s’applique pas)",
+      label: "Bout de phrase « , et c’est gratuit » (vide si l’offre de lancement ne s’applique pas)",
       html: true,
     },
   ],
@@ -69,8 +69,8 @@ export async function sendImportPublishedEmail({
   // Offre de lancement : mention de la première année gratuite.
   const freeYear = isFreeLaunch
     ? preferredLanguage === "fr"
-      ? ", et ta première année d'accès est gratuite"
-      : ", and your first year of access is free"
+      ? ", et c'est gratuit"
+      : ", and it's free"
     : "";
 
   const text = await resolveEmailText(TEMPLATE_IMPORT_PUBLISHED, preferredLanguage, {

@@ -7,6 +7,7 @@ import {
   type ReminderThreshold,
 } from "@/lib/emails/subscriptionReminder";
 import { sendWinbackReminderEmail, type WinbackThreshold } from "@/lib/emails/winbackReminder";
+import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
 
 function adminSupabase() {
   return createAdminClient(
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
     const daysRemaining = Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS);
 
     const isFreeLaunch = sub.is_free_launch as boolean;
-    const dueThresholds = isFreeLaunch
+    const dueThresholds = isFreeLaunch && FREE_YEAR_REMINDERS_ENABLED
       ? RENEWAL_THRESHOLDS.filter(({ days, column }) => daysRemaining <= days && !flags[column])
       : [];
     const autoRenewalDue = !isFreeLaunch && daysRemaining <= 30 && !flags.reminder_auto_renewal_sent;
