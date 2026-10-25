@@ -10,7 +10,7 @@ import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
 import RegionsExplorer from "@/components/RegionsExplorer";
 import ThemesExplorer from "@/components/ThemesExplorer";
-import HomeThemeShowcase, { SHOWCASE_THEMES } from "@/components/HomeThemeShowcase";
+import HomeThemeShowcase from "@/components/HomeThemeShowcase";
 import HomeSeoSection from "@/components/HomeSeoSection";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhotos } from "@/lib/photo";
@@ -166,9 +166,9 @@ export default async function HomePage() {
 
       </section>
 
-      {/* ── 3 meilleurs chalets de 3 thèmes (bord de l'eau, spa, télétravail), puis les autres thèmes ── */}
+      {/* ── 3 meilleurs chalets de 3 thèmes (bord de l'eau, spa, télétravail), puis tous les thèmes en tuiles ── */}
       <HomeThemeShowcase userId={user?.id ?? null} />
-      <ThemesExplorer exclude={[...SHOWCASE_THEMES.map((k) => k as string)]} />
+      <ThemesExplorer />
 
       {/* ── Chalets en vedette ── */}
       {vedetteListings.length > 0 && (

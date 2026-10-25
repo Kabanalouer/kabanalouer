@@ -11,7 +11,8 @@ import { AMENITY_LANDINGS, listingMatchesLanding, type AmenityLandingKey } from 
 // Première section de l'accueil (2026-10-25, demande de Simon) : remplace « Nouveaux chalets ». Les 3 meilleurs
 // chalets de trois thèmes (bord de l'eau, spa, télétravail), chacun avec un lien vers tous les chalets du thème.
 // Même ordre que partout : revendiquées d'abord, puis meilleur score, puis plus récentes. Un chalet n'apparaît
-// jamais deux fois : les thèmes sont servis dans l'ordre et un chalet déjà choisi est écarté des suivants.
+// deux fois que si un thème n'a pas assez de chalets autrement : les thèmes sont servis dans l'ordre et un chalet
+// déjà choisi est écarté des suivants, sauf pour compléter à 3.
 
 export const SHOWCASE_THEMES = ["waterfront", "spa", "remote-work"] as const satisfies readonly AmenityLandingKey[];
 const PER_THEME = 3;
@@ -39,19 +40,28 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
     .order("created_at", { ascending: false })
     .limit(300);
 
+  // 1re passe : jamais le même chalet deux fois. 2e passe : un thème qui n'a pas ses 3 chalets reprend, dans
+  // l'ordre du classement, des chalets déjà présentés ailleurs (décision de Simon, 2026-10-25).
   const used = new Set<string>();
-  const picks = SHOWCASE_THEMES.map((key) => {
-    const landing = AMENITY_LANDINGS.find((l) => l.key === key)!;
-    const ids: string[] = [];
+  const lists = SHOWCASE_THEMES.map((key) => ({ key, landing: AMENITY_LANDINGS.find((l) => l.key === key)!, ids: [] as string[] }));
+  for (const list of lists) {
     for (const row of ranked ?? []) {
-      if (ids.length >= PER_THEME) break;
+      if (list.ids.length >= PER_THEME) break;
       const id = row.id as string;
-      if (used.has(id) || !listingMatchesLanding(row.amenities, landing)) continue;
-      ids.push(id);
+      if (used.has(id) || !listingMatchesLanding(row.amenities, list.landing)) continue;
+      list.ids.push(id);
       used.add(id);
     }
-    return { key, landing, ids };
-  }).filter((p) => p.ids.length > 0);
+  }
+  for (const list of lists) {
+    for (const row of ranked ?? []) {
+      if (list.ids.length >= PER_THEME) break;
+      const id = row.id as string;
+      if (list.ids.includes(id) || !listingMatchesLanding(row.amenities, list.landing)) continue;
+      list.ids.push(id);
+    }
+  }
+  const picks = lists.filter((p) => p.ids.length > 0);
   if (picks.length === 0) return null;
 
   const today = new Date().toISOString().split("T")[0];
