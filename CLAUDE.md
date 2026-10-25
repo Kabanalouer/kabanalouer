@@ -1216,6 +1216,15 @@ Tout en ligne (commits `ff9071d` → `f2fcf1f`, plus des corrections de données
 
 ## 14. Points en suspens
 
+### Gratuit jusqu'à nouvel ordre (2026-10-25, décision de Simon)
+
+Le site dit simplement « Gratuit » (jamais « pour toujours », jamais de durée ni de date). Trois interrupteurs, faciles à renverser pour un retour au mode payant :
+- `SITE_IS_FREE` (`lib/siteIsFree.ts`) : affichage seulement (page /devenir-hote, accueil, encart « Affichez votre chalet », écran Publier, courriels). À `false` : les textes « sans offre » (prix annuel) reviennent.
+- `FREE_UNTIL_FURTHER_NOTICE` (`lib/launchOffer.ts`) : l'offre est toujours active (`isLaunchOfferActive()` vrai, date de fin ignorée), **aucune dépublication à l'échéance de l'année gratuite** (cron `subscription-reminders`), pas d'avis « fin d'offre dans 7 jours », dates de renouvellement masquées pour les annonces gratuites. Seules les annonces `canceled` sont encore dépubliées. Les abonnements gratuits existants gardent leur `expires_at` (inoffensif).
+- `FREE_YEAR_REMINDERS_ENABLED` (`lib/siteIsFree.ts`) : rappels 30/10/3 jours de fin d'année gratuite en pause (marqués « en pause » dans Admin → Séquences courriel).
+
+Pour revenir au payant : `FREE_UNTIL_FURTHER_NOTICE = false` + choisir `LAUNCH_OFFER_END`, `SITE_IS_FREE = false`, `FREE_YEAR_REMINDERS_ENABLED = true` ; vérifier d'abord quelles annonces gratuites ont un `expires_at` déjà passé (elles seraient dépubliées au prochain passage du cron).
+
 ### À vérifier / à décider après la session du 2026-10-19
 
 - **Fiches sans courriel (phase 2, décidé par Simon)** : l'import les refuse aujourd'hui, la base interdit de les publier (`listings_unclaimed_publish_check`) et la fenêtre de revendication ne montrerait que la vérification manuelle. À préparer plus tard : formulaire de demande avec note honnête (« nous cherchons à joindre ce propriétaire »), liste admin « Fiches sans courriel » classée par demandes de voyageurs, champ pour ajouter un courriel, permis par fiche (le regroupement se fait par adresse). Simon veut d'abord terminer l'import des fiches avec courriel.

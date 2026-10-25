@@ -12,6 +12,7 @@ import { parseAccessibility } from "@/lib/accessibility";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
+import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 function adminSupabase() {
   return createAdminClient(
@@ -77,7 +78,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
     // cette annonce précise a déjà eu un abonnement, gratuit ou payant.
     supabase
       .from("subscriptions")
-      .select("status, expires_at")
+      .select("status, expires_at, is_free_launch")
       .eq("listing_id", id)
       .maybeSingle(),
     getNextPaidRank(admin, hostId),
@@ -168,7 +169,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         initialLat={listing.latitude ?? null}
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
-        subscriptionExpiresAt={subscription?.expires_at ?? null}
+        subscriptionExpiresAt={subscription?.is_free_launch && FREE_UNTIL_FURTHER_NOTICE ? null : subscription?.expires_at ?? null}
         hasExistingSubscription={!!subscription}
         nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}

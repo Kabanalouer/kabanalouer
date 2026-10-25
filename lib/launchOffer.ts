@@ -5,6 +5,11 @@
 // Sans offre, la publication passe par l'abonnement Stripe (lib/subscriptionPricing.ts).
 export const LAUNCH_OFFER_END: string | null = "2026-11-30";
 
+// Gratuit « jusqu'à nouvel ordre » (décision de Simon, 2026-10-25) : tant que c'est true, l'offre est toujours
+// active (date de fin ignorée), aucune annonce n'est dépubliée à l'échéance de son année gratuite et aucun avis
+// de fin d'offre n'est envoyé. Pour revenir à un mode payant : mettre false (et choisir LAUNCH_OFFER_END).
+export const FREE_UNTIL_FURTHER_NOTICE = true;
+
 // Prix affiché quand il n'y a plus d'offre (1re annonce payante, tier1).
 export const REGULAR_PRICE_CENTS = 29900;
 
@@ -20,12 +25,13 @@ function montrealToday(now: Date): string {
 }
 
 export function isLaunchOfferActive(now: Date = new Date()): boolean {
+  if (FREE_UNTIL_FURTHER_NOTICE) return true;
   return LAUNCH_OFFER_END !== null && montrealToday(now) <= LAUNCH_OFFER_END;
 }
 
 // Jours restants, le jour de fin compris (le dernier jour de l'offre → 1). Null sans offre.
 export function launchOfferDaysLeft(now: Date = new Date()): number | null {
-  if (!isLaunchOfferActive(now) || LAUNCH_OFFER_END === null) return null;
+  if (FREE_UNTIL_FURTHER_NOTICE || !isLaunchOfferActive(now) || LAUNCH_OFFER_END === null) return null;
   const [y1, m1, d1] = montrealToday(now).split("-").map(Number);
   const [y2, m2, d2] = LAUNCH_OFFER_END.split("-").map(Number);
   return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86_400_000) + 1;
@@ -34,7 +40,7 @@ export function launchOfferDaysLeft(now: Date = new Date()): number | null {
 // « 30 novembre 2026 » / « November 30, 2026 » ; court : « 30 nov. 2026 » /
 // « Oct 31, 2026 ». Espaces insécables en français. Null sans offre.
 export function formatLaunchOfferEnd(locale: string, style: "long" | "short" = "long"): string | null {
-  if (LAUNCH_OFFER_END === null) return null;
+  if (FREE_UNTIL_FURTHER_NOTICE || LAUNCH_OFFER_END === null) return null;
   const date = new Date(`${LAUNCH_OFFER_END}T12:00:00Z`);
   const formatted = date.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", {
     timeZone: "UTC",

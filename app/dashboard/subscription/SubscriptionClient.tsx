@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 type ListingSub = {
   listing_id: string;
@@ -114,7 +115,7 @@ export default function SubscriptionClient() {
                         {formatPriceLabel(sub.price_cents, locale === "en" ? "en" : "fr")} {t("perYear")}
                       </p>
                     )}
-                    {isActive && sub?.expires_at && (
+                    {isActive && sub?.expires_at && !(sub.is_free_launch && FREE_UNTIL_FURTHER_NOTICE) && (
                       <p className="text-xs text-charcoal-400 mt-0.5">
                         {t("renewsOn", {
                           date: new Date(sub.expires_at).toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", {

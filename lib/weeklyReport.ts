@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getPlatformHealth, type PlatformHealth } from "@/lib/platformHealth";
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
-import { LAUNCH_OFFER_END, isLaunchOfferActive } from "@/lib/launchOffer";
+import { FREE_UNTIL_FURTHER_NOTICE, LAUNCH_OFFER_END, isLaunchOfferActive } from "@/lib/launchOffer";
 import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
 import { sanitizeAiOutput, fenceUntrusted } from "@/lib/untrustedText";
 
@@ -45,7 +45,7 @@ async function collectMetrics(now: number) {
   return {
     periode: "7 derniers jours, comparés aux 7 jours précédents",
     contexte: {
-      offre_de_lancement: isLaunchOfferActive() ? `active jusqu'au ${LAUNCH_OFFER_END} (première année gratuite pour les proprios)` : "terminée",
+      offre_de_lancement: FREE_UNTIL_FURTHER_NOTICE ? "gratuit pour les proprios jusqu'à nouvel ordre (aucune durée ni date de fin annoncée)" : isLaunchOfferActive() ? `active jusqu'au ${LAUNCH_OFFER_END} (première année gratuite pour les proprios)` : "terminée",
       boosts: BOOSTS_ENABLED ? "actifs" : "désactivés pour le lancement (ne pas les recommander)",
     },
     reponse_des_proprios: h.trust,

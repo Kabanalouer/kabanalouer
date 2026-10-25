@@ -9,6 +9,7 @@
 
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
+import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 export type EmailCategory = "proprio" | "voyageur" | "compte" | "interne";
 
@@ -396,6 +397,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     subject: { fr: "L’offre de lancement se termine le {date}" },
     when: "Le jour où il reste 7 jours à l’offre de lancement.",
     mechanism: "daily", dailyAt: "11 h", testable: true, fixedRecipient: "simon.authentik@gmail.com",
+    ...(FREE_UNTIL_FURTHER_NOTICE ? { paused: true, pausedReason: "Gratuit jusqu’à nouvel ordre (lib/launchOffer.ts) — aucune fin d’offre prévue." } : {}),
   },
   {
     id: "import-notification", category: "interne", group: "Équipe",

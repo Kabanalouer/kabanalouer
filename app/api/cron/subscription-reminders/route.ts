@@ -8,6 +8,7 @@ import {
 } from "@/lib/emails/subscriptionReminder";
 import { sendWinbackReminderEmail, type WinbackThreshold } from "@/lib/emails/winbackReminder";
 import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
+import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 function adminSupabase() {
   return createAdminClient(
@@ -200,7 +201,9 @@ export async function GET(request: NextRequest) {
   const { data: lapsedSubs, error: lapsedError } = await supabase
     .from("subscriptions")
     .select("listing_id")
-    .or(`status.eq.canceled,and(is_free_launch.eq.true,expires_at.lt.${new Date().toISOString()})`);
+    .or(FREE_UNTIL_FURTHER_NOTICE
+      ? "status.eq.canceled"
+      : `status.eq.canceled,and(is_free_launch.eq.true,expires_at.lt.${new Date().toISOString()})`);
 
   let unpublished = 0;
 
