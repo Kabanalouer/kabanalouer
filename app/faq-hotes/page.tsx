@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -100,8 +99,6 @@ export default async function FaqHotesPage() {
       items: [
         { q: t("s5q1"), a: t("s5a1") },
         { q: t("s5q2"), a: t("s5a2") },
-        // Question sur l'offre gratuite : seulement pendant l'offre de lancement.
-        ...(isLaunchOfferActive() ? [{ q: t("s5q3"), a: t("s5a3") }] : []),
       ],
     },
   ];

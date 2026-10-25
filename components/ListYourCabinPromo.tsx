@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
-import { isLaunchOfferActive } from "@/lib/launchOffer";
+import { SITE_IS_FREE } from "@/lib/siteIsFree";
 
 // Encart « Affichez votre chalet ici » montré quand une recherche ne donne
 // aucun résultat (recherche /chalets, page région vide) : transforme une page
@@ -11,8 +11,8 @@ import { isLaunchOfferActive } from "@/lib/launchOffer";
 export default function ListYourCabinPromo() {
   const t = useTranslations("listYourCabinPromo");
   const locale = useLocale();
-  // Mention « gratuit » seulement pendant l'offre de lancement.
-  const offerActive = isLaunchOfferActive();
+  // Mention « gratuit » (lib/siteIsFree.ts).
+  const offerActive = SITE_IS_FREE;
 
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-primary-100 bg-primary-50 px-6 py-7 text-center">

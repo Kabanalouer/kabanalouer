@@ -19,7 +19,8 @@ import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { formatPrice } from "@/lib/formatPrice";
 import { SITE_URL } from "@/lib/siteUrl";
-import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 const OG_IMAGE = `${SITE_URL}/images/og-default.jpg`;
@@ -28,17 +29,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const isEn = (await getLocale()) === "en";
   const canonical = isEn ? "/en/become-a-host" : "/devenir-hote";
   // Le gabarit du layout racine ajoute « | Kabanalouer ».
-  // Offre de lancement (lib/launchOffer.ts) : date de fin à jour, ou prix annuel sans offre.
-  const offerEnd = formatLaunchOfferEnd(isEn ? "en" : "fr");
-  const offerActive = isLaunchOfferActive();
+  // Affichage « Gratuit » (lib/siteIsFree.ts) ou prix annuel si l'affichage payant est rétabli.
+  const offerActive = SITE_IS_FREE;
   const price = formatPriceLabel(REGULAR_PRICE_CENTS, isEn ? "en" : "fr");
   const title = offerActive
     ? isEn ? "List your cabin for free" : "Devenir hôte — Publiez votre chalet gratuitement"
     : isEn ? "List your cabin, no commission" : "Devenir hôte — Publiez votre chalet sans commission";
   const description = offerActive
     ? isEn
-      ? `List your cabin on Kabanalouer: free for the first year, 0% commission, no transaction fees. Offer valid for sign-ups before ${offerEnd}.`
-      : `Publiez votre chalet sur Kabanalouer : gratuit la première année, 0 % commission, aucuns frais de transaction. Offre valable pour toute inscription avant le ${offerEnd}.`
+      ? "List your cabin on Kabanalouer: free, 0% commission, no transaction fees."
+      : "Publiez votre chalet sur Kabanalouer : gratuit, 0 % commission, aucuns frais de transaction."
     : isEn
       ? `List your cabin on Kabanalouer: ${price} per year, 0% commission, no transaction fees.`
       : `Publiez votre chalet sur Kabanalouer : ${price} par année, 0 % commission, aucuns frais de transaction.`;
@@ -208,15 +208,7 @@ export default async function DevenirHotePage() {
                 <h2 className={H2}>{c.free.h2}</h2>
                 <p className="m-0 text-lg leading-[1.6] text-charcoal-600 text-pretty">{c.free.subtitle}</p>
                 {c.offerActive ? (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[13px] font-semibold text-charcoal-500">{c.free.regularLabel}</span>
-                    <s className="text-lg font-bold text-charcoal-500 decoration-2">{c.free.regularPrice}</s>
-                  </div>
-                  <svg className="w-[22px] h-[22px] text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
                     <span className="text-[13px] font-bold text-primary-700">{c.free.offerLabel}</span>
                     <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">
                       {c.free.offerPricePre}
@@ -224,7 +216,6 @@ export default async function DevenirHotePage() {
                       {c.free.offerPricePost}
                     </span>
                   </div>
-                </div>
                 ) : (
                   <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
                     <span className="text-[13px] font-bold text-primary-700">{c.free.regularLabel}</span>

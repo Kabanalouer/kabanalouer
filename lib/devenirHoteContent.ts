@@ -3,11 +3,11 @@
 // landing-page-proprio/ — ne pas reformuler. Espaces insécables : U+202F
 // avant ? ! ; U+00A0 avant : et dans « 350 $ », « 31 octobre 2026 ».
 // La FAQ sert aussi au JSON-LD FAQPage (app/devenir-hote/page.tsx).
-// Offre de lancement (lib/launchOffer.ts) : {date}/{dateShort} = date de fin ;
-// sans offre, noOfferFr/noOfferEn remplacent les mentions « gratuit » par le
-// prix annuel ({price}).
+// Affichage « Gratuit » (lib/siteIsFree.ts, 2026-10-25) : aucune durée ni date. Mettre SITE_IS_FREE à false
+// pour revenir à l'affichage payant : noOfferFr/noOfferEn remplacent « gratuit » par le prix annuel ({price}).
 
-import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { formatLaunchOfferEnd, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { SITE_IS_FREE } from "@/lib/siteIsFree";
 
 export type Faq = { q: string; a: string };
 
@@ -100,13 +100,13 @@ type BaseContent = Omit<DevenirHoteContent, "offerActive">;
 const fr: BaseContent = {
   header: { questions: "Questions", login: "Connexion", publish: "Publier gratuitement" },
   hero: {
-    badge: "Offre de lancement · Inscrivez-vous avant le {date}",
+    badge: "",
     h1Line1: "Annoncez votre chalet.",
     h1Pre: "C’est ",
     h1Accent: "gratuit",
     h1Post: ".",
     subtitle:
-      "C’est gratuit la première année et sans engagement. Aucune commission sur vos réservations. Aucuns frais de transaction. Ce que vos voyageurs paient, vous le gardez en entier.",
+      "Aucune commission sur vos réservations. Aucuns frais de transaction. Ce que vos voyageurs paient, vous le gardez en entier.",
     ctaCreate: "Créer mon annonce",
     ctaDuplicate: "Dupliquer depuis Airbnb",
     cardPill: "Sur Kabanalouer",
@@ -130,18 +130,18 @@ const fr: BaseContent = {
     ],
   },
   free: {
-    eyebrow: "Gratuit la première année",
+    eyebrow: "Gratuit",
     h2: "Ce que vous louez, vous le gardez. En entier.",
     subtitle:
-      "Pas d’abonnement pendant 12 mois, pas de commission, pas de frais de transaction. Les voyageurs vous contactent et vous paient directement.",
+      "Pas d’abonnement, pas de commission, pas de frais de transaction. Les voyageurs vous contactent et vous paient directement.",
     regularLabel: "Forfaits réguliers",
     regularPrice: "199 $ à 399 $/an",
-    offerLabel: "Offre de lancement",
-    offerPricePre: "0 $ la 1",
-    offerPriceSup: "re",
-    offerPricePost: " année",
+    offerLabel: "Kabanalouer",
+    offerPricePre: "0 $",
+    offerPriceSup: "",
+    offerPricePost: "",
     points: [
-      "12 mois gratuits, sans engagement",
+      "Gratuit, sans abonnement et sans carte de crédit",
       "Aucune commission sur vos réservations",
       "Aucuns frais de transaction, ni pour vous ni pour vos voyageurs",
     ],
@@ -155,7 +155,7 @@ const fr: BaseContent = {
     commissionLabel: "Plateformes à commission",
     commissionNote: "≈ 15 % de frais",
     kabanalouerLabel: "Kabanalouer",
-    kabanalouerNote: "la première année",
+    kabanalouerNote: "gratuit",
     kabanalouerCost: 0,
     pocketPre: "Dans vos poches : ",
     pocketPost: " de plus",
@@ -193,7 +193,7 @@ const fr: BaseContent = {
     us: "Kabanalouer",
     them: "Plateformes à commission",
     rows: [
-      { label: "Coût la première année", us: "0 $", them: "Frais sur chaque réservation" },
+      { label: "Coût", us: "0 $", them: "Frais sur chaque réservation" },
       { label: "Commission sur les réservations", us: "0 %", them: "3 à 15 %+" },
       { label: "Frais de transaction", us: "Aucuns", them: "Oui" },
       { label: "Import d’annonce Airbnb", us: "✓", them: "—" },
@@ -206,15 +206,7 @@ const fr: BaseContent = {
     items: [
       {
         q: "C’est vraiment gratuit ?",
-        a: "Oui. Pendant les 12 premiers mois, publier votre chalet ne coûte rien : pas d’abonnement, pas de commission sur vos réservations, pas de frais de transaction. Aucune carte de crédit n’est demandée à l’inscription.",
-      },
-      {
-        q: "Jusqu’à quand puis-je profiter de l’offre ?",
-        a: "L’offre de lancement s’applique à toute inscription faite avant le {date}. Vos 12 mois gratuits commencent à votre inscription.",
-      },
-      {
-        q: "Que se passe-t-il après la première année ?",
-        a: "Vous serez avisé avant la fin de votre période gratuite et vous choisirez librement de continuer avec l’un de nos forfaits, de 199 $ à 399 $ par année. Aucun renouvellement automatique : sans action de votre part, rien n’est facturé. Aucune carte de crédit n’est demandée pendant la première année.",
+        a: "Oui. Publier votre chalet sur Kabanalouer est gratuit : pas d’abonnement, pas de commission sur vos réservations, pas de frais de transaction. Aucune carte de crédit n’est demandée à l’inscription.",
       },
       {
         q: "Dois-je quitter Airbnb ?",
@@ -235,25 +227,25 @@ const fr: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Votre chalet en ligne aujourd’hui. C’est gratuit pendant 1 an.",
-    subtitle: "Offre de lancement valable pour toute inscription avant le {date}.",
+    h2: "Votre chalet en ligne aujourd’hui. C’est gratuit.",
+    subtitle: "Sans commission et sans frais de transaction.",
     importBtn: "Importer mon annonce Airbnb",
     createBtn: "Créer une annonce à partir de 0",
   },
-  sticky: { title: "Gratuite", subtitle: "Avant le {dateShort}", cta: "Publier mon chalet" },
+  sticky: { title: "Gratuit", subtitle: "Sans commission", cta: "Publier mon chalet" },
 };
 
 // EN : traduction maison (non fournie par le client), à faire valider.
 const en: BaseContent = {
   header: { questions: "Questions", login: "Log in", publish: "List for free" },
   hero: {
-    badge: "Launch offer · Sign up before {date}",
+    badge: "",
     h1Line1: "List your cabin.",
     h1Pre: "It’s ",
     h1Accent: "free",
     h1Post: ".",
     subtitle:
-      "Free for the first year, no commitment. No commission on your bookings. No transaction fees. What your guests pay, you keep in full.",
+      "No commission on your bookings. No transaction fees. What your guests pay, you keep in full.",
     ctaCreate: "Create my listing",
     ctaDuplicate: "Copy from Airbnb",
     cardPill: "On Kabanalouer",
@@ -277,18 +269,18 @@ const en: BaseContent = {
     ],
   },
   free: {
-    eyebrow: "Free for the first year",
+    eyebrow: "Free",
     h2: "What you earn, you keep. In full.",
     subtitle:
-      "No subscription for 12 months, no commission, no transaction fees. Travelers contact you and pay you directly.",
+      "No subscription, no commission, no transaction fees. Travelers contact you and pay you directly.",
     regularLabel: "Regular plans",
     regularPrice: "$199 to $399/year",
-    offerLabel: "Launch offer",
-    offerPricePre: "$0 the 1",
-    offerPriceSup: "st",
-    offerPricePost: " year",
+    offerLabel: "Kabanalouer",
+    offerPricePre: "$0",
+    offerPriceSup: "",
+    offerPricePost: "",
     points: [
-      "12 months free, no commitment",
+      "Free, no subscription and no credit card",
       "No commission on your bookings",
       "No transaction fees, for you or your guests",
     ],
@@ -302,7 +294,7 @@ const en: BaseContent = {
     commissionLabel: "Commission platforms",
     commissionNote: "≈ 15% in fees",
     kabanalouerLabel: "Kabanalouer",
-    kabanalouerNote: "the first year",
+    kabanalouerNote: "free",
     kabanalouerCost: 0,
     pocketPre: "In your pocket: ",
     pocketPost: " more",
@@ -340,7 +332,7 @@ const en: BaseContent = {
     us: "Kabanalouer",
     them: "Commission platforms",
     rows: [
-      { label: "Cost the first year", us: "$0", them: "Fees on every booking" },
+      { label: "Cost", us: "$0", them: "Fees on every booking" },
       { label: "Commission on bookings", us: "0%", them: "3 to 15%+" },
       { label: "Transaction fees", us: "None", them: "Yes" },
       { label: "Airbnb listing import", us: "✓", them: "—" },
@@ -353,15 +345,7 @@ const en: BaseContent = {
     items: [
       {
         q: "Is it really free?",
-        a: "Yes. For the first 12 months, listing your cabin costs nothing: no subscription, no commission on your bookings, no transaction fees. No credit card is required to sign up.",
-      },
-      {
-        q: "Until when can I take advantage of the offer?",
-        a: "The launch offer applies to every sign-up made before {date}. Your 12 free months start when you sign up.",
-      },
-      {
-        q: "What happens after the first year?",
-        a: "You’ll be notified before your free period ends and you’ll be free to continue with one of our plans, from $199 to $399 per year. No automatic renewal: if you do nothing, nothing is charged. No credit card is required during the first year.",
+        a: "Yes. Listing your cabin on Kabanalouer is free: no subscription, no commission on your bookings, no transaction fees. No credit card is required to sign up.",
       },
       {
         q: "Do I have to leave Airbnb?",
@@ -382,12 +366,12 @@ const en: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Your cabin online today. Free for 1 year.",
-    subtitle: "Launch offer valid for every sign-up before {date}.",
+    h2: "Your cabin online today. It’s free.",
+    subtitle: "No commission and no transaction fees.",
     importBtn: "Import my Airbnb listing",
     createBtn: "Create a listing from scratch",
   },
-  sticky: { title: "Free", subtitle: "Before {dateShort}", cta: "List my cabin" },
+  sticky: { title: "Free", subtitle: "No commission", cta: "List my cabin" },
 };
 
 // Sans offre de lancement : mêmes textes, sauf les mentions « gratuit ».
@@ -430,7 +414,7 @@ function noOfferFr(c: BaseContent): BaseContent {
           q: "Combien ça coûte ?",
           a: "{price} par année pour votre chalet, sans engagement, avec un tarif dégressif à partir du 2e chalet. Aucune commission sur vos réservations et aucuns frais de transaction : ce que vos voyageurs paient, vous le gardez.",
         },
-        ...c.faq.items.slice(3),
+        ...c.faq.items.slice(1),
       ],
     },
     finalCta: {
@@ -479,7 +463,7 @@ function noOfferEn(c: BaseContent): BaseContent {
           q: "How much does it cost?",
           a: "{price} per year for your cabin, no commitment, with lower rates from your 2nd cabin. No commission on your bookings and no transaction fees: what your guests pay, you keep.",
         },
-        ...c.faq.items.slice(3),
+        ...c.faq.items.slice(1),
       ],
     },
     finalCta: {
@@ -505,7 +489,7 @@ function fillTokens<T>(value: T, tokens: Record<string, string>): T {
 
 export function getDevenirHoteContent(locale: string): DevenirHoteContent {
   const isEn = locale === "en";
-  const offerActive = isLaunchOfferActive();
+  const offerActive = SITE_IS_FREE;
   const base = isEn ? en : fr;
   const content = offerActive ? base : isEn ? noOfferEn(base) : noOfferFr(base);
   const amount = (REGULAR_PRICE_CENTS / 100).toLocaleString(isEn ? "en-CA" : "fr-CA");

@@ -25,7 +25,7 @@ import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
-import { formatLaunchOfferEnd, isLaunchOfferActive, launchOfferDaysLeft } from "@/lib/launchOffer";
+import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
@@ -1911,13 +1911,8 @@ export default function EditListingForm({
             const daysUntilExpiry = expiryDate
               ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
               : null;
-            const oneYearFromNow = new Date();
-            oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
             const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
             const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
-            const referencePriceLabel = formatPriceLabel(29900, lang); // tier1 — valeur de référence affichée barrée pour l'offre gratuite
-            const offerDaysLeft = launchOfferDaysLeft() ?? 0;
-            const offerEndLabel = formatLaunchOfferEnd(locale) ?? "";
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -2071,23 +2066,9 @@ export default function EditListingForm({
                   )}
 
                   {isFree ? (
-                    // Offre de lancement mise en évidence (date de fin : lib/launchOffer.ts)
+                    // Affichage « Gratuit » seulement : aucune durée, date ni prix barré (lib/siteIsFree.ts)
                     <div className="rounded-2xl bg-primary-50 border border-primary-100 p-6">
-                      <span className="inline-flex rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
-                        {t("publish.launchOffer")}
-                      </span>
-                      <p className="mt-4 text-3xl font-extrabold leading-tight text-charcoal-800">{t("publish.launchOfferTitle")}</p>
-                      <p className="mt-1 text-sm text-charcoal-400 line-through">{t("publish.oldPrice", { price: referencePriceLabel })}</p>
-                      {offerDaysLeft > 0 && (
-                        <div className="mt-5 pt-4 border-t border-primary-100 flex flex-wrap items-center gap-x-3 gap-y-2">
-                          <p className="text-base font-semibold text-charcoal-700">{t("publish.launchOfferDeadline", { date: offerEndLabel })}</p>
-                          {offerDaysLeft <= 31 && (
-                            <span className="inline-flex rounded-full bg-accent text-white px-3 py-1 text-xs font-bold">
-                              {t("publish.launchOfferDaysLeft", { days: offerDaysLeft })}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      <p className="text-3xl font-extrabold leading-tight text-charcoal-800">{t("publish.launchOfferTitle")}</p>
                     </div>
                   ) : (
                     <div>
@@ -2112,11 +2093,6 @@ export default function EditListingForm({
                       >
                         {publishLoading ? t("publish.publishing") : t("publish.activateFree")}
                       </button>
-                      <p className="text-xs text-charcoal-400">
-                        {tEdit("validUntil", {
-                          date: oneYearFromNow.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })
-                        })}
-                      </p>
                     </>
                   ) : (
                     <>

@@ -2,16 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
-import { formatLaunchOfferEnd, isLaunchOfferActive, REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
+import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 
 // Section « Pour les propriétaires » de la page d'accueil, juste avant le pied
-// de page. Pendant l'offre de lancement (lib/launchOffer.ts) : pastille, « C'est
-// gratuit » et date limite ; ensuite « Sans commission » et le prix annuel.
+// de page. « C'est gratuit », sans durée ni date (lib/siteIsFree.ts) ; à false :
+// « Sans commission » et le prix annuel.
 export default async function OwnersSection() {
   const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
-  const offerActive = isLaunchOfferActive();
-  const deadline = formatLaunchOfferEnd(locale);
+  const offerActive = SITE_IS_FREE;
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, locale === "en" ? "en" : "fr");
 
   return (
@@ -32,11 +32,6 @@ export default async function OwnersSection() {
 
           <div className="relative max-w-[520px] box-content p-8 sm:p-12 flex flex-col items-start gap-10">
             <div className="flex flex-col items-start gap-6 text-left">
-              {offerActive && (
-                <p className="inline-flex items-center rounded-full bg-[#dce7a8] px-4 py-1.5 text-xs font-bold tracking-[0.08em] uppercase text-primary-dark">
-                  {t("ctaLabel")}
-                </p>
-              )}
               <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-h2 text-balance">
                 {t("ownersTitleLine1")}
                 <br />
@@ -49,14 +44,6 @@ export default async function OwnersSection() {
               <p className="text-[17px] leading-[1.6] text-white/80 text-pretty">
                 {offerActive ? t("ownersDesc") : t("ownersDescRegular", { price: regularPrice })}
               </p>
-              {offerActive && deadline && (
-                <p className="inline-flex items-center gap-2 text-lg font-bold text-white">
-                  <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
-                  </svg>
-                  {t("ownersDeadline", { date: deadline })}
-                </p>
-              )}
             </div>
 
             <Link
