@@ -62,13 +62,13 @@ function layout(index: number, total: number): string {
   return `${alone ? "col-span-2" : "col-span-1"} ${desktop}`;
 }
 
-export default async function ThemesExplorer() {
+export default async function ThemesExplorer({ exclude = [] }: { exclude?: string[] }) {
   const [locale, show] = await Promise.all([getLocale(), getThemeLinkVisibility()]);
   const isEn = locale === "en";
 
   const isVisible = (key: string) =>
     key === "dogs" ? show.dogFriendly : key === "accessible" ? show.accessible : key === "deals" ? show.deals : show.amenities[key as AmenityLandingKey];
-  const visible = THEMES.filter((t) => isVisible(t.key));
+  const visible = THEMES.filter((t) => !exclude.includes(t.key) && isVisible(t.key));
   if (visible.length === 0) return null;
 
   return (

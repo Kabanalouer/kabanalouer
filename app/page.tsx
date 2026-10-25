@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import AuthCodeWelcomeTrigger from "@/components/AuthCodeWelcomeTrigger";
@@ -11,16 +10,14 @@ import PriceComparison from "@/components/PriceComparison";
 import OwnersSection from "@/components/OwnersSection";
 import RegionsExplorer from "@/components/RegionsExplorer";
 import ThemesExplorer from "@/components/ThemesExplorer";
+import HomeThemeShowcase, { SHOWCASE_THEMES } from "@/components/HomeThemeShowcase";
 import HomeSeoSection from "@/components/HomeSeoSection";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { normalizePhotos } from "@/lib/photo";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
-import { localePath } from "@/lib/localePath";
 import { SITE_URL } from "@/lib/siteUrl";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
-import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("home");
@@ -82,52 +79,6 @@ export default async function HomePage() {
     }
   }
 
-  // « Nouveautés » : les 3 chalets publiés le plus récemment (6 plus tard,
-  // quand il y aura plus d'annonces). Pas de colonne
-  // de date de publication : la ligne subscriptions d'une annonce est créée à
-  // sa première publication (gratuite ou payante), on trie donc par sa date ;
-  // les fiches non revendiquées (sans abonnement) sont triées par leur date d'import.
-  // Lecture serveur seulement (subscriptions n'est pas lisible par les visiteurs).
-  const NEW_LISTINGS_COUNT = 3;
-  const LISTING_CARD_COLUMNS = "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug";
-  const { data: recentSubs } = await createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  )
-    .from("subscriptions")
-    .select("listing_id, created_at")
-    .order("created_at", { ascending: false })
-    .limit(30);
-  // Fiches non revendiquées publiées : pas de ligne subscriptions, leur date d'entrée
-  // (created_at, l'import) tient lieu de date de publication.
-  const { data: recentUnclaimed } = await createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  )
-    .from("listings")
-    .select("id, created_at")
-    .eq("claim_status", "unclaimed")
-    .eq("is_published", true)
-    .eq("is_test", false)
-    .order("created_at", { ascending: false })
-    .limit(30);
-  const newestAt = new Map<string, string>();
-  for (const r of recentUnclaimed ?? []) newestAt.set(r.id as string, r.created_at as string);
-  for (const r of recentSubs ?? []) newestAt.set(r.listing_id as string, r.created_at as string);
-  const publishedOrder = [...newestAt.entries()].sort((a, b) => (a[1] < b[1] ? 1 : -1)).map(([id]) => id);
-  const { data: candidateListings } = publishedOrder.length > 0
-    ? await supabase
-        .from("listings")
-        .select(LISTING_CARD_COLUMNS)
-        .eq("is_published", true)
-        .in("id", publishedOrder)
-    : { data: [] };
-  const rawListings = (candidateListings ?? [])
-    .sort((a, b) => publishedOrder.indexOf(a.id as string) - publishedOrder.indexOf(b.id as string))
-    .slice(0, NEW_LISTINGS_COUNT);
-
   // Vedette listings for current month
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -145,7 +96,7 @@ export default async function HomePage() {
         .select("id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug")
         .in("id", vedetteIds)
         .eq("is_published", true)
-    : { data: [] as typeof rawListings };
+    : { data: [] as { id: string; title: string | null; title_en: string | null; region: string | null; city: string | null; price_low: number | null; price_on_request: boolean | null; capacity: number | null; bedrooms: number | null; photos: unknown; amenities: unknown; listing_number: number | null; custom_slug: string | null }[] };
   const vedetteListings: Listing[] = (rawVedette ?? []).map((l) => ({
     id: l.id,
     title: (locale === "en" && (l.title_en as string | null)) || (l.title ?? ""),
@@ -160,35 +111,6 @@ export default async function HomePage() {
     photos: normalizePhotos(l.photos).map((p) => p.url),
     tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
     isFeatured: true,
-  }));
-
-  const featuredIds = (rawListings ?? []).map((l) => l.id as string);
-  const today = new Date().toISOString().split("T")[0];
-  const { data: activePromos } = featuredIds.length > 0
-    ? await supabase
-        .from("promotions")
-        .select(`listing_id, ${PROMO_DISPLAY_COLUMNS}`)
-        .in("listing_id", featuredIds)
-        .eq("is_active", true)
-        .or(visiblePromoFilter(today))
-    : { data: [] as { listing_id: string; type: string; value: number; min_nights: number | null; days_before: number | null; start_date: string | null; end_date: string | null; date_basis: "stay" | "booking" }[] };
-  const promoMap = new Map((activePromos ?? []).map((p) => [p.listing_id as string, p]));
-
-  const featuredListings: Listing[] = (rawListings ?? []).map((l) => ({
-    id: l.id,
-    title: (locale === "en" && (l.title_en as string | null)) || (l.title ?? ""),
-    region: l.region ?? "",
-    city: (l.city as string | null) ?? null,
-    listing_number: (l.listing_number as number | null) ?? null,
-    custom_slug: (l.custom_slug as string | null) ?? null,
-    price: (l.price_low as number) ?? 0,
-    priceOnRequest: (l.price_on_request as boolean) ?? false,
-    capacity: (l.capacity as number) ?? 1,
-    bedrooms: (l.bedrooms as number) ?? 1,
-    photos: normalizePhotos(l.photos).map((p) => p.url),
-    tags: Array.isArray(l.amenities) ? getAmenityLabels(l.amenities as AmenityValue[], locale).slice(0, 3) : [],
-    hasPromo: promoMap.has(l.id as string),
-    promoData: promoMap.get(l.id as string) ?? null,
   }));
 
   return (
@@ -244,6 +166,10 @@ export default async function HomePage() {
 
       </section>
 
+      {/* ── 3 meilleurs chalets de 3 thèmes (bord de l'eau, spa, télétravail), puis les autres thèmes ── */}
+      <HomeThemeShowcase userId={user?.id ?? null} />
+      <ThemesExplorer exclude={[...SHOWCASE_THEMES.map((k) => k as string)]} />
+
       {/* ── Chalets en vedette ── */}
       {vedetteListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 w-full">
@@ -258,57 +184,11 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── Featured listings ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        {/* Section header */}
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.08em] uppercase text-primary mb-2">
-              {t("pickLabel")}
-            </p>
-            <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug">
-              {t("pickTitle")}
-            </h2>
-          </div>
-          <Link
-            href={localePath("/chalets", locale)}
-            className="text-charcoal-800 font-medium text-sm underline underline-offset-4 hover:text-primary transition-colors hidden md:block"
-          >
-            {t("viewAll")}
-          </Link>
-        </div>
-
-        {featuredListings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-            {featuredListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} currentUserId={user?.id ?? null} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 text-charcoal-400">
-            <p className="text-lg font-medium mb-2">{t("noListings")}</p>
-            <p className="text-base">{t("noListingsSoon")}</p>
-          </div>
-        )}
-
-        <div className="mt-10 flex justify-center md:hidden">
-          <Link
-            href={localePath("/chalets", locale)}
-            className="text-charcoal-800 font-medium text-sm underline underline-offset-4"
-          >
-            {t("viewAllMobile")}
-          </Link>
-        </div>
-      </section>
-
-      {/* ── Explorer par région (seulement les régions avec chalets) ── */}
-      <RegionsExplorer />
-
       {/* ── Notre différence — comparaison des prix ── */}
       <PriceComparison />
 
-      {/* ── Explorer par thème (spa, bord de l'eau, chiens…, seulement les thèmes avec chalets) ── */}
-      <ThemesExplorer />
+      {/* ── Explorer par région (seulement les régions avec chalets) ── */}
+      <RegionsExplorer />
 
       {/* ── Présentation et FAQ (référencement « location de chalet au Québec ») ── */}
       <HomeSeoSection />
