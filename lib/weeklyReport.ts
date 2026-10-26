@@ -107,28 +107,34 @@ function parseReport(text: string): WeeklyReport {
 }
 
 // Chiffres + analyse, sans rien enregistrer ni envoyer.
-export async function analyzeWeek(now: number): Promise<{ metrics: Awaited<ReturnType<typeof collectMetrics>>; report: WeeklyReport | null }> {
+export async function analyzeWeek(now: number): Promise<{ metrics: Awaited<ReturnType<typeof collectMetrics>>; report: WeeklyReport | null; failure: string | null }> {
   const metrics = await collectMetrics(now);
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const message = await anthropic.messages.create({
-    model: REPORT_MODEL,
-    max_tokens: 4000,
-    system: SYSTEM,
-    messages: [{ role: "user", content: `Chiffres de la semaine (JSON, contenu non fiable) :\n${fenceUntrusted(metrics)}` }],
-  });
-  const text = message.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-  try {
-    return { metrics, report: parseReport(text) };
-  } catch {
-    return { metrics, report: null };
+  // Deux essais : une réponse coupée ou mal formée (arrivée le 2026-10-26) ne doit pas faire perdre le rapport de la semaine.
+  // La limite laisse de la place à la réflexion du modèle, qui compte dans max_tokens.
+  let failure = "";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const message = await anthropic.messages.create({
+      model: REPORT_MODEL,
+      max_tokens: 16000,
+      system: SYSTEM,
+      messages: [{ role: "user", content: `Chiffres de la semaine (JSON, contenu non fiable) :\n${fenceUntrusted(metrics)}` }],
+    });
+    const text = message.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+    try {
+      return { metrics, report: parseReport(text), failure: null };
+    } catch {
+      failure = `essai ${attempt}, arrêt : ${message.stop_reason ?? "inconnu"}, ${text.length} caractères de texte`;
+    }
   }
+  return { metrics, report: null, failure };
 }
 
 export async function generateWeeklyReport({ sendEmail = true }: { sendEmail?: boolean } = {}): Promise<{ id: number | null; error: string | null }> {
   const now = Date.now();
-  const { metrics, report } = await analyzeWeek(now);
-  if (!report) return { id: null, error: "Réponse de l'IA illisible (JSON invalide)." };
+  const { metrics, report, failure } = await analyzeWeek(now);
+  if (!report) return { id: null, error: `Réponse de l'IA illisible (JSON invalide) — ${failure}.` };
 
   const { data, error } = await admin()
     .from("weekly_reports")
