@@ -102,12 +102,12 @@ const fr: BaseContent = {
   hero: {
     badge: "",
     h1Line1: "Annoncez votre chalet.",
-    h1Pre: "C’est ",
+    h1Pre: "C'est simple, rapide et ",
     h1Accent: "gratuit",
     h1Post: ".",
     subtitle:
-      "Aucune commission sur vos réservations. Aucuns frais de transaction. Ce que vos voyageurs paient, vous le gardez en entier.",
-    ctaCreate: "Créer mon annonce",
+      "Trouvez votre chalet, revendiquez votre fiche et répondez aux demandes des voyageurs.",
+    ctaCreate: "Trouver mon chalet",
     ctaDuplicate: "Dupliquer depuis Airbnb",
     cardPill: "Sur Kabanalouer",
   },
@@ -227,10 +227,10 @@ const fr: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Votre chalet en ligne aujourd’hui. C’est gratuit.",
-    subtitle: "Sans commission et sans frais de transaction.",
+    h2: "Votre chalet en ligne aujourd'hui. C'est simple, rapide et gratuit.",
+    subtitle: "Trouvez votre chalet, revendiquez votre fiche et répondez aux demandes des voyageurs.",
     importBtn: "Importer mon annonce Airbnb",
-    createBtn: "Créer une annonce à partir de 0",
+    createBtn: "Trouver mon chalet",
   },
   sticky: { title: "Gratuit", subtitle: "Sans commission", cta: "Publier mon chalet" },
 };
@@ -241,12 +241,12 @@ const en: BaseContent = {
   hero: {
     badge: "",
     h1Line1: "List your cabin.",
-    h1Pre: "It’s ",
+    h1Pre: "It's simple, fast and ",
     h1Accent: "free",
     h1Post: ".",
     subtitle:
-      "No commission on your bookings. No transaction fees. What your guests pay, you keep in full.",
-    ctaCreate: "Create my listing",
+      "Find your cabin, claim your listing and respond to travelers’ requests.",
+    ctaCreate: "Find my cabin",
     ctaDuplicate: "Copy from Airbnb",
     cardPill: "On Kabanalouer",
   },
@@ -366,10 +366,10 @@ const en: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Your cabin online today. It’s free.",
-    subtitle: "No commission and no transaction fees.",
+    h2: "Your cabin online today. It's simple, fast and free.",
+    subtitle: "Find your cabin, claim your listing and respond to travelers’ requests.",
     importBtn: "Import my Airbnb listing",
-    createBtn: "Create a listing from scratch",
+    createBtn: "Find my cabin",
   },
   sticky: { title: "Free", subtitle: "No commission", cta: "List my cabin" },
 };

@@ -119,9 +119,8 @@ export default async function DevenirHotePage() {
                     {c.hero.badge}
                   </p>
                 )}
-                <h1 className="m-0 text-[clamp(40px,5.4vw,68px)] leading-[1.02] font-bold text-charcoal-800 text-balance">
-                  {c.hero.h1Line1}
-                  <br />
+                <h1 className="m-0 text-[clamp(36px,4.4vw,56px)] leading-[1.02] font-bold text-charcoal-800 text-balance">
+                  {c.hero.h1Line1}{" "}
                   {c.hero.h1Pre}
                   <span className="text-primary">{c.hero.h1Accent}</span>
                   {c.hero.h1Post}
@@ -136,7 +135,8 @@ export default async function DevenirHotePage() {
                       className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-primary text-white text-base font-bold shadow-[var(--shadow-md)] hover:bg-primary-dark ${BTN_MOTION}`}
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14" />
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" />
                       </svg>
                       {c.hero.ctaCreate}
                     </CreateListingLink>
@@ -363,18 +363,18 @@ export default async function DevenirHotePage() {
                 </h2>
                 <p className="m-0 text-lg leading-[1.55] text-white/90">{c.finalCta.subtitle}</p>
                 <div className="flex flex-wrap gap-3">
-                  <ScrollToImportButton
+                  <CreateListingLink
                     emplacement="cta_final"
                     className={`inline-flex items-center justify-center min-h-14 py-3 px-[26px] rounded-full bg-white text-primary-800 text-base font-extrabold text-center hover:bg-primary-50 ${BTN_MOTION}`}
                   >
-                    {c.finalCta.importBtn}
-                  </ScrollToImportButton>
-                  <CreateListingLink
+                    {c.finalCta.createBtn}
+                  </CreateListingLink>
+                  <ScrollToImportButton
                     emplacement="cta_final"
                     className={`inline-flex items-center justify-center min-h-14 py-3 px-6 rounded-full border-[1.5px] border-white bg-[rgba(21,24,13,0.35)] text-white text-base font-bold text-center sm:whitespace-nowrap hover:bg-white/10 ${BTN_MOTION}`}
                   >
-                    {c.finalCta.createBtn}
-                  </CreateListingLink>
+                    {c.finalCta.importBtn}
+                  </ScrollToImportButton>
                 </div>
               </div>
             </div>
