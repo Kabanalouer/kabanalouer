@@ -1,60 +1,36 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
 import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
 
-// Section « Pour les propriétaires » de la page d'accueil, juste avant le pied
-// de page. « C'est gratuit », sans durée ni date (lib/siteIsFree.ts) ; à false :
-// « Sans commission » et le prix annuel.
+// Bannière « Pour les propriétaires » des pages publiques (accueil, recherche, régions, villes, thèmes), juste avant
+// le pied de page. Même bannière que le bas de /devenir-hote (components/OwnersBanner.tsx, la référence). « Gratuit »,
+// sans durée ni date (lib/siteIsFree.ts) ; à false : « Sans commission » et le prix annuel.
 export default async function OwnersSection() {
   const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
   const offerActive = SITE_IS_FREE;
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, locale === "en" ? "en" : "fr");
+  const landing = localePath("/devenir-hote", locale);
+
+  const title = offerActive
+    ? `${t("ownersTitleLine1")} ${t("ownersTitleLine2")} ${t("ownersTitleAccent")}`
+    : `${t("ownersTitleLine1")} ${t("ownersTitleLine2Regular")} ${t("ownersTitleAccentRegular")}`;
 
   return (
-    <section className="bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        {/* Carte contenue : même photo que le CTA final de /devenir-hote, assombrie pour la lisibilité */}
-        <div className="relative rounded-[16px] overflow-hidden text-white">
-          <Image
-            src="/images/devenir-hote/chalet-soiree.jpg"
-            alt=""
-            fill
-            loading="lazy"
-            sizes="(max-width: 1280px) 100vw, 1280px"
-            className="object-cover object-right"
-          />
-          <div className="absolute inset-0 bg-[rgba(15,14,12,0.7)] sm:hidden" />
-          <div className="absolute inset-0 hidden sm:block bg-[linear-gradient(to_right,rgba(15,14,12,.88)_0%,rgba(15,14,12,.55)_50%,rgba(15,14,12,.05)_100%)]" />
-
-          <div className="relative max-w-[520px] box-content p-8 sm:p-12 flex flex-col items-start gap-10">
-            <div className="flex flex-col items-start gap-6 text-left">
-              <h2 className="text-[32px] sm:text-[44px] leading-[1.08] font-extrabold tracking-h2 text-balance">
-                {t("ownersTitleLine1")}
-                <br />
-                {offerActive ? (
-                  <>{t("ownersTitleLine2")} <span className="text-[#dce7a8]">{t("ownersTitleAccent")}</span></>
-                ) : (
-                  <>{t("ownersTitleLine2Regular")} <span className="text-[#dce7a8]">{t("ownersTitleAccentRegular")}</span></>
-                )}
-              </h2>
-              <p className="text-[17px] leading-[1.6] text-white/80 text-pretty">
-                {offerActive ? t("ownersDesc") : t("ownersDescRegular", { price: regularPrice })}
-              </p>
-            </div>
-
-            <Link
-              href={localePath("/devenir-hote", locale)}
-              className="inline-flex items-center bg-white text-primary font-bold text-base px-7 py-4 rounded-full transition-[background-color,color,transform] duration-[140ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-50 hover:text-primary-dark active:scale-[0.97] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-white/40"
-            >
-              {offerActive ? t("ctaButton") : t("ctaButtonRegular")}
-            </Link>
-          </div>
-        </div>
-      </div>
+    <section className="bg-white px-[clamp(20px,4vw,48px)] py-[clamp(56px,7vw,96px)]">
+      <OwnersBanner title={title} subtitle={offerActive ? t("ownersDesc") : t("ownersDescRegular", { price: regularPrice })}>
+        <Link href={landing} className={OWNERS_BANNER_PRIMARY_BTN}>
+          {offerActive ? t("ownersFindBtn") : t("ctaButtonRegular")}
+        </Link>
+        {offerActive && (
+          <Link href={`${landing}#import`} className={OWNERS_BANNER_SECONDARY_BTN}>
+            {t("ownersImportBtn")}
+          </Link>
+        )}
+      </OwnersBanner>
     </section>
   );
 }

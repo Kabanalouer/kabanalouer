@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
 import { CreateListingLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
 import {
   FaqAccordion,
@@ -164,7 +165,7 @@ export default async function DevenirHotePage() {
           </section>
 
           {/* ── 02 Duplication Airbnb ── */}
-          <section id="import" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50`}>
+          <section id="import" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50 scroll-mt-24`}>
             <div className="mx-auto max-w-[1240px] flex flex-col gap-[clamp(40px,5vw,64px)]">
               <div className="flex flex-col gap-5">
                 <p className={`m-0 ${EYEBROW}`}>{c.importSection.eyebrow}</p>
@@ -347,37 +348,14 @@ export default async function DevenirHotePage() {
 
           {/* ── 07 CTA final ── */}
           <section className={`${SECTION_X} py-[clamp(56px,7vw,96px)]`}>
-            <div className="relative mx-auto max-w-[1240px] rounded-[20px] overflow-hidden bg-primary-800">
-              <Image
-                src="/images/devenir-hote/chalet-soiree.jpg"
-                alt=""
-                fill
-                loading="lazy"
-                sizes="(max-width: 1240px) 100vw, 1240px"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[rgba(21,24,13,0.85)] via-[rgba(21,24,13,0.55)] via-60% to-[rgba(21,24,13,0.3)]" />
-              <div className="relative px-6 py-10 sm:p-[clamp(40px,6vw,88px)] flex flex-col gap-[22px] max-w-[680px]">
-                <h2 className="m-0 text-[clamp(34px,4.4vw,56px)] leading-[1.04] font-extrabold tracking-display text-white text-balance">
-                  {c.finalCta.h2}
-                </h2>
-                <p className="m-0 text-lg leading-[1.55] text-white/90">{c.finalCta.subtitle}</p>
-                <div className="flex flex-wrap gap-3">
-                  <CreateListingLink
-                    emplacement="cta_final"
-                    className={`inline-flex items-center justify-center min-h-14 py-3 px-[26px] rounded-full bg-white text-primary-800 text-base font-extrabold text-center hover:bg-primary-50 ${BTN_MOTION}`}
-                  >
-                    {c.finalCta.createBtn}
-                  </CreateListingLink>
-                  <ScrollToImportButton
-                    emplacement="cta_final"
-                    className={`inline-flex items-center justify-center min-h-14 py-3 px-6 rounded-full border-[1.5px] border-white bg-[rgba(21,24,13,0.35)] text-white text-base font-bold text-center sm:whitespace-nowrap hover:bg-white/10 ${BTN_MOTION}`}
-                  >
-                    {c.finalCta.importBtn}
-                  </ScrollToImportButton>
-                </div>
-              </div>
-            </div>
+            <OwnersBanner title={c.finalCta.h2} subtitle={c.finalCta.subtitle}>
+              <CreateListingLink emplacement="cta_final" className={OWNERS_BANNER_PRIMARY_BTN}>
+                {c.finalCta.createBtn}
+              </CreateListingLink>
+              <ScrollToImportButton emplacement="cta_final" className={OWNERS_BANNER_SECONDARY_BTN}>
+                {c.finalCta.importBtn}
+              </ScrollToImportButton>
+            </OwnersBanner>
           </section>
         </main>
 
