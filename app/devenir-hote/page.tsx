@@ -109,7 +109,7 @@ export default async function DevenirHotePage() {
 
         <main className="flex-1">
           {/* ── 01 Hero : gratuité (offre de lancement) ou sans commission ── */}
-          <section className={`${SECTION_X} pt-[clamp(24px,4.5vw,72px)] pb-[clamp(56px,7vw,96px)]`}>
+          <section className={`${SECTION_X} pt-[clamp(24px,4.5vw,72px)]`}>
             <div className="mx-auto max-w-[1240px] grid items-center gap-[clamp(40px,5vw,72px)] lg:grid-cols-2">
               <div className="flex flex-col gap-[clamp(18px,2vw,26px)]">
                 {c.hero.badge && (
