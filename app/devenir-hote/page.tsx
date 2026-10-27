@@ -226,7 +226,7 @@ export default async function DevenirHotePage() {
           </section>
 
           {/* ── 05 Comparaison ── */}
-          <section className={`${SECTION_X} pb-[clamp(72px,9vw,128px)]`}>
+          <section className={SECTION_X}>
             <div className="mx-auto max-w-[880px] flex flex-col gap-8">
               <h2 className="m-0 text-center text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-extrabold tracking-h2 text-charcoal-800 text-balance">
                 {c.compare.h2}
