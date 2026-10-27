@@ -12,7 +12,7 @@ const supabaseAdmin = createClient(
 const FROM = "Kabanalouer <no-reply@kabanalouer.ca>";
 
 interface HookPayload {
-  user: { id: string; email: string };
+  user: { id: string; email: string; user_metadata?: { role?: string } };
   email_data: {
     token_hash: string;
     email_action_type: string;
@@ -173,6 +173,13 @@ const TEMPLATES: Record<HandledActionType, Record<"fr" | "en", {
   },
 };
 
+// Corps du courriel de confirmation pour un compte proprio (le gabarit signup
+// ci-dessus parle aux voyageurs). Rôle lu dans user_metadata.role, écrit à l'inscription.
+const HOST_SIGNUP_BODY: Record<"fr" | "en", string> = {
+  fr: "Clique sur le bouton ci-dessous pour confirmer la création de ton compte proprio. Tu pourras ensuite gérer l'annonce de ton chalet et répondre aux demandes des voyageurs.",
+  en: "Click the button below to confirm your owner account. You can then manage your cabin listing and respond to travelers’ requests.",
+};
+
 Deno.serve(async (req) => {
   const payload = await req.text();
   const headers = Object.fromEntries(req.headers);
@@ -214,7 +221,10 @@ Deno.serve(async (req) => {
     console.error("[send-email-hook] lecture preferred_language échouée, fallback fr", error);
   }
 
-  const template = TEMPLATES[email_action_type][preferredLanguage];
+  const template = { ...TEMPLATES[email_action_type][preferredLanguage] };
+  if (email_action_type === "signup" && user.user_metadata?.role === "host") {
+    template.body = HOST_SIGNUP_BODY[preferredLanguage];
+  }
   const actionLink = buildActionLink(token_hash, email_action_type, redirect_to);
   const html = renderEmail({
     lang: preferredLanguage,
