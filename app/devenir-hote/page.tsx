@@ -161,43 +161,6 @@ export default async function DevenirHotePage() {
             </div>
           </section>
 
-          {/* ── 03 Gratuit ── */}
-          <section className={`${SECTION_X} ${SECTION_Y}`}>
-            <div className="mx-auto max-w-[880px] flex flex-col gap-[clamp(40px,5vw,64px)]">
-              <div className="flex flex-col gap-5">
-                <p className={`m-0 ${EYEBROW}`}>{c.free.eyebrow}</p>
-                <h2 className={H2}>{c.free.h2}</h2>
-                <p className="m-0 text-lg leading-[1.6] text-charcoal-600 text-pretty">{c.free.subtitle}</p>
-                {c.offerActive ? (
-                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
-                    <span className="text-[13px] font-bold text-primary-700">{c.free.offerLabel}</span>
-                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">
-                      {c.free.offerPricePre}
-                      <sup>{c.free.offerPriceSup}</sup>
-                      {c.free.offerPricePost}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
-                    <span className="text-[13px] font-bold text-primary-700">{c.free.regularLabel}</span>
-                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">{c.free.regularPrice}</span>
-                  </div>
-                )}
-                <ul className="m-0 p-0 pt-1 list-none flex flex-col gap-3">
-                  {c.free.points.map((point) => (
-                    <li key={point} className="flex items-start gap-3 text-base font-semibold text-charcoal-800">
-                      <svg className="w-5 h-5 shrink-0 mt-0.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <SavingsCalculator c={c.calculator} locale={locale} />
-            </div>
-          </section>
-
           {/* ── 04 Fonctionnalités ── */}
           <section className={`${SECTION_X} ${SECTION_Y}`}>
             <div className="mx-auto max-w-[1240px] flex flex-col gap-[clamp(40px,5vw,56px)]">
@@ -293,6 +256,43 @@ export default async function DevenirHotePage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </section>
+
+          {/* ── 03 Gratuit ── */}
+          <section className={`${SECTION_X} ${SECTION_Y}`}>
+            <div className="mx-auto max-w-[880px] flex flex-col gap-[clamp(40px,5vw,64px)]">
+              <div className="flex flex-col gap-5">
+                <p className={`m-0 ${EYEBROW}`}>{c.free.eyebrow}</p>
+                <h2 className={H2}>{c.free.h2}</h2>
+                <p className="m-0 text-lg leading-[1.6] text-charcoal-600 text-pretty">{c.free.subtitle}</p>
+                {c.offerActive ? (
+                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
+                    <span className="text-[13px] font-bold text-primary-700">{c.free.offerLabel}</span>
+                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">
+                      {c.free.offerPricePre}
+                      <sup>{c.free.offerPriceSup}</sup>
+                      {c.free.offerPricePost}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5 self-start bg-primary-50 border border-primary-100 rounded-lg px-5 py-4">
+                    <span className="text-[13px] font-bold text-primary-700">{c.free.regularLabel}</span>
+                    <span className="text-[26px] font-extrabold tracking-h2 leading-[1.1] text-primary-700">{c.free.regularPrice}</span>
+                  </div>
+                )}
+                <ul className="m-0 p-0 pt-1 list-none flex flex-col gap-3">
+                  {c.free.points.map((point) => (
+                    <li key={point} className="flex items-start gap-3 text-base font-semibold text-charcoal-800">
+                      <svg className="w-5 h-5 shrink-0 mt-0.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <SavingsCalculator c={c.calculator} locale={locale} />
             </div>
           </section>
 
