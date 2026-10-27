@@ -5,7 +5,7 @@ import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
 import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
 import { StandaloneCreateListingLink } from "@/components/devenir-hote/OwnerAccess";
-import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
+import OwnersBanner, { BannerPlusIcon, BannerSearchIcon, OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
 
 // Bannière « Pour les propriétaires » des pages publiques (accueil, recherche, régions, villes, thèmes), juste avant
 // le pied de page. Même bannière que le bas de /devenir-hote (components/OwnersBanner.tsx, la référence). « Gratuit »,
@@ -25,10 +25,12 @@ export default async function OwnersSection() {
     <section className="bg-white px-[clamp(20px,4vw,48px)] py-[clamp(56px,7vw,96px)]">
       <OwnersBanner title={title} subtitle={offerActive ? t("ownersDesc") : t("ownersDescRegular", { price: regularPrice })}>
         <Link href={offerActive ? findPath : landing} className={OWNERS_BANNER_PRIMARY_BTN}>
+          {offerActive && <BannerSearchIcon />}
           {offerActive ? t("ownersFindBtn") : t("ctaButtonRegular")}
         </Link>
         {offerActive && (
           <StandaloneCreateListingLink emplacement="banniere_site" className={OWNERS_BANNER_SECONDARY_BTN}>
+            <BannerPlusIcon />
             {t("ownersImportBtn")}
           </StandaloneCreateListingLink>
         )}
