@@ -227,7 +227,7 @@ const fr: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Votre chalet en ligne aujourd'hui. C'est simple, rapide et gratuit.",
+    h2: "Votre chalet en ligne aujourd'hui. C'est simple, rapide et gratuit.",
     subtitle: "Trouvez votre chalet, revendiquez votre fiche et répondez aux demandes des voyageurs.",
     importBtn: "Créer mon annonce",
     createBtn: "Trouver mon chalet",
@@ -366,7 +366,7 @@ const en: BaseContent = {
     ],
   },
   finalCta: {
-    h2: "Your cabin online today. It's simple, fast and free.",
+    h2: "Your cabin online today. It's simple, fast and free.",
     subtitle: "Find your cabin, claim your listing and respond to travelers’ requests.",
     importBtn: "Create my listing",
     createBtn: "Find my cabin",
