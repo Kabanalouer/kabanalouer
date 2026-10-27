@@ -2,6 +2,7 @@ import { adminSupabase } from "@/lib/sendMessage";
 import { buildListingPath } from "@/lib/listingUrl";
 import { firstPhotoUrl } from "@/lib/photo";
 import { maskEmail } from "@/lib/claims/maskedEmail";
+import { normalizeDest } from "@/lib/destinationSearch";
 
 // Fiches non revendiquées déjà en ligne qui pourraient être celles d'un proprio qui arrive pour
 // inscrire son chalet : trouvées par CITQ (étape « Votre chalet est peut-être déjà sur Kabanalouer »)
@@ -54,6 +55,26 @@ export async function findUnclaimedByCitq(citq: string, locale: "fr" | "en"): Pr
     .order("created_at", { ascending: true })
     .limit(10);
   return ((data ?? []) as Row[]).map((r) => toMatch(r, locale));
+}
+
+// Fiches non revendiquées d'une ville, pour la page publique « Trouver mon chalet » (sans compte). La base écrit
+// les villes de façons variables (« Ste-Agathe-des-Monts », « St-Zénon ») : la comparaison se fait sur les noms
+// normalisés (accents, tirets, « st » = « saint »), comme la barre de recherche.
+export async function findUnclaimedByCity(city: string, locale: "fr" | "en"): Promise<UnclaimedMatch[]> {
+  const wanted = normalizeDest(city);
+  if (!wanted) return [];
+  const { data } = await adminSupabase()
+    .from("listings")
+    .select(COLUMNS)
+    .eq("claim_status", "unclaimed")
+    .eq("is_published", true)
+    .eq("is_test", false)
+    .not("city", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(1000);
+  return ((data ?? []) as Row[])
+    .filter((r) => r.city && normalizeDest(r.city) === wanted)
+    .map((r) => toMatch(r, locale));
 }
 
 export async function findUnclaimedByEmail(email: string, locale: "fr" | "en"): Promise<UnclaimedMatch[]> {

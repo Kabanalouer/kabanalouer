@@ -18,16 +18,21 @@ export const maxDuration = 90;
 export default async function NewListingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ import?: string }>;
+  searchParams: Promise<{ import?: string; verifie?: string }>;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   // Lien Airbnb saisi sur /devenir-hote : prérempli dans le formulaire d'import.
-  const initialImportUrl = normalizeAirbnbInput((await searchParams).import ?? "");
+  const params = await searchParams;
+  const initialImportUrl = normalizeAirbnbInput(params.import ?? "");
 
   if (!user) {
     const loginLocale = await getLocale();
-    const target = `/dashboard/listings/new${initialImportUrl ? `?import=${encodeURIComponent(initialImportUrl)}` : ""}`;
+    const query = [
+      initialImportUrl ? `import=${encodeURIComponent(initialImportUrl)}` : "",
+      params.verifie === "1" ? "verifie=1" : "",
+    ].filter(Boolean).join("&");
+    const target = `/dashboard/listings/new${query ? `?${query}` : ""}`;
     redirect(localePath(`/login?next=${encodeURIComponent(localePath(target, loginLocale))}`, loginLocale));
   }
 

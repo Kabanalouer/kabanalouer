@@ -3,6 +3,7 @@
 const PATH_TRANSLATIONS: Array<[string, string]> = [
   ["/chalets", "/cabins"],
   ["/devenir-hote", "/become-a-host"],
+  ["/trouver-mon-chalet", "/find-my-cabin"],
   ["/a-propos", "/about"],
   ["/comment-ca-marche", "/how-it-works"],
   ["/faq-hotes", "/owner-faq"],

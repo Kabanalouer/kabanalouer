@@ -96,20 +96,47 @@ export function CreateListingLink({
   emplacement,
   className,
   children,
+  target = NEW_LISTING_PATH,
+}: {
+  emplacement: string;
+  className: string;
+  children: React.ReactNode;
+  target?: string;
+}) {
+  const { hrefFor, guard } = useOwnerAccess();
+  return (
+    <Link
+      href={hrefFor(target)}
+      className={className}
+      onClick={(e) => {
+        trackEvent("lp_hote_creer_annonce", { emplacement });
+        trackFunnelStep("h_cta");
+        if (!guard(target)) e.preventDefault();
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+// « Trouver mon chalet » : mène à la recherche par ville (/trouver-mon-chalet), sans compte.
+export function FindCabinLink({
+  emplacement,
+  className,
+  children,
 }: {
   emplacement: string;
   className: string;
   children: React.ReactNode;
 }) {
-  const { hrefFor, guard } = useOwnerAccess();
+  const locale = useLocale();
   return (
     <Link
-      href={hrefFor(NEW_LISTING_PATH)}
+      href={localePath("/trouver-mon-chalet", locale)}
       className={className}
-      onClick={(e) => {
-        trackEvent("lp_hote_creer_annonce", { emplacement });
+      onClick={() => {
+        trackEvent("lp_hote_trouver_chalet", { emplacement });
         trackFunnelStep("h_cta");
-        if (!guard(NEW_LISTING_PATH)) e.preventDefault();
       }}
     >
       {children}

@@ -6,7 +6,7 @@ import { getLocale } from "next-intl/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
-import { CreateListingLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
+import { CreateListingLink, FindCabinLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
 import {
   FaqAccordion,
   ImportForm,
@@ -131,7 +131,7 @@ export default async function DevenirHotePage() {
                 </p>
                 <div className="flex flex-col gap-3 max-w-[580px]">
                   <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))]">
-                    <CreateListingLink
+                    <FindCabinLink
                       emplacement="hero"
                       className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-primary text-white text-base font-bold shadow-[var(--shadow-md)] hover:bg-primary-dark ${BTN_MOTION}`}
                     >
@@ -140,7 +140,7 @@ export default async function DevenirHotePage() {
                         <path d="m20 20-3.5-3.5" />
                       </svg>
                       {c.hero.ctaCreate}
-                    </CreateListingLink>
+                    </FindCabinLink>
                     <ScrollToImportButton
                       emplacement="hero"
                       className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-white text-charcoal-800 text-base font-bold border-[1.5px] border-charcoal-800 hover:bg-charcoal-50 ${BTN_MOTION}`}
@@ -349,9 +349,9 @@ export default async function DevenirHotePage() {
           {/* ── 07 CTA final ── */}
           <section className={`${SECTION_X} py-[clamp(56px,7vw,96px)]`}>
             <OwnersBanner title={c.finalCta.h2} subtitle={c.finalCta.subtitle}>
-              <CreateListingLink emplacement="cta_final" className={OWNERS_BANNER_PRIMARY_BTN}>
+              <FindCabinLink emplacement="cta_final" className={OWNERS_BANNER_PRIMARY_BTN}>
                 {c.finalCta.createBtn}
-              </CreateListingLink>
+              </FindCabinLink>
               <ScrollToImportButton emplacement="cta_final" className={OWNERS_BANNER_SECONDARY_BTN}>
                 {c.finalCta.importBtn}
               </ScrollToImportButton>

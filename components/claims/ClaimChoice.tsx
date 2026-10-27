@@ -12,10 +12,12 @@ export default function ClaimChoice({
   listingId,
   maskedEmail,
   locale,
+  signedIn = true,
 }: {
   listingId: string;
   maskedEmail: string | null;
   locale: string;
+  signedIn?: boolean;
 }) {
   const t = useTranslations("claim");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -35,6 +37,7 @@ export default function ClaimChoice({
   }
 
   const verificationPath = `${localePath("/revendiquer/verification", locale)}?listing=${listingId}`;
+  const signupHref = `${localePath("/signup", locale)}?role=host&next=${encodeURIComponent(verificationPath)}`;
 
   return (
     <div className="space-y-4">
@@ -61,12 +64,12 @@ export default function ClaimChoice({
       )}
       <div className="rounded-xl border border-[#ebebeb] bg-white p-5">
         <p className="text-base font-semibold text-charcoal-800">{t("proofTitle")}</p>
-        <p className="mt-1 text-sm text-charcoal-500">{t("proofBodySignedIn")}</p>
+        <p className="mt-1 text-sm text-charcoal-500">{t(signedIn ? "proofBodySignedIn" : "proofBody")}</p>
         <a
-          href={verificationPath}
+          href={signedIn ? verificationPath : signupHref}
           className="mt-4 inline-flex items-center justify-center rounded-full border border-charcoal-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors"
         >
-          {t("proofButton")}
+          {signedIn ? t("proofButton") : t("proofButtonSignIn")}
         </a>
       </div>
     </div>

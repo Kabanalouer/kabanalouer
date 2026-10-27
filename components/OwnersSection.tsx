@@ -14,6 +14,7 @@ export default async function OwnersSection() {
   const offerActive = SITE_IS_FREE;
   const regularPrice = formatPriceLabel(REGULAR_PRICE_CENTS, locale === "en" ? "en" : "fr");
   const landing = localePath("/devenir-hote", locale);
+  const findPath = localePath("/trouver-mon-chalet", locale);
 
   const title = offerActive
     ? `${t("ownersTitleLine1")} ${t("ownersTitleLine2")} ${t("ownersTitleAccent")}`
@@ -22,7 +23,7 @@ export default async function OwnersSection() {
   return (
     <section className="bg-white px-[clamp(20px,4vw,48px)] py-[clamp(56px,7vw,96px)]">
       <OwnersBanner title={title} subtitle={offerActive ? t("ownersDesc") : t("ownersDescRegular", { price: regularPrice })}>
-        <Link href={landing} className={OWNERS_BANNER_PRIMARY_BTN}>
+        <Link href={offerActive ? findPath : landing} className={OWNERS_BANNER_PRIMARY_BTN}>
           {offerActive ? t("ownersFindBtn") : t("ctaButtonRegular")}
         </Link>
         {offerActive && (
