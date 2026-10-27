@@ -119,6 +119,15 @@ export function CreateListingLink({
   );
 }
 
+// « Créer mon annonce » hors de /devenir-hote (bannières des pages publiques) : même accès proprio, avec son propre contexte.
+export function StandaloneCreateListingLink(props: { emplacement: string; className: string; children: React.ReactNode }) {
+  return (
+    <OwnerAccessProvider>
+      <CreateListingLink {...props} />
+    </OwnerAccessProvider>
+  );
+}
+
 // « Trouver mon chalet » : mène à la recherche par ville (/trouver-mon-chalet), sans compte.
 export function FindCabinLink({
   emplacement,

@@ -4,6 +4,7 @@ import { localePath } from "@/lib/localePath";
 import { REGULAR_PRICE_CENTS } from "@/lib/launchOffer";
 import { SITE_IS_FREE } from "@/lib/siteIsFree";
 import { formatPriceLabel } from "@/lib/subscriptionPricing";
+import { StandaloneCreateListingLink } from "@/components/devenir-hote/OwnerAccess";
 import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
 
 // Bannière « Pour les propriétaires » des pages publiques (accueil, recherche, régions, villes, thèmes), juste avant
@@ -27,9 +28,9 @@ export default async function OwnersSection() {
           {offerActive ? t("ownersFindBtn") : t("ctaButtonRegular")}
         </Link>
         {offerActive && (
-          <Link href={`${landing}#import`} className={OWNERS_BANNER_SECONDARY_BTN}>
+          <StandaloneCreateListingLink emplacement="banniere_site" className={OWNERS_BANNER_SECONDARY_BTN}>
             {t("ownersImportBtn")}
-          </Link>
+          </StandaloneCreateListingLink>
         )}
       </OwnersBanner>
     </section>

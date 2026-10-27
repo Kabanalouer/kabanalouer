@@ -209,12 +209,12 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
           {c.pocketPre}
           <strong className="text-lg text-charcoal-800">{savedLabel}{c.pocketPost}</strong>
         </p>
-        <ScrollToImportButton
+        <CreateListingLink
           emplacement="calculatrice"
           className="bg-primary text-white text-[15px] font-bold px-[18px] py-3 rounded-full transition-[background-color,transform] duration-[140ms] hover:bg-primary-dark active:scale-[0.97] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
         >
           {c.cta}
-        </ScrollToImportButton>
+        </CreateListingLink>
       </div>
     </div>
   );

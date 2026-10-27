@@ -9,9 +9,7 @@ import OwnersBanner, { OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } 
 import { CreateListingLink, FindCabinLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
 import {
   FaqAccordion,
-  ImportForm,
   SavingsCalculator,
-  ScrollToImportButton,
   StickyCta,
 } from "@/components/devenir-hote/LandingInteractive";
 import { getDevenirHoteContent } from "@/lib/devenirHoteContent";
@@ -141,16 +139,15 @@ export default async function DevenirHotePage() {
                       </svg>
                       {c.hero.ctaCreate}
                     </FindCabinLink>
-                    <ScrollToImportButton
+                    <CreateListingLink
                       emplacement="hero"
                       className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-white text-charcoal-800 text-base font-bold border-[1.5px] border-charcoal-800 hover:bg-charcoal-50 ${BTN_MOTION}`}
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="9" y="9" width="13" height="13" rx="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
                       </svg>
                       {c.hero.ctaDuplicate}
-                    </ScrollToImportButton>
+                    </CreateListingLink>
                   </div>
                 </div>
               </div>
@@ -160,43 +157,6 @@ export default async function DevenirHotePage() {
                 <div className="relative w-full max-w-[500px] bg-white rounded-2xl shadow-[var(--shadow-xl)] p-3.5 pb-[22px] rotate-[1.2deg]">
                   <HeroListingCard locale={locale} pill={c.hero.cardPill} />
                 </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ── 02 Duplication Airbnb ── */}
-          <section id="import" className={`${SECTION_X} ${SECTION_Y} bg-charcoal-50 scroll-mt-24`}>
-            <div className="mx-auto max-w-[1240px] flex flex-col gap-[clamp(40px,5vw,64px)]">
-              <div className="flex flex-col gap-5">
-                <p className={`m-0 ${EYEBROW}`}>{c.importSection.eyebrow}</p>
-                <h2 className={H2}>{c.importSection.h2}</h2>
-                <p className="m-0 text-lg leading-[1.6] text-charcoal-600 text-pretty">{c.importSection.subtitle}</p>
-                <div className="flex flex-col gap-2.5">
-                  <ImportForm c={c.importSection} />
-                  <p className="m-0 text-sm text-charcoal-400">
-                    {c.importSection.noAirbnb}{" "}
-                    <CreateListingLink
-                      emplacement="import"
-                      className="font-bold text-primary-dark hover:text-primary-press hover:underline"
-                    >
-                      {c.importSection.createFromScratch}
-                    </CreateListingLink>
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-6">
-                <h3 className="m-0 text-heading-2 font-semibold tracking-h2 text-charcoal-800">{c.importSection.stepsTitle}</h3>
-                <ol className="m-0 p-0 list-none grid gap-8 md:grid-cols-3">
-                  {c.importSection.steps.map((step, i) => (
-                    <li key={step.title} className="border-t border-[#222] pt-5 flex flex-col gap-2.5">
-                      <span className="font-[family-name:var(--font-geist-mono)] text-[13px] text-charcoal-400" aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <h4 className="m-0 text-lg font-semibold tracking-h3 text-charcoal-800">{step.title}</h4>
-                      <p className="m-0 text-[15px] leading-[1.55] text-charcoal-400">{step.text}</p>
-                    </li>
-                  ))}
-                </ol>
               </div>
             </div>
           </section>
@@ -352,9 +312,9 @@ export default async function DevenirHotePage() {
               <FindCabinLink emplacement="cta_final" className={OWNERS_BANNER_PRIMARY_BTN}>
                 {c.finalCta.createBtn}
               </FindCabinLink>
-              <ScrollToImportButton emplacement="cta_final" className={OWNERS_BANNER_SECONDARY_BTN}>
+              <CreateListingLink emplacement="cta_final_creer" className={OWNERS_BANNER_SECONDARY_BTN}>
                 {c.finalCta.importBtn}
-              </ScrollToImportButton>
+              </CreateListingLink>
             </OwnersBanner>
           </section>
         </main>

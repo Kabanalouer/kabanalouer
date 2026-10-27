@@ -108,7 +108,7 @@ const fr: BaseContent = {
     subtitle:
       "Trouvez votre chalet, revendiquez votre fiche et répondez aux demandes des voyageurs.",
     ctaCreate: "Trouver mon chalet",
-    ctaDuplicate: "Dupliquer depuis Airbnb",
+    ctaDuplicate: "Créer mon annonce",
     cardPill: "Sur Kabanalouer",
   },
   importSection: {
@@ -229,7 +229,7 @@ const fr: BaseContent = {
   finalCta: {
     h2: "Votre chalet en ligne aujourd'hui. C'est simple, rapide et gratuit.",
     subtitle: "Trouvez votre chalet, revendiquez votre fiche et répondez aux demandes des voyageurs.",
-    importBtn: "Importer mon annonce Airbnb",
+    importBtn: "Créer mon annonce",
     createBtn: "Trouver mon chalet",
   },
   sticky: { title: "Gratuit", subtitle: "Sans commission", cta: "Publier mon chalet" },
@@ -247,7 +247,7 @@ const en: BaseContent = {
     subtitle:
       "Find your cabin, claim your listing and respond to travelers’ requests.",
     ctaCreate: "Find my cabin",
-    ctaDuplicate: "Copy from Airbnb",
+    ctaDuplicate: "Create my listing",
     cardPill: "On Kabanalouer",
   },
   importSection: {
@@ -368,7 +368,7 @@ const en: BaseContent = {
   finalCta: {
     h2: "Your cabin online today. It's simple, fast and free.",
     subtitle: "Find your cabin, claim your listing and respond to travelers’ requests.",
-    importBtn: "Import my Airbnb listing",
+    importBtn: "Create my listing",
     createBtn: "Find my cabin",
   },
   sticky: { title: "Free", subtitle: "No commission", cta: "List my cabin" },
