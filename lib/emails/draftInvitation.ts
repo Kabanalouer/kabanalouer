@@ -22,6 +22,7 @@ const PLACEHOLDERS: EmailTemplateDef["placeholders"] = [
   { key: "bouton", label: "Texte du bouton : « Voir l’aperçu » ou, si les fiches sont déjà revendiquées, « Activer mes fiches »" },
   { key: "retrait", label: "Phrase et liens « Retirer » (vide si le propriétaire a déjà revendiqué ses fiches)", html: true },
   { key: "suivi", label: "Pixel invisible qui compte les ouvertures (à laisser tel quel)", html: true },
+  { key: "intro", label: "Première phrase personnalisée selon le site du propriétaire, écrite dans Admin → Brouillons (vide s’il n’y en a pas)", html: true },
 ];
 
 const RETRAIT = "{retrait}{suivi}";
@@ -34,7 +35,7 @@ export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
       subject: "Votre chalet est prêt sur Kabanalouer, il ne reste qu’à l’activer{gratuitement}",
       greeting: "Bonjour,",
       heading: "Votre chalet est prêt sur Kabanalouer",
-      body: "Nous avons préparé la fiche de votre chalet sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElle n’est pas encore en ligne : vous la voyez d’abord dans un aperçu privé. En l’activant, vous créez votre compte et elle est mise en ligne tout de suite.{offre}",
+      body: "{intro}Nous avons préparé la fiche de votre chalet sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElle n’est pas encore en ligne : vous la voyez d’abord dans un aperçu privé. En l’activant, vous créez votre compte et elle est mise en ligne tout de suite.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
@@ -42,7 +43,7 @@ export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
       subject: "Your cabin is ready on Kabanalouer, all that’s left is to activate it{gratuitement}",
       greeting: "Hello,",
       heading: "Your cabin is ready on Kabanalouer",
-      body: "We have prepared a listing for your cabin on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nIt is not online yet: you first see it in a private preview. When you activate it, you create your account and it goes online right away.{offre}",
+      body: "{intro}We have prepared a listing for your cabin on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nIt is not online yet: you first see it in a private preview. When you activate it, you create your account and it goes online right away.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
@@ -57,7 +58,7 @@ export const TEMPLATE_DRAFT_INVITATION_MULTI: EmailTemplateDef = {
       subject: "Vos {nombre} chalets sont prêts sur Kabanalouer, il ne reste qu’à les activer{gratuitement}",
       greeting: "Bonjour,",
       heading: "Vos {nombre} chalets sont prêts sur Kabanalouer",
-      body: "Nous avons préparé les fiches de vos {nombre} chalets sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElles ne sont pas encore en ligne : vous les voyez d’abord dans un aperçu privé. En les activant, vous créez votre compte et elles sont toutes mises en ligne tout de suite.{offre}",
+      body: "{intro}Nous avons préparé les fiches de vos {nombre} chalets sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElles ne sont pas encore en ligne : vous les voyez d’abord dans un aperçu privé. En les activant, vous créez votre compte et elles sont toutes mises en ligne tout de suite.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
@@ -65,7 +66,7 @@ export const TEMPLATE_DRAFT_INVITATION_MULTI: EmailTemplateDef = {
       subject: "Your {nombre} cabins are ready on Kabanalouer, all that’s left is to activate them{gratuitement}",
       greeting: "Hello,",
       heading: "Your {nombre} cabins are ready on Kabanalouer",
-      body: "We have prepared listings for your {nombre} cabins on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nThey are not online yet: you first see them in a private preview. When you activate them, you create your account and they all go online right away.{offre}",
+      body: "{intro}We have prepared listings for your {nombre} cabins on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nThey are not online yet: you first see them in a private preview. When you activate them, you create your account and they all go online right away.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
@@ -185,6 +186,8 @@ export async function sendDraftInvitationEmail(input: {
   removeLinks: DraftEmailRemoveLink[];
   claimed?: boolean;
   trackToken?: string;
+  // Première phrase personnalisée (texte brut), invitation seulement : écrite dans Admin → Brouillons selon le site du propriétaire
+  intro?: string | null;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
   const link = (href: string, label: string, bold = false) =>
@@ -222,7 +225,11 @@ export async function sendDraftInvitationEmail(input: {
     ? multiple ? (fr ? "Activer mes fiches" : "Activate my listings") : fr ? "Activer ma fiche" : "Activate my listing"
     : multiple ? (fr ? "Voir l’aperçu de mes fiches" : "See the preview of my listings") : fr ? "Voir l’aperçu de ma fiche" : "See the preview of my listing";
 
+  const introText = input.kind === "draft_invite" ? (input.intro ?? "").trim() : "";
+  const intro = introText ? `${escapeHtml(introText)}<br/><br/>` : "";
+
   const text = await resolveEmailText(templateFor(input.kind, multiple), input.lang, {
+    intro,
     titreChalet: subjectTitle,
     nombre: String(input.listings.length),
     fiches,
@@ -232,6 +239,8 @@ export async function sendDraftInvitationEmail(input: {
     retrait,
     suivi,
   });
+  // Un texte enregistré dans l'admin avant l'ajout du repère {intro} ne l'a pas : la phrase s'ajoute alors au début
+  if (intro && !text.body.includes(intro)) text.body = intro + text.body;
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.buttonUrl });
   const { error } = await sendEmail({ from: FROM, to: [input.to], subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };

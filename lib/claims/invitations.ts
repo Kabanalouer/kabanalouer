@@ -5,7 +5,7 @@ import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 import { sendDraftInvitationEmail, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 import { buildListingPath } from "@/lib/listingUrl";
 import { localePath } from "@/lib/localePath";
-import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
+import { loadDraftNote } from "@/lib/claims/draftNotes";
 import { SITE_URL } from "@/lib/siteUrl";
 
 // Invitations à revendiquer, envoyées chaque jour par le cron send-invitations ou à la main depuis
@@ -297,11 +297,10 @@ export async function listDraftCandidates(admin: AdminClient, kind: DraftInvitat
   }));
 }
 
-// Envoie l'invitation brouillon ou une relance. Même garde que sendInvitation : la ligne de listing_invitations est créée
+// Envoie l'invitation brouillon ou une relance. Seul appelant : le bouton « Envoyer » d'Admin → Brouillons (admin
+// seulement, courriel par courriel : plus aucun envoi brouillon automatique). Même garde que sendInvitation : la ligne de listing_invitations est créée
 // AVANT l'envoi (clé unique adresse + type, 'skipped' si déjà là) et retirée si l'envoi échoue.
 export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCandidate, kind: DraftInvitationKind): Promise<"sent" | "skipped" | "error"> {
-  // Interrupteur (lib/draftInvitationsConfig.ts) : fermé, aucun courriel brouillon ne part, par aucun chemin
-  if (!DRAFT_INVITATIONS_ENABLED) return "skipped";
   const trackToken = randomBytes(16).toString("hex");
   const { data: inserted, error: insertError } = await admin
     .from("listing_invitations")
@@ -337,13 +336,41 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
     removeLinks = candidate.listings.map((l, i) => ({ title: titleFor(l, lang), url: removeLink(lang, removeRaws[i] as string) }));
   }
 
-  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken });
+  // Première phrase personnalisée selon le site du propriétaire (invitation seulement), écrite dans Admin → Brouillons
+  const note = kind === "draft_invite" ? await loadDraftNote(admin, candidate.claimEmail) : null;
+  const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
+
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken, intro });
   if (error) {
     console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();
     return "error";
   }
   return "sent";
+}
+
+// Aperçu du courriel brouillon d'une adresse (admin seulement) : le même courriel que l'envoi, capturé au lieu d'être
+// envoyé, avec des liens d'exemple (aucun jeton créé, aucun pixel de suivi). intro : la phrase en cours de rédaction.
+export async function previewDraftInvitation(
+  candidate: DraftCandidate,
+  kind: DraftInvitationKind,
+  intro?: string | null
+): Promise<{ subject: string; html: string } | null> {
+  let captured: { subject: string; html: string } | null = null;
+  const lang = candidate.lang;
+  await emailContext.run({ capture: (e) => (captured = e) }, () =>
+    sendDraftInvitationEmail({
+      to: candidate.claimEmail,
+      lang,
+      kind,
+      listings: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, "apercu", l.id) })),
+      buttonUrl: candidate.claimed ? `${SITE_URL}${localePath("/dashboard/listings", lang)}` : previewLink(lang, "apercu"),
+      removeLinks: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: removeLink(lang, "apercu") })),
+      claimed: candidate.claimed,
+      intro,
+    })
+  );
+  return captured;
 }
 
 // Une revendication marque l'invitation comme réussie (résultats de l'admin)

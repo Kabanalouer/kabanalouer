@@ -34,6 +34,7 @@ import {
 import { claimLink, previewLink, removeLink, reportLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 import { sendDraftInvitationEmail } from "@/lib/emails/draftInvitation";
+import { sendDraftRemindersDueNotice } from "@/lib/emails/draftRemindersDue";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -66,6 +67,8 @@ export function emailTestSenders(): Record<string, Sender> {
   const MULTI_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, path: lang === "en" ? `/en/cabins/laurentians/mille-isles/4834${7 + i}` : `/chalets/laurentides/mille-isles/4834${7 + i}` }));
   const MULTI_REMOVE = (lang: Lang) => MULTI_TITLES.map((title) => ({ title, url: removeLink(lang, "exemple") }));
   const DRAFT_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, url: previewLink(lang, "exemple", `00000000-0000-4000-8000-00000000000${i + 1}`) }));
+  const DRAFT_INTRO = (lang: Lang) =>
+    lang === "fr" ? "Nous avons visité votre site web et adoré vos chalets au bord du lac." : "We visited your website and loved your lakeside cabins.";
 
   return {
     "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
@@ -166,6 +169,10 @@ export function emailTestSenders(): Record<string, Sender> {
       suivi: "",
     }, 0),
     "error-alert": () => sendErrorAlert({ source: "client", message: "Exemple : Cannot read properties of undefined (reading 'photos')", path: LISTING_PATH }),
+    "draft-reminders-due": () => sendDraftRemindersDueNotice([
+      { email: "proprio@exemple.test", kind: "draft_reminder_3", titles: [TITLE, "Chalet exemple 2"] },
+      { email: "autre@exemple.test", kind: "draft_reminder_10", titles: ["Chalet exemple 3"] },
+    ]),
     "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
     // Fiches non revendiquées : liens d'exemple (la page affiche « lien invalide », rien n'est modifié)
@@ -199,11 +206,11 @@ export function emailTestSenders(): Record<string, Sender> {
       claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-draft-invitation": (to, lang) => sendDraftInvitationEmail({
-      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang).slice(0, 1),
+      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang).slice(0, 1), intro: DRAFT_INTRO(lang),
       buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
     }),
     "claim-draft-invitation-multi": (to, lang) => sendDraftInvitationEmail({
-      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang),
+      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang), intro: DRAFT_INTRO(lang),
       buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-draft-reminder-3": (to, lang) => sendDraftInvitationEmail({

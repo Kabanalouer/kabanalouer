@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
-import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listDraftCandidates, listInvitationCandidates, sendDraftInvitation, sendInvitation, withoutWaiting, type InvitationKind } from "@/lib/claims/invitations";
+import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listDraftCandidates, listInvitationCandidates, sendInvitation, withoutWaiting, type InvitationKind } from "@/lib/claims/invitations";
+import { loadDraftNotes, markReminderNotified } from "@/lib/claims/draftNotes";
+import { sendDraftRemindersDueNotice, type DueDraftReminder } from "@/lib/emails/draftRemindersDue";
 
 export const maxDuration = 120;
 
@@ -19,6 +20,30 @@ function montrealHour(now: Date): number {
   return Number(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Montreal", hour: "2-digit", hourCycle: "h23" }).format(now));
 }
 
+type AdminClient = Parameters<typeof listDraftCandidates>[0];
+
+// Relances brouillon : envoyées à la main depuis Admin → Brouillons. Ici, seulement un courriel à Simon quand une
+// relance (J+3 ou J+10) devient due, une seule fois par adresse et par relance (draft_invitation_notes).
+async function notifyDueDraftReminders(admin: AdminClient): Promise<{ due: number; notified?: boolean }> {
+  const notes = await loadDraftNotes(admin);
+  const items: DueDraftReminder[] = [];
+  for (const kind of ["draft_reminder_3", "draft_reminder_10"] as const) {
+    const column = kind === "draft_reminder_3" ? "reminder_3_notified_at" : "reminder_10_notified_at";
+    for (const c of await listDraftCandidates(admin, kind)) {
+      if (notes.get(c.claimEmail.trim().toLowerCase())?.[column]) continue;
+      items.push({ email: c.claimEmail, kind, titles: c.listings.map((l) => l.title ?? "") });
+    }
+  }
+  if (items.length === 0) return { due: 0 };
+  const { error } = await sendDraftRemindersDueNotice(items);
+  if (error) {
+    console.error("[cron send-invitations] notification des relances brouillon", error.message);
+    return { due: items.length, notified: false };
+  }
+  for (const it of items) await markReminderNotified(admin, it.email, it.kind);
+  return { due: items.length, notified: true };
+}
+
 // GET — appelé par le cron Vercel (chaque jour à 8 h, heure de Montréal, après la
 // publication du matin par publish-unclaimed) :
 // envoie l'invitation aux adresses qui ont une fiche non revendiquée publiée et qui n'en
@@ -32,10 +57,11 @@ export async function GET(request: NextRequest) {
   if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!AUTO_INVITATIONS_ENABLED) return NextResponse.json({ ok: true, enabled: false });
   if (montrealHour(new Date()) !== SEND_HOUR) return NextResponse.json({ ok: true, skipped: "Pas 8 h à Montréal." });
 
   const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const draftReminders = await notifyDueDraftReminders(admin);
+  if (!AUTO_INVITATIONS_ENABLED) return NextResponse.json({ ok: true, enabled: false, draftReminders });
   const result: Record<string, { sent: number; skipped: number; errors: number; remaining: number }> = {};
 
   for (const [kind, max] of [["invite", MAX_INVITES_PER_RUN], ["reminder", MAX_REMINDERS_PER_RUN]] as [InvitationKind, number][]) {
@@ -57,21 +83,5 @@ export async function GET(request: NextRequest) {
     result[kind] = { sent, skipped, errors, remaining: Math.max(0, candidates.length - batch.length) };
   }
 
-  // Relances des brouillons (J+3 et J+10 après l'invitation, tant qu'aucune fiche n'est activée)
-  for (const kind of DRAFT_INVITATIONS_ENABLED ? (["draft_reminder_3", "draft_reminder_10"] as const) : []) {
-    const candidates = await listDraftCandidates(admin, kind);
-    const batch = candidates.slice(0, MAX_REMINDERS_PER_RUN);
-    let sent = 0;
-    let skipped = 0;
-    let errors = 0;
-    for (let i = 0; i < batch.length; i++) {
-      const r = await sendDraftInvitation(admin, batch[i], kind);
-      if (r === "sent") sent++;
-      else if (r === "skipped") skipped++;
-      else errors++;
-      if (i < batch.length - 1) await new Promise((res) => setTimeout(res, DELAY_MS));
-    }
-    result[kind] = { sent, skipped, errors, remaining: Math.max(0, candidates.length - batch.length) };
-  }
-  return NextResponse.json({ ok: true, ...result });
+  return NextResponse.json({ ok: true, ...result, draftReminders });
 }

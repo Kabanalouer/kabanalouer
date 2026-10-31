@@ -102,15 +102,32 @@ test("relances : fenêtre J+3 (3 à 10 jours) et J+10, jamais si une fiche est a
   assert.deepEqual(r10.map((c) => c.claimEmail), ["g@exemple.test"]);
 });
 
-test("interrupteur fermé : aucune invitation brouillon ne part et la base n'est même pas touchée", async () => {
-  const { sendDraftInvitation } = await load();
-  const { DRAFT_INVITATIONS_ENABLED } = await import("@/lib/draftInvitationsConfig");
-  assert.equal(DRAFT_INVITATIONS_ENABLED, false);
-  const boom = { from: () => { throw new Error("la base ne doit pas être appelée"); } };
-  const candidate = { claimEmail: "a@exemple.test", lang: "fr" as const, listings: [], claimed: false };
-  for (const kind of ["draft_invite", "draft_reminder_3", "draft_reminder_10"] as const) {
-    assert.equal(await sendDraftInvitation(boom, candidate, kind), "skipped");
-  }
+test("phrase d'ouverture et site : texte nettoyé et borné, jamais de lien autre que http(s)", async () => {
+  const { cleanIntro, cleanSiteUrl, INTRO_MAX_LENGTH } = await import("@/lib/claims/draftNotes");
+  assert.equal(cleanIntro("  Nous avons   visité\nvotre site.  "), "Nous avons visité votre site.");
+  assert.equal(cleanIntro("   "), null);
+  assert.equal(cleanIntro(42), null);
+  assert.equal(cleanIntro("a".repeat(INTRO_MAX_LENGTH + 50))?.length, INTRO_MAX_LENGTH);
+  assert.equal(cleanSiteUrl("chalets-exemple.ca"), "https://chalets-exemple.ca/");
+  assert.equal(cleanSiteUrl("http://exemple.ca/chalets"), "http://exemple.ca/chalets");
+  assert.equal(cleanSiteUrl("javascript:alert(1)"), null);
+  assert.equal(cleanSiteUrl(""), null);
+});
+
+test("table Brouillons : état d'un propriétaire et fiches à compléter", async () => {
+  const { deriveStatus, listingIssues } = await import("@/lib/claims/draftTable");
+  const base = { removed: false, listingCount: 3, pendingImports: 0, invited: false, anyActive: false, anyClaimed: false };
+  assert.equal(deriveStatus(base), "pret");
+  assert.equal(deriveStatus({ ...base, pendingImports: 2 }), "import");
+  assert.equal(deriveStatus({ ...base, listingCount: 0 }), "import");
+  assert.equal(deriveStatus({ ...base, invited: true }), "invite");
+  assert.equal(deriveStatus({ ...base, invited: true, anyClaimed: true }), "revendique");
+  assert.equal(deriveStatus({ ...base, invited: true, anyClaimed: true, anyActive: true }), "actif");
+  assert.equal(deriveStatus({ ...base, removed: true, invited: true }), "retire");
+
+  const ok = { title: "Chalet", description: "Une description complète de plus de quarante caractères.", photos: [1, 2, 3, 4, 5], region: "Laurentides", citq_number: "298960" };
+  assert.deepEqual(listingIssues(ok), []);
+  assert.deepEqual(listingIssues({ ...ok, photos: [1, 2], citq_number: null, description: "courte" }), ["description trop courte", "2 photos (5 minimum)", "CITQ manquant ou invalide"]);
 });
 
 test("revendication d'un brouillon : mise en ligne tout de suite, sauf fiche à compléter, CITQ manquant ou abonnement absent", async () => {
