@@ -68,8 +68,10 @@ export default function EmailSequencesClient() {
   const [editing, setEditing] = useState<CatalogEmail | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
 
-  const pausedCount = EMAIL_CATALOG.filter((e) => e.paused).length;
-  const activeCount = EMAIL_CATALOG.length - pausedCount;
+  const inUse = EMAIL_CATALOG.filter((e) => !e.archived);
+  const archivedCount = EMAIL_CATALOG.length - inUse.length;
+  const pausedCount = inUse.filter((e) => e.paused).length;
+  const activeCount = inUse.length - pausedCount;
   const visible = (e: CatalogEmail) => filter === "all" || (filter === "paused" ? !!e.paused : !e.paused);
 
   // Objets des courriels modifiables (version modifiée comprise), rechargés après une modification.
@@ -119,12 +121,103 @@ export default function EmailSequencesClient() {
 
   async function sendCategory(category: EmailCategory) {
     setRunningCategory(category);
-    const emails = EMAIL_CATALOG.filter((e) => e.category === category && e.testable && !e.paused);
+    const emails = EMAIL_CATALOG.filter((e) => e.category === category && e.testable && !e.paused && !e.archived);
     for (const email of emails) {
       await sendOne(email);
       await wait(1200); // garde l'ordre dans la boîte de réception, sous la limite d'envoi Resend
     }
     setRunningCategory(null);
+  }
+
+  function renderGroups(list: CatalogEmail[], showGroups: boolean) {
+    const groups = [...new Set(list.map((e) => e.group))];
+    return (
+      <div className="space-y-5">
+        {groups.map((group) => (
+          <div key={group}>
+            {showGroups ? (
+              <h3 className="text-sm font-semibold text-charcoal-500 mb-2">{group}</h3>
+            ) : null}
+            <ul className="divide-y divide-[#ebebeb] rounded-2xl border border-[#ebebeb] bg-white">
+              {list.filter((e) => e.group === group).map((email) => {
+                const status = statuses[email.id];
+                return (
+                  <li key={email.id} className={`flex flex-col sm:flex-row sm:items-start gap-3 p-4 ${email.paused ? "bg-charcoal-50" : ""}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusPill paused={email.paused} />
+                        <p className={`text-base font-medium ${email.paused ? "text-charcoal-500" : "text-charcoal-800"}`}>{email.name}</p>
+                      </div>
+                      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                        {subjectOf(email) && (
+                          <>
+                            <dt className="text-charcoal-400">Objet</dt>
+                            <dd className="font-medium text-charcoal-800"><SubjectText text={subjectOf(email)!} /></dd>
+                          </>
+                        )}
+                        <dt className="text-charcoal-400">Quand</dt>
+                        <dd className="text-charcoal-700">{email.when}</dd>
+                        {email.conditions && (
+                          <>
+                            <dt className="text-charcoal-400">Règles</dt>
+                            <dd className="text-charcoal-700">{email.conditions}</dd>
+                          </>
+                        )}
+                        <dt className="text-charcoal-400">Envoi</dt>
+                        <dd className="text-charcoal-700">{timingLabel(email)}</dd>
+                        {email.fixedRecipient && (
+                          <>
+                            <dt className="text-charcoal-400">À</dt>
+                            <dd className="text-charcoal-700">{email.fixedRecipient}</dd>
+                          </>
+                        )}
+                      </dl>
+                      {email.paused && email.pausedReason && (
+                        <p className="mt-2 text-sm text-warning-700">{email.pausedReason}</p>
+                      )}
+                      {customized[email.id]?.length ? (
+                        <p className="text-xs font-medium text-primary mt-2">
+                          Texte modifié ({customized[email.id].map((l) => (l === "fr" ? "français" : "anglais")).join(" et ")})
+                        </p>
+                      ) : null}
+                      {status?.state === "sent" && (
+                        <p className="text-sm text-success-600 mt-1">Envoyé à {status.to}</p>
+                      )}
+                      {status?.state === "error" && (
+                        <p className="text-sm text-error-600 mt-1">{status.message}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end shrink-0">
+                      {editable.has(email.id) && (
+                        <button
+                          type="button"
+                          onClick={() => setEditing(email)}
+                          className="rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] transition-colors"
+                        >
+                          Modifier le texte
+                        </button>
+                      )}
+                      {email.testable ? (
+                        <button
+                          type="button"
+                          onClick={() => sendOne(email)}
+                          disabled={status?.state === "sending" || runningCategory !== null}
+                          className="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-400 disabled:text-charcoal-400 transition-colors"
+                        >
+                          {status?.state === "sending" ? "Envoi…" : "Envoyer un test"}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-charcoal-400">Test par le vrai parcours</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -162,6 +255,7 @@ export default function EmailSequencesClient() {
         <p className="text-base text-charcoal-700">
           <span className="font-semibold text-charcoal-800">{activeCount} actifs</span>
           {pausedCount > 0 && <span className="text-charcoal-500"> · {pausedCount} en pause</span>}
+          {archivedCount > 0 && <span className="text-charcoal-500"> · {archivedCount} rangés</span>}
         </p>
         <div className="inline-flex self-start rounded-full border border-[#ebebeb] bg-white p-1">
           {FILTERS.map((f) => (
@@ -183,11 +277,13 @@ export default function EmailSequencesClient() {
         const all = EMAIL_CATALOG.filter((e) => e.category === category);
         const emails = all.filter(visible);
         if (emails.length === 0) return null;
-        const groups = [...new Set(emails.map((e) => e.group))];
-        const showGroups = new Set(all.map((e) => e.group)).size > 1;
+        const strategy = emails.filter((e) => !e.archived);
+        const rangés = emails.filter((e) => e.archived);
+        const showGroups = new Set(all.filter((e) => !e.archived).map((e) => e.group)).size > 1;
         const label = CATEGORY_LABELS[category];
-        const categoryPaused = all.filter((e) => e.paused).length;
-        const hasTestable = all.some((e) => e.testable && !e.paused);
+        const current = all.filter((e) => !e.archived);
+        const categoryPaused = current.filter((e) => e.paused).length;
+        const hasTestable = current.some((e) => e.testable && !e.paused);
         const running = runningCategory === category;
         return (
           <section key={category}>
@@ -196,7 +292,7 @@ export default function EmailSequencesClient() {
                 <h2 className="text-heading-2 font-semibold text-charcoal-800">
                   {label.title}{" "}
                   <span className="text-charcoal-400 font-normal">
-                    ({all.length - categoryPaused} actifs{categoryPaused > 0 ? `, ${categoryPaused} en pause` : ""})
+                    ({current.length - categoryPaused} actifs{categoryPaused > 0 ? `, ${categoryPaused} en pause` : ""})
                   </span>
                 </h2>
                 <p className="text-sm text-charcoal-500 mt-1">{label.description}</p>
@@ -213,91 +309,27 @@ export default function EmailSequencesClient() {
               )}
             </div>
 
-            <div className="space-y-5">
-              {groups.map((group) => (
-                <div key={group}>
-                  {showGroups ? (
-                    <h3 className="text-sm font-semibold text-charcoal-500 mb-2">{group}</h3>
-                  ) : null}
-                  <ul className="divide-y divide-[#ebebeb] rounded-2xl border border-[#ebebeb] bg-white">
-                    {emails.filter((e) => e.group === group).map((email) => {
-                      const status = statuses[email.id];
-                      return (
-                        <li key={email.id} className={`flex flex-col sm:flex-row sm:items-start gap-3 p-4 ${email.paused ? "bg-charcoal-50" : ""}`}>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <StatusPill paused={email.paused} />
-                              <p className={`text-base font-medium ${email.paused ? "text-charcoal-500" : "text-charcoal-800"}`}>{email.name}</p>
-                            </div>
-                            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                              {subjectOf(email) && (
-                                <>
-                                  <dt className="text-charcoal-400">Objet</dt>
-                                  <dd className="font-medium text-charcoal-800"><SubjectText text={subjectOf(email)!} /></dd>
-                                </>
-                              )}
-                              <dt className="text-charcoal-400">Quand</dt>
-                              <dd className="text-charcoal-700">{email.when}</dd>
-                              {email.conditions && (
-                                <>
-                                  <dt className="text-charcoal-400">Règles</dt>
-                                  <dd className="text-charcoal-700">{email.conditions}</dd>
-                                </>
-                              )}
-                              <dt className="text-charcoal-400">Envoi</dt>
-                              <dd className="text-charcoal-700">{timingLabel(email)}</dd>
-                              {email.fixedRecipient && (
-                                <>
-                                  <dt className="text-charcoal-400">À</dt>
-                                  <dd className="text-charcoal-700">{email.fixedRecipient}</dd>
-                                </>
-                              )}
-                            </dl>
-                            {email.paused && email.pausedReason && (
-                              <p className="mt-2 text-sm text-warning-700">{email.pausedReason}</p>
-                            )}
-                            {customized[email.id]?.length ? (
-                              <p className="text-xs font-medium text-primary mt-2">
-                                Texte modifié ({customized[email.id].map((l) => (l === "fr" ? "français" : "anglais")).join(" et ")})
-                              </p>
-                            ) : null}
-                            {status?.state === "sent" && (
-                              <p className="text-sm text-success-600 mt-1">Envoyé à {status.to}</p>
-                            )}
-                            {status?.state === "error" && (
-                              <p className="text-sm text-error-600 mt-1">{status.message}</p>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end shrink-0">
-                            {editable.has(email.id) && (
-                              <button
-                                type="button"
-                                onClick={() => setEditing(email)}
-                                className="rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] transition-colors"
-                              >
-                                Modifier le texte
-                              </button>
-                            )}
-                            {email.testable ? (
-                              <button
-                                type="button"
-                                onClick={() => sendOne(email)}
-                                disabled={status?.state === "sending" || runningCategory !== null}
-                                className="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-400 disabled:text-charcoal-400 transition-colors"
-                              >
-                                {status?.state === "sending" ? "Envoi…" : "Envoyer un test"}
-                              </button>
-                            ) : (
-                              <span className="text-xs text-charcoal-400">Test par le vrai parcours</span>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+            {strategy.length > 0 && renderGroups(strategy, showGroups)}
+
+            {rangés.length > 0 && (
+              <details className="group mt-6 rounded-2xl border border-[#ebebeb] bg-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-base font-medium text-charcoal-600 hover:text-charcoal-800">
+                  <span>
+                    Courriels qui ne servent plus pour le moment{" "}
+                    <span className="font-normal text-charcoal-400">({rangés.length})</span>
+                  </span>
+                  <svg className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                  </svg>
+                </summary>
+                <div className="border-t border-[#ebebeb] p-4">
+                  <p className="text-sm text-charcoal-500 mb-4">
+                    Boosts, offre gratuite et abonnements, anciennes invitations. Rangés seulement dans cette page : le texte reste modifiable et les envois ne changent pas.
+                  </p>
+                  {renderGroups(rangés, true)}
                 </div>
-              ))}
-            </div>
+              </details>
+            )}
           </section>
         );
       })}
