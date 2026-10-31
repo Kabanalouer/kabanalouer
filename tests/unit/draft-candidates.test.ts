@@ -103,7 +103,10 @@ test("relances : fenêtre J+3 (3 à 10 jours) et J+10, jamais si une fiche est a
 });
 
 test("phrase d'ouverture et site : texte nettoyé et borné, jamais de lien autre que http(s)", async () => {
-  const { cleanIntro, cleanSiteUrl, INTRO_MAX_LENGTH } = await import("@/lib/claims/draftNotes");
+  const { cleanIntro, cleanSiteUrl, cleanDisplayName, INTRO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH } = await import("@/lib/claims/draftNotes");
+  assert.equal(cleanDisplayName("  Chalets   Zenya \n"), "Chalets Zenya");
+  assert.equal(cleanDisplayName("   "), null);
+  assert.equal(cleanDisplayName("x".repeat(DISPLAY_NAME_MAX_LENGTH + 20))?.length, DISPLAY_NAME_MAX_LENGTH);
   assert.equal(cleanIntro("  Nous avons   visité\nvotre site.  "), "Nous avons visité votre site.");
   assert.equal(cleanIntro("   "), null);
   assert.equal(cleanIntro(42), null);

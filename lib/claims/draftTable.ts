@@ -29,6 +29,7 @@ export type DraftOwnerRow = {
   email: string;
   lang: "fr" | "en";
   siteUrl: string | null;
+  displayName: string;
   introFr: string;
   introEn: string;
   listings: DraftOwnerListing[];
@@ -171,6 +172,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
       email,
       lang: mine[0]?.claim_language === "en" ? "en" : "fr",
       siteUrl: note?.site_url ?? null,
+      displayName: note?.display_name ?? "",
       introFr: note?.intro_fr ?? "",
       introEn: note?.intro_en ?? "",
       listings,

@@ -35,6 +35,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   const en = row.lang === "en";
   const [intro, setIntro] = useState(en ? row.introEn : row.introFr);
   const [site, setSite] = useState(row.siteUrl ?? "");
+  const [name, setName] = useState(row.displayName);
   const [saved, setSaved] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -56,7 +57,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   async function save(): Promise<boolean> {
     setBusy("save");
     setMessage(null);
-    const { ok, data } = await call("PUT", { email: row.email, [en ? "intro_en" : "intro_fr"]: intro, site_url: site });
+    const { ok, data } = await call("PUT", { email: row.email, [en ? "intro_en" : "intro_fr"]: intro, site_url: site, display_name: name });
     setBusy(null);
     if (!ok) {
       setMessage({ ok: false, text: String(data.error ?? "Enregistrement impossible") });
@@ -71,7 +72,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   async function showPreview(kind: Kind) {
     setBusy(`preview-${kind}`);
     setMessage(null);
-    const { ok, data } = await call("POST", { action: "preview", email: row.email, kind, intro });
+    const { ok, data } = await call("POST", { action: "preview", email: row.email, kind, intro, displayName: name });
     setBusy(null);
     if (!ok) return setMessage({ ok: false, text: String(data.error ?? "Aperçu impossible") });
     setPreview({ kind, subject: String(data.subject ?? ""), html: String(data.html ?? "") });
@@ -161,24 +162,41 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
               className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
             />
           </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-charcoal-700">Site du propriétaire</span>
-            <input
-              type="text"
-              value={site}
-              onChange={(e) => {
-                setSite(e.target.value);
-                setSaved(false);
-              }}
-              placeholder="exemple.ca"
-              className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-            />
-            {row.siteUrl && (
-              <a href={row.siteUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block truncate text-xs text-primary hover:underline">
-                Ouvrir le site
-              </a>
-            )}
-          </label>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-charcoal-700">Nom du chalet ou du site (objet et titre)</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSaved(false);
+                }}
+                maxLength={120}
+                placeholder={row.listings.length > 1 ? "Chalets Exemple" : row.listings[0]?.title ?? "Nom du chalet"}
+                className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+              />
+              <span className="mt-1 block text-xs text-charcoal-400">Vide : le titre du chalet (ou « Titre et N autres chalets »).</span>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-charcoal-700">Site du propriétaire</span>
+              <input
+                type="text"
+                value={site}
+                onChange={(e) => {
+                  setSite(e.target.value);
+                  setSaved(false);
+                }}
+                placeholder="exemple.ca"
+                className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+              />
+              {row.siteUrl && (
+                <a href={row.siteUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block truncate text-xs text-primary hover:underline">
+                  Ouvrir le site
+                </a>
+              )}
+            </label>
+          </div>
         </div>
       )}
 

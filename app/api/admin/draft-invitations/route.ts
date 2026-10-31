@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { listDraftCandidates, previewDraftInvitation, sendDraftInvitation, type DraftCandidate } from "@/lib/claims/invitations";
-import { cleanIntro, saveDraftNote } from "@/lib/claims/draftNotes";
+import { cleanDisplayName, cleanIntro, saveDraftNote } from "@/lib/claims/draftNotes";
 import type { DraftInvitationKind } from "@/lib/emails/draftInvitation";
 
 export const maxDuration = 60;
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       listings: rows,
       claimed: rows.every((r: { claim_status: string }) => r.claim_status === "claimed"),
     };
-    const preview = await previewDraftInvitation(candidate, kind, cleanIntro(body.intro));
+    const preview = await previewDraftInvitation(candidate, kind, cleanIntro(body.intro), cleanDisplayName(body.displayName));
     if (!preview) return NextResponse.json({ error: "Aperçu impossible" }, { status: 500 });
     return NextResponse.json({ subject: preview.subject, html: preview.html }, { headers: { "Cache-Control": "no-store" } });
   }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ error: "Action inconnue" }, { status: 400 });
 }
 
-// PUT { email, intro_fr?, intro_en?, site_url? } : enregistre la phrase d'ouverture et le site d'origine
+// PUT { email, intro_fr?, intro_en?, site_url?, display_name? } : enregistre la phrase d'ouverture, le site d'origine et le nom affiché
 export async function PUT(request: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
@@ -86,8 +86,8 @@ export async function PUT(request: NextRequest) {
   const email = readEmail(body.email);
   if (!email) return NextResponse.json({ error: "Adresse invalide" }, { status: 400 });
 
-  const fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown } = {};
-  for (const key of ["intro_fr", "intro_en", "site_url"] as const) if (key in body) fields[key] = body[key];
+  const fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown } = {};
+  for (const key of ["intro_fr", "intro_en", "site_url", "display_name"] as const) if (key in body) fields[key] = body[key];
   const { error } = await saveDraftNote(adminSupabase(), email, fields);
   if (error) {
     console.error("[admin draft-invitations] enregistrement", error);

@@ -339,8 +339,9 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   // Première phrase personnalisée selon le site du propriétaire (invitation seulement), écrite dans Admin → Brouillons
   const note = kind === "draft_invite" ? await loadDraftNote(admin, candidate.claimEmail) : null;
   const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
+  const displayName = note?.display_name;
 
-  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken, intro });
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken, intro, displayName });
   if (error) {
     console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();
@@ -354,7 +355,8 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
 export async function previewDraftInvitation(
   candidate: DraftCandidate,
   kind: DraftInvitationKind,
-  intro?: string | null
+  intro?: string | null,
+  displayName?: string | null
 ): Promise<{ subject: string; html: string } | null> {
   let captured: { subject: string; html: string } | null = null;
   const lang = candidate.lang;
@@ -368,6 +370,7 @@ export async function previewDraftInvitation(
       removeLinks: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: removeLink(lang, "apercu") })),
       claimed: candidate.claimed,
       intro,
+      displayName,
     })
   );
   return captured;

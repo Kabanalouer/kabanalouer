@@ -22,6 +22,7 @@ const PLACEHOLDERS: EmailTemplateDef["placeholders"] = [
   { key: "bouton", label: "Texte du bouton : « Voir l’aperçu » ou, si les fiches sont déjà revendiquées, « Activer mes fiches »" },
   { key: "retrait", label: "Phrase et liens « Retirer » (vide si le propriétaire a déjà revendiqué ses fiches)", html: true },
   { key: "suivi", label: "Pixel invisible qui compte les ouvertures (à laisser tel quel)", html: true },
+  { key: "nom", label: "Nom du chalet ou du site du propriétaire (saisi dans Admin → Brouillons ; sinon le titre du chalet, ou « Titre et N autres chalets »)" },
   { key: "intro", label: "Première phrase personnalisée selon le site du propriétaire, écrite dans Admin → Brouillons (vide s’il n’y en a pas)", html: true },
 ];
 
@@ -32,17 +33,17 @@ export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
   placeholders: PLACEHOLDERS,
   defaults: {
     fr: {
-      subject: "Votre chalet est prêt sur Kabanalouer, il ne reste qu’à l’activer{gratuitement}",
+      subject: "{nom} sur Kabanalouer",
       greeting: "Bonjour,",
-      heading: "Votre chalet est prêt sur Kabanalouer",
+      heading: "{nom} sur Kabanalouer",
       body: "{intro}Nous avons préparé la fiche de votre chalet sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElle n’est pas encore en ligne : vous la voyez d’abord dans un aperçu privé. En l’activant, vous créez votre compte et elle est mise en ligne tout de suite.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
     en: {
-      subject: "Your cabin is ready on Kabanalouer, all that’s left is to activate it{gratuitement}",
+      subject: "{nom} on Kabanalouer",
       greeting: "Hello,",
-      heading: "Your cabin is ready on Kabanalouer",
+      heading: "{nom} on Kabanalouer",
       body: "{intro}We have prepared a listing for your cabin on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nIt is not online yet: you first see it in a private preview. When you activate it, you create your account and it goes online right away.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
@@ -55,17 +56,17 @@ export const TEMPLATE_DRAFT_INVITATION_MULTI: EmailTemplateDef = {
   placeholders: PLACEHOLDERS,
   defaults: {
     fr: {
-      subject: "Vos {nombre} chalets sont prêts sur Kabanalouer, il ne reste qu’à les activer{gratuitement}",
+      subject: "{nom} sur Kabanalouer",
       greeting: "Bonjour,",
-      heading: "Vos {nombre} chalets sont prêts sur Kabanalouer",
+      heading: "{nom} sur Kabanalouer",
       body: "{intro}Nous avons préparé les fiches de vos {nombre} chalets sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElles ne sont pas encore en ligne : vous les voyez d’abord dans un aperçu privé. En les activant, vous créez votre compte et elles sont toutes mises en ligne tout de suite.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
     },
     en: {
-      subject: "Your {nombre} cabins are ready on Kabanalouer, all that’s left is to activate them{gratuitement}",
+      subject: "{nom} on Kabanalouer",
       greeting: "Hello,",
-      heading: "Your {nombre} cabins are ready on Kabanalouer",
+      heading: "{nom} on Kabanalouer",
       body: "{intro}We have prepared listings for your {nombre} cabins on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nThey are not online yet: you first see them in a private preview. When you activate them, you create your account and they all go online right away.{offre}",
       buttonLabel: "{bouton}",
       footerNote: RETRAIT,
@@ -186,6 +187,8 @@ export async function sendDraftInvitationEmail(input: {
   removeLinks: DraftEmailRemoveLink[];
   claimed?: boolean;
   trackToken?: string;
+  // Nom du chalet ou du site (« {nom} sur Kabanalouer »), saisi dans Admin → Brouillons ; sinon le titre du chalet ou « Titre et N autres chalets »
+  displayName?: string | null;
   // Première phrase personnalisée (texte brut), invitation seulement : écrite dans Admin → Brouillons selon le site du propriétaire
   intro?: string | null;
 }): Promise<{ error: Error | null }> {
@@ -229,6 +232,7 @@ export async function sendDraftInvitationEmail(input: {
   const intro = introText ? `${escapeHtml(introText)}<br/><br/>` : "";
 
   const text = await resolveEmailText(templateFor(input.kind, multiple), input.lang, {
+    nom: (input.displayName ?? "").trim() || subjectTitle,
     intro,
     titreChalet: subjectTitle,
     nombre: String(input.listings.length),

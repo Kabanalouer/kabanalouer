@@ -210,7 +210,7 @@ export function emailTestSenders(): Record<string, Sender> {
       buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
     }),
     "claim-draft-invitation-multi": (to, lang) => sendDraftInvitationEmail({
-      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang), intro: DRAFT_INTRO(lang),
+      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang), intro: DRAFT_INTRO(lang), displayName: lang === "fr" ? "Chalets Exemple" : "Example Cabins",
       buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-draft-reminder-3": (to, lang) => sendDraftInvitationEmail({

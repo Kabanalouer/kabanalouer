@@ -76,14 +76,14 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "claim-draft-invitation", category: "proprio", group: "Nouvelle stratégie : invitation et relances",
     name: "Brouillon — invitation à voir l’aperçu et activer sa fiche",
     when: "Quand vous cliquez sur « Envoyer l’invitation » dans Admin → Brouillons, une fois toutes les fiches de l’adresse importées.",
-    conditions: "Pour les propriétaires de plusieurs chalets : l’import écrit mode_publication = « brouillon » dans le lot, les fiches restent hors ligne (jamais publiées par le serveur, hors du plafond de 15 par jour). Un seul courriel par adresse, qui liste toutes ses fiches ; le lien mène à un aperçu privé (non indexé, sans limite de durée) puis à l’activation. La première phrase est personnalisée selon son site web (Admin → Brouillons). Aucun envoi automatique. Pas d’invitation si le propriétaire a déjà retiré une fiche.",
+    conditions: "Pour les propriétaires de plusieurs chalets : l’import écrit mode_publication = « brouillon » dans le lot, les fiches restent hors ligne (jamais publiées par le serveur, hors du plafond de 15 par jour). Objet et titre : « {nom} sur Kabanalouer » (le nom du chalet ou du site, saisi dans Admin → Brouillons ; sinon le titre du chalet). Un seul courriel par adresse, qui liste toutes ses fiches ; le lien mène à un aperçu privé (non indexé, sans limite de durée) puis à l’activation. La première phrase est personnalisée selon son site web (Admin → Brouillons). Aucun envoi automatique. Pas d’invitation si le propriétaire a déjà retiré une fiche.",
     mechanism: "manual", testable: true,
   },
   {
     id: "claim-draft-invitation-multi", category: "proprio", group: "Nouvelle stratégie : invitation et relances",
     name: "Brouillon — invitation, plusieurs chalets",
     when: "Même moment que l’invitation brouillon, quand l’adresse a 2 chalets ou plus.",
-    conditions: "Objet : « Vos N chalets sont prêts sur Kabanalouer, il ne reste qu’à les activer » (« , gratuitement » tant que la plateforme est gratuite). Première phrase personnalisée selon son site web, liste à puces des fiches, bouton vers l’aperçu, un lien « Retirer » par chalet.",
+    conditions: "Objet et titre : « {nom} sur Kabanalouer » (le nom du site saisi dans Admin → Brouillons ; sinon « Titre et N autres chalets »). Première phrase personnalisée selon son site web, liste à puces des fiches, bouton vers l’aperçu, un lien « Retirer » par chalet.",
     mechanism: "manual", testable: true,
   },
   {
