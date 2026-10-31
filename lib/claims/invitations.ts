@@ -1,8 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { emailContext } from "@/lib/emails/emailContext";
-import { claimLink, createClaimToken, removeLink } from "@/lib/claims/tokens";
+import { claimLink, createClaimToken, DRAFT_TOKEN_TTL_DAYS, previewLink, removeLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
+import { sendDraftInvitationEmail, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 import { buildListingPath } from "@/lib/listingUrl";
+import { localePath } from "@/lib/localePath";
+import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Invitations à revendiquer, envoyées chaque jour par le cron send-invitations ou à la main depuis
 // Admin → Invitations (table listing_invitations).
@@ -58,6 +62,8 @@ async function unclaimedPublished(admin: AdminClient, testMode: boolean): Promis
       .select(LISTING_COLUMNS)
       .eq("claim_status", "unclaimed")
       .eq("is_test", testMode)
+      // Les brouillons ont leur propre invitation (aperçu privé), jamais celle des fiches en ligne
+      .is("mode_publication", null)
       .not("claim_email", "is", null);
     if (!testMode) query = query.eq("is_published", true);
     return query.order("claim_email").range(from, to);
@@ -89,17 +95,26 @@ const PAYLOAD_EMAIL_KEYS = ["claim_email", "courriel", "email", "courriel_contac
 // L'envoi manuel d'Admin → Invitations ne l'applique pas : c'est un geste volontaire de l'admin.
 export async function emailsStillImporting(admin: AdminClient): Promise<Set<string>> {
   const since = new Date(Date.now() - 86_400_000).toISOString();
-  const [{ data: queued }, { data: unpublished }] = await Promise.all([
-    admin.from("listing_import_queue").select("payload").eq("status", "pending").lt("attempts", 5),
+  const [emails, { data: unpublished }] = await Promise.all([
+    emailsWithPendingImport(admin),
     admin
       .from("listings")
       .select("claim_email")
       .eq("claim_status", "unclaimed")
       .eq("is_published", false)
       .eq("is_test", false)
+      // Un brouillon n'attend jamais sa mise en ligne : il ne retient pas l'invitation des fiches publiées
+      .is("mode_publication", null)
       .not("claim_email", "is", null)
       .gte("created_at", since),
   ]);
+  for (const r of (unpublished ?? []) as { claim_email: string }[]) emails.add(String(r.claim_email).trim().toLowerCase());
+  return emails;
+}
+
+// Adresses (en minuscules) qui ont encore une ligne de la file d'import en attente (moins de 5 essais), brouillon ou non.
+export async function emailsWithPendingImport(admin: AdminClient): Promise<Set<string>> {
+  const { data: queued } = await admin.from("listing_import_queue").select("payload").eq("status", "pending").lt("attempts", 5);
   const emails = new Set<string>();
   for (const r of (queued ?? []) as { payload: unknown }[]) {
     const payload = r.payload && typeof r.payload === "object" ? (r.payload as Record<string, unknown>) : {};
@@ -108,7 +123,6 @@ export async function emailsStillImporting(admin: AdminClient): Promise<Set<stri
       if (typeof v === "string" && v.trim()) { emails.add(v.trim().toLowerCase()); break; }
     }
   }
-  for (const r of (unpublished ?? []) as { claim_email: string }[]) emails.add(String(r.claim_email).trim().toLowerCase());
   return emails;
 }
 
@@ -208,6 +222,124 @@ export async function sendInvitation(admin: AdminClient, candidate: InvitationCa
   });
   if (error) {
     console.error("sendInvitation: échec d'envoi", candidate.claimEmail, error.message);
+    await undo();
+    return "error";
+  }
+  return "sent";
+}
+
+// ── Fiches en brouillon (mode_publication = 'brouillon') ─────────────────────────────────────────────────
+// Propriétaires de plusieurs chalets : les fiches restent hors ligne ; UNE invitation (aperçu privé) part quand plus
+// aucune ligne de la file d'import n'attend pour l'adresse, puis des relances à J+3 et J+10 tant qu'aucune fiche n'est
+// activée. Le propriétaire active lui-même (/api/listings/activate-draft) : jamais de publication par le serveur.
+
+export const DRAFT_REMINDER_DAYS: Record<"draft_reminder_3" | "draft_reminder_10", { from: number; to: number }> = {
+  // La relance J+3 ne part plus si l'invitation a plus de 10 jours (la relance J+10 prend le relais)
+  draft_reminder_3: { from: 3, to: 10 },
+  draft_reminder_10: { from: 10, to: Infinity },
+};
+
+export type DraftCandidate = InvitationCandidate & { claimed: boolean };
+
+async function draftListings(admin: AdminClient, testMode: boolean, claimStatus: "unclaimed" | "claimed"): Promise<Row[]> {
+  return fetchAllRows<Row>((from, to) =>
+    admin
+      .from("listings")
+      .select(LISTING_COLUMNS)
+      .eq("claim_status", claimStatus)
+      .eq("mode_publication", "brouillon")
+      .eq("is_test", testMode)
+      .not("claim_email", "is", null)
+      .order("claim_email")
+      .range(from, to)
+  );
+}
+
+// À inviter : adresses avec au moins une fiche brouillon non revendiquée, aucune ligne d'import en attente, pas d'invitation.
+// À relancer : invitée (draft_invite) depuis la durée voulue, aucune fiche activée, pas déjà relancée à ce moment-là, au
+// moins une fiche encore en brouillon (non revendiquée, ou revendiquée mais pas activée : le bouton mène alors au tableau de bord).
+export async function listDraftCandidates(admin: AdminClient, kind: DraftInvitationKind, testMode = false): Promise<DraftCandidate[]> {
+  const removed = testMode ? new Set<string>() : await removedOwnerEmails(admin);
+  const keep = (rows: Row[]) => rows.filter((r) => !removed.has(r.claim_email.trim().toLowerCase()));
+  const unclaimed = keep(await draftListings(admin, testMode, "unclaimed"));
+
+  if (kind === "draft_invite") {
+    const [{ data }, pending] = await Promise.all([
+      admin.from("listing_invitations").select("claim_email").eq("kind", "draft_invite"),
+      emailsWithPendingImport(admin),
+    ]);
+    const exclude = new Set<string>([...(data ?? []).map((r: { claim_email: string }) => r.claim_email), ...pending]);
+    return group(unclaimed, undefined, exclude).map((c) => ({ ...c, claimed: false }));
+  }
+
+  const claimedRows = keep(await draftListings(admin, testMode, "claimed"));
+  const window = DRAFT_REMINDER_DAYS[kind];
+  const now = Date.now();
+  const [{ data: invites }, { data: already }, { data: activated }] = await Promise.all([
+    admin.from("listing_invitations").select("claim_email, sent_at").eq("kind", "draft_invite"),
+    admin.from("listing_invitations").select("claim_email").eq("kind", kind),
+    admin.from("listings").select("claim_email").not("import_raw_data->>active_le", "is", null).not("claim_email", "is", null),
+  ]);
+  const doneSet = new Set<string>((already ?? []).map((r: { claim_email: string }) => r.claim_email));
+  const activatedSet = new Set<string>((activated ?? []).map((r: { claim_email: string }) => r.claim_email.trim().toLowerCase()));
+  const dueAt = new Map<string, string>();
+  for (const r of (invites ?? []) as { claim_email: string; sent_at: string }[]) {
+    const ageDays = (now - new Date(r.sent_at).getTime()) / 86_400_000;
+    if (ageDays >= window.from && ageDays < window.to && !doneSet.has(r.claim_email) && !activatedSet.has(r.claim_email.trim().toLowerCase())) {
+      dueAt.set(r.claim_email, r.sent_at);
+    }
+  }
+  const stillUnclaimed = new Set(unclaimed.map((r) => r.claim_email));
+  return group([...unclaimed, ...claimedRows], new Set(dueAt.keys())).map((c) => ({
+    ...c,
+    invitedAt: dueAt.get(c.claimEmail),
+    claimed: !stillUnclaimed.has(c.claimEmail),
+  }));
+}
+
+// Envoie l'invitation brouillon ou une relance. Même garde que sendInvitation : la ligne de listing_invitations est créée
+// AVANT l'envoi (clé unique adresse + type, 'skipped' si déjà là) et retirée si l'envoi échoue.
+export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCandidate, kind: DraftInvitationKind): Promise<"sent" | "skipped" | "error"> {
+  // Interrupteur (lib/draftInvitationsConfig.ts) : fermé, aucun courriel brouillon ne part, par aucun chemin
+  if (!DRAFT_INVITATIONS_ENABLED) return "skipped";
+  const trackToken = randomBytes(16).toString("hex");
+  const { data: inserted, error: insertError } = await admin
+    .from("listing_invitations")
+    .insert({ claim_email: candidate.claimEmail, kind, listing_ids: candidate.listings.map((l) => l.id), track_token: trackToken })
+    .select("id")
+    .single();
+  if (insertError) return insertError.code === "23505" ? "skipped" : "error";
+
+  const undo = async () => {
+    await admin.from("listing_invitations").delete().eq("id", inserted.id);
+  };
+
+  const lang = candidate.lang;
+  let buttonUrl: string;
+  let listings: { title: string; url: string }[];
+  let removeLinks: { title: string; url: string }[] = [];
+  if (candidate.claimed) {
+    // Déjà revendiquées : le propriétaire a un compte, tout se passe dans son tableau de bord
+    buttonUrl = `${SITE_URL}${localePath("/dashboard/listings", lang)}`;
+    listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: `${SITE_URL}${localePath(`/dashboard/listings/${l.id}/edit`, lang)}` }));
+  } else {
+    const reason = `invitation_${kind}`;
+    const [previewRaw, ...removeRaws] = await Promise.all([
+      createClaimToken(admin, { kind: "claim", claimEmail: candidate.claimEmail, reason, ttlDays: DRAFT_TOKEN_TTL_DAYS }),
+      ...candidate.listings.map((l) => createClaimToken(admin, { kind: "remove", claimEmail: candidate.claimEmail, listingId: l.id, reason })),
+    ]);
+    if (!previewRaw || removeRaws.some((r) => !r)) {
+      await undo();
+      return "error";
+    }
+    buttonUrl = previewLink(lang, previewRaw);
+    listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, previewRaw, l.id) }));
+    removeLinks = candidate.listings.map((l, i) => ({ title: titleFor(l, lang), url: removeLink(lang, removeRaws[i] as string) }));
+  }
+
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken });
+  if (error) {
+    console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();
     return "error";
   }

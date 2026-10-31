@@ -10,6 +10,7 @@
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
 import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
+import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
 
 export type EmailCategory = "proprio" | "voyageur" | "compte" | "interne";
 
@@ -60,6 +61,10 @@ export const CATEGORY_LABELS: Record<EmailCategory, { title: string; description
 const FREE_YEAR_PAUSE = FREE_YEAR_REMINDERS_ENABLED
   ? {}
   : { paused: true, pausedReason: "Rappels de fin d’année gratuite en pause (lib/siteIsFree.ts) — le site ne parle plus d’une durée." };
+
+const DRAFT_PAUSE = DRAFT_INVITATIONS_ENABLED
+  ? {}
+  : { paused: true, pausedReason: "Invitations brouillon en pause (lib/draftInvitationsConfig.ts) — aucun envoi tant que Simon n’a pas validé l’essai et les textes." };
 
 const BOOST_PAUSE = BOOSTS_ENABLED
   ? {}
@@ -189,6 +194,52 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "Même moment que la relance, quand la même adresse a 2 chalets ou plus.",
     conditions: "Une seule relance par adresse. Même présentation que l’invitation pour plusieurs chalets.",
     mechanism: "daily", dailyAt: "8 h", testable: true,
+  },
+  {
+    id: "claim-draft-invitation", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — invitation à voir l’aperçu et activer sa fiche",
+    when: "Dès qu’il ne reste plus aucune ligne en attente dans la file d’import pour l’adresse (vérifié aux 5 minutes, entre 8 h et 19 h, heure de Montréal).",
+    conditions: "Pour les propriétaires de plusieurs chalets : l’import écrit mode_publication = « brouillon » dans le lot, les fiches restent hors ligne (jamais publiées par le serveur, hors du plafond de 15 par jour). Une seule invitation par adresse, qui liste toutes ses fiches ; le lien mène à un aperçu privé (non indexé, 60 jours) puis à l’activation. Pas d’invitation si le propriétaire a déjà retiré une fiche.",
+    mechanism: "event", testable: true,
+    ...DRAFT_PAUSE,
+  },
+  {
+    id: "claim-draft-invitation-multi", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — invitation, plusieurs chalets",
+    when: "Même moment que l’invitation brouillon, quand l’adresse a 2 chalets ou plus.",
+    conditions: "Objet : « Vos N chalets sont prêts sur Kabanalouer, il ne reste qu’à les activer » (« , gratuitement » tant que la plateforme est gratuite). Liste à puces des fiches, bouton vers l’aperçu, un lien « Retirer » par chalet.",
+    mechanism: "event", testable: true,
+    ...DRAFT_PAUSE,
+  },
+  {
+    id: "claim-draft-reminder-3", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — relance à J+3",
+    when: "Chaque jour à 8 h (heure de Montréal), 3 jours après l’invitation brouillon.",
+    conditions: "Seulement si aucune fiche de l’adresse n’est activée, une seule fois (30 par jour au plus). Si le propriétaire a déjà revendiqué ses fiches sans les activer, le bouton mène à son tableau de bord.",
+    mechanism: "daily", dailyAt: "8 h", testable: true,
+    ...DRAFT_PAUSE,
+  },
+  {
+    id: "claim-draft-reminder-3-multi", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — relance à J+3, plusieurs chalets",
+    when: "Même moment que la relance à J+3, quand l’adresse a 2 chalets ou plus.",
+    mechanism: "daily", dailyAt: "8 h", testable: true,
+    ...DRAFT_PAUSE,
+  },
+  {
+    id: "claim-draft-reminder-10", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — relance à J+10 (dernier courriel)",
+    when: "Chaque jour à 8 h (heure de Montréal), 10 jours après l’invitation brouillon.",
+    conditions: "Seulement si aucune fiche de l’adresse n’est activée, une seule fois (30 par jour au plus). C’est le dernier courriel de la séquence.",
+    mechanism: "daily", dailyAt: "8 h", testable: true,
+    ...DRAFT_PAUSE,
+  },
+  {
+    id: "claim-draft-reminder-10-multi", category: "proprio", group: "Fiches non revendiquées",
+    name: "Brouillon — relance à J+10, plusieurs chalets",
+    when: "Même moment que la relance à J+10, quand l’adresse a 2 chalets ou plus.",
+    mechanism: "daily", dailyAt: "8 h", testable: true,
+    ...DRAFT_PAUSE,
   },
   {
     id: "review-received", category: "proprio", group: "Demandes et avis",

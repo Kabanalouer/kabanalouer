@@ -1,0 +1,9 @@
+import { PreviewListingPage } from "@/components/claims/PreviewPages";
+import { CLAIM_PAGE_METADATA } from "@/components/claims/ClaimPages";
+
+export const metadata = CLAIM_PAGE_METADATA;
+
+export default async function Page({ params }: { params: Promise<{ jeton: string; listingId: string }> }) {
+  const { jeton, listingId } = await params;
+  return <PreviewListingPage jeton={jeton} listingId={listingId} />;
+}

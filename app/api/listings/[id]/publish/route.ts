@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase } from "@/lib/sendMessage";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,6 +22,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if (!ownedListing) {
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
+  }
+
+  // Fiche importée en brouillon : elle s'active avec le bouton « Activer » de Mes chalets (droits sur les photos et CITQ confirmés)
+  const { data: draft } = await adminSupabase().from("listings").select("mode_publication").eq("id", id).maybeSingle();
+  if (draft?.mode_publication === "brouillon") {
+    return NextResponse.json({ error: t2(locale, "Cette fiche s'active avec le bouton « Activer » de Mes chalets.", "This listing is activated with the “Activate” button in My cabins.") }, { status: 409 });
   }
 
   if (!(ownedListing.region as string | null)?.trim()) {

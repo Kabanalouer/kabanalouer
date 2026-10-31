@@ -53,7 +53,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      // Aperçu privé des fiches en brouillon : jamais indexé, même si le lien fuit (en plus de la balise noindex des pages)
+      { source: "/apercu/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
+      { source: "/en/preview/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
+    ];
   },
   // Contourne un comportement de routage confirmé où une route dynamique
   // imbriquée/catch-all déclarée directement à la racine de app/ (sans

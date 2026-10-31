@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
-import { findClaimToken } from "@/lib/claims/tokens";
+import { findClaimToken, previewPath } from "@/lib/claims/tokens";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { ClaimForm, RemoveForm, ReportForm, VerificationForm } from "@/components/claims/ClaimForms";
@@ -91,7 +91,7 @@ export async function ClaimTokenPage({ jeton }: { jeton: string }) {
   // Toutes les fiches non revendiquées de cette adresse : un seul lien les couvre.
   const { data: listings } = await admin
     .from("listings")
-    .select("id, title, title_en, city, region, listing_number, custom_slug")
+    .select("id, title, title_en, city, region, listing_number, custom_slug, mode_publication")
     .eq("claim_email", lookup.token.claim_email)
     .eq("claim_status", "unclaimed")
     .order("title");
@@ -114,10 +114,14 @@ export async function ClaimTokenPage({ jeton }: { jeton: string }) {
           id: l.id as string,
           title: titleOf(l as { title: string | null; title_en: string | null }, isEn),
           city: (l.city as string | null) ?? null,
-          href: buildListingPath(
-            { region: l.region as string | null, city: l.city as string | null, listing_number: l.listing_number as number | null, custom_slug: (l.custom_slug as string | null) ?? null },
-            isEn ? "en" : "fr"
-          ),
+          // Brouillon : pas encore de fiche en ligne, « Voir l'annonce » mène à l'aperçu privé
+          href:
+            l.mode_publication === "brouillon"
+              ? previewPath(isEn ? "en" : "fr", jeton, l.id as string)
+              : buildListingPath(
+                  { region: l.region as string | null, city: l.city as string | null, listing_number: l.listing_number as number | null, custom_slug: (l.custom_slug as string | null) ?? null },
+                  isEn ? "en" : "fr"
+                ),
         }))}
       />
 

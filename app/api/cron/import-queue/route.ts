@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { IMPORT_BATCH_SIZE, importQueueRow } from "@/lib/importQueue";
+import { AUTO_INVITATIONS_ENABLED, listDraftCandidates, sendDraftInvitation } from "@/lib/claims/invitations";
+import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
 
 export const maxDuration = 300;
+
+// Invitations brouillon : fenêtre d'envoi (heure de Montréal), plafond par passage, délai entre courriels (limite d'envoi de Resend).
+const DRAFT_INVITE_FIRST_HOUR = 8;
+const DRAFT_INVITE_LAST_HOUR = 19;
+const MAX_DRAFT_INVITES_PER_RUN = 10;
+const INVITE_DELAY_MS = 650;
 
 // On ne commence plus de nouvelle fiche passé ce délai (une fiche = téléchargement et
 // ré-encodage des photos + appels à l'IA, de 30 s à 1 min).
@@ -60,5 +68,27 @@ export async function GET(request: NextRequest) {
     report.push({ url: row.import_source_url as string, ...result });
   }
 
-  return NextResponse.json({ ok: true, processed: report.length, report });
+  const draftInvites = await sendDraftInvitations(admin);
+
+  return NextResponse.json({ ok: true, processed: report.length, report, draftInvites });
+}
+
+// Invitations des propriétaires en mode brouillon : une seule par adresse, dès qu'aucune ligne de la file n'attend plus
+// pour cette adresse (la dernière fiche vient d'être importée ou refusée). Entre 8 h et 19 h à Montréal seulement.
+// Les relances J+3 et J+10 sont faites par send-invitations.
+async function sendDraftInvitations(admin: Parameters<typeof importQueueRow>[0]): Promise<{ sent: number; skipped: number; errors: number; outsideHours?: boolean }> {
+  const out = { sent: 0, skipped: 0, errors: 0 };
+  if (!AUTO_INVITATIONS_ENABLED || !DRAFT_INVITATIONS_ENABLED) return out;
+  const hour = Number(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Montreal", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
+  if (hour < DRAFT_INVITE_FIRST_HOUR || hour >= DRAFT_INVITE_LAST_HOUR) return { ...out, outsideHours: true };
+
+  const candidates = (await listDraftCandidates(admin, "draft_invite")).slice(0, MAX_DRAFT_INVITES_PER_RUN);
+  for (let i = 0; i < candidates.length; i++) {
+    const r = await sendDraftInvitation(admin, candidates[i], "draft_invite");
+    if (r === "sent") out.sent++;
+    else if (r === "skipped") out.skipped++;
+    else out.errors++;
+    if (i < candidates.length - 1) await new Promise((res) => setTimeout(res, INVITE_DELAY_MS));
+  }
+  return out;
 }

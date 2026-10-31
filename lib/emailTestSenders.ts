@@ -31,8 +31,9 @@ import {
   sendListingRemovedNotice,
   sendImportDuplicateAlert,
 } from "@/lib/emails/unclaimedOwner";
-import { claimLink, removeLink, reportLink } from "@/lib/claims/tokens";
+import { claimLink, previewLink, removeLink, reportLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
+import { sendDraftInvitationEmail } from "@/lib/emails/draftInvitation";
 
 // Données d'exemple (fiche Chalet Authentik 50) de chaque courriel du catalogue :
 // envoi de test (/api/admin/test-email) et aperçu de l'éditeur de textes
@@ -64,6 +65,7 @@ export function emailTestSenders(): Record<string, Sender> {
   const MULTI_TITLES = [TITLE, "Chalet exemple 2", "Chalet exemple 3"];
   const MULTI_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, path: lang === "en" ? `/en/cabins/laurentians/mille-isles/4834${7 + i}` : `/chalets/laurentides/mille-isles/4834${7 + i}` }));
   const MULTI_REMOVE = (lang: Lang) => MULTI_TITLES.map((title) => ({ title, url: removeLink(lang, "exemple") }));
+  const DRAFT_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, url: previewLink(lang, "exemple", `00000000-0000-4000-8000-00000000000${i + 1}`) }));
 
   return {
     "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
@@ -195,6 +197,30 @@ export function emailTestSenders(): Record<string, Sender> {
     "claim-invitation-reminder-multi": (to, lang) => sendClaimInvitationEmail({
       to, lang, kind: "reminder", listings: MULTI_LISTINGS(lang),
       claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+    }),
+    "claim-draft-invitation": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+    }),
+    "claim-draft-invitation-multi": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+    }),
+    "claim-draft-reminder-3": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_reminder_3", listings: DRAFT_LISTINGS(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+    }),
+    "claim-draft-reminder-3-multi": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_reminder_3", listings: DRAFT_LISTINGS(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+    }),
+    "claim-draft-reminder-10": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_reminder_10", listings: DRAFT_LISTINGS(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+    }),
+    "claim-draft-reminder-10-multi": (to, lang) => sendDraftInvitationEmail({
+      to, lang, kind: "draft_reminder_10", listings: DRAFT_LISTINGS(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], firstName: "Marie", approved: true }),

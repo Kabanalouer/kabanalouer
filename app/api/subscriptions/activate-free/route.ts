@@ -38,13 +38,18 @@ export async function POST(request: NextRequest) {
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, title_en, import_status, region")
+    .select("id, title, title_en, import_status, region, mode_publication")
     .eq("id", listingId)
     .eq("host_id", user.id)
     .single();
 
   if (!listing) {
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
+  }
+
+  // Fiche importée en brouillon : elle s'active avec le bouton « Activer » de Mes chalets (droits sur les photos et CITQ confirmés)
+  if (listing.mode_publication === "brouillon") {
+    return NextResponse.json({ error: t2(locale, "Cette fiche s'active avec le bouton « Activer » de Mes chalets.", "This listing is activated with the “Activate” button in My cabins.") }, { status: 409 });
   }
 
   // Jamais d'annonce en ligne sans région : elle n'apparaîtrait sur aucune page région ni dans le fil d'Ariane.

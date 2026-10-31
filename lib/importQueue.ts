@@ -143,12 +143,27 @@ export type NormalizedImport = {
   checkoutTime: string | null;
   priceLow: number | null;
   photos: PhotoSource[];
+  // 'brouillon' : fiche jamais publiée par le serveur (propriétaire de plusieurs chalets, il l'active lui-même)
+  modePublication: "brouillon" | null;
 };
+
+// Valeur du champ mode_publication d'un lot : seul « brouillon » est connu ; une autre valeur est refusée
+// (une faute de frappe ne doit jamais faire publier une fiche que Simon voulait garder hors ligne).
+export function readModePublication(raw: unknown): { ok: true; mode: "brouillon" | null } | { ok: false; error: string } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ok: true, mode: null };
+  const v = (raw as Obj).mode_publication;
+  if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) return { ok: true, mode: null };
+  if (typeof v === "string" && v.trim().toLowerCase() === "brouillon") return { ok: true, mode: "brouillon" };
+  return { ok: false, error: `mode_publication inconnu : « ${String(v).slice(0, 40)} » (seule la valeur « brouillon » existe).` };
+}
 
 // Noms de champs acceptés (français ou anglais) : voir CLAUDE.md, section « File d'import ».
 export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImport } | { ok: false; error: string } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ok: false, error: "Le lot n'est pas un objet JSON." };
   const p = raw as Obj;
+
+  const mode = readModePublication(p);
+  if (!mode.ok) return { ok: false, error: mode.error };
 
   const title = asStr(pick(p, "titre", "nom", "nom_etablissement", "nom_de_l_etablissement", "title", "name"));
   if (!title) return { ok: false, error: "Nom de l'établissement manquant." };
@@ -216,6 +231,7 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
       checkoutTime: asTime(pick(p, "checkout_time", "checkout", "depart", "départ")),
       priceLow: price !== null && price >= 10 && price <= 10000 ? price : null,
       photos: photoUrls.map((url) => ({ url })),
+      modePublication: mode.mode,
     },
   };
 }
@@ -851,6 +867,8 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       photos,
       score,
       is_published: false,
+      // 'brouillon' : jamais publiée par publish-unclaimed ni comptée dans les 15 par jour ; le propriétaire l'active lui-même
+      ...(d.modePublication ? { mode_publication: d.modePublication } : {}),
       claim_status: "unclaimed",
       claim_email: d.claimEmail,
       claim_language: d.claimLanguage,

@@ -33,11 +33,11 @@ export function hashToken(raw: string): string {
 // remove : une fiche (« Retirer ma fiche »), sans expiration. dispute : « Signaler un problème ».
 export async function createClaimToken(
   admin: AdminClient,
-  input: { kind: ClaimTokenKind; claimEmail: string; listingId?: string; listingIds?: string[]; reason: string }
+  input: { kind: ClaimTokenKind; claimEmail: string; listingId?: string; listingIds?: string[]; reason: string; ttlDays?: number }
 ): Promise<string | null> {
   const raw = randomBytes(32).toString("base64url");
   const expiresAt =
-    input.kind === "claim" ? new Date(Date.now() + CLAIM_TOKEN_TTL_DAYS * 86_400_000).toISOString() : null;
+    input.kind === "claim" ? new Date(Date.now() + (input.ttlDays ?? CLAIM_TOKEN_TTL_DAYS) * 86_400_000).toISOString() : null;
   const { error } = await admin.from("listing_claim_tokens").insert({
     token_hash: hashToken(raw),
     kind: input.kind,
@@ -87,6 +87,16 @@ export function removeLink(locale: "fr" | "en", raw: string): string {
 }
 export function reportLink(locale: "fr" | "en", raw: string): string {
   return `${SITE_URL}${PATHS.report[locale]}${raw}`;
+}
+
+// Aperçu privé des fiches en brouillon (même jeton que l'activation) : /apercu/… en français, /en/preview/… en anglais.
+// Durée d'un jeton d'invitation brouillon : le propriétaire prend son temps pour activer ses fiches.
+export const DRAFT_TOKEN_TTL_DAYS = 60;
+export function previewPath(locale: "fr" | "en", raw: string, listingId?: string): string {
+  return `${locale === "en" ? "/en/preview/" : "/apercu/"}${raw}${listingId ? `/${listingId}` : ""}`;
+}
+export function previewLink(locale: "fr" | "en", raw: string, listingId?: string): string {
+  return `${SITE_URL}${previewPath(locale, raw, listingId)}`;
 }
 
 // Plafonds du bouton public « Envoyer le lien » (claim_email_log) : 3 demandes par jour par

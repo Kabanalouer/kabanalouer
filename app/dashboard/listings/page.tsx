@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import ListingsClient from "@/components/dashboard/ListingsClient";
+import DraftActivation from "@/components/dashboard/DraftActivation";
 import { computeScore } from "@/lib/listingScore";
 import { normalizePhotos } from "@/lib/photo";
 import type { AmenityValue } from "@/lib/amenities-catalog";
@@ -36,6 +37,22 @@ export default async function ListingsPage({
     // Lien iCal : colonne privée, lue avec le client service (voir lib/listingColumns.ts)
     adminSupabase().from("listings").select("id, ical_url").eq("host_id", user.id),
   ]);
+
+  // Fiches importées en brouillon, revendiquées mais pas encore activées (colonne privée : client service, propriété vérifiée par host_id)
+  const { data: draftRows } = await adminSupabase()
+    .from("listings")
+    .select("id, title, city, citq_number")
+    .eq("host_id", user.id)
+    .eq("claim_status", "claimed")
+    .eq("mode_publication", "brouillon")
+    .eq("is_published", false)
+    .order("title");
+  const drafts = (draftRows ?? []).map((d) => ({
+    id: d.id as string,
+    title: ((d.title as string | null) ?? "").trim() || (locale === "en" ? "Untitled listing" : "Fiche sans titre"),
+    city: (d.city as string | null) ?? null,
+    citq: (d.citq_number as string | null) ?? null,
+  }));
 
   const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
   const listingIds = (listings ?? []).map((l) => l.id as string);
@@ -140,6 +157,8 @@ export default async function ListingsPage({
           <span className="hidden sm:inline">{t("createListing")}</span>
         </Link>
       </div>
+
+      <DraftActivation drafts={drafts} />
 
       {listings && listings.length > 0 ? (
         <ListingsClient listings={listings} reviews={reviewRecord} scores={scoreRecord} translationPending={translationPendingRecord} />

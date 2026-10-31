@@ -53,9 +53,14 @@ interface ListingDetailProps {
   searchParams: { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string };
   locale: string;
   isPreviewFrame: boolean;
+  // Aperçu privé d'une fiche en brouillon (page /apercu/[jeton]) : lue avec le client service (la fiche n'est pas
+  // publique), affichée comme une fiche revendiquée (pas d'encadré « non revendiquée », pas de profil du compte
+  // système), sans compter de vue ni formulaire de demande. claimHref : bouton « Activer mes fiches ».
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ownerPreview?: { db: any; claimHref: string; listHref: string };
 }
 
-export default async function ListingDetail({ listing, user, searchParams, locale, isPreviewFrame }: ListingDetailProps) {
+export default async function ListingDetail({ listing, user, searchParams, locale, isPreviewFrame, ownerPreview }: ListingDetailProps) {
   const t = await getTranslations("listing");
   const isEn = locale === "en";
 
@@ -67,7 +72,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const urlDogs = dogPolicy.allowed
     ? (() => { const n = parseDogsParam(searchParams.dogs); return n ? Math.min(n, dogPolicy.max ?? DOGS_MAX_LIMIT) : null; })()
     : null;
-  const supabase = await createClient();
+  const supabase: Awaited<ReturnType<typeof createClient>> = ownerPreview?.db ?? (await createClient());
 
   // Si la ligne a pu être lue alors qu'elle n'est pas publiée, c'est
   // uniquement parce que la RLS a laissé passer le propriétaire ou un
@@ -75,7 +80,10 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const isTestListing = listing.is_test === true;
   // Fiche importée détenue par le compte système : pas de profil de proprio,
   // pas de calendrier, mention « pas encore activée » et bouton « C'est mon chalet ».
-  const isUnclaimed = listing.claim_status === "unclaimed";
+  // Aperçu d'un brouillon : la fiche s'affiche comme elle le sera une fois revendiquée (sans l'encadré « pas encore
+  // revendiquée »), mais le compte système qui la détient n'a pas de profil à montrer (hostless).
+  const hostless = listing.claim_status === "unclaimed";
+  const isUnclaimed = hostless && !ownerPreview;
   const isDraftPreview = !listing.is_published && !isTestListing;
 
   const id = listing.id as string; // UUID for all sub-queries
@@ -109,7 +117,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   // Fetch host profile via public_profiles (vue publique, colonnes non sensibles
   // uniquement — voir supabase/create-public-profiles-view.sql) plutôt que
   // public.users directement, dont la RLS ne permet plus la lecture publique.
-  const { data: hostProfile } = isUnclaimed
+  const { data: hostProfile } = hostless
     ? { data: null }
     : await supabase
         .from("public_profiles")
@@ -119,7 +127,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
   const maskedClaimEmail = isUnclaimed ? await getMaskedClaimEmail(listing.id as string) : null;
 
   // Increment view count (fire and forget — don't block page render)
-  void supabase.rpc("increment_listing_views", { p_listing_id: id });
+  if (!ownerPreview) void supabase.rpc("increment_listing_views", { p_listing_id: id });
 
   // User profile for pre-filling the contact form
   const { data: userProfile } = user
@@ -350,7 +358,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
   return (
     <div className="flex flex-col min-h-screen">
-      <ViewTracker listingId={id} isOwner={isOwner} />
+      {!ownerPreview && <ViewTracker listingId={id} isOwner={isOwner} />}
       {!user && <AuthCodeWelcomeTrigger />}
       <script
         type="application/ld+json"
@@ -368,7 +376,17 @@ export default async function ListingDetail({ listing, user, searchParams, local
       )}
       {!isPreviewFrame && <Navbar />}
 
-      {isDraftPreview && (
+      {ownerPreview && (
+        <div className="bg-primary/10 border-b border-primary/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-primary">
+            <p className="font-semibold">{t("ownerPreviewBanner")}</p>
+            <a href={ownerPreview.listHref} className="font-medium underline underline-offset-4 hover:text-primary-dark">{t("ownerPreviewBack")}</a>
+            <a href={ownerPreview.claimHref} className="font-semibold underline underline-offset-4 hover:text-primary-dark">{t("ownerPreviewActivate")}</a>
+          </div>
+        </div>
+      )}
+
+      {isDraftPreview && !ownerPreview && (
         <div className="bg-primary/10 border-b border-primary/20">
           <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 text-sm font-medium text-primary text-center">
             {t("draftPreviewBanner")}
@@ -503,7 +521,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
 
             {/* Reviews — encadré gris pâle, comme les points forts. Masqué (pas de section vide)
                 pour une fiche non revendiquée qui n'a aucun avis. */}
-            {!(isUnclaimed && reviews.length === 0) && (
+            {!(hostless && reviews.length === 0) && (
             <section className="bg-charcoal-50 rounded-2xl p-6 sm:p-8">
               <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-6">
                 <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("reviewsTitle")}</h2>
@@ -701,7 +719,18 @@ export default async function ListingDetail({ listing, user, searchParams, local
                 );
               })()}
               {/* CTA */}
-              {isOwner ? (
+              {ownerPreview ? (
+                <div className="rounded-xl bg-charcoal-50 border border-[#ebebeb] p-5 text-center">
+                  <p className="text-base font-semibold text-charcoal-800">{t("ownerPreviewCardTitle")}</p>
+                  <p className="text-sm text-charcoal-500 mt-1">{t("ownerPreviewCardNote")}</p>
+                  <a
+                    href={ownerPreview.claimHref}
+                    className="mt-4 inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                  >
+                    {t("ownerPreviewActivate")}
+                  </a>
+                </div>
+              ) : isOwner ? (
                 <div className="rounded-xl bg-charcoal-50 border border-[#ebebeb] p-5 text-center">
                   <p className="text-base font-semibold text-charcoal-800">{t("isYourCabin")}</p>
                   <p className="text-sm text-charcoal-500 mt-1">{t("ownListingNote")}</p>
@@ -746,7 +775,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
         </div>
 
         {/* Mobile CTA */}
-        {!isOwner && (
+        {!isOwner && !ownerPreview && (
           <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#ebebeb] px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-4">
             {listing.price_on_request || listing.price_low === 0 || listing.price_low == null ? (
               <span className="text-sm font-bold text-charcoal-800">{t("priceOnRequest")}</span>
@@ -812,7 +841,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
       {!isPreviewFrame && <Footer />}
       {/* Réserve la hauteur de la barre fixe mobile sous le pied de page,
           sinon elle en masque le bas. */}
-      {!isOwner && <div className="lg:hidden h-[calc(4.5rem+env(safe-area-inset-bottom))]" aria-hidden="true" />}
+      {!isOwner && !ownerPreview && <div className="lg:hidden h-[calc(4.5rem+env(safe-area-inset-bottom))]" aria-hidden="true" />}
     </div>
   );
 }

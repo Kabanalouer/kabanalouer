@@ -118,6 +118,8 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
     .eq("claim_status", "unclaimed")
     .eq("is_published", false)
     .eq("is_test", false)
+    // Un brouillon n'est JAMAIS publié par le serveur (le propriétaire l'active lui-même)
+    .is("mode_publication", null)
     .not("claim_email", "is", null)
     .not("citq_number", "is", null)
     .order("score", { ascending: false, nullsFirst: false })
@@ -195,7 +197,8 @@ async function notifySimonIfDone(admin: Admin): Promise<{ notified: number; skip
     .select("id", { count: "exact", head: true })
     .eq("claim_status", "unclaimed")
     .eq("is_published", false)
-    .eq("is_test", false);
+    .eq("is_test", false)
+    .is("mode_publication", null);
 
   const { error: mailError } = await sendUnclaimedPublishedNotice({
     waiting: waiting ?? 0,

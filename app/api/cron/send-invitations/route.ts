@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listInvitationCandidates, sendInvitation, withoutWaiting, type InvitationKind } from "@/lib/claims/invitations";
+import { DRAFT_INVITATIONS_ENABLED } from "@/lib/draftInvitationsConfig";
+import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listDraftCandidates, listInvitationCandidates, sendDraftInvitation, sendInvitation, withoutWaiting, type InvitationKind } from "@/lib/claims/invitations";
 
 export const maxDuration = 120;
 
@@ -48,6 +49,23 @@ export async function GET(request: NextRequest) {
     let errors = 0;
     for (let i = 0; i < batch.length; i++) {
       const r = await sendInvitation(admin, batch[i], kind);
+      if (r === "sent") sent++;
+      else if (r === "skipped") skipped++;
+      else errors++;
+      if (i < batch.length - 1) await new Promise((res) => setTimeout(res, DELAY_MS));
+    }
+    result[kind] = { sent, skipped, errors, remaining: Math.max(0, candidates.length - batch.length) };
+  }
+
+  // Relances des brouillons (J+3 et J+10 après l'invitation, tant qu'aucune fiche n'est activée)
+  for (const kind of DRAFT_INVITATIONS_ENABLED ? (["draft_reminder_3", "draft_reminder_10"] as const) : []) {
+    const candidates = await listDraftCandidates(admin, kind);
+    const batch = candidates.slice(0, MAX_REMINDERS_PER_RUN);
+    let sent = 0;
+    let skipped = 0;
+    let errors = 0;
+    for (let i = 0; i < batch.length; i++) {
+      const r = await sendDraftInvitation(admin, batch[i], kind);
       if (r === "sent") sent++;
       else if (r === "skipped") skipped++;
       else errors++;
