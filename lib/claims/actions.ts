@@ -1,6 +1,7 @@
 import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { maskEmail } from "@/lib/claims/maskedEmail";
 import { markInvitationsClaimed } from "@/lib/claims/invitations";
+import { activateClaimedDrafts } from "@/lib/claims/activateDrafts";
 import {
   claimLink,
   createClaimToken,
@@ -25,8 +26,8 @@ type ClaimedRow = { out_listing_id: string; out_claim_email: string | null };
 // Puis avertit les anciennes adresses.
 export async function claimListingsForUser(
   admin: AdminClient,
-  input: { userId: string; listingIds: string[]; tokenId?: string | null; welcome?: boolean }
-): Promise<{ ok: true; listingIds: string[] } | { ok: false; error: string }> {
+  input: { userId: string; listingIds: string[]; tokenId?: string | null; welcome?: boolean; activateDrafts?: boolean }
+): Promise<{ ok: true; listingIds: string[]; published: number } | { ok: false; error: string }> {
   let freeUntil: string | null = null;
   if (isLaunchOfferActive()) {
     const d = new Date();
@@ -46,6 +47,20 @@ export async function claimListingsForUser(
   }
 
   const rows = (data ?? []) as ClaimedRow[];
+
+  // Fiches en brouillon : revendiquer les met en ligne tout de suite (le propriétaire n'a rien d'autre à faire). Celles qui
+  // ne peuvent pas l'être (à compléter, abonnement à régler) restent hors ligne : bouton « Activer » dans Mes chalets.
+  // Fait AVANT les courriels : la bienvenue dépend de ce qui est réellement en ligne. Ne bloque jamais la revendication.
+  let published = 0;
+  if (input.activateDrafts) {
+    try {
+      const results = await activateClaimedDrafts(admin, { userId: input.userId, listingIds: rows.map((r) => r.out_listing_id) });
+      published = results.filter((r) => r.ok).length;
+    } catch (e) {
+      console.error("claimListingsForUser: échec de la mise en ligne des brouillons", e);
+    }
+  }
+
   try {
     // L'invitation envoyée à cette adresse est marquée « revendiquée » (résultats de l'admin)
     await markInvitationsClaimed(admin, [...new Set(rows.map((r) => r.out_claim_email).filter((e): e is string => !!e))]);
@@ -55,7 +70,7 @@ export async function claimListingsForUser(
     // La revendication a réussi : l'avis à l'ancienne adresse ne doit jamais la défaire.
     console.error("claimListingsForUser: échec de l'avis à l'ancienne adresse", e);
   }
-  return { ok: true, listingIds: rows.map((r) => r.out_listing_id) };
+  return { ok: true, listingIds: rows.map((r) => r.out_listing_id), published };
 }
 
 // Un seul courriel de bienvenue par revendication, même pour plusieurs fiches.

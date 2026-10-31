@@ -113,6 +113,52 @@ test("interrupteur fermé : aucune invitation brouillon ne part et la base n'est
   }
 });
 
+test("revendication d'un brouillon : mise en ligne tout de suite, sauf fiche à compléter, CITQ manquant ou abonnement absent", async () => {
+  const { activateClaimedDrafts } = await import("@/lib/claims/activateDrafts");
+  const owner = "owner-1";
+  const row = (id: string, extra: Row = {}): Row => ({
+    id, host_id: owner, claim_status: "claimed", mode_publication: "brouillon", is_published: false,
+    title: "Chalet", description: "Une description complète de plus de quarante caractères.", photos: [1, 2, 3, 4, 5],
+    region: "Laurentides", citq_number: "298960", import_raw_data: { fixture: true }, ...extra,
+  });
+  const rows = [
+    row("ok"), row("peu-de-photos", { photos: [1, 2, 3, 4] }), row("sans-abonnement"), row("sans-citq", { citq_number: null }),
+    row("citq-invalide", { citq_number: "12" }), row("autre-proprio", { host_id: "someone-else" }), row("deja-en-ligne", { is_published: true }),
+  ];
+  const subs = ["ok", "peu-de-photos", "sans-citq", "citq-invalide", "autre-proprio", "deja-en-ligne"].map((listing_id) => ({ listing_id, status: "active" }));
+  const updates: { id: string; vals: Row }[] = [];
+  const admin = {
+    from(table: string) {
+      if (table === "subscriptions") return { select: () => ({ in: async () => ({ data: subs }) }) };
+      return {
+        select: () => ({ in: async () => ({ data: rows }) }),
+        update: (vals: Row) => {
+          let id = "";
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const q: any = { eq: (c: string, v: string) => ((c === "id" && (id = v)), q), select: async () => (updates.push({ id, vals }), { data: [{ id }], error: null }) };
+          return q;
+        },
+      };
+    },
+  };
+  const ids = rows.map((r) => r.id as string);
+  const res = await activateClaimedDrafts(admin, { userId: owner, listingIds: ids });
+  const by = Object.fromEntries(res.map((r) => [r.id, r.ok ? "ok" : r.error]));
+  assert.deepEqual(by, {
+    "ok": "ok", "peu-de-photos": "incomplete", "sans-abonnement": "subscription_required", "sans-citq": "citq_missing",
+    "citq-invalide": "citq_missing", "autre-proprio": "not_eligible", "deja-en-ligne": "not_eligible",
+  });
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0].vals.is_published, true);
+  assert.equal(updates[0].vals.mode_publication, null);
+  assert.match(String((updates[0].vals.import_raw_data as Row).active_le), /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal((updates[0].vals.import_raw_data as Row).publie_le, undefined); // jamais compté dans les 15 par jour
+
+  // Le bouton de secours peut fournir le CITQ manquant
+  const again = await activateClaimedDrafts(admin, { userId: owner, listingIds: ["sans-citq"], citqs: { "sans-citq": "123456" } });
+  assert.deepEqual(again, [{ id: "sans-citq", ok: true }]);
+});
+
 test("mode_publication : seule la valeur « brouillon » est acceptée", async () => {
   const { readModePublication } = await import("@/lib/importQueue");
   assert.deepEqual(readModePublication({}), { ok: true, mode: null });

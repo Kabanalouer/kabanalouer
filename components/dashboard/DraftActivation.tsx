@@ -5,31 +5,34 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { trackEvent } from "@/lib/analytics";
 
-// Fiches importées en brouillon, déjà revendiquées par le propriétaire : « Activer » pour une fiche ou pour toutes.
-// Il confirme ses droits sur les photos et le numéro CITQ, puis POST /api/listings/activate-draft publie la fiche
-// (sans limite quotidienne). Voir app/api/listings/activate-draft/route.ts.
+// Fiches importées en brouillon, revendiquées mais pas mises en ligne à la revendication (fiche à compléter, CITQ
+// manquant, abonnement à régler) : « Activer » pour une fiche ou pour toutes. Aucune confirmation des droits sur les
+// photos (décision de Simon, 2026-10-31) ; le CITQ n'est demandé que s'il manque ou est invalide.
+// POST /api/listings/activate-draft (lib/claims/activateDrafts.ts).
 
 export type DraftToActivate = { id: string; title: string; city: string | null; citq: string | null };
 
-type ResultError = "not_eligible" | "incomplete" | "subscription_required" | "failed";
+type ResultError = "not_eligible" | "incomplete" | "citq_missing" | "subscription_required" | "failed";
 type ApiResult = { id: string; ok: boolean; error?: ResultError };
+
+const validCitq = (v: string | null | undefined) => /^[0-9]{6}$/.test((v ?? "").trim());
 
 export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] }) {
   const t = useTranslations("draftActivation");
   const router = useRouter();
   const [ids, setIds] = useState<string[] | null>(null);
   const [citqs, setCitqs] = useState<Record<string, string>>({});
-  const [rights, setRights] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState<string | null>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
 
   const open = ids !== null;
   useEffect(() => {
     if (!open) return;
-    firstFieldRef.current?.focus();
+    (firstFieldRef.current ?? confirmRef.current)?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) setIds(null);
     };
@@ -41,30 +44,35 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
 
   const openFor = (list: string[]) => {
     setCitqs(Object.fromEntries(drafts.filter((d) => list.includes(d.id)).map((d) => [d.id, d.citq ?? ""])));
-    setRights(false);
     setMessage(null);
     setErrors({});
     setIds(list);
   };
 
   const errorText = (e?: ResultError) =>
-    e === "not_eligible" ? t("errNotEligible") : e === "incomplete" ? t("errIncomplete") : e === "subscription_required" ? t("errSubscription") : t("errFailed");
+    e === "not_eligible" ? t("errNotEligible")
+    : e === "incomplete" ? t("errIncomplete")
+    : e === "citq_missing" ? t("errCitq")
+    : e === "subscription_required" ? t("errSubscription")
+    : t("errFailed");
 
   const submit = async () => {
     if (!ids) return;
     setMessage(null);
     setErrors({});
     const bad: Record<string, string> = {};
-    for (const id of ids) if (!/^[0-9]{6}$/.test((citqs[id] ?? "").trim())) bad[id] = t("citqInvalid");
+    for (const id of ids) {
+      const original = drafts.find((d) => d.id === id)?.citq;
+      if (!validCitq(original) && !validCitq(citqs[id])) bad[id] = t("citqInvalid");
+    }
     if (Object.keys(bad).length > 0) return setErrors(bad);
-    if (!rights) return setMessage(t("rightsRequired"));
 
     setBusy(true);
     try {
       const res = await fetch("/api/listings/activate-draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: ids.map((id) => ({ id, citq: citqs[id].trim() })), photosRightsConfirmed: true }),
+        body: JSON.stringify({ items: ids.map((id) => ({ id, citq: validCitq(citqs[id]) ? citqs[id].trim() : undefined })) }),
       });
       const data = (await res.json().catch(() => ({}))) as { results?: ApiResult[]; error?: string };
       if (!res.ok || !data.results) return setMessage(data.error ?? t("errGeneric"));
@@ -88,7 +96,7 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
     }
   };
 
-  const titleOf = (id: string) => drafts.find((d) => d.id === id)?.title ?? "";
+  const draftOf = (id: string) => drafts.find((d) => d.id === id);
 
   return (
     <>
@@ -143,35 +151,44 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="draft-activation-modal-title" className="text-heading-2 font-semibold text-charcoal-800">{t("modalTitle", { count: ids.length })}</h2>
-            <p className="mt-2 text-sm text-charcoal-600">{t("modalIntro")}</p>
+            <p className="mt-2 text-sm text-charcoal-600">{t("modalIntro", { count: ids.length })}</p>
 
-            <div className="mt-5 space-y-4">
-              {ids.map((id, i) => (
-                <div key={id}>
-                  <label htmlFor={`citq-${id}`} className="block text-sm font-semibold text-charcoal-800">
-                    {t("citqLabel")} <span className="font-normal text-charcoal-500">– {titleOf(id)}</span>
-                  </label>
-                  <input
-                    id={`citq-${id}`}
-                    ref={i === 0 ? firstFieldRef : undefined}
-                    inputMode="numeric"
-                    maxLength={6}
-                    autoComplete="off"
-                    value={citqs[id] ?? ""}
-                    onChange={(e) => setCitqs((c) => ({ ...c, [id]: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
-                    aria-invalid={errors[id] ? true : undefined}
-                    aria-describedby={errors[id] ? `citq-err-${id}` : undefined}
-                    className="mt-1 w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 focus:border-primary focus:outline-none"
-                  />
-                  {errors[id] && <p id={`citq-err-${id}`} className="mt-1 text-sm text-error-600">{errors[id]}</p>}
-                </div>
-              ))}
-            </div>
+            {/* Un champ seulement pour les fiches dont le CITQ manque ou est invalide */}
+            {ids.some((id) => !validCitq(draftOf(id)?.citq)) && (
+              <div className="mt-5 space-y-4">
+                {ids.filter((id) => !validCitq(draftOf(id)?.citq)).map((id, i) => (
+                  <div key={id}>
+                    <label htmlFor={`citq-${id}`} className="block text-sm font-semibold text-charcoal-800">
+                      {t("citqLabel")} <span className="font-normal text-charcoal-500">– {draftOf(id)?.title}</span>
+                    </label>
+                    <p className="mt-0.5 text-sm text-charcoal-500">{t("citqHelp")}</p>
+                    <input
+                      id={`citq-${id}`}
+                      ref={i === 0 ? firstFieldRef : undefined}
+                      inputMode="numeric"
+                      maxLength={6}
+                      autoComplete="off"
+                      value={citqs[id] ?? ""}
+                      onChange={(e) => setCitqs((c) => ({ ...c, [id]: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
+                      aria-invalid={errors[id] ? true : undefined}
+                      aria-describedby={errors[id] ? `citq-err-${id}` : undefined}
+                      className="mt-1 w-full rounded-xl border border-[#ebebeb] px-4 py-2.5 text-base text-charcoal-800 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
-            <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm text-charcoal-800">
-              <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
-              <span>{t("rightsLabel")}</span>
-            </label>
+            {/* Erreurs par fiche (fiche à compléter, abonnement…) */}
+            {Object.keys(errors).length > 0 && (
+              <ul className="mt-4 space-y-1">
+                {ids.filter((id) => errors[id]).map((id) => (
+                  <li key={id} id={`citq-err-${id}`} className="text-sm text-error-600">
+                    <span className="font-semibold">{draftOf(id)?.title}</span> – {errors[id]}
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {message && <p role="alert" className="mt-4 text-sm text-error-600">{message}</p>}
 
@@ -185,6 +202,7 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
                 {t("cancel")}
               </button>
               <button
+                ref={confirmRef}
                 type="button"
                 onClick={submit}
                 disabled={busy}

@@ -46,17 +46,29 @@ export function ClaimForm({
 }) {
   const t = useTranslations("claim");
   const [status, setStatus] = useState<Status>("idle");
+  // Fiches réellement mises en ligne à la revendication (brouillons seulement ; le reste attend dans Mes chalets)
+  const [published, setPublished] = useState(0);
 
   async function activate() {
     setStatus("submitting");
-    setStatus((await postJson("/api/claims/claim", { token })) ? "done" : "error");
+    try {
+      const res = await fetch("/api/claims/claim", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      if (!res.ok) return setStatus("error");
+      const data = (await res.json().catch(() => ({}))) as { published?: number };
+      setPublished(typeof data.published === "number" ? data.published : 0);
+      setStatus("done");
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "done") {
+    // Brouillons : tout est en ligne → message habituel ; sinon on dit ce qui reste à faire dans Mes chalets
+    const allOnline = !draft || published >= count;
     return (
       <div role="status">
-        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t(draft ? "doneDraftTitle" : "doneTitle", { count })}</h2>
-        <p className="mt-2 text-base text-charcoal-600">{t(draft ? "doneDraftBody" : "doneBody", { count })}</p>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t(allOnline ? "doneTitle" : "doneDraftTitle", { count })}</h2>
+        <p className="mt-2 text-base text-charcoal-600">{t(allOnline ? "doneBody" : "doneDraftBody", { count })}</p>
         <Link href={dashboardHref} className={`${PRIMARY_BUTTON} mt-6`}>{t(draft ? "goListings" : "goDashboard")}</Link>
       </div>
     );

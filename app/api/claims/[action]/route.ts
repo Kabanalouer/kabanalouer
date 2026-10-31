@@ -142,9 +142,10 @@ async function claim(request: NextRequest, locale: "fr" | "en") {
   const listingIds = (listings ?? []).map((l) => l.id as string);
   if (listingIds.length === 0) return NextResponse.json({ error: "used" }, { status: 410 });
 
-  const result = await claimListingsForUser(admin, { userId: user.id, listingIds, tokenId: lookup.token.id });
+  // activateDrafts : les fiches en brouillon sont mises en ligne tout de suite (published = combien l'ont été)
+  const result = await claimListingsForUser(admin, { userId: user.id, listingIds, tokenId: lookup.token.id, activateDrafts: true });
   if (!result.ok) return bad(locale, "L'activation a échoué.", "Activation failed.", 400);
-  return NextResponse.json({ ok: true, count: result.listingIds.length });
+  return NextResponse.json({ ok: true, count: result.listingIds.length, published: result.published });
 }
 
 async function remove(request: NextRequest, locale: "fr" | "en") {
