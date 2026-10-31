@@ -118,6 +118,34 @@ export const TEMPLATE_CLAIM_WELCOME: EmailTemplateDef = {
   },
 };
 
+// Bienvenue après la revendication de fiches en brouillon : elles sont à lui mais pas encore en ligne.
+export const TEMPLATE_CLAIM_WELCOME_DRAFT: EmailTemplateDef = {
+  id: "claim-welcome-draft",
+  placeholders: [
+    LISTINGS_PLACEHOLDER,
+    { key: "prenom", label: "Prénom du nouveau propriétaire" },
+    { key: "offre", label: "Phrase « Votre première année est gratuite. » (vide si l’offre de lancement est terminée)", html: true },
+  ],
+  defaults: {
+    fr: {
+      subject: "Bienvenue sur Kabanalouer : vos fiches sont à vous",
+      greeting: "Bonjour {prenom},",
+      heading: "Bienvenue sur Kabanalouer",
+      body: "Vous êtes maintenant propriétaire de :\n\n{titresFiches}\n\n{offre}Elles ne sont pas encore en ligne. Voici comment les mettre en ligne :\n\n**1. Passez chaque fiche en revue** : photos, détails, prix.\n\n**2. Activez-les depuis Mes chalets**, une par une ou toutes d’un coup. Il faudra confirmer vos droits sur les photos et votre numéro CITQ.\n\n**3. Recevez les demandes par texto** en ajoutant votre numéro de cellulaire dans votre profil.\n\nUne fois en ligne, les voyageurs vous écrivent directement, sans frais de service.",
+      buttonLabel: "Voir mes chalets",
+      footerNote: "Une question ? Répondez simplement à ce courriel.",
+    },
+    en: {
+      subject: "Welcome to Kabanalouer: your listings are now yours",
+      greeting: "Hi {prenom},",
+      heading: "Welcome to Kabanalouer",
+      body: "You are now the owner of:\n\n{titresFiches}\n\n{offre}They are not online yet. Here is how to put them online:\n\n**1. Go through each listing**: photos, details, price.\n\n**2. Activate them from My cabins**, one by one or all at once. You will need to confirm your rights to the photos and your CITQ number.\n\n**3. Get requests by text message** by adding your cell phone number to your profile.\n\nOnce online, travelers write to you directly, with no service fees.",
+      buttonLabel: "See my cabins",
+      footerNote: "Any question? Just reply to this email.",
+    },
+  },
+};
+
 export const TEMPLATE_CLAIM_APPROVED: EmailTemplateDef = {
   id: "claim-approved",
   placeholders: [LISTINGS_PLACEHOLDER, { key: "prenom", label: "Prénom du demandeur" }],
@@ -250,10 +278,12 @@ export async function sendClaimWelcomeEmail(input: {
   firstName?: string | null;
   listingTitles: string[];
   freeYear: boolean;
+  // Fiches en brouillon (pas encore en ligne) : texte « elles sont à vous, activez-les depuis Mes chalets »
+  draft?: boolean;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
   const offre = input.freeYear ? `<strong>${fr ? "C’est gratuit." : "It’s free."}</strong><br/><br/>` : "";
-  const text = await resolveEmailText(TEMPLATE_CLAIM_WELCOME, input.lang, {
+  const text = await resolveEmailText(input.draft ? TEMPLATE_CLAIM_WELCOME_DRAFT : TEMPLATE_CLAIM_WELCOME, input.lang, {
     prenom: input.firstName?.trim(),
     titresFiches: titlesHtml(input.listingTitles),
     offre,

@@ -90,8 +90,10 @@ export function reportLink(locale: "fr" | "en", raw: string): string {
 }
 
 // Aperçu privé des fiches en brouillon (même jeton que l'activation) : /apercu/… en français, /en/preview/… en anglais.
-// Durée d'un jeton d'invitation brouillon : le propriétaire prend son temps pour activer ses fiches.
-export const DRAFT_TOKEN_TTL_DAYS = 60;
+// Jeton d'invitation brouillon : aucune limite de durée (décision de Simon, 2026-10-31). La base exige une date
+// d'expiration pour un jeton « claim » (claim_tokens_claim_expires) : 100 ans = jamais en pratique. Le jeton n'est
+// consommé qu'à la revendication.
+export const DRAFT_TOKEN_TTL_DAYS = 36500;
 export function previewPath(locale: "fr" | "en", raw: string, listingId?: string): string {
   return `${locale === "en" ? "/en/preview/" : "/apercu/"}${raw}${listingId ? `/${listingId}` : ""}`;
 }

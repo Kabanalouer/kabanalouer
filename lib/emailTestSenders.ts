@@ -223,6 +223,7 @@ export function emailTestSenders(): Record<string, Sender> {
       buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
     }),
     "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
+    "claim-welcome-draft": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], freeYear: true, draft: true }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], firstName: "Marie", approved: true }),
     "claim-refused": (to, lang) => sendClaimDecisionEmail({
       to, lang, listingTitle: TITLE, firstName: "Marie", approved: false,

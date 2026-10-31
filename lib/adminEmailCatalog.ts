@@ -155,6 +155,13 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "event", testable: true,
   },
   {
+    id: "claim-welcome-draft", category: "proprio", group: "Fiches non revendiquées",
+    name: "Bienvenue après la revendication — fiches en brouillon",
+    when: "Dès qu’un propriétaire revendique ses fiches en brouillon avec le lien de l’aperçu.",
+    conditions: "Remplace « Bienvenue après la revendication » quand au moins une des fiches est en brouillon : elles sont à lui mais pas encore en ligne. Explique les 3 étapes : passer chaque fiche en revue, les activer depuis Mes chalets (droits sur les photos et CITQ), ajouter son cellulaire. Un seul courriel même pour plusieurs fiches.",
+    mechanism: "event", testable: true,
+  },
+  {
     id: "claim-approved", category: "proprio", group: "Fiches non revendiquées",
     name: "Demande de vérification approuvée",
     when: "Quand tu approuves une demande dans Admin → Revendications.",
@@ -199,7 +206,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "claim-draft-invitation", category: "proprio", group: "Fiches non revendiquées",
     name: "Brouillon — invitation à voir l’aperçu et activer sa fiche",
     when: "Dès qu’il ne reste plus aucune ligne en attente dans la file d’import pour l’adresse (vérifié aux 5 minutes, entre 8 h et 19 h, heure de Montréal).",
-    conditions: "Pour les propriétaires de plusieurs chalets : l’import écrit mode_publication = « brouillon » dans le lot, les fiches restent hors ligne (jamais publiées par le serveur, hors du plafond de 15 par jour). Une seule invitation par adresse, qui liste toutes ses fiches ; le lien mène à un aperçu privé (non indexé, 60 jours) puis à l’activation. Pas d’invitation si le propriétaire a déjà retiré une fiche.",
+    conditions: "Pour les propriétaires de plusieurs chalets : l’import écrit mode_publication = « brouillon » dans le lot, les fiches restent hors ligne (jamais publiées par le serveur, hors du plafond de 15 par jour). Une seule invitation par adresse, qui liste toutes ses fiches ; le lien mène à un aperçu privé (non indexé, sans limite de durée) puis à l’activation. Pas d’invitation si le propriétaire a déjà retiré une fiche.",
     mechanism: "event", testable: true,
     ...DRAFT_PAUSE,
   },

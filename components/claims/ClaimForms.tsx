@@ -33,6 +33,7 @@ export function ClaimForm({
   loginHref,
   signupHref,
   dashboardHref,
+  draft = false,
 }: {
   token: string;
   count: number;
@@ -40,6 +41,8 @@ export function ClaimForm({
   loginHref: string;
   signupHref: string;
   dashboardHref: string;
+  // Fiches en brouillon : « revendiquer » (devenir propriétaire), les fiches restent hors ligne jusqu'à leur activation
+  draft?: boolean;
 }) {
   const t = useTranslations("claim");
   const [status, setStatus] = useState<Status>("idle");
@@ -52,9 +55,9 @@ export function ClaimForm({
   if (status === "done") {
     return (
       <div role="status">
-        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("doneTitle", { count })}</h2>
-        <p className="mt-2 text-base text-charcoal-600">{t("doneBody", { count })}</p>
-        <Link href={dashboardHref} className={`${PRIMARY_BUTTON} mt-6`}>{t("goDashboard")}</Link>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t(draft ? "doneDraftTitle" : "doneTitle", { count })}</h2>
+        <p className="mt-2 text-base text-charcoal-600">{t(draft ? "doneDraftBody" : "doneBody", { count })}</p>
+        <Link href={dashboardHref} className={`${PRIMARY_BUTTON} mt-6`}>{t(draft ? "goListings" : "goDashboard")}</Link>
       </div>
     );
   }
@@ -62,7 +65,7 @@ export function ClaimForm({
   if (!signedInEmail) {
     return (
       <div>
-        <p className="text-base text-charcoal-600">{t("accountNeeded")}</p>
+        <p className="text-base text-charcoal-600">{t(draft ? "accountNeededDraft" : "accountNeeded")}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link href={signupHref} className={PRIMARY_BUTTON}>{t("createAccount")}</Link>
           <Link href={loginHref} className={SECONDARY_BUTTON}>{t("signIn")}</Link>
@@ -75,7 +78,7 @@ export function ClaimForm({
     <div>
       <p className="text-sm text-charcoal-500">{t("signedInAs", { email: signedInEmail })}</p>
       <button type="button" onClick={activate} disabled={status === "submitting"} className={`${PRIMARY_BUTTON} mt-4`}>
-        {status === "submitting" ? t("activating") : t("activateButton", { count })}
+        {status === "submitting" ? t(draft ? "claiming" : "activating") : t(draft ? "claimDraftButton" : "activateButton", { count })}
       </button>
       {status === "error" && <p className="mt-3 text-sm text-error-600" role="alert">{t("activateError")}</p>}
     </div>

@@ -25,8 +25,6 @@ const PLACEHOLDERS: EmailTemplateDef["placeholders"] = [
 ];
 
 const RETRAIT = "{retrait}{suivi}";
-const RETRAIT_VALIDITE_FR = "{retrait}\n\nLe lien de l’aperçu est valide 60 jours.{suivi}";
-const RETRAIT_VALIDITE_EN = "{retrait}\n\nThe preview link is valid for 60 days.{suivi}";
 
 export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
   id: "claim-draft-invitation",
@@ -38,7 +36,7 @@ export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
       heading: "Votre chalet est prêt sur Kabanalouer",
       body: "Nous avons préparé la fiche de votre chalet sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElle n’est pas encore en ligne : vous la voyez d’abord dans un aperçu privé, vous la modifiez au besoin, puis vous l’activez vous-même quand vous le souhaitez.{offre}",
       buttonLabel: "{bouton}",
-      footerNote: RETRAIT_VALIDITE_FR,
+      footerNote: RETRAIT,
     },
     en: {
       subject: "Your cabin is ready on Kabanalouer, all that’s left is to activate it{gratuitement}",
@@ -46,7 +44,7 @@ export const TEMPLATE_DRAFT_INVITATION: EmailTemplateDef = {
       heading: "Your cabin is ready on Kabanalouer",
       body: "We have prepared a listing for your cabin on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nIt is not online yet: you first see it in a private preview, edit it if needed, then activate it yourself whenever you like.{offre}",
       buttonLabel: "{bouton}",
-      footerNote: RETRAIT_VALIDITE_EN,
+      footerNote: RETRAIT,
     },
   },
 };
@@ -61,7 +59,7 @@ export const TEMPLATE_DRAFT_INVITATION_MULTI: EmailTemplateDef = {
       heading: "Vos {nombre} chalets sont prêts sur Kabanalouer",
       body: "Nous avons préparé les fiches de vos {nombre} chalets sur Kabanalouer, la plateforme québécoise où les voyageurs communiquent directement avec les propriétaires de chalets, sans frais de service pour eux.\n\n{fiches}\n\nElles ne sont pas encore en ligne : vous les voyez d’abord dans un aperçu privé, vous les modifiez au besoin, puis vous les activez vous-même, une par une ou toutes d’un coup.{offre}",
       buttonLabel: "{bouton}",
-      footerNote: RETRAIT_VALIDITE_FR,
+      footerNote: RETRAIT,
     },
     en: {
       subject: "Your {nombre} cabins are ready on Kabanalouer, all that’s left is to activate them{gratuitement}",
@@ -69,7 +67,7 @@ export const TEMPLATE_DRAFT_INVITATION_MULTI: EmailTemplateDef = {
       heading: "Your {nombre} cabins are ready on Kabanalouer",
       body: "We have prepared listings for your {nombre} cabins on Kabanalouer, the Quebec platform where travelers deal directly with cabin owners, with no service fees for them.\n\n{fiches}\n\nThey are not online yet: you first see them in a private preview, edit them if needed, then activate them yourself, one by one or all at once.{offre}",
       buttonLabel: "{bouton}",
-      footerNote: RETRAIT_VALIDITE_EN,
+      footerNote: RETRAIT,
     },
   },
 };

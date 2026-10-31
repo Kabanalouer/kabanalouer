@@ -63,10 +63,12 @@ async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: s
   if (listingIds.length === 0) return;
   const [{ data: user }, { data: listings }] = await Promise.all([
     admin.from("users").select("email, name, preferred_language").eq("id", userId).maybeSingle(),
-    admin.from("listings").select("title, title_en").in("id", listingIds),
+    admin.from("listings").select("title, title_en, mode_publication").in("id", listingIds),
   ]);
   if (!user?.email) return;
   const lang: "fr" | "en" = user.preferred_language === "en" ? "en" : "fr";
+  // Au moins une fiche en brouillon : « elles sont à vous, activez-les depuis Mes chalets »
+  const draft = (listings ?? []).some((l: { mode_publication: string | null }) => l.mode_publication === "brouillon");
   const titles = (listings ?? []).map((l: { title: string | null; title_en: string | null }) =>
     (lang === "en" ? l.title_en : null) || l.title || (lang === "en" ? "Your listing" : "Votre fiche")
   );
@@ -76,6 +78,7 @@ async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: s
     firstName: ((user.name as string | null) ?? "").split(" ")[0],
     listingTitles: titles,
     freeYear,
+    draft,
   });
   if (error) console.error("welcomeNewOwner: échec envoi", error);
 }

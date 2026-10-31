@@ -102,13 +102,15 @@ export async function ClaimTokenPage({ jeton }: { jeton: string }) {
 
   const here = isEn ? `/en/claim/${jeton}` : `/revendiquer/${jeton}`;
   const next = encodeURIComponent(here);
+  // Fiches en brouillon : on « revendique » (devenir propriétaire), elles restent hors ligne jusqu'à l'activation dans Mes chalets
+  const draft = listings.some((l) => l.mode_publication === "brouillon");
 
   return (
     <Shell>
-      <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t("claimTitle", { count: listings.length })}</h1>
-      <p className="mt-3 text-base text-charcoal-600">{t("claimIntro", { count: listings.length })}</p>
+      <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-800">{t(draft ? "claimDraftTitle" : "claimTitle", { count: listings.length })}</h1>
+      <p className="mt-3 text-base text-charcoal-600">{t(draft ? "claimDraftIntro" : "claimIntro", { count: listings.length })}</p>
 
-      <h2 className="mt-8 text-heading-3 font-semibold text-charcoal-800">{t("claimListingsTitle")}</h2>
+      <h2 className="mt-8 text-heading-3 font-semibold text-charcoal-800">{t(draft ? "claimDraftListingsTitle" : "claimListingsTitle")}</h2>
       <ClaimListingsList
         listings={listings.map((l) => ({
           id: l.id as string,
@@ -132,7 +134,8 @@ export async function ClaimTokenPage({ jeton }: { jeton: string }) {
           signedInEmail={user?.email ?? null}
           loginHref={`${localePath("/login", locale)}?next=${next}`}
           signupHref={`${localePath("/signup", locale)}?role=host&next=${next}`}
-          dashboardHref={localePath("/dashboard", locale)}
+          dashboardHref={localePath(draft ? "/dashboard/listings" : "/dashboard", locale)}
+          draft={draft}
         />
       </div>
     </Shell>
