@@ -164,7 +164,9 @@ function SignupForm() {
           {role === "host" ? t("subtitleHost") : t("subtitleDefault")}
         </p>
         {claiming && (
-          <p className="mb-6 rounded-xl bg-[#f5f6ec] p-4 text-base text-charcoal-700" role="note">{t("claimBanner")}</p>
+          <p className="mb-6 rounded-xl bg-[#f5f6ec] p-4 text-base text-charcoal-700" role="note">
+            {/^\/(en\/)?(revendiquer|claim)\/verification/.test(next) ? t("claimBanner") : t("claimBannerLink")}
+          </p>
         )}
 
         {/* Choix du rôle — toujours visible ; Proprio présélectionné quand on
