@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
 
-  // Fiche importée en brouillon : elle s'active avec le bouton « Activer » de Mes chalets (droits sur les photos et CITQ confirmés)
+  // Fiche importée en brouillon : elle s'active avec le bouton « Activer » de Mes chalets (sans CITQ exigé : le propriétaire l'ajoute après la mise en ligne)
   const { data: draft } = await adminSupabase().from("listings").select("mode_publication").eq("id", id).maybeSingle();
   if (draft?.mode_publication === "brouillon") {
     return NextResponse.json({ error: t2(locale, "Cette fiche s'active avec le bouton « Activer » de Mes chalets.", "This listing is activated with the “Activate” button in My cabins.") }, { status: 409 });

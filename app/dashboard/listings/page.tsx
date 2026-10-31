@@ -41,7 +41,7 @@ export default async function ListingsPage({
   // Fiches importées en brouillon, revendiquées mais pas encore activées (colonne privée : client service, propriété vérifiée par host_id)
   const { data: draftRows } = await adminSupabase()
     .from("listings")
-    .select("id, title, city, citq_number")
+    .select("id, title, city")
     .eq("host_id", user.id)
     .eq("claim_status", "claimed")
     .eq("mode_publication", "brouillon")
@@ -51,7 +51,6 @@ export default async function ListingsPage({
     id: d.id as string,
     title: ((d.title as string | null) ?? "").trim() || (locale === "en" ? "Untitled listing" : "Fiche sans titre"),
     city: (d.city as string | null) ?? null,
-    citq: (d.citq_number as string | null) ?? null,
   }));
 
   const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));

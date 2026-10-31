@@ -1,6 +1,5 @@
 import { emailsWithPendingImport, listDraftCandidates, removedOwnerEmails } from "@/lib/claims/invitations";
 import { loadDraftNotes } from "@/lib/claims/draftNotes";
-import { normalizeCitq } from "@/lib/claims/activateDrafts";
 import { normalizePhotos } from "@/lib/photo";
 
 // Données de la table d'Admin → Brouillons : une ligne par propriétaire de fiches en brouillon, avec ses fiches, l'état de
@@ -70,7 +69,6 @@ export function listingIssues(l: { title: string | null; description: string | n
   const photos = Array.isArray(l.photos) ? l.photos.length : 0;
   if (photos < 5) issues.push(`${photos} photo${photos > 1 ? "s" : ""} (5 minimum)`);
   if (!(l.region ?? "").trim()) issues.push("région manquante");
-  if (!normalizeCitq(l.citq_number)) issues.push("CITQ manquant ou invalide");
   return issues;
 }
 

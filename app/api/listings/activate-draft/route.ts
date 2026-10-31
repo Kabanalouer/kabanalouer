@@ -24,16 +24,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: t2(locale, "Demande invalide.", "Invalid request.") }, { status: 400 });
   }
   const ids: string[] = [];
-  const citqs: Record<string, string> = {};
   for (const it of items) {
-    const { id, citq } = (it ?? {}) as { id?: unknown; citq?: unknown };
+    const { id } = (it ?? {}) as { id?: unknown };
     if (typeof id !== "string" || !UUID.test(id)) {
       return NextResponse.json({ error: t2(locale, "Demande invalide.", "Invalid request.") }, { status: 400 });
     }
     if (!ids.includes(id)) ids.push(id);
-    if (typeof citq === "string" && citq.trim() !== "") citqs[id] = citq.trim();
   }
 
-  const results = await activateClaimedDrafts(adminSupabase(), { userId: user.id, listingIds: ids, citqs });
+  const results = await activateClaimedDrafts(adminSupabase(), { userId: user.id, listingIds: ids });
   return NextResponse.json({ results });
 }

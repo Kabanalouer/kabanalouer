@@ -1,13 +1,13 @@
 // Mise en ligne des fiches en brouillon (mode_publication = 'brouillon') une fois revendiquées.
 // Appelée à la revendication (lib/claims/actions.ts : le propriétaire n'a rien d'autre à faire, décision de Simon,
-// 2026-10-31 : ni confirmation du CITQ ni des droits sur les photos) et par le bouton « Activer » de Mes chalets
+// 2026-10-31 : ni confirmation du CITQ, ni CITQ exigé, ni droits sur les photos) et par le bouton « Activer » de Mes chalets
 // (/api/listings/activate-draft) pour les fiches qui n'ont pas pu être mises en ligne à la revendication.
 // Écritures avec le client service : mode_publication et import_raw_data sont protégées contre les sessions.
 // Jamais de publie_le : ces fiches ne comptent pas dans les 15 par jour de publish-unclaimed.
 
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type ActivationError = "not_eligible" | "incomplete" | "citq_missing" | "subscription_required" | "failed";
+export type ActivationError = "not_eligible" | "incomplete" | "subscription_required" | "failed";
 export type ActivationResult = { id: string; ok: boolean; error?: ActivationError };
 
 export type DraftRow = {
@@ -24,12 +24,8 @@ export type DraftRow = {
   import_raw_data: Record<string, unknown> | null;
 };
 
-export function normalizeCitq(v: unknown): string | null {
-  return typeof v === "string" && /^[0-9]{6}$/.test(v.trim()) ? v.trim() : null;
-}
-
 // Pourquoi une fiche ne peut pas être mise en ligne maintenant (null = elle peut). Mêmes minimums que publish-unclaimed.
-export function draftBlocker(l: DraftRow, userId: string, hasActiveSubscription: boolean, citq: string | null): ActivationError | null {
+export function draftBlocker(l: DraftRow, userId: string, hasActiveSubscription: boolean): ActivationError | null {
   if (l.host_id !== userId || l.claim_status !== "claimed" || l.mode_publication !== "brouillon" || l.is_published) return "not_eligible";
   const complete =
     (l.title ?? "").trim().length > 0 &&
@@ -37,7 +33,6 @@ export function draftBlocker(l: DraftRow, userId: string, hasActiveSubscription:
     Array.isArray(l.photos) && l.photos.length >= 5 &&
     (l.region ?? "").trim().length > 0;
   if (!complete) return "incomplete";
-  if (!citq) return "citq_missing";
   if (!hasActiveSubscription) return "subscription_required";
   return null;
 }
@@ -48,10 +43,10 @@ function montrealDate(): string {
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-// citqs : numéros saisis par le propriétaire (bouton de secours seulement) ; sinon on garde celui de la fiche.
+// Le CITQ n'est pas exigé : le propriétaire l'ajoute après la mise en ligne (décision de Simon, 2026-10-31).
 export async function activateClaimedDrafts(
   admin: AdminClient,
-  input: { userId: string; listingIds: string[]; citqs?: Record<string, string> }
+  input: { userId: string; listingIds: string[] }
 ): Promise<ActivationResult[]> {
   if (input.listingIds.length === 0) return [];
   const [{ data: rows }, { data: subs }] = await Promise.all([
@@ -72,8 +67,7 @@ export async function activateClaimedDrafts(
       results.push({ id, ok: false, error: "not_eligible" });
       continue;
     }
-    const citq = normalizeCitq(input.citqs?.[id]) ?? normalizeCitq(l.citq_number);
-    const blocker = draftBlocker(l, input.userId, activeSub.has(id), citq);
+    const blocker = draftBlocker(l, input.userId, activeSub.has(id));
     if (blocker) {
       results.push({ id, ok: false, error: blocker });
       continue;
@@ -83,7 +77,6 @@ export async function activateClaimedDrafts(
       .update({
         is_published: true,
         mode_publication: null,
-        citq_number: citq,
         unpublished_at: null,
         unpublished_reason: null,
         import_raw_data: { ...(l.import_raw_data ?? {}), active_le: today },

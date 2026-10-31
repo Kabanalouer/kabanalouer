@@ -127,10 +127,10 @@ test("table Brouillons : état d'un propriétaire et fiches à compléter", asyn
 
   const ok = { title: "Chalet", description: "Une description complète de plus de quarante caractères.", photos: [1, 2, 3, 4, 5], region: "Laurentides", citq_number: "298960" };
   assert.deepEqual(listingIssues(ok), []);
-  assert.deepEqual(listingIssues({ ...ok, photos: [1, 2], citq_number: null, description: "courte" }), ["description trop courte", "2 photos (5 minimum)", "CITQ manquant ou invalide"]);
+  assert.deepEqual(listingIssues({ ...ok, photos: [1, 2], citq_number: null, description: "courte" }), ["description trop courte", "2 photos (5 minimum)"]);
 });
 
-test("revendication d'un brouillon : mise en ligne tout de suite, sauf fiche à compléter, CITQ manquant ou abonnement absent", async () => {
+test("revendication d'un brouillon : mise en ligne tout de suite (même sans CITQ), sauf fiche à compléter ou abonnement absent", async () => {
   const { activateClaimedDrafts } = await import("@/lib/claims/activateDrafts");
   const owner = "owner-1";
   const row = (id: string, extra: Row = {}): Row => ({
@@ -162,18 +162,15 @@ test("revendication d'un brouillon : mise en ligne tout de suite, sauf fiche à 
   const res = await activateClaimedDrafts(admin, { userId: owner, listingIds: ids });
   const by = Object.fromEntries(res.map((r) => [r.id, r.ok ? "ok" : r.error]));
   assert.deepEqual(by, {
-    "ok": "ok", "peu-de-photos": "incomplete", "sans-abonnement": "subscription_required", "sans-citq": "citq_missing",
-    "citq-invalide": "citq_missing", "autre-proprio": "not_eligible", "deja-en-ligne": "not_eligible",
+    "ok": "ok", "peu-de-photos": "incomplete", "sans-abonnement": "subscription_required", "sans-citq": "ok",
+    "citq-invalide": "ok", "autre-proprio": "not_eligible", "deja-en-ligne": "not_eligible",
   });
-  assert.equal(updates.length, 1);
+  assert.equal(updates.length, 3); // ok, sans-citq, citq-invalide : le CITQ n'est pas exigé
   assert.equal(updates[0].vals.is_published, true);
   assert.equal(updates[0].vals.mode_publication, null);
+  assert.equal("citq_number" in updates[0].vals, false); // le CITQ de la fiche n'est jamais modifié à l'activation
   assert.match(String((updates[0].vals.import_raw_data as Row).active_le), /^\d{4}-\d{2}-\d{2}$/);
   assert.equal((updates[0].vals.import_raw_data as Row).publie_le, undefined); // jamais compté dans les 15 par jour
-
-  // Le bouton de secours peut fournir le CITQ manquant
-  const again = await activateClaimedDrafts(admin, { userId: owner, listingIds: ["sans-citq"], citqs: { "sans-citq": "123456" } });
-  assert.deepEqual(again, [{ id: "sans-citq", ok: true }]);
 });
 
 test("mode_publication : seule la valeur « brouillon » est acceptée", async () => {
@@ -183,4 +180,16 @@ test("mode_publication : seule la valeur « brouillon » est acceptée", async (
   assert.deepEqual(readModePublication({ mode_publication: " Brouillon " }), { ok: true, mode: "brouillon" });
   const bad = readModePublication({ mode_publication: "brouilon" });
   assert.equal(bad.ok, false);
+});
+
+test("import : le CITQ est facultatif pour un brouillon, toujours exigé pour une fiche publiée par le serveur", async () => {
+  const { normalizePayload } = await import("@/lib/importQueue");
+  const base = { nom: "Chalet exemple", courriel: "a@exemple.test", region: "Laurentides", photos: ["https://exemple.test/1.jpg"] };
+  const sans = normalizePayload({ ...base, mode_publication: "brouillon" });
+  assert.equal(sans.ok, true);
+  if (sans.ok) assert.equal(sans.data.citq, null);
+  const avec = normalizePayload({ ...base, mode_publication: "brouillon", citq: "298960" });
+  assert.equal(avec.ok && avec.data.citq, "298960");
+  const normale = normalizePayload(base);
+  assert.equal(normale.ok, false);
 });

@@ -126,7 +126,8 @@ export type NormalizedImport = {
   descriptionOriginal: string | null;
   claimEmail: string;
   claimLanguage: "fr" | "en";
-  citq: string;
+  // Null seulement pour un brouillon : le propriétaire l'ajoute après la mise en ligne
+  citq: string | null;
   region: string;
   city: string | null;
   latitude: number | null;
@@ -172,7 +173,8 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, error: "Courriel du propriétaire manquant ou invalide." };
 
   const citqMatch = asStr(pick(p, "citq_number", "citq", "numero_citq", "no_citq")).match(/\b\d{6}\b/);
-  if (!citqMatch) return { ok: false, error: "Numéro CITQ à 6 chiffres manquant." };
+  // Un brouillon peut être importé sans CITQ (décision de Simon, 2026-10-31) ; une fiche à publier par le serveur l'exige toujours
+  if (!citqMatch && !mode.mode) return { ok: false, error: "Numéro CITQ à 6 chiffres manquant." };
 
   const regionRaw = asStr(pick(p, "region", "région"));
   const region = matchRegion(regionRaw || null);
@@ -212,7 +214,7 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
       descriptionOriginal: description ? stripHtml(description) : null,
       claimEmail: email,
       claimLanguage: /^en/i.test(asStr(pick(p, "claim_language", "langue", "language"))) ? "en" : "fr",
-      citq: citqMatch[0],
+      citq: citqMatch ? citqMatch[0] : null,
       region,
       city: asStr(pick(p, "city", "ville")) || null,
       latitude: geoOk ? lat : null,
@@ -735,7 +737,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     // Fiches à ne jamais réimporter : retirées par leur propriétaire, ou supprimées après revendication
     const [{ data: byUrl }, { data: byCitq }] = await Promise.all([
       admin.from("import_exclusions").select("id").eq("import_source_url", row.import_source_url).limit(1),
-      admin.from("import_exclusions").select("id").eq("citq_number", d.citq).is("import_source_url", null).limit(1),
+      d.citq ? admin.from("import_exclusions").select("id").eq("citq_number", d.citq).is("import_source_url", null).limit(1) : Promise.resolve({ data: [] }),
     ]);
     if ((byUrl ?? []).length > 0 || (byCitq ?? []).length > 0) return await reject(admin, row, "Fiche exclue (retirée ou supprimée par son propriétaire).");
 
@@ -818,7 +820,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       description: description.text ?? "",
       amenities: d.amenities,
       nearbyActivities: d.nearbyActivities,
-      citqNumber: d.citq,
+      citqNumber: d.citq ?? "",
       icalUrl: null,
       hasFutureBlocked: false,
       roomsAllHavePhotos: false,
@@ -830,12 +832,9 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
 
     // Même CITQ qu'une annonce déjà tenue par un vrai compte (proprio inscrit ou fiche
     // revendiquée) : la fiche est importée quand même, mais Simon est averti (pas de refus).
-    const { data: sameCitq } = await admin
-      .from("listings")
-      .select("id, title, claim_status")
-      .eq("citq_number", d.citq)
-      .neq("host_id", systemId)
-      .limit(5);
+    const { data: sameCitq } = d.citq
+      ? await admin.from("listings").select("id, title, claim_status").eq("citq_number", d.citq).neq("host_id", systemId).limit(5)
+      : { data: [] };
     const duplicates = (sameCitq ?? []).map((x) => ({ id: x.id as string, title: (x.title as string | null) ?? "(sans titre)", claim_status: (x.claim_status as string | null) ?? null }));
 
     const listingNumber = await generateUniqueListingNumber(admin);
@@ -896,7 +895,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
     }
 
     await finish(admin, row, { status: "imported", error: null, imported_at: new Date().toISOString(), listing_id: listingId });
-    if (duplicates.length > 0) {
+    if (d.citq && duplicates.length > 0) {
       await sendImportDuplicateAlert({ listingId, title: d.title, citq: d.citq, matches: duplicates }).catch((e) =>
         console.error("[importQueue] échec de l'alerte de doublon", e)
       );

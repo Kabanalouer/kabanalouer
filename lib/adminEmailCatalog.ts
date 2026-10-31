@@ -123,7 +123,7 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     id: "claim-welcome-draft", category: "proprio", group: "Revendication et accueil",
     name: "Bienvenue après la revendication — fiches en brouillon",
     when: "Dès qu’un propriétaire revendique ses fiches en brouillon avec le lien de l’aperçu.",
-    conditions: "Cas de secours : remplace « Bienvenue après la revendication » seulement si au moins une fiche en brouillon n’a pas pu être mise en ligne à la revendication (fiche à compléter, CITQ manquant ou abonnement à régler). Dit d’aller dans Mes chalets pour compléter et activer ce qui reste. Un seul courriel même pour plusieurs fiches.",
+    conditions: "Cas de secours : remplace « Bienvenue après la revendication » seulement si au moins une fiche en brouillon n’a pas pu être mise en ligne à la revendication (fiche à compléter ou abonnement à régler). Dit d’aller dans Mes chalets pour compléter et activer ce qui reste. Un seul courriel même pour plusieurs fiches.",
     mechanism: "event", testable: true,
   },
   {
