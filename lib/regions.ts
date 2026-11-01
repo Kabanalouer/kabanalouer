@@ -222,13 +222,13 @@ export const REGIONS: RegionConfig[] = [
     slugEn: "quebec-city-region",
     nameEn: "Québec City Region",
     dbValue: "Québec (ville et région)",
-    locative: "dans la Capitale-Nationale",
-    genitive: "de la Capitale-Nationale",
+    locative: "dans la région de Québec",
+    genitive: "de la région de Québec",
     heroImage: "/images/regions/quebec.webp",
     seoText: [
-      "La région de la Capitale-Nationale englobe Québec, la vieille ville fortifiée, mais aussi les magnifiques campagnes de la Côte-de-Beaupré, de l'Île d'Orléans et du nord jusqu'à la réserve faunique des Laurentides. Louer un chalet dans cette région, c'est combiner culture urbaine et nature sauvage à quelques kilomètres de distance.",
+      "La région de Québec englobe la ville de Québec et sa vieille ville fortifiée, mais aussi les magnifiques campagnes de la Côte-de-Beaupré, de l'Île d'Orléans et du nord jusqu'à la réserve faunique des Laurentides. Louer un chalet dans cette région, c'est combiner culture urbaine et nature sauvage à quelques kilomètres de distance.",
       "L'Île d'Orléans, surnommée le « jardin du Québec », offre des tables champêtres, des fromageries et des vergers dans un cadre pastoral unique. La Côte-de-Beaupré mène à la grandiose chute Montmorency et au mont Sainte-Anne, l'une des importantes stations de ski alpin de l'est du Canada.",
-      "Le parc de la Jacques-Cartier, au nord de Québec, est un paradis de canot-camping l'été et de raquettes l'hiver. Un chalet dans la Capitale-Nationale vous place au cœur de l'histoire et de la nature québécoise.",
+      "Le parc de la Jacques-Cartier, au nord de Québec, est un paradis de canot-camping l'été et de raquettes l'hiver. Un chalet dans la région de Québec vous place au cœur de l'histoire et de la nature québécoise.",
     ],
   },
   {
