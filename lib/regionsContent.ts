@@ -780,9 +780,9 @@ const REGIONS_CONTENT: RegionContent[] = [
       "Quebec City just minutes away",
       "Canoe-camping and snowshoeing in national parks",
     ],
-    meta_title_fr: "Chalets à louer à Québec",
+    meta_title_fr: "Chalets à louer dans la région de Québec",
     meta_title_en: "Cabin Rentals near Quebec City, QC",
-    meta_description_fr: "Chalets à louer à Québec — Mont-Sainte-Anne, île d'Orléans, parc de la Jacques-Cartier. Contact direct propriétaires.",
+    meta_description_fr: "Chalets à louer dans la région de Québec — Mont-Sainte-Anne, île d'Orléans, parc de la Jacques-Cartier. Contact direct propriétaires.",
     meta_description_en: "Rent a cabin near Quebec City. Mont-Sainte-Anne, Montmorency Falls, Jacques-Cartier Park — direct contact with owners. No service fees.",
     faq_fr: [
       {
