@@ -90,12 +90,28 @@ function toPlain(text: string, def: EmailTemplateDef, vars: Vars): string {
     .trim();
 }
 
-export async function resolveEmailText(def: EmailTemplateDef, lang: Lang, vars: Vars): Promise<ResolvedEmailText> {
+// Texte de base d'un courriel (version enregistrée dans l'admin, sinon celle du code), avec ses repères {cle}
+export async function loadBaseFields(def: EmailTemplateDef, lang: Lang): Promise<TemplateFields> {
+  return (await loadSavedFields(def.id, lang)) ?? def.defaults[lang];
+}
+
+// custom : texte propre à un envoi (ex. invitation brouillon d'un propriétaire), posé par-dessus la base ; un champ vide garde la base
+export async function resolveEmailText(
+  def: EmailTemplateDef,
+  lang: Lang,
+  vars: Vars,
+  custom?: { subject?: string | null; body?: string | null }
+): Promise<ResolvedEmailText> {
   const preview = emailContext.getStore()?.overrides;
-  const fields =
+  const base =
     (preview && preview.id === def.id && preview.lang === lang ? preview.fields : null) ??
     (await loadSavedFields(def.id, lang)) ??
     def.defaults[lang];
+  const fields: TemplateFields = {
+    ...base,
+    subject: custom?.subject?.trim() ? custom.subject : base.subject,
+    body: custom?.body?.trim() ? custom.body : base.body,
+  };
 
   // Formule d'appel omise si un de ses repères est vide (ex. prénom inconnu).
   const greetingKeys = [...fields.greeting.matchAll(PLACEHOLDER_RE)].map((m) => m[1]);

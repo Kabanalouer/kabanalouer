@@ -12,11 +12,13 @@ export type DraftNote = {
   intro_en: string | null;
   site_url: string | null;
   display_name: string | null;
+  custom_subject: string | null;
+  custom_body: string | null;
   reminder_3_notified_at: string | null;
   reminder_10_notified_at: string | null;
 };
 
-const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, reminder_3_notified_at, reminder_10_notified_at";
+const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, custom_subject, custom_body, reminder_3_notified_at, reminder_10_notified_at";
 
 // Phrase d'ouverture : texte brut seulement (échappé à l'envoi), espaces nettoyées, bornée. Vide = aucune phrase.
 export function cleanIntro(value: unknown): string | null {
@@ -30,6 +32,21 @@ export const DISPLAY_NAME_MAX_LENGTH = 120;
 export function cleanDisplayName(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const text = value.replace(/\s+/g, " ").trim().slice(0, DISPLAY_NAME_MAX_LENGTH);
+  return text.length > 0 ? text : null;
+}
+
+// Objet et texte de l'invitation propres à un propriétaire (Admin → Brouillons) : texte brut avec repères {cle} et **gras**.
+// Le texte garde ses retours à la ligne ; vide = on retombe sur le modèle.
+export const CUSTOM_SUBJECT_MAX_LENGTH = 200;
+export const CUSTOM_BODY_MAX_LENGTH = 5000;
+export function cleanCustomSubject(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/\s+/g, " ").trim().slice(0, CUSTOM_SUBJECT_MAX_LENGTH);
+  return text.length > 0 ? text : null;
+}
+export function cleanCustomBody(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/\r\n/g, "\n").trim().slice(0, CUSTOM_BODY_MAX_LENGTH);
   return text.length > 0 ? text : null;
 }
 
@@ -63,13 +80,15 @@ export async function loadDraftNote(admin: AdminClient, email: string): Promise<
 export async function saveDraftNote(
   admin: AdminClient,
   email: string,
-  fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown }
+  fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown; custom_subject?: unknown; custom_body?: unknown }
 ): Promise<{ error: string | null }> {
   const row: Record<string, unknown> = { claim_email: email.trim().toLowerCase(), updated_at: new Date().toISOString() };
   if ("intro_fr" in fields) row.intro_fr = cleanIntro(fields.intro_fr);
   if ("intro_en" in fields) row.intro_en = cleanIntro(fields.intro_en);
   if ("site_url" in fields) row.site_url = cleanSiteUrl(fields.site_url);
   if ("display_name" in fields) row.display_name = cleanDisplayName(fields.display_name);
+  if ("custom_subject" in fields) row.custom_subject = cleanCustomSubject(fields.custom_subject);
+  if ("custom_body" in fields) row.custom_body = cleanCustomBody(fields.custom_body);
   const { error } = await admin.from("draft_invitation_notes").upsert(row, { onConflict: "claim_email" });
   return { error: error ? error.message : null };
 }

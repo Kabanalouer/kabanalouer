@@ -359,8 +359,9 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   const note = kind === "draft_invite" ? await loadDraftNote(admin, candidate.claimEmail) : null;
   const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
   const displayName = note?.display_name;
+  const customText = kind === "draft_invite" ? { subject: note?.custom_subject, body: note?.custom_body } : null;
 
-  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName });
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName, customText });
   if (error) {
     console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();
@@ -375,7 +376,8 @@ export async function previewDraftInvitation(
   candidate: DraftCandidate,
   kind: DraftInvitationKind,
   intro?: string | null,
-  displayName?: string | null
+  displayName?: string | null,
+  customText?: { subject?: string | null; body?: string | null } | null
 ): Promise<{ subject: string; html: string } | null> {
   let captured: { subject: string; html: string } | null = null;
   const lang = candidate.lang;
@@ -390,6 +392,7 @@ export async function previewDraftInvitation(
       claimed: candidate.claimed,
       intro,
       displayName,
+      customText: kind === "draft_invite" ? customText : null,
     })
   );
   return captured;

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { listDraftCandidates, previewDraftInvitation, sendDraftInvitation, type DraftCandidate } from "@/lib/claims/invitations";
-import { cleanDisplayName, cleanIntro, saveDraftNote } from "@/lib/claims/draftNotes";
-import type { DraftInvitationKind } from "@/lib/emails/draftInvitation";
+import { cleanCustomBody, cleanCustomSubject, cleanDisplayName, cleanIntro, saveDraftNote } from "@/lib/claims/draftNotes";
+import { loadDraftInvitationBase, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 
 export const maxDuration = 60;
 
@@ -28,7 +28,7 @@ function readEmail(value: unknown): string | null {
   return EMAIL_RE.test(email) && email.length <= 254 ? email : null;
 }
 
-// POST { action: "send" | "preview", email, kind, intro? }
+// POST { action: "send" | "preview" | "base", email, kind, customSubject?, customBody? } ("base" : texte du modèle, point de départ du texte propre au propriétaire)
 export async function POST(request: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
   if (!email || !KINDS.includes(kind)) return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
   const admin = adminSupabase();
 
-  if (body.action === "preview") {
-    // Aperçu depuis les fiches de l'adresse, même si l'envoi n'est pas encore possible (import en cours, relance pas encore due)
+  if (body.action === "preview" || body.action === "base") {
+    // Depuis les fiches de l'adresse, même si l'envoi n'est pas encore possible (import en cours, relance pas encore due)
     const { data: rows } = await admin
       .from("listings")
       .select("id, title, title_en, region, city, listing_number, custom_slug, claim_language, claim_status")
@@ -55,7 +55,12 @@ export async function POST(request: NextRequest) {
       listings: rows,
       claimed: rows.every((r: { claim_status: string }) => r.claim_status === "claimed"),
     };
-    const preview = await previewDraftInvitation(candidate, kind, cleanIntro(body.intro), cleanDisplayName(body.displayName));
+    if (body.action === "base") {
+      const base = await loadDraftInvitationBase(candidate.lang, candidate.listings.length > 1);
+      return NextResponse.json(base, { headers: { "Cache-Control": "no-store" } });
+    }
+    const customText = kind === "draft_invite" ? { subject: cleanCustomSubject(body.customSubject), body: cleanCustomBody(body.customBody) } : null;
+    const preview = await previewDraftInvitation(candidate, kind, cleanIntro(body.intro), cleanDisplayName(body.displayName), customText);
     if (!preview) return NextResponse.json({ error: "Aperçu impossible" }, { status: 500 });
     return NextResponse.json({ subject: preview.subject, html: preview.html }, { headers: { "Cache-Control": "no-store" } });
   }
@@ -78,7 +83,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ error: "Action inconnue" }, { status: 400 });
 }
 
-// PUT { email, intro_fr?, intro_en?, site_url?, display_name? } : enregistre la phrase d'ouverture, le site d'origine et le nom affiché
+// PUT { email, site_url?, display_name?, custom_subject?, custom_body? } : enregistre le site d'origine, le nom affiché et le texte propre au propriétaire
 export async function PUT(request: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
@@ -86,8 +91,8 @@ export async function PUT(request: NextRequest) {
   const email = readEmail(body.email);
   if (!email) return NextResponse.json({ error: "Adresse invalide" }, { status: 400 });
 
-  const fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown } = {};
-  for (const key of ["intro_fr", "intro_en", "site_url", "display_name"] as const) if (key in body) fields[key] = body[key];
+  const fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown; custom_subject?: unknown; custom_body?: unknown } = {};
+  for (const key of ["intro_fr", "intro_en", "site_url", "display_name", "custom_subject", "custom_body"] as const) if (key in body) fields[key] = body[key];
   const { error } = await saveDraftNote(adminSupabase(), email, fields);
   if (error) {
     console.error("[admin draft-invitations] enregistrement", error);

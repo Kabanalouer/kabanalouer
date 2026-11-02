@@ -1,7 +1,7 @@
 import { renderEmail } from "./renderEmail";
 import { sendEmail } from "./send";
 import { escapeHtml } from "@/lib/escapeHtml";
-import { resolveEmailText } from "@/lib/emailTemplates/resolve";
+import { loadBaseFields, resolveEmailText } from "@/lib/emailTemplates/resolve";
 import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 import { SITE_URL } from "@/lib/siteUrl";
 import { SITE_IS_FREE } from "@/lib/siteIsFree";
@@ -191,6 +191,8 @@ export async function sendDraftInvitationEmail(input: {
   displayName?: string | null;
   // Première phrase personnalisée (texte brut), invitation seulement : écrite dans Admin → Brouillons selon le site du propriétaire
   intro?: string | null;
+  // Objet et texte propres à ce propriétaire (Admin → Brouillons), invitation seulement ; vide = texte du modèle
+  customText?: { subject?: string | null; body?: string | null } | null;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
   const link = (href: string, label: string, bold = false) =>
@@ -241,8 +243,15 @@ export async function sendDraftInvitationEmail(input: {
     bouton,
     retrait,
     suivi,
-  });
+  }, input.kind === "draft_invite" ? input.customText ?? undefined : undefined);
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.buttonUrl });
   const { error } = await sendEmail({ from: FROM, to: [input.to], subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };
+}
+
+// Objet et texte du modèle d'invitation (version enregistrée dans l'admin, sinon celle du code), avec leurs repères {cle} :
+// point de départ du texte propre à un propriétaire dans Admin → Brouillons. {intro} n'est plus utilisé : retiré.
+export async function loadDraftInvitationBase(lang: "fr" | "en", multiple: boolean): Promise<{ subject: string; body: string }> {
+  const f = await loadBaseFields(templateFor("draft_invite", multiple), lang);
+  return { subject: f.subject, body: f.body.replace(/\{intro\}/g, "") };
 }
