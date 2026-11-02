@@ -100,7 +100,7 @@ export async function resolveEmailText(
   def: EmailTemplateDef,
   lang: Lang,
   vars: Vars,
-  custom?: { subject?: string | null; body?: string | null }
+  custom?: { subject?: string | null; greeting?: string | null; body?: string | null }
 ): Promise<ResolvedEmailText> {
   const preview = emailContext.getStore()?.overrides;
   const base =
@@ -110,6 +110,7 @@ export async function resolveEmailText(
   const fields: TemplateFields = {
     ...base,
     subject: custom?.subject?.trim() ? custom.subject : base.subject,
+    greeting: custom?.greeting?.trim() ? custom.greeting : base.greeting,
     body: custom?.body?.trim() ? custom.body : base.body,
   };
 

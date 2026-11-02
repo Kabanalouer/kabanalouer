@@ -33,6 +33,7 @@ export type DraftOwnerRow = {
   introFr: string;
   introEn: string;
   customSubject: string;
+  customGreeting: string;
   customBody: string;
   listings: DraftOwnerListing[];
   pendingImports: number;
@@ -178,6 +179,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
       introFr: note?.intro_fr ?? "",
       introEn: note?.intro_en ?? "",
       customSubject: note?.custom_subject ?? "",
+      customGreeting: note?.custom_greeting ?? "",
       customBody: note?.custom_body ?? "",
       listings,
       pendingImports,

@@ -359,7 +359,7 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   const note = kind === "draft_invite" ? await loadDraftNote(admin, candidate.claimEmail) : null;
   const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
   const displayName = note?.display_name;
-  const customText = kind === "draft_invite" ? { subject: note?.custom_subject, body: note?.custom_body } : null;
+  const customText = kind === "draft_invite" ? { subject: note?.custom_subject, greeting: note?.custom_greeting, body: note?.custom_body } : null;
 
   const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName, customText });
   if (error) {
@@ -377,7 +377,7 @@ export async function previewDraftInvitation(
   kind: DraftInvitationKind,
   intro?: string | null,
   displayName?: string | null,
-  customText?: { subject?: string | null; body?: string | null } | null
+  customText?: { subject?: string | null; greeting?: string | null; body?: string | null } | null
 ): Promise<{ subject: string; html: string } | null> {
   let captured: { subject: string; html: string } | null = null;
   const lang = candidate.lang;
