@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import {
-  sendSubscriptionReminderEmail,
   sendAutoRenewalReminderEmail,
   sendPaymentFailedEmail,
-  type ReminderThreshold,
 } from "@/lib/emails/subscriptionReminder";
 import { sendWinbackReminderEmail, type WinbackThreshold } from "@/lib/emails/winbackReminder";
-import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
 import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 function adminSupabase() {
@@ -16,13 +13,6 @@ function adminSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
-
-// Séquence à 3 seuils — offre de lancement uniquement (renouvellement actif requis).
-const RENEWAL_THRESHOLDS: { days: ReminderThreshold; column: "reminder_30d_sent" | "reminder_10d_sent" | "reminder_3d_sent" }[] = [
-  { days: 30, column: "reminder_30d_sent" },
-  { days: 10, column: "reminder_10d_sent" },
-  { days: 3, column: "reminder_3d_sent" },
-];
 
 const WINBACK_THRESHOLDS: { days: WinbackThreshold; column: "reminder_winback_3d_sent" | "reminder_winback_14d_sent" }[] = [
   { days: 3, column: "reminder_winback_3d_sent" },
@@ -135,13 +125,11 @@ export async function GET(request: NextRequest) {
 
     const daysRemaining = Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS);
 
+    // Aucun rappel de fin pour une annonce gratuite : le site est toujours gratuit, aucune échéance n'est annoncée au proprio
     const isFreeLaunch = sub.is_free_launch as boolean;
-    const dueThresholds = isFreeLaunch && FREE_YEAR_REMINDERS_ENABLED
-      ? RENEWAL_THRESHOLDS.filter(({ days, column }) => daysRemaining <= days && !flags[column])
-      : [];
     const autoRenewalDue = !isFreeLaunch && daysRemaining <= 30 && !flags.reminder_auto_renewal_sent;
 
-    if (dueThresholds.length === 0 && !autoRenewalDue) continue;
+    if (!autoRenewalDue) continue;
 
     const { data: profile } = await supabase
       .from("users")
@@ -155,41 +143,20 @@ export async function GET(request: NextRequest) {
     const firstName = profile.name?.trim().split(/\s+/)[0];
     const listingTitle = titleFor(preferredLanguage) || (preferredLanguage === "en" ? "your listing" : "ton chalet");
 
-    if (isFreeLaunch) {
-      for (const { days, column } of dueThresholds) {
-        const { error: emailError } = await sendSubscriptionReminderEmail({
-          email: profile.email,
-          preferredLanguage,
-          firstName,
-          threshold: days,
-          expiresAt,
-          listingTitle,
-        });
+    const { error: emailError } = await sendAutoRenewalReminderEmail({
+      email: profile.email,
+      preferredLanguage,
+      firstName,
+      expiresAt,
+      listingTitle,
+      priceCents: sub.price_cents ?? 0,
+    });
 
-        if (emailError) {
-          console.error(`[subscription-reminders] échec envoi rappel ${days}j (subscription ${sub.id})`, emailError);
-          continue; // pas de flag posé — retry au prochain passage du cron
-        }
-
-        await supabase.from("subscriptions").update({ [column]: true }).eq("id", sub.id);
-        sent++;
-      }
-    } else if (autoRenewalDue) {
-      const { error: emailError } = await sendAutoRenewalReminderEmail({
-        email: profile.email,
-        preferredLanguage,
-        firstName,
-        expiresAt,
-        listingTitle,
-        priceCents: sub.price_cents ?? 0,
-      });
-
-      if (emailError) {
-        console.error(`[subscription-reminders] échec envoi rappel renouvellement auto (subscription ${sub.id})`, emailError);
-      } else {
-        await supabase.from("subscriptions").update({ reminder_auto_renewal_sent: true }).eq("id", sub.id);
-        sent++;
-      }
+    if (emailError) {
+      console.error(`[subscription-reminders] échec envoi rappel renouvellement auto (subscription ${sub.id})`, emailError);
+    } else {
+      await supabase.from("subscriptions").update({ reminder_auto_renewal_sent: true }).eq("id", sub.id);
+      sent++;
     }
   }
 

@@ -8,8 +8,6 @@
 // d'une valeur recopiée à la main.
 
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
-import { FREE_YEAR_REMINDERS_ENABLED } from "@/lib/siteIsFree";
-import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 export type EmailCategory = "proprio" | "voyageur" | "compte" | "interne";
 
@@ -59,10 +57,6 @@ export const CATEGORY_LABELS: Record<EmailCategory, { title: string; description
   compte: { title: "Connexion et compte", description: "Envoyés par Supabase (Send Email Hook) — à tester par le vrai parcours sur le site." },
   interne: { title: "Notifications internes", description: "Envoyées à l’équipe Kabanalouer, jamais aux utilisateurs." },
 };
-
-const FREE_YEAR_PAUSE = FREE_YEAR_REMINDERS_ENABLED
-  ? {}
-  : { paused: true, pausedReason: "Rappels de fin d’année gratuite en pause (lib/siteIsFree.ts) — le site ne parle plus d’une durée." };
 
 const BOOST_PAUSE = BOOSTS_ENABLED
   ? {}
@@ -267,27 +261,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "daily", dailyAt: "23 h", testable: true, ...BOOST_PAUSE, archived: true,
   },
   {
-    id: "reminder-30", category: "proprio", group: "Offre gratuite et abonnement",
-    name: "Offre gratuite — rappel 30 jours",
-    when: "30 jours avant la fin de l’année gratuite.",
-    conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE, archived: true,
-  },
-  {
-    id: "reminder-10", category: "proprio", group: "Offre gratuite et abonnement",
-    name: "Offre gratuite — rappel 10 jours",
-    when: "10 jours avant la fin de l’année gratuite.",
-    conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE, archived: true,
-  },
-  {
-    id: "reminder-3", category: "proprio", group: "Offre gratuite et abonnement",
-    name: "Offre gratuite — rappel 3 jours",
-    when: "3 jours avant la fin de l’année gratuite.",
-    conditions: "Une seule fois par annonce et par année.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, ...FREE_YEAR_PAUSE, archived: true,
-  },
-  {
     id: "auto-renewal", category: "proprio", group: "Offre gratuite et abonnement",
     name: "Abonnement payant — renouvellement à venir",
     when: "30 jours avant le renouvellement automatique.",
@@ -450,14 +423,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     when: "À la première apparition d’une erreur, ou quand une erreur marquée « Réglée » revient.",
     conditions: "Au plus 10 alertes par heure. Jamais pour une erreur ignorée. Détails dans Admin → Erreurs.",
     mechanism: "event", testable: true, fixedRecipient: "simon.authentik@gmail.com",
-  },
-  {
-    id: "launch-offer-ending", category: "interne", group: "Équipe",
-    name: "Fin de l’offre de lancement dans 7 jours",
-    subject: { fr: "L’offre de lancement se termine le {date}" },
-    when: "Le jour où il reste 7 jours à l’offre de lancement.",
-    mechanism: "daily", dailyAt: "11 h", testable: true, fixedRecipient: "simon.authentik@gmail.com",
-    ...(FREE_UNTIL_FURTHER_NOTICE ? { paused: true, pausedReason: "Gratuit jusqu’à nouvel ordre (lib/launchOffer.ts) — aucune fin d’offre prévue." } : {}),
   },
   {
     id: "import-notification", category: "interne", group: "Équipe",

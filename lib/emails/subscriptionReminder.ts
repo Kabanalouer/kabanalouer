@@ -10,8 +10,6 @@ import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
-export type ReminderThreshold = 30 | 10 | 3;
-
 const FOOTER_QUESTION_FR = "Une question ? Réponds directement à ce courriel, on va te répondre avec plaisir.";
 const FOOTER_QUESTION_EN = "Got a question? Just reply to this email — we're happy to help.";
 
@@ -26,87 +24,6 @@ function subjectWithoutMissingName(subject: string): string {
   return stripped.charAt(0).toUpperCase() + stripped.slice(1);
 }
 
-const REMINDER_PLACEHOLDERS = [
-  PLACEHOLDER_PRENOM,
-  PLACEHOLDER_TITRE,
-  { key: "dateFin", label: "Date de fin de l’abonnement (ou de l’accès gratuit)" },
-];
-
-export const TEMPLATE_REMINDER_30: EmailTemplateDef = {
-  id: "reminder-30",
-  placeholders: REMINDER_PLACEHOLDERS,
-  defaults: {
-    fr: {
-      subject: "{prenom}, ton abonnement Kabanalouer expire dans 30 jours",
-      greeting: "Bonjour {prenom} !",
-      heading: "Ton abonnement expire dans 30 jours",
-      body: "Un petit rappel amical : ton accès gratuit (offre de lancement) pour {titreChalet} arrive à échéance le {dateFin}. Renouvelle ton abonnement dès maintenant pour que ton annonce reste visible sans interruption.",
-      buttonLabel: "Renouveler mon annonce",
-      footerNote: FOOTER_QUESTION_FR,
-    },
-    en: {
-      subject: "{prenom}, your Kabanalouer subscription expires in 30 days",
-      greeting: "Hi {prenom}!",
-      heading: "Your subscription expires in 30 days",
-      body: "Just a friendly reminder: your free launch access for {titreChalet} expires on {dateFin}. Renew your subscription now so your listing stays visible without interruption.",
-      buttonLabel: "Renew my listing",
-      footerNote: FOOTER_QUESTION_EN,
-    },
-  },
-};
-
-export const TEMPLATE_REMINDER_10: EmailTemplateDef = {
-  id: "reminder-10",
-  placeholders: REMINDER_PLACEHOLDERS,
-  defaults: {
-    fr: {
-      subject: "{prenom}, il reste 10 jours avant l'expiration de ton abonnement",
-      greeting: "Bonjour {prenom} !",
-      heading: "Plus que 10 jours",
-      body: "Ton abonnement Kabanalouer pour {titreChalet} expire le {dateFin}, dans 10 jours. Renouvelle ton abonnement dès maintenant pour éviter toute interruption.",
-      buttonLabel: "Renouveler mon annonce",
-      footerNote: FOOTER_QUESTION_FR,
-    },
-    en: {
-      subject: "{prenom}, 10 days left before your subscription expires",
-      greeting: "Hi {prenom}!",
-      heading: "Only 10 days left",
-      body: "Your Kabanalouer subscription for {titreChalet} expires on {dateFin}, in 10 days. Renew your subscription now to avoid any interruption.",
-      buttonLabel: "Renew my listing",
-      footerNote: FOOTER_QUESTION_EN,
-    },
-  },
-};
-
-export const TEMPLATE_REMINDER_3: EmailTemplateDef = {
-  id: "reminder-3",
-  placeholders: REMINDER_PLACEHOLDERS,
-  defaults: {
-    fr: {
-      subject: "{prenom}, ton abonnement expire dans 3 jours",
-      greeting: "Bonjour {prenom} !",
-      heading: "Dernier rappel : 3 jours",
-      body: "Ton abonnement Kabanalouer pour {titreChalet} expire le {dateFin}. Si rien ne change avant cette date, ton annonce disparaîtra des résultats de recherche. Renouvelle ton abonnement dès aujourd'hui pour l'éviter.",
-      buttonLabel: "Renouveler mon annonce",
-      footerNote: FOOTER_QUESTION_FR,
-    },
-    en: {
-      subject: "{prenom}, your subscription expires in 3 days",
-      greeting: "Hi {prenom}!",
-      heading: "Last reminder: 3 days left",
-      body: "Your Kabanalouer subscription for {titreChalet} expires on {dateFin}. If nothing changes before then, your listing will disappear from search results. Renew your subscription today to avoid that.",
-      buttonLabel: "Renew my listing",
-      footerNote: FOOTER_QUESTION_EN,
-    },
-  },
-};
-
-const REMINDER_TEMPLATES: Record<ReminderThreshold, EmailTemplateDef> = {
-  30: TEMPLATE_REMINDER_30,
-  10: TEMPLATE_REMINDER_10,
-  3: TEMPLATE_REMINDER_3,
-};
-
 function formatExpiryDate(expiresAt: Date, lang: "fr" | "en"): string {
   return expiresAt.toLocaleDateString(lang === "en" ? "en-CA" : "fr-CA", {
     year: "numeric",
@@ -115,44 +32,8 @@ function formatExpiryDate(expiresAt: Date, lang: "fr" | "en"): string {
   });
 }
 
-export async function sendSubscriptionReminderEmail({
-  email,
-  preferredLanguage,
-  firstName,
-  threshold,
-  expiresAt,
-  listingTitle,
-}: {
-  email: string;
-  preferredLanguage: "fr" | "en";
-  firstName?: string | null;
-  threshold: ReminderThreshold;
-  expiresAt: Date;
-  listingTitle: string;
-}): Promise<{ error: Error | null }> {
-  const prenom = firstName?.trim() || undefined;
-  const buttonPath = preferredLanguage === "en" ? "/en/dashboard/subscription" : "/dashboard/subscription";
-
-  const text = await resolveEmailText(REMINDER_TEMPLATES[threshold], preferredLanguage, {
-    prenom,
-    titreChalet: listingTitle,
-    dateFin: formatExpiryDate(expiresAt, preferredLanguage),
-  });
-  const html = renderEmail({ lang: preferredLanguage, ...text, buttonUrl: `${SITE_URL}${buttonPath}` });
-
-  const { error } = await sendEmail({
-    from: FROM,
-    to: [email],
-    subject: prenom ? text.subject : subjectWithoutMissingName(text.subject),
-    html,
-  });
-
-  return { error: error ? new Error(error.message) : null };
-}
-
 // ── Renouvellement automatique (abonnements payants Stripe) ─────────────────
-// Rappel unique et informatif — contrairement au cas offre de lancement,
-// aucune action n'est requise : Stripe facture automatiquement.
+// Rappel unique et informatif : aucune action n'est requise, Stripe facture automatiquement.
 export const TEMPLATE_AUTO_RENEWAL: EmailTemplateDef = {
   id: "auto-renewal",
   placeholders: [

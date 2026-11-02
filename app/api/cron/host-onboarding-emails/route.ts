@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendProfileTipEmail, sendRoomsTipEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
-import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
-import { launchOfferDaysLeft } from "@/lib/launchOffer";
 
 // Cron quotidien — séquence d'accueil des proprios, UNE SEULE FOIS PAR PROPRIO (jamais par chalet), à partir
 // de sa première publication ou de sa première revendication. Une annonce ne peut être publiée qu'avec un
@@ -46,13 +44,6 @@ export async function GET(request: NextRequest) {
 
   const supabase = adminSupabase();
   const now = Date.now();
-
-  let launchOfferReminderSent = false;
-  if (launchOfferDaysLeft() === 7) {
-    const { error: offerError } = await sendLaunchOfferEndingNotification({ daysLeft: 7 });
-    if (offerError) console.error("[host-onboarding-emails] avis fin d'offre de lancement", offerError);
-    else launchOfferReminderSent = true;
-  }
 
   const { data: subs, error: subsError } = await supabase
     .from("subscriptions")
@@ -178,7 +169,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, draftRemindersSent, profileSent, boostSent, roomsSent, installSent, launchOfferReminderSent });
+  return NextResponse.json({ ok: true, draftRemindersSent, profileSent, boostSent, roomsSent, installSent });
 }
 
 async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, now: number): Promise<number> {

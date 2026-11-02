@@ -6,7 +6,7 @@ import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail, sendP
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
-import { sendSubscriptionReminderEmail, sendAutoRenewalReminderEmail, sendPaymentFailedEmail } from "@/lib/emails/subscriptionReminder";
+import { sendAutoRenewalReminderEmail, sendPaymentFailedEmail } from "@/lib/emails/subscriptionReminder";
 import { sendWinbackReminderEmail } from "@/lib/emails/winbackReminder";
 import { sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
 import { sendGuestRequestEmail } from "@/lib/emails/guestRequest";
@@ -17,7 +17,6 @@ import { firstPhotoUrl } from "@/lib/photo";
 import { buildListingPath } from "@/lib/listingUrl";
 import { sendContactMessageNotification } from "@/lib/emails/contactMessageNotification";
 import { sendImportReviewNotification } from "@/lib/emails/importNotification";
-import { sendLaunchOfferEndingNotification } from "@/lib/emails/launchOfferEnding";
 import { sendErrorAlert } from "@/lib/emails/errorAlert";
 import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
 import { sendFeedbackMessage, sendFeedbackAnalysis } from "@/lib/emails/feedback";
@@ -89,9 +88,6 @@ export function emailTestSenders(): Record<string, Sender> {
     "featured-confirmation": (to, lang) => sendFeaturedConfirmationEmail(featured(to, lang)),
     "featured-expiring": (to, lang) => sendFeaturedExpiringEmail(featured(to, lang)),
     "featured-expired": (to, lang) => sendFeaturedExpiredEmail(featured(to, lang)),
-    "reminder-30": (to, lang) => sendSubscriptionReminderEmail({ ...base(to, lang), threshold: 30, expiresAt: inDays(30), listingTitle: TITLE }),
-    "reminder-10": (to, lang) => sendSubscriptionReminderEmail({ ...base(to, lang), threshold: 10, expiresAt: inDays(10), listingTitle: TITLE }),
-    "reminder-3": (to, lang) => sendSubscriptionReminderEmail({ ...base(to, lang), threshold: 3, expiresAt: inDays(3), listingTitle: TITLE }),
     "auto-renewal": (to, lang) => sendAutoRenewalReminderEmail({ ...base(to, lang), expiresAt: inDays(30), listingTitle: TITLE, priceCents: 29900 }),
     "payment-failed": (to, lang) => sendPaymentFailedEmail({ ...base(to, lang), listingTitle: TITLE, priceCents: 29900 }),
     "winback-3": (to, lang) => sendWinbackReminderEmail({ ...base(to, lang), threshold: 3, listingTitle: TITLE }),
@@ -172,7 +168,6 @@ export function emailTestSenders(): Record<string, Sender> {
       { email: "proprio@exemple.test", kind: "draft_reminder_3", titles: [TITLE, "Chalet exemple 2"] },
       { email: "autre@exemple.test", kind: "draft_reminder_10", titles: ["Chalet exemple 3"] },
     ]),
-    "launch-offer-ending": () => sendLaunchOfferEndingNotification({ daysLeft: 7 }),
     "import-notification": () => sendImportReviewNotification({ listingId: LISTING_ID, listingTitle: TITLE, platform: "airbnb", hostName: "Simon Lemay" }),
     // Fiches non revendiquées : liens d'exemple (la page affiche « lien invalide », rien n'est modifié)
     "unclaimed-request": (to, lang) => sendUnclaimedRequestEmail({

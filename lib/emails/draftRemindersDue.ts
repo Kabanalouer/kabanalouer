@@ -5,7 +5,7 @@ import { escapeHtml } from "@/lib/escapeHtml";
 
 // Notification interne à Simon : des relances brouillon (J+3 ou J+10) sont dues. Les relances sont envoyées à la main
 // depuis Admin → Brouillons : ce courriel dit lesquelles. Envoyé par le cron send-invitations (8 h, heure de Montréal),
-// une seule fois par adresse et par relance (draft_invitation_notes). Même gabarit que launchOfferEnding.ts.
+// une seule fois par adresse et par relance (draft_invitation_notes).
 
 const FROM = "Kabanalouer <info@kabanalouer.ca>";
 const ADMIN_EMAIL = "simon.authentik@gmail.com";

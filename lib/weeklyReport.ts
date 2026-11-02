@@ -2,7 +2,6 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getPlatformHealth, type PlatformHealth } from "@/lib/platformHealth";
 import { BOOSTS_ENABLED } from "@/lib/featuredConfig";
-import { FREE_UNTIL_FURTHER_NOTICE, LAUNCH_OFFER_END, isLaunchOfferActive } from "@/lib/launchOffer";
 import { sendWeeklyReportEmail } from "@/lib/emails/weeklyReport";
 import { sanitizeAiOutput, fenceUntrusted } from "@/lib/untrustedText";
 
@@ -45,7 +44,7 @@ async function collectMetrics(now: number) {
   return {
     periode: "7 derniers jours, comparés aux 7 jours précédents",
     contexte: {
-      offre_de_lancement: FREE_UNTIL_FURTHER_NOTICE ? "gratuit pour les proprios jusqu'à nouvel ordre (aucune durée ni date de fin annoncée)" : isLaunchOfferActive() ? `active jusqu'au ${LAUNCH_OFFER_END} (première année gratuite pour les proprios)` : "terminée",
+      prix_pour_proprios: "toujours gratuit (aucun abonnement, aucune offre ni date de fin)",
       boosts: BOOSTS_ENABLED ? "actifs" : "désactivés pour le lancement (ne pas les recommander)",
     },
     reponse_des_proprios: h.trust,
@@ -77,7 +76,7 @@ async function collectMetrics(now: number) {
   };
 }
 
-const SYSTEM = `Tu es l'analyste produit de Kabanalouer, une place de marché québécoise de location de chalets : les proprios paient un abonnement annuel fixe pour afficher leur chalet, aucune commission sur les séjours, aucuns frais pour les voyageurs ; voyageurs et proprios s'écrivent directement et s'entendent entre eux (pas de paiement de séjour sur le site). La plateforme est toute jeune : les volumes sont très faibles, et quelques comptes de test sont comptés comme les autres.
+const SYSTEM = `Tu es l'analyste produit de Kabanalouer, une place de marché québécoise de location de chalets : publier un chalet est toujours gratuit pour les proprios (aucun abonnement, aucune offre de lancement ni date de fin : n'en invente jamais ; les seules options payantes seront les boosts), aucune commission sur les séjours, aucuns frais pour les voyageurs ; voyageurs et proprios s'écrivent directement et s'entendent entre eux (pas de paiement de séjour sur le site). La plateforme est toute jeune : les volumes sont très faibles, et quelques comptes de test sont comptés comme les autres.
 
 Chaque lundi, tu lis les chiffres de la semaine et tu écris un rapport court, en français québécois naturel, en tutoyant Simon, le fondateur (non développeur). Règles :
 - Chaque problème et chaque recommandation s'appuie sur un chiffre précis tiré des données. Jamais d'invention.
