@@ -54,6 +54,41 @@ export async function createClaimToken(
   return raw;
 }
 
+// « Retirer mes fiches » : un seul jeton couvre toutes les fiches de l'adresse (listing_ids). listing_id garde la
+// première, que la contrainte claim_tokens_remove_listing exige. Une seule fiche : jeton classique (listing_ids NULL).
+export async function createRemoveToken(
+  admin: AdminClient,
+  input: { claimEmail: string; listingIds: string[]; reason: string }
+): Promise<string | null> {
+  const [first] = input.listingIds;
+  if (!first) return null;
+  return createClaimToken(admin, {
+    kind: "remove",
+    claimEmail: input.claimEmail,
+    listingId: first,
+    listingIds: input.listingIds.length > 1 ? input.listingIds : undefined,
+    reason: input.reason,
+  });
+}
+
+// Fiches qu'un jeton « remove » couvre (sans doublon).
+export function removeTokenListingIds(token: Pick<ClaimTokenRow, "listing_id" | "listing_ids">): string[] {
+  const ids = token.listing_ids && token.listing_ids.length > 0 ? token.listing_ids : token.listing_id ? [token.listing_id] : [];
+  return [...new Set(ids)];
+}
+
+// Fiches à retirer pour une demande : une seule fiche couverte = celle-là ; plusieurs = la sélection du propriétaire,
+// qui doit être non vide et ne contenir que des fiches du jeton (sinon null : la demande est refusée).
+export function selectRemovalIds(token: Pick<ClaimTokenRow, "listing_id" | "listing_ids">, requested: unknown): string[] | null {
+  const covered = removeTokenListingIds(token);
+  if (covered.length === 0) return null;
+  if (covered.length === 1) return covered;
+  if (!Array.isArray(requested) || requested.length === 0) return null;
+  const wanted = new Set(requested.map(String));
+  if (![...wanted].every((id) => covered.includes(id))) return null;
+  return covered.filter((id) => wanted.has(id));
+}
+
 export type TokenLookup =
   | { status: "ok"; token: ClaimTokenRow }
   | { status: "invalid" | "used" | "expired" };

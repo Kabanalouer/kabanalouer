@@ -202,8 +202,9 @@ function titlesHtml(titles: string[]): string {
   return titles.map((t) => `<strong>${escapeHtml(t)}</strong>`).join("<br/>");
 }
 
-function removeAnchor(lang: Lang, url: string): string {
-  return `<a href="${url}" style="color:#636e40;">${lang === "fr" ? "Retirer ma fiche" : "Remove my listing"}</a>`;
+function removeAnchor(lang: Lang, url: string, multiple = false): string {
+  const label = multiple ? (lang === "fr" ? "Retirer mes fiches" : "Remove my listings") : lang === "fr" ? "Retirer ma fiche" : "Remove my listing";
+  return `<a href="${url}" style="color:#636e40;">${label}</a>`;
 }
 
 // Demande d'un voyageur, transmise au propriétaire qui n'a pas encore de compte.
@@ -246,7 +247,7 @@ export async function sendClaimLinkEmail(input: {
 }): Promise<{ error: Error | null }> {
   const text = await resolveEmailText(TEMPLATE_CLAIM_LINK, input.lang, {
     titresFiches: titlesHtml(input.listingTitles),
-    lienRetrait: removeAnchor(input.lang, input.removeUrl),
+    lienRetrait: removeAnchor(input.lang, input.removeUrl, input.listingTitles.length > 1),
   });
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.claimUrl });
   const { error } = await sendEmail({ from: FROM_NOREPLY, to: [input.to], subject: text.subject, html });
@@ -343,34 +344,45 @@ export async function sendImportDuplicateAlert(input: {
   if (error) console.error("sendImportDuplicateAlert: échec envoi", error);
 }
 
-// Avis à Simon quand un propriétaire retire sa fiche : ce que le site a fait tout seul, et ce qui reste à faire à la
-// main (fichier de prospection hors du site, copies d'images de Vercel). Texte simple, jamais bloquant.
-export async function sendListingRemovedNotice(input: {
-  title: string;
+// Avis à Simon quand un propriétaire retire une ou plusieurs fiches (un seul courriel par demande de retrait) : ce que
+// le site a fait tout seul, et ce qui reste à faire à la main (fichier de prospection hors du site, copies d'images de
+// Vercel). Texte simple, jamais bloquant.
+export async function sendListingsRemovedNotice(input: {
   claimEmail: string;
-  listingId: string;
-  photosRemoved: number;
-  titleKept: boolean;
+  listings: { title: string; photosRemoved: number; titleKept: boolean }[];
 }): Promise<void> {
   try {
-    const html = `<p><strong>Fiche retirée par son propriétaire</strong></p>
-<p>Fiche : ${escapeHtml(input.title)}<br/>Adresse : ${escapeHtml(input.claimEmail)}</p>
+    const n = input.listings.length;
+    if (n === 0) return;
+    const plural = n > 1;
+    const s = (count: number) => (count > 1 ? "s" : "");
+    const fiches = input.listings
+      .map(
+        (l) =>
+          `<li>${escapeHtml(l.title)} : ${l.photosRemoved} photo${s(l.photosRemoved)} supprimée${s(l.photosRemoved)} du stockage${l.titleKept ? " (titre gardé : des voyageurs ont écrit sur cette fiche)" : ""}</li>`
+      )
+      .join("");
+    const html = `<p><strong>${plural ? `${n} fiches retirées par leur propriétaire` : "Fiche retirée par son propriétaire"}</strong></p>
+<p>Adresse : ${escapeHtml(input.claimEmail)}</p>
+<ul>${fiches}</ul>
 <p><strong>Fait automatiquement</strong></p>
 <ul>
-<li>Fiche hors ligne (la page répond « introuvable »). Les liens directs des photos peuvent répondre encore jusqu’à une heure (mémoire du réseau de distribution), puis ils s’éteignent.</li>
-<li>${input.photosRemoved} photo${input.photosRemoved > 1 ? "s" : ""} supprimée${input.photosRemoved > 1 ? "s" : ""} du stockage.</li>
-<li>Textes, adresse et coordonnées supprimés${input.titleKept ? " (le titre est gardé : des voyageurs ont écrit sur cette fiche)" : ""}.</li>
-<li>Exclue de l’import et des invitations : on ne lui écrit plus jamais.</li>
+<li>${plural ? "Fiches hors ligne (les pages répondent « introuvable »)" : "Fiche hors ligne (la page répond « introuvable »)"}. Les liens directs des photos peuvent répondre encore jusqu’à une heure (mémoire du réseau de distribution), puis ils s’éteignent.</li>
+<li>Photos, textes, adresse et coordonnées supprimés (voir le détail par fiche ci-dessus).</li>
+<li>Adresse exclue de l’import et des invitations : on ne lui écrit plus jamais.</li>
 </ul>
 <p><strong>À faire de ton côté</strong></p>
 <ul>
-<li>Retirer cette adresse de la feuille « Proprios » du fichier de prospection et l’ajouter à la feuille « Ne plus contacter ».</li>
-<li>Si la fiche est restée en ligne plus que quelques minutes : demander à Claude de purger les copies de photos gardées en mémoire par Vercel.</li>
+<li>Retirer cette adresse de la feuille « Proprios » du fichier de prospection et l’ajouter à la feuille « Ne plus contacter ».</li>
+<li>Si ${plural ? "une des fiches est restée" : "la fiche est restée"} en ligne plus que quelques minutes : demander à Claude de purger les copies de photos gardées en mémoire par Vercel.</li>
 </ul>`;
-    const { error } = await sendEmail({ from: FROM_NOREPLY, to: [ADMIN_EMAIL], subject: `Fiche retirée : ${input.title}`, html });
-    if (error) console.error("sendListingRemovedNotice: échec envoi", error);
+    const subject = plural
+      ? `${n} fiches retirées : ${input.listings[0].title} et ${n - 1} autre${s(n - 1)}`
+      : `Fiche retirée : ${input.listings[0].title}`;
+    const { error } = await sendEmail({ from: FROM_NOREPLY, to: [ADMIN_EMAIL], subject, html });
+    if (error) console.error("sendListingsRemovedNotice: échec envoi", error);
   } catch (e) {
-    console.error("sendListingRemovedNotice: erreur", e);
+    console.error("sendListingsRemovedNotice: erreur", e);
   }
 }
 

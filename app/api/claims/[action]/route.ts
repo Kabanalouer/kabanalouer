@@ -6,11 +6,13 @@ import {
   canSendLinkEmail,
   claimLink,
   createClaimToken,
+  createRemoveToken,
   findClaimToken,
   logOwnerEmail,
   removeLink,
+  selectRemovalIds,
 } from "@/lib/claims/tokens";
-import { claimListingsForUser, removeUnclaimedListing, reportClaimProblem } from "@/lib/claims/actions";
+import { claimListingsForUser, removeUnclaimedListings, reportClaimProblem } from "@/lib/claims/actions";
 import { sendClaimAdminAlert, sendClaimLinkEmail } from "@/lib/emails/unclaimedOwner";
 import { findUnclaimedByCitq } from "@/lib/claims/lookup";
 
@@ -85,14 +87,16 @@ async function sendLink(request: NextRequest, locale: "fr" | "en") {
   // Un seul lien couvre toutes les fiches non revendiquées de cette adresse.
   const { data: all } = await admin
     .from("listings")
-    .select("title, title_en")
+    .select("id, title, title_en")
     .eq("claim_email", email)
     .eq("claim_status", "unclaimed");
   const titles = (all ?? []).map((l) => ((lang === "en" ? l.title_en : null) || l.title || (lang === "en" ? "Your listing" : "Votre fiche")) as string);
+  const allIds = (all ?? []).map((l) => l.id as string);
 
   const [claimRaw, removeRaw] = await Promise.all([
     createClaimToken(admin, { kind: "claim", claimEmail: email, reason: "owner_request" }),
-    createClaimToken(admin, { kind: "remove", claimEmail: email, listingId: listing.id as string, reason: "owner_request" }),
+    // Un seul lien de retrait pour toutes les fiches de l'adresse : la page laisse cocher celles à retirer
+    createRemoveToken(admin, { claimEmail: email, listingIds: allIds.length > 0 ? allIds : [listing.id as string], reason: "owner_request" }),
   ]);
   if (!claimRaw || !removeRaw) return bad(locale, "Erreur, réessayez.", "Error, try again.", 500);
 
@@ -153,9 +157,12 @@ async function remove(request: NextRequest, locale: "fr" | "en") {
   const admin = adminSupabase();
   const lookup = await findClaimToken(admin, String(body.token ?? ""), "remove");
   if (lookup.status !== "ok") return NextResponse.json({ error: lookup.status }, { status: 410 });
-  const result = await removeUnclaimedListing(admin, lookup.token);
+  // Un jeton qui couvre plusieurs fiches : le propriétaire choisit lesquelles retirer (les autres restent intactes)
+  const ids = selectRemovalIds(lookup.token, body.listingIds);
+  if (!ids) return bad(locale, "Cochez au moins une fiche à retirer.", "Select at least one listing to remove.");
+  const result = await removeUnclaimedListings(admin, lookup.token, ids);
   if (!result.ok) return bad(locale, "Le retrait a échoué.", "Removal failed.", 400);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, count: result.removed });
 }
 
 async function report(request: NextRequest, locale: "fr" | "en") {

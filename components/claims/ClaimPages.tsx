@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
-import { findClaimToken, previewPath } from "@/lib/claims/tokens";
+import { findClaimToken, previewPath, removeTokenListingIds } from "@/lib/claims/tokens";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { ClaimForm, RemoveForm, ReportForm, VerificationForm } from "@/components/claims/ClaimForms";
@@ -149,16 +149,27 @@ export async function RemoveTokenPage({ jeton }: { jeton: string }) {
   const lookup = await findClaimToken(admin, jeton, "remove");
   if (lookup.status !== "ok") return <Problem kind={lookup.status} />;
 
-  const { data: listing } = await admin
+  // Le jeton peut couvrir plusieurs fiches (« Retirer mes fiches ») : seules celles encore non revendiquées s'affichent
+  const ids = removeTokenListingIds(lookup.token);
+  const { data: rows } = await admin
     .from("listings")
-    .select("title, title_en, claim_status")
-    .eq("id", lookup.token.listing_id as string)
-    .maybeSingle();
-  if (!listing || listing.claim_status !== "unclaimed") return <Problem kind="used" />;
+    .select("id, title, title_en, claim_status, claim_email")
+    .in("id", ids);
+  const email = lookup.token.claim_email.trim().toLowerCase();
+  const byId = new Map(
+    ((rows ?? []) as { id: string; title: string | null; title_en: string | null; claim_status: string | null; claim_email: string | null }[])
+      .filter((l) => l.claim_status === "unclaimed" && (l.claim_email ?? "").trim().toLowerCase() === email)
+      .map((l) => [l.id, l])
+  );
+  const items = ids.flatMap((id) => {
+    const l = byId.get(id);
+    return l ? [{ id, title: titleOf(l, locale === "en") }] : [];
+  });
+  if (items.length === 0) return <Problem kind="used" />;
 
   return (
     <Shell>
-      <RemoveForm token={jeton} title={titleOf(listing as { title: string | null; title_en: string | null }, locale === "en")} />
+      <RemoveForm token={jeton} items={items} />
     </Shell>
   );
 }

@@ -97,30 +97,87 @@ export function ClaimForm({
   );
 }
 
-export function RemoveForm({ token, title }: { token: string; title: string }) {
+// items : les fiches que le lien permet de retirer. Une seule : confirmation simple. Plusieurs : le propriétaire coche
+// celles à retirer (rien n'est coché au départ : le retrait est définitif), les autres restent intactes.
+export function RemoveForm({ token, items }: { token: string; items: { id: string; title: string }[] }) {
   const t = useTranslations("claim");
   const [status, setStatus] = useState<Status>("idle");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const multiple = items.length > 1;
+  const allSelected = selected.size === items.length;
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   async function remove() {
     setStatus("submitting");
-    setStatus((await postJson("/api/claims/remove", { token })) ? "done" : "error");
+    const body = multiple ? { token, listingIds: items.filter((i) => selected.has(i.id)).map((i) => i.id) } : { token };
+    setStatus((await postJson("/api/claims/remove", body)) ? "done" : "error");
   }
 
   if (status === "done") {
     return (
       <div role="status">
-        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("removeDoneTitle")}</h2>
-        <p className="mt-2 text-base text-charcoal-600">{t("removeDoneBody")}</p>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">
+          {multiple ? t("removeMultiDoneTitle", { count: selected.size }) : t("removeDoneTitle")}
+        </h2>
+        <p className="mt-2 text-base text-charcoal-600">
+          {multiple ? t("removeMultiDoneBody", { count: selected.size, kept: items.length - selected.size }) : t("removeDoneBody")}
+        </p>
       </div>
     );
   }
+
+  if (!multiple) {
+    return (
+      <div>
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("removeTitle")}</h2>
+        <p className="mt-2 text-base text-charcoal-600">{t("removeBody", { title: items[0]?.title ?? "" })}</p>
+        <button type="button" onClick={remove} disabled={status === "submitting"} className={`${PRIMARY_BUTTON} mt-6`}>
+          {status === "submitting" ? t("removing") : t("removeButton")}
+        </button>
+        {status === "error" && <p className="mt-3 text-sm text-error-600" role="alert">{t("activateError")}</p>}
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("removeTitle")}</h2>
-      <p className="mt-2 text-base text-charcoal-600">{t("removeBody", { title })}</p>
-      <button type="button" onClick={remove} disabled={status === "submitting"} className={`${PRIMARY_BUTTON} mt-6`}>
-        {status === "submitting" ? t("removing") : t("removeButton")}
+      <h2 className="text-heading-2 font-semibold text-charcoal-800">{t("removeMultiTitle")}</h2>
+      <p className="mt-2 text-base text-charcoal-600">{t("removeMultiBody")}</p>
+      <button
+        type="button"
+        onClick={() => setSelected(allSelected ? new Set() : new Set(items.map((i) => i.id)))}
+        className="mt-4 text-sm font-medium text-primary hover:underline"
+      >
+        {allSelected ? t("removeSelectNone") : t("removeSelectAll")}
       </button>
+      <ul className="mt-2 space-y-2">
+        {items.map((item) => (
+          <li key={item.id}>
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#ebebeb] bg-white px-4 py-3 hover:bg-charcoal-50">
+              <input
+                type="checkbox"
+                checked={selected.has(item.id)}
+                onChange={() => toggle(item.id)}
+                disabled={status === "submitting"}
+                className="h-5 w-5 shrink-0 accent-primary"
+              />
+              <span className="text-base text-charcoal-800">{item.title}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      <button type="button" onClick={remove} disabled={status === "submitting" || selected.size === 0} className={`${PRIMARY_BUTTON} mt-6`}>
+        {status === "submitting" ? t("removing") : t("removeMultiButton", { count: selected.size })}
+      </button>
+      {selected.size === 0 && <p className="mt-3 text-sm text-charcoal-500">{t("removeMultiHint")}</p>}
       {status === "error" && <p className="mt-3 text-sm text-error-600" role="alert">{t("activateError")}</p>}
     </div>
   );

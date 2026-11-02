@@ -7,10 +7,11 @@ import {
   createClaimToken,
   logOwnerEmail,
   removeLink,
+  removeTokenListingIds,
   reportLink,
   type ClaimTokenRow,
 } from "@/lib/claims/tokens";
-import { sendClaimActivatedEmail, sendClaimAdminAlert, sendClaimWelcomeEmail, sendListingRemovedNotice, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
+import { sendClaimActivatedEmail, sendClaimAdminAlert, sendClaimWelcomeEmail, sendListingsRemovedNotice, sendUnclaimedRequestEmail } from "@/lib/emails/unclaimedOwner";
 
 // Actions serveur des fiches non revendiquées. Toutes utilisent le client
 // service : les colonnes claim_* et les tables de jetons ne sont jamais
@@ -134,64 +135,90 @@ async function notifyOldAddresses(admin: AdminClient, userId: string, rows: Clai
   }
 }
 
-// « Retirer ma fiche » : la fiche est dépubliée et marquée 'removed', son
-// CITQ et son adresse d'origine vont dans import_exclusions pour qu'elle ne
-// soit plus jamais réimportée, et le jeton est consommé.
-export async function removeUnclaimedListing(
-  admin: AdminClient,
-  token: ClaimTokenRow
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!token.listing_id) return { ok: false, error: "Jeton invalide" };
+// « Retirer mes fiches » : chaque fiche choisie est dépubliée et marquée 'removed', son CITQ et son adresse d'origine
+// vont dans import_exclusions pour qu'elle ne soit plus jamais réimportée, puis ses photos et ses textes sont supprimés.
+// Un jeton couvre toutes les fiches de l'adresse (token.listing_ids) : le propriétaire en choisit certaines, les autres
+// restent intactes et le jeton reste valable ; il n'est consommé que lorsqu'il ne reste plus aucune fiche à retirer.
+// Un seul avis à Simon pour toute la demande.
+type RemovableRow = {
+  id: string;
+  host_id: string | null;
+  title: string | null;
+  claim_email: string | null;
+  claim_status: string | null;
+  citq_number: string | null;
+  import_source_url: string | null;
+};
 
-  const { data: listing } = await admin
+export async function removeUnclaimedListings(
+  admin: AdminClient,
+  token: ClaimTokenRow,
+  listingIds: string[]
+): Promise<{ ok: true; removed: number } | { ok: false; error: string }> {
+  const covered = removeTokenListingIds(token);
+  const wanted = listingIds.filter((id) => covered.includes(id));
+  if (wanted.length === 0) return { ok: false, error: "Jeton invalide" };
+
+  const { data: rows } = await admin
     .from("listings")
     .select("id, host_id, title, claim_email, claim_status, citq_number, import_source_url")
-    .eq("id", token.listing_id)
-    .maybeSingle();
-  if (!listing || listing.claim_status !== "unclaimed") return { ok: false, error: "Fiche indisponible" };
+    .in("id", wanted);
+  // La fiche doit être toujours non revendiquée et porter l'adresse du jeton
+  const email = token.claim_email.trim().toLowerCase();
+  const listings = ((rows ?? []) as RemovableRow[]).filter(
+    (l) => l.claim_status === "unclaimed" && (l.claim_email ?? "").trim().toLowerCase() === email
+  );
+  if (listings.length === 0) return { ok: false, error: "Fiche indisponible" };
 
-  const { error } = await admin
-    .from("listings")
-    .update({
-      claim_status: "removed",
-      is_published: false,
-      unpublished_at: new Date().toISOString(),
-      unpublished_reason: "removed",
-    })
-    .eq("id", listing.id)
-    .eq("claim_status", "unclaimed");
-  if (error) {
-    console.error("removeUnclaimedListing: échec", error);
-    return { ok: false, error: "Échec du retrait" };
-  }
-
-  if (listing.citq_number || listing.import_source_url) {
-    // Clé unique sur une expression (coalesce) : un upsert ne peut pas la cibler,
-    // on insère et on ignore le doublon (23505).
-    const { error: exclusionError } = await admin.from("import_exclusions").insert({
-      citq_number: listing.citq_number ?? null,
-      import_source_url: listing.import_source_url ?? null,
-      reason: "removed_by_owner",
-    });
-    if (exclusionError && exclusionError.code !== "23505") {
-      console.error("removeUnclaimedListing: échec import_exclusions", exclusionError);
+  const removed: { title: string; photosRemoved: number; titleKept: boolean }[] = [];
+  for (const listing of listings) {
+    const { error } = await admin
+      .from("listings")
+      .update({
+        claim_status: "removed",
+        is_published: false,
+        unpublished_at: new Date().toISOString(),
+        unpublished_reason: "removed",
+      })
+      .eq("id", listing.id)
+      .eq("claim_status", "unclaimed");
+    if (error) {
+      console.error("removeUnclaimedListings: échec", error);
+      continue;
     }
-  }
-  await admin.from("listing_claim_tokens").update({ used_at: new Date().toISOString() }).eq("id", token.id);
 
-  // Retrait complet : photos et textes supprimés du serveur (jamais bloquant pour le propriétaire)
-  const purge = await purgeRemovedListing(admin, listing).catch((e) => {
-    console.error("removeUnclaimedListing: purge", e);
-    return { photosRemoved: 0, titleKept: false };
-  });
-  await sendListingRemovedNotice({
-    title: (listing.title as string | null) ?? "(sans titre)",
-    claimEmail: (listing.claim_email as string | null) ?? "",
-    listingId: listing.id as string,
-    photosRemoved: purge.photosRemoved,
-    titleKept: purge.titleKept,
-  });
-  return { ok: true };
+    if (listing.citq_number || listing.import_source_url) {
+      // Clé unique sur une expression (coalesce) : un upsert ne peut pas la cibler,
+      // on insère et on ignore le doublon (23505).
+      const { error: exclusionError } = await admin.from("import_exclusions").insert({
+        citq_number: listing.citq_number ?? null,
+        import_source_url: listing.import_source_url ?? null,
+        reason: "removed_by_owner",
+      });
+      if (exclusionError && exclusionError.code !== "23505") {
+        console.error("removeUnclaimedListings: échec import_exclusions", exclusionError);
+      }
+    }
+
+    // Retrait complet : photos et textes supprimés du serveur (jamais bloquant pour le propriétaire)
+    const purge = await purgeRemovedListing(admin, listing).catch((e) => {
+      console.error("removeUnclaimedListings: purge", e);
+      return { photosRemoved: 0, titleKept: false };
+    });
+    removed.push({ title: listing.title ?? "(sans titre)", photosRemoved: purge.photosRemoved, titleKept: purge.titleKept });
+  }
+  if (removed.length === 0) return { ok: false, error: "Échec du retrait" };
+
+  // Le jeton reste valable tant qu'une de ses fiches peut encore être retirée
+  const { count: remaining } = await admin
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .in("id", covered)
+    .eq("claim_status", "unclaimed");
+  if ((remaining ?? 0) === 0) await admin.from("listing_claim_tokens").update({ used_at: new Date().toISOString() }).eq("id", token.id);
+
+  await sendListingsRemovedNotice({ claimEmail: token.claim_email, listings: removed });
+  return { ok: true, removed: removed.length };
 }
 
 // Règle de Simon (2026-10-24) : quand un propriétaire retire sa fiche, on supprime ses photos (fichiers du

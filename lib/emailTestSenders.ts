@@ -28,7 +28,7 @@ import {
   sendClaimDecisionEmail,
   sendClaimWelcomeEmail,
   sendClaimAdminAlert,
-  sendListingRemovedNotice,
+  sendListingsRemovedNotice,
   sendImportDuplicateAlert,
 } from "@/lib/emails/unclaimedOwner";
 import { claimLink, previewLink, removeLink, reportLink } from "@/lib/claims/tokens";
@@ -65,7 +65,6 @@ export function emailTestSenders(): Record<string, Sender> {
 
   const MULTI_TITLES = [TITLE, "Chalet exemple 2", "Chalet exemple 3"];
   const MULTI_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, path: lang === "en" ? `/en/cabins/laurentians/mille-isles/4834${7 + i}` : `/chalets/laurentides/mille-isles/4834${7 + i}` }));
-  const MULTI_REMOVE = (lang: Lang) => MULTI_TITLES.map((title) => ({ title, url: removeLink(lang, "exemple") }));
   const DRAFT_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, url: previewLink(lang, "exemple", `00000000-0000-4000-8000-00000000000${i + 1}`) }));
   const DRAFT_INTRO = (lang: Lang) =>
     lang === "fr" ? "Nous avons visité votre site web et adoré vos chalets au bord du lac." : "We visited your website and loved your lakeside cabins.";
@@ -190,44 +189,44 @@ export function emailTestSenders(): Record<string, Sender> {
     "claim-invitation": (to, lang) => sendClaimInvitationEmail({
       to, lang, kind: "invite",
       listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
-      claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-invitation-reminder": (to, lang) => sendClaimInvitationEmail({
       to, lang, kind: "reminder",
       listings: [{ title: TITLE, path: lang === "en" ? "/en/cabins/laurentians/mille-isles/48347" : LISTING_PATH }],
-      claimUrl: claimLink(lang, "exemple"), removeLinks: [{ title: TITLE, url: removeLink(lang, "exemple") }],
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-invitation-multi": (to, lang) => sendClaimInvitationEmail({
       to, lang, kind: "invite", listings: MULTI_LISTINGS(lang),
-      claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-invitation-reminder-multi": (to, lang) => sendClaimInvitationEmail({
       to, lang, kind: "reminder", listings: MULTI_LISTINGS(lang),
-      claimUrl: claimLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+      claimUrl: claimLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-invitation": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang).slice(0, 1), intro: DRAFT_INTRO(lang),
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-invitation-multi": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_invite", listings: DRAFT_LISTINGS(lang), intro: DRAFT_INTRO(lang), displayName: lang === "fr" ? "Chalets Exemple" : "Example Cabins",
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-reminder-3": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_reminder_3", listings: DRAFT_LISTINGS(lang).slice(0, 1),
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-reminder-3-multi": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_reminder_3", listings: DRAFT_LISTINGS(lang),
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-reminder-10": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_reminder_10", listings: DRAFT_LISTINGS(lang).slice(0, 1),
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang).slice(0, 1),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-draft-reminder-10-multi": (to, lang) => sendDraftInvitationEmail({
       to, lang, kind: "draft_reminder_10", listings: DRAFT_LISTINGS(lang),
-      buttonUrl: previewLink(lang, "exemple"), removeLinks: MULTI_REMOVE(lang),
+      buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
     "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
     "claim-welcome-draft": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], freeYear: true, draft: true }),
@@ -241,7 +240,7 @@ export function emailTestSenders(): Record<string, Sender> {
       return { error: null };
     },
     "listing-removed-notice": async () => {
-      await sendListingRemovedNotice({ title: TITLE, claimEmail: "proprio@exemple.com", listingId: LISTING_ID, photosRemoved: 30, titleKept: false });
+      await sendListingsRemovedNotice({ claimEmail: "proprio@exemple.com", listings: [{ title: TITLE, photosRemoved: 30, titleKept: false }, { title: "Chalet exemple 2", photosRemoved: 24, titleKept: false }] });
       return { error: null };
     },
     "claim-admin-alert": async () => {

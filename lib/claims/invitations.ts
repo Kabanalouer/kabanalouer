@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { emailContext } from "@/lib/emails/emailContext";
-import { claimLink, createClaimToken, DRAFT_TOKEN_TTL_DAYS, previewLink, removeLink } from "@/lib/claims/tokens";
+import { claimLink, createClaimToken, createRemoveToken, DRAFT_TOKEN_TTL_DAYS, previewLink, removeLink } from "@/lib/claims/tokens";
 import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 import { sendDraftInvitationEmail, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 import { buildListingPath } from "@/lib/listingUrl";
@@ -179,7 +179,7 @@ export async function previewInvitation(candidate: InvitationCandidate, kind: In
       kind,
       listings: candidate.listings.map((l) => ({ title: titleFor(l, candidate.lang), path: buildListingPath(l, candidate.lang) })),
       claimUrl: claimLink(candidate.lang, "apercu"),
-      removeLinks: candidate.listings.map((l) => ({ title: titleFor(l, candidate.lang), url: removeLink(candidate.lang, "apercu") })),
+      removeUrl: removeLink(candidate.lang, "apercu"),
     })
   );
   return captured;
@@ -202,11 +202,12 @@ export async function sendInvitation(admin: AdminClient, candidate: InvitationCa
   };
 
   const reason = `invitation_${kind}`;
-  const [claimRaw, ...removeRaws] = await Promise.all([
+  const [claimRaw, removeRaw] = await Promise.all([
     createClaimToken(admin, { kind: "claim", claimEmail: candidate.claimEmail, reason }),
-    ...candidate.listings.map((l) => createClaimToken(admin, { kind: "remove", claimEmail: candidate.claimEmail, listingId: l.id, reason })),
+    // Un seul lien de retrait pour toutes les fiches : la page laisse cocher celles à retirer
+    createRemoveToken(admin, { claimEmail: candidate.claimEmail, listingIds: candidate.listings.map((l) => l.id), reason }),
   ]);
-  if (!claimRaw || removeRaws.some((r) => !r)) {
+  if (!claimRaw || !removeRaw) {
     await undo();
     return "error";
   }
@@ -217,7 +218,7 @@ export async function sendInvitation(admin: AdminClient, candidate: InvitationCa
     kind,
     listings: candidate.listings.map((l) => ({ title: titleFor(l, candidate.lang), path: buildListingPath(l, candidate.lang) })),
     claimUrl: claimLink(candidate.lang, claimRaw),
-    removeLinks: candidate.listings.map((l, i) => ({ title: titleFor(l, candidate.lang), url: removeLink(candidate.lang, removeRaws[i] as string) })),
+    removeUrl: removeLink(candidate.lang, removeRaw),
     trackToken,
   });
   if (error) {
@@ -316,24 +317,25 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   const lang = candidate.lang;
   let buttonUrl: string;
   let listings: { title: string; url: string }[];
-  let removeLinks: { title: string; url: string }[] = [];
+  let removeUrl: string | undefined;
   if (candidate.claimed) {
     // Déjà revendiquées : le propriétaire a un compte, tout se passe dans son tableau de bord
     buttonUrl = `${SITE_URL}${localePath("/dashboard/listings", lang)}`;
     listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: `${SITE_URL}${localePath(`/dashboard/listings/${l.id}/edit`, lang)}` }));
   } else {
     const reason = `invitation_${kind}`;
-    const [previewRaw, ...removeRaws] = await Promise.all([
+    const [previewRaw, removeRaw] = await Promise.all([
       createClaimToken(admin, { kind: "claim", claimEmail: candidate.claimEmail, reason, ttlDays: DRAFT_TOKEN_TTL_DAYS }),
-      ...candidate.listings.map((l) => createClaimToken(admin, { kind: "remove", claimEmail: candidate.claimEmail, listingId: l.id, reason })),
+      // Un seul lien de retrait pour toutes les fiches : la page laisse cocher celles à retirer
+      createRemoveToken(admin, { claimEmail: candidate.claimEmail, listingIds: candidate.listings.map((l) => l.id), reason }),
     ]);
-    if (!previewRaw || removeRaws.some((r) => !r)) {
+    if (!previewRaw || !removeRaw) {
       await undo();
       return "error";
     }
     buttonUrl = previewLink(lang, previewRaw);
     listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, previewRaw, l.id) }));
-    removeLinks = candidate.listings.map((l, i) => ({ title: titleFor(l, lang), url: removeLink(lang, removeRaws[i] as string) }));
+    removeUrl = removeLink(lang, removeRaw);
   }
 
   // Première phrase personnalisée selon le site du propriétaire (invitation seulement), écrite dans Admin → Brouillons
@@ -341,7 +343,7 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
   const displayName = note?.display_name;
 
-  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeLinks, claimed: candidate.claimed, trackToken, intro, displayName });
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName });
   if (error) {
     console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();
@@ -367,7 +369,7 @@ export async function previewDraftInvitation(
       kind,
       listings: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, "apercu", l.id) })),
       buttonUrl: candidate.claimed ? `${SITE_URL}${localePath("/dashboard/listings", lang)}` : previewLink(lang, "apercu"),
-      removeLinks: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: removeLink(lang, "apercu") })),
+      removeUrl: removeLink(lang, "apercu"),
       claimed: candidate.claimed,
       intro,
       displayName,

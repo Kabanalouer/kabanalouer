@@ -168,7 +168,6 @@ export const TEMPLATE_DRAFT_REMINDER_10_MULTI: EmailTemplateDef = {
 
 export type DraftInvitationKind = "draft_invite" | "draft_reminder_3" | "draft_reminder_10";
 export type DraftEmailListing = { title: string; url: string };
-export type DraftEmailRemoveLink = { title: string; url: string };
 
 function templateFor(kind: DraftInvitationKind, multiple: boolean): EmailTemplateDef {
   if (kind === "draft_invite") return multiple ? TEMPLATE_DRAFT_INVITATION_MULTI : TEMPLATE_DRAFT_INVITATION;
@@ -184,7 +183,8 @@ export async function sendDraftInvitationEmail(input: {
   kind: DraftInvitationKind;
   listings: DraftEmailListing[];
   buttonUrl: string;
-  removeLinks: DraftEmailRemoveLink[];
+  // « Retirer ma fiche » / « Retirer mes fiches » : un seul lien (jeton couvrant toutes les fiches de l'adresse)
+  removeUrl?: string;
   claimed?: boolean;
   trackToken?: string;
   // Nom du chalet ou du site (« {nom} sur Kabanalouer »), saisi dans Admin → Brouillons ; sinon le titre du chalet ou « Titre et N autres chalets »
@@ -205,12 +205,11 @@ export async function sendDraftInvitationEmail(input: {
   const items = input.listings.map((l) => link(l.url, l.title, true));
   const fiches = multiple ? bullets(items) : items[0] ?? "";
 
-  const removeItems = input.removeLinks.map((r) => link(r.url, fr ? `Retirer « ${r.title} »` : `Remove “${r.title}”`));
+  // Un seul lien pour toutes les fiches : la page de retrait laisse cocher celles à retirer
+  const removeLabel = multiple ? (fr ? "Retirer mes fiches" : "Remove my listings") : fr ? "Retirer ma fiche" : "Remove my listing";
   let retrait = "";
-  if (!input.claimed && input.removeLinks.length > 0) {
-    retrait = multiple
-      ? `${escapeHtml(fr ? "Vous ne souhaitez pas figurer sur Kabanalouer ? Vous pouvez retirer chaque chalet :" : "Don’t want to be on Kabanalouer? You can remove each cabin:")}<br/>${bullets(removeItems)}`
-      : `${escapeHtml(fr ? "Vous ne souhaitez pas figurer sur Kabanalouer ?" : "Don’t want to be on Kabanalouer?")} ${link(input.removeLinks[0].url, fr ? "Retirer ma fiche" : "Remove my listing")}`;
+  if (!input.claimed && input.removeUrl) {
+    retrait = `${escapeHtml(fr ? "Vous ne souhaitez pas figurer sur Kabanalouer ?" : "Don’t want to be on Kabanalouer?")} ${link(input.removeUrl, removeLabel)}`;
   }
 
   const offerActive = SITE_IS_FREE;
