@@ -72,6 +72,30 @@ test("invitation brouillon : une adresse sans ligne en attente reçoit une invit
   assert.equal(out[0].claimed, false);
 });
 
+test("invitation brouillon : les fiches déjà revendiquées (hors ligne) de la même adresse font partie du lot, triées avec les autres", async () => {
+  const { listDraftCandidates, draftListingUrl } = await load();
+  const admin = fakeAdmin({
+    listings: [
+      draft("z@exemple.test", { title: "Serenia", claim_status: "claimed" }),
+      draft("z@exemple.test", { title: "Villa Bianca" }),
+      draft("z@exemple.test", { title: "Black Eagle" }),
+      draft("y@exemple.test", { title: "Seule revendiquée", claim_status: "claimed" }), // rien à inviter : pas d'invitation
+    ],
+    listing_import_queue: [],
+    listing_invitations: [],
+  });
+  const out = await listDraftCandidates(admin, "draft_invite");
+  assert.deepEqual(out.map((c) => c.claimEmail), ["z@exemple.test"]);
+  assert.deepEqual(out[0].listings.map((l) => l.title), ["Black Eagle", "Serenia", "Villa Bianca"]);
+  assert.equal(out[0].claimed, false);
+
+  // Lien : l'aperçu privé pour une fiche pas encore à lui, son tableau de bord pour une fiche déjà revendiquée
+  const [black, serenia] = out[0].listings;
+  assert.match(draftListingUrl(black, "fr", "JETON"), /^https:\/\/kabanalouer\.ca\/apercu\/JETON\//);
+  assert.equal(draftListingUrl(serenia, "fr", "JETON"), `https://kabanalouer.ca/dashboard/listings/${serenia.id}/edit`);
+  assert.equal(draftListingUrl(serenia, "en", "JETON"), `https://kabanalouer.ca/en/dashboard/listings/${serenia.id}/edit`);
+});
+
 test("relances : fenêtre J+3 (3 à 10 jours) et J+10, jamais si une fiche est activée ou déjà relancée", async () => {
   const { listDraftCandidates } = await load();
   const tables = {

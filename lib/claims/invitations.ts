@@ -28,6 +28,8 @@ type CandidateListing = {
   city: string | null;
   listing_number: number | null;
   custom_slug: string | null;
+  // Brouillon seulement : 'claimed' = déjà à son compte (hors ligne), le courriel mène alors à son tableau de bord
+  claim_status?: string | null;
 };
 
 export type InvitationCandidate = {
@@ -38,7 +40,7 @@ export type InvitationCandidate = {
   invitedAt?: string;
 };
 
-const LISTING_COLUMNS = "id, title, title_en, region, city, listing_number, custom_slug, claim_email, claim_language";
+const LISTING_COLUMNS = "id, title, title_en, region, city, listing_number, custom_slug, claim_email, claim_language, claim_status";
 
 async function fetchAllRows<T>(build: (from: number, to: number) => PromiseLike<{ data: unknown; error: { message: string } | null }>): Promise<T[]> {
   const rows: T[] = [];
@@ -242,6 +244,13 @@ export const DRAFT_REMINDER_DAYS: Record<"draft_reminder_3" | "draft_reminder_10
 
 export type DraftCandidate = InvitationCandidate & { claimed: boolean };
 
+// Lien d'une fiche dans le courriel brouillon : l'aperçu privé pour une fiche pas encore à son compte, sa page dans le
+// tableau de bord pour une fiche qu'il a déjà revendiquée (l'aperçu ne montre que les fiches non revendiquées).
+export function draftListingUrl(l: Pick<CandidateListing, "id" | "claim_status">, lang: "fr" | "en", previewRaw: string): string {
+  if (l.claim_status === "claimed") return `${SITE_URL}${localePath(`/dashboard/listings/${l.id}/edit`, lang)}`;
+  return previewLink(lang, previewRaw, l.id);
+}
+
 async function draftListings(admin: AdminClient, testMode: boolean, claimStatus: "unclaimed" | "claimed"): Promise<Row[]> {
   return fetchAllRows<Row>((from, to) =>
     admin
@@ -263,6 +272,7 @@ export async function listDraftCandidates(admin: AdminClient, kind: DraftInvitat
   const removed = testMode ? new Set<string>() : await removedOwnerEmails(admin);
   const keep = (rows: Row[]) => rows.filter((r) => !removed.has(r.claim_email.trim().toLowerCase()));
   const unclaimed = keep(await draftListings(admin, testMode, "unclaimed"));
+  const claimedRows = keep(await draftListings(admin, testMode, "claimed"));
 
   if (kind === "draft_invite") {
     const [{ data }, pending] = await Promise.all([
@@ -270,10 +280,17 @@ export async function listDraftCandidates(admin: AdminClient, kind: DraftInvitat
       emailsWithPendingImport(admin),
     ]);
     const exclude = new Set<string>([...(data ?? []).map((r: { claim_email: string }) => r.claim_email), ...pending]);
-    return group(unclaimed, undefined, exclude).map((c) => ({ ...c, claimed: false }));
+    // Les fiches de la même adresse que le propriétaire a déjà revendiquées (toujours hors ligne) font partie du même lot :
+    // elles sont listées comme les autres, sans mention spéciale (même liste que l'aperçu de l'admin).
+    const unclaimedEmails = new Set(unclaimed.map((r) => r.claim_email));
+    const batch = [...unclaimed, ...claimedRows.filter((r) => unclaimedEmails.has(r.claim_email))];
+    return group(batch, undefined, exclude).map((c) => ({
+      ...c,
+      listings: [...c.listings].sort((a, b) => (a.title ?? "").localeCompare(b.title ?? "", "fr")),
+      claimed: false,
+    }));
   }
 
-  const claimedRows = keep(await draftListings(admin, testMode, "claimed"));
   const window = DRAFT_REMINDER_DAYS[kind];
   const now = Date.now();
   const [{ data: invites }, { data: already }, { data: activated }] = await Promise.all([
@@ -334,7 +351,7 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
       return "error";
     }
     buttonUrl = previewLink(lang, previewRaw);
-    listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, previewRaw, l.id) }));
+    listings = candidate.listings.map((l) => ({ title: titleFor(l, lang), url: draftListingUrl(l, lang, previewRaw) }));
     removeUrl = removeLink(lang, removeRaw);
   }
 
@@ -367,7 +384,7 @@ export async function previewDraftInvitation(
       to: candidate.claimEmail,
       lang,
       kind,
-      listings: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: previewLink(lang, "apercu", l.id) })),
+      listings: candidate.listings.map((l) => ({ title: titleFor(l, lang), url: draftListingUrl(l, lang, "apercu") })),
       buttonUrl: candidate.claimed ? `${SITE_URL}${localePath("/dashboard/listings", lang)}` : previewLink(lang, "apercu"),
       removeUrl: removeLink(lang, "apercu"),
       claimed: candidate.claimed,

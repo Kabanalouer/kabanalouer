@@ -55,8 +55,23 @@ export async function claimListingsForUser(
   let published = 0;
   if (input.activateDrafts) {
     try {
-      const results = await activateClaimedDrafts(admin, { userId: input.userId, listingIds: rows.map((r) => r.out_listing_id) });
-      published = results.filter((r) => r.ok).length;
+      const claimedIds = rows.map((r) => r.out_listing_id);
+      // Même lot : ses fiches de la même adresse qu'il avait déjà revendiquées et qui sont restées hors ligne (brouillon)
+      // sont activées avec les autres. `published` ne compte que les fiches revendiquées maintenant (écran de fin).
+      const emails = [...new Set(rows.map((r) => r.out_claim_email).filter((e): e is string => !!e))];
+      let earlier: string[] = [];
+      if (emails.length > 0) {
+        const { data: others } = await admin
+          .from("listings")
+          .select("id")
+          .eq("host_id", input.userId)
+          .eq("claim_status", "claimed")
+          .eq("mode_publication", "brouillon")
+          .in("claim_email", emails);
+        earlier = ((others ?? []) as { id: string }[]).map((o) => o.id).filter((id) => !claimedIds.includes(id));
+      }
+      const results = await activateClaimedDrafts(admin, { userId: input.userId, listingIds: [...claimedIds, ...earlier] });
+      published = results.filter((r) => r.ok && claimedIds.includes(r.id)).length;
     } catch (e) {
       console.error("claimListingsForUser: échec de la mise en ligne des brouillons", e);
     }
