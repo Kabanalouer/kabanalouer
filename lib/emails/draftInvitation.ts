@@ -243,8 +243,6 @@ export async function sendDraftInvitationEmail(input: {
     retrait,
     suivi,
   });
-  // Un texte enregistré dans l'admin avant l'ajout du repère {intro} ne l'a pas : la phrase s'ajoute alors au début
-  if (intro && !text.body.includes(intro)) text.body = intro + text.body;
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.buttonUrl });
   const { error } = await sendEmail({ from: FROM, to: [input.to], subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };

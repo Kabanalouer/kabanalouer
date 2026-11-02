@@ -33,7 +33,6 @@ function sentLine(label: string, s: SentInfo | null): string | null {
 function OwnerCard({ row }: { row: DraftOwnerRow }) {
   const router = useRouter();
   const en = row.lang === "en";
-  const [intro, setIntro] = useState(en ? row.introEn : row.introFr);
   const [site, setSite] = useState(row.siteUrl ?? "");
   const [name, setName] = useState(row.displayName);
   const [saved, setSaved] = useState(true);
@@ -57,7 +56,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   async function save(): Promise<boolean> {
     setBusy("save");
     setMessage(null);
-    const { ok, data } = await call("PUT", { email: row.email, [en ? "intro_en" : "intro_fr"]: intro, site_url: site, display_name: name });
+    const { ok, data } = await call("PUT", { email: row.email, site_url: site, display_name: name });
     setBusy(null);
     if (!ok) {
       setMessage({ ok: false, text: String(data.error ?? "Enregistrement impossible") });
@@ -72,7 +71,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   async function showPreview(kind: Kind) {
     setBusy(`preview-${kind}`);
     setMessage(null);
-    const { ok, data } = await call("POST", { action: "preview", email: row.email, kind, intro, displayName: name });
+    const { ok, data } = await call("POST", { action: "preview", email: row.email, kind, displayName: name });
     setBusy(null);
     if (!ok) return setMessage({ ok: false, text: String(data.error ?? "Aperçu impossible") });
     setPreview({ kind, subject: String(data.subject ?? ""), html: String(data.html ?? "") });
@@ -145,24 +144,8 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
       )}
 
       {row.status !== "retire" && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_16rem]">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-charcoal-700">
-              Première phrase du courriel ({en ? "anglais" : "français"}), selon son site web
-            </span>
-            <textarea
-              value={intro}
-              onChange={(e) => {
-                setIntro(e.target.value);
-                setSaved(false);
-              }}
-              rows={2}
-              maxLength={600}
-              placeholder={en ? "We came across your website and loved your cabins." : "Nous avons découvert votre site et adoré vos chalets."}
-              className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-            />
-          </label>
-          <div className="space-y-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="contents">
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-charcoal-700">Nom du chalet ou du site (objet et titre)</span>
               <input
