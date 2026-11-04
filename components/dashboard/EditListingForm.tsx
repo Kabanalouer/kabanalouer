@@ -177,7 +177,6 @@ export default function EditListingForm({
   initialCity,
   initialLat,
   initialLng,
-  subscriptionStatus: initialSubStatus,
   initialBlocked,
   icalUrl,
   icalLastSync,
@@ -197,7 +196,6 @@ export default function EditListingForm({
   initialCity: string;
   initialLat: number | null;
   initialLng: number | null;
-  subscriptionStatus: string | null;
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
   icalLastSync: string | null;
@@ -279,7 +277,6 @@ export default function EditListingForm({
   // Vient d'être publiée (offre gratuite) : on bascule sur la section Boost
   // avec un message de succès au-dessus.
   const [justPublished, setJustPublished] = useState(false);
-  const [subStatus, setSubStatus] = useState<string | null>(initialSubStatus);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [localImportStatus, setLocalImportStatus] = useState(importStatus ?? null);
@@ -602,35 +599,10 @@ export default function EditListingForm({
     return promise;
   };
 
-  const handleActivateFree = async () => {
+  const handlePublish = async () => {
     setPublishLoading(true);
     setPublishError("");
-    let res: Response;
-    if (subStatus === "active") {
-      // Abonnement gratuit déjà en place (fiche revendiquée) : brouillon → activate-draft, sinon republication simple
-      const draftRes = await fetch("/api/listings/activate-draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: [{ id: listingId }] }),
-      });
-      const draftData = (await draftRes.json().catch(() => ({}))) as { results?: { ok: boolean; error?: string }[] };
-      const result = draftData.results?.[0];
-      if (draftRes.ok && result?.ok) {
-        res = draftRes;
-      } else if (draftRes.ok && result?.error === "not_eligible") {
-        res = await fetch(`/api/listings/${listingId}/publish`, { method: "POST" });
-      } else {
-        setPublishError(tEdit("activateError"));
-        setPublishLoading(false);
-        return;
-      }
-    } else {
-      res = await fetch("/api/subscriptions/activate-free", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId }),
-      });
-    }
+    const res = await fetch(`/api/listings/${listingId}/publish`, { method: "POST" });
     if (!res.ok) {
       const data = await res.json();
       setPublishError(data.error ?? tEdit("activateError"));
@@ -638,7 +610,6 @@ export default function EditListingForm({
       return;
     }
     setIsPublished(true);
-    setSubStatus("active");
     setPublishLoading(false);
     setJustPublished(true);
     trackEvent("listing_publish", { offer: "gratuite", listing_id: listingId });
@@ -785,7 +756,7 @@ export default function EditListingForm({
   };
 
   // Point d'entrée commun pour les 3 déclencheurs de publication
-  // (handleActivateFree, handleAdminPublish) — n'y
+  // (handlePublish, handleAdminPublish) — n'y
   // touche pas lui-même, se contente d'attendre la confirmation du flush
   // juste avant de les appeler.
   const runPublishAction = async (action: () => Promise<void>) => {
@@ -978,7 +949,7 @@ export default function EditListingForm({
 
           {/* Bottom actions */}
           <div className="mt-4 pt-4 border-t border-[#ebebeb] space-y-2">
-            {isPublished && subStatus === "active" ? (
+            {isPublished ? (
               <button
                 onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
                 className="w-full py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"
@@ -1886,9 +1857,6 @@ export default function EditListingForm({
 
           {/* Section: Publier */}
           {activeSection === "publier" && (() => {
-            // L'offre gratuite n'est proposée que si CETTE annonce n'a jamais
-            // eu d'abonnement — par annonce, pas par proprio. Un proprio avec
-            // plusieurs chalets a droit à l'offre séparément pour chacun.
             const canPublish = allRequiredComplete;
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
@@ -1931,7 +1899,7 @@ export default function EditListingForm({
               );
             }
 
-            if (isPublished && subStatus === "active") {
+            if (isPublished) {
               const publishedDate = new Date(listingCreatedAt + (listingCreatedAt.includes("T") ? "" : "T12:00:00"));
               return (
                 <SectionShell title={t("publish.headingActive")}>
@@ -2030,7 +1998,7 @@ export default function EditListingForm({
                   <button
                     onClick={() => {
                       if (!canPublish) { setShowPublishErrors(true); return; }
-                      void runPublishAction(handleActivateFree);
+                      void runPublishAction(handlePublish);
                     }}
                     disabled={publishLoading}
                     className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
@@ -2156,7 +2124,7 @@ export default function EditListingForm({
 
         {/* Mobile : actions de l’annonce, sous les champs */}
         <div className="flex lg:hidden flex-col gap-2 mt-6">
-          {isPublished && subStatus === "active" ? (
+          {isPublished ? (
             <button
               onClick={() => goToSection("publier")}
               className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border border-[#ebebeb] text-charcoal-600 bg-white hover:bg-charcoal-50 transition-colors flex items-center justify-center gap-1.5"

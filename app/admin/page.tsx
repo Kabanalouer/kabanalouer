@@ -4,14 +4,14 @@ export default async function AdminOverviewPage() {
   const supabase = await createClient();
 
   const [
-    { data: activeSubUsers },
+    { data: hostsWithLive },
     { count: publishedListings },
     { count: totalMessages },
     { count: totalReviews },
     { data: recentUsers },
     { data: recentListings },
   ] = await Promise.all([
-    supabase.from("subscriptions").select("user_id").eq("status", "active"),
+    supabase.from("listings").select("host_id").eq("is_published", true).or("claim_status.is.null,claim_status.eq.claimed").eq("is_test", false),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("messages").select("id", { count: "exact", head: true }),
     supabase.from("reviews").select("id", { count: "exact", head: true }),
@@ -19,7 +19,7 @@ export default async function AdminOverviewPage() {
     supabase.from("listings").select("id, title, region, is_published, created_at, host:host_id(name)").order("created_at", { ascending: false }).limit(5),
   ]);
 
-  const activeProprios = new Set((activeSubUsers ?? []).map((s) => s.user_id)).size;
+  const activeProprios = new Set((hostsWithLive ?? []).map((l) => l.host_id)).size;
 
   const metrics = [
     { label: "Proprios actifs", value: activeProprios },

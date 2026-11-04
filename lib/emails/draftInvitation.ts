@@ -4,7 +4,6 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { loadBaseFields, resolveEmailText } from "@/lib/emailTemplates/resolve";
 import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 import { SITE_URL } from "@/lib/siteUrl";
-import { SITE_IS_FREE } from "@/lib/siteIsFree";
 
 // Fiches en brouillon (propriétaires de plusieurs chalets, mode_publication = 'brouillon') : invitation à voir
 // l'aperçu privé et à activer ses fiches, puis relances à J+3 et J+10. Part de info@kabanalouer.ca.
@@ -214,8 +213,7 @@ export async function sendDraftInvitationEmail(input: {
     retrait = `${escapeHtml(fr ? "Vous ne souhaitez pas figurer sur Kabanalouer ?" : "Don’t want to be on Kabanalouer?")} ${link(input.removeUrl, removeLabel)}`;
   }
 
-  const offerActive = SITE_IS_FREE;
-  const offre = offerActive ? `<br/><br/>${escapeHtml(fr ? "L’activation est gratuite." : "Activation is free.")}` : "";
+  const offre = `<br/><br/>${escapeHtml(fr ? "L’activation est gratuite." : "Activation is free.")}`;
   const suivi = input.trackToken
     ? `<img src="${SITE_URL}/api/invitations/open/${input.trackToken}.gif" width="1" height="1" alt="" style="display:block;border:0;width:1px;height:1px;" />`
     : "";
@@ -238,7 +236,7 @@ export async function sendDraftInvitationEmail(input: {
     titreChalet: subjectTitle,
     nombre: String(input.listings.length),
     fiches,
-    gratuitement: offerActive ? (fr ? ", gratuitement" : ", for free") : "",
+    gratuitement: fr ? ", gratuitement" : ", for free",
     offre,
     bouton,
     retrait,

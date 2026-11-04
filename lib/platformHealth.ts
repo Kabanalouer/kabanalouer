@@ -27,9 +27,8 @@ async function fetchAll<T>(admin: Admin, table: string, columns: string): Promis
 }
 
 type Msg = { listing_id: string; sender_id: string; receiver_id: string; created_at: string };
-type Listing = { id: string; host_id: string; title: string | null; region: string | null; city: string | null; is_published: boolean; created_at: string; views_listing: number | null; claim_status: string | null; is_test: boolean };
+type Listing = { id: string; host_id: string; title: string | null; region: string | null; city: string | null; is_published: boolean; created_at: string; views_listing: number | null; claim_status: string | null; is_test: boolean; published_at: string | null };
 type User = { id: string; name: string | null; role: string; created_at: string; is_system: boolean };
-type Sub = { listing_id: string | null; created_at: string };
 type Review = { rating: number | null; created_at: string };
 type ReviewRequest = { prompted_at: string | null };
 type Nudge = { status: string; created_at: string };
@@ -103,11 +102,10 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
   const start = now - days * DAY;
   const prevStart = start - days * DAY;
 
-  const [messages, allListings, allUsers, subs, reviews, reviewRequests, nudges] = await Promise.all([
+  const [messages, allListings, allUsers, reviews, reviewRequests, nudges] = await Promise.all([
     fetchAll<Msg>(admin, "messages", "listing_id, sender_id, receiver_id, created_at"),
-    fetchAll<Listing>(admin, "listings", "id, host_id, title, region, city, is_published, created_at, views_listing, claim_status, is_test"),
+    fetchAll<Listing>(admin, "listings", "id, host_id, title, region, city, is_published, created_at, views_listing, claim_status, is_test, published_at"),
     fetchAll<User>(admin, "users", "id, name, role, created_at, is_system"),
-    fetchAll<Sub>(admin, "subscriptions", "listing_id, created_at"),
     fetchAll<Review>(admin, "reviews", "rating, created_at"),
     fetchAll<ReviewRequest>(admin, "review_requests", "prompted_at"),
     fetchAll<Nudge>(admin, "no_reply_nudges", "status, created_at").catch(() => [] as Nudge[]),
@@ -166,10 +164,8 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
 
   // ── Offre
   const firstPublication = new Map<string, number>();
-  for (const s of subs) {
-    if (!s.listing_id) continue;
-    const t = time(s.created_at);
-    firstPublication.set(s.listing_id, Math.min(firstPublication.get(s.listing_id) ?? Infinity, t));
+  for (const l of listings) {
+    if (l.published_at) firstPublication.set(l.id, time(l.published_at));
   }
   const published = listings.filter((l) => l.is_published);
   const regionCounts = new Map<string, number>();

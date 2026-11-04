@@ -157,7 +157,7 @@ test("table Brouillons : état d'un propriétaire et fiches à compléter", asyn
   assert.deepEqual(listingIssues({ ...ok, photos: [1, 2], citq_number: null, description: "courte" }), ["description trop courte", "2 photos (5 minimum)"]);
 });
 
-test("revendication d'un brouillon : mise en ligne tout de suite (même sans CITQ), sauf fiche à compléter ou abonnement absent", async () => {
+test("revendication d'un brouillon : mise en ligne tout de suite (même sans CITQ), sauf fiche à compléter", async () => {
   const { activateClaimedDrafts } = await import("@/lib/claims/activateDrafts");
   const owner = "owner-1";
   const row = (id: string, extra: Row = {}): Row => ({
@@ -166,20 +166,18 @@ test("revendication d'un brouillon : mise en ligne tout de suite (même sans CIT
     region: "Laurentides", citq_number: "298960", import_raw_data: { fixture: true }, ...extra,
   });
   const rows = [
-    row("ok"), row("peu-de-photos", { photos: [1, 2, 3, 4] }), row("sans-abonnement"), row("sans-citq", { citq_number: null }),
+    row("ok"), row("peu-de-photos", { photos: [1, 2, 3, 4] }), row("sans-citq", { citq_number: null }),
     row("citq-invalide", { citq_number: "12" }), row("autre-proprio", { host_id: "someone-else" }), row("deja-en-ligne", { is_published: true }),
   ];
-  const subs = ["ok", "peu-de-photos", "sans-citq", "citq-invalide", "autre-proprio", "deja-en-ligne"].map((listing_id) => ({ listing_id, status: "active" }));
   const updates: { id: string; vals: Row }[] = [];
   const admin = {
-    from(table: string) {
-      if (table === "subscriptions") return { select: () => ({ in: async () => ({ data: subs }) }) };
+    from() {
       return {
         select: () => ({ in: async () => ({ data: rows }) }),
         update: (vals: Row) => {
           let id = "";
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const q: any = { eq: (c: string, v: string) => ((c === "id" && (id = v)), q), select: async () => (updates.push({ id, vals }), { data: [{ id }], error: null }) };
+          const q: any = { eq: (c: string, v: string) => ((c === "id" && (id = v)), q), in: () => q, is: async () => ({ error: null }), select: async () => (updates.push({ id, vals }), { data: [{ id }], error: null }) };
           return q;
         },
       };
@@ -189,7 +187,7 @@ test("revendication d'un brouillon : mise en ligne tout de suite (même sans CIT
   const res = await activateClaimedDrafts(admin, { userId: owner, listingIds: ids });
   const by = Object.fromEntries(res.map((r) => [r.id, r.ok ? "ok" : r.error]));
   assert.deepEqual(by, {
-    "ok": "ok", "peu-de-photos": "incomplete", "sans-abonnement": "subscription_required", "sans-citq": "ok",
+    "ok": "ok", "peu-de-photos": "incomplete", "sans-citq": "ok",
     "citq-invalide": "ok", "autre-proprio": "not_eligible", "deja-en-ligne": "not_eligible",
   });
   assert.equal(updates.length, 3); // ok, sans-citq, citq-invalide : le CITQ n'est pas exigé

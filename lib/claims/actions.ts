@@ -1,4 +1,3 @@
-import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { maskEmail } from "@/lib/claims/maskedEmail";
 import { markInvitationsClaimed } from "@/lib/claims/invitations";
 import { activateClaimedDrafts } from "@/lib/claims/activateDrafts";
@@ -22,25 +21,16 @@ type AdminClient = { from: (table: string) => any; rpc: (fn: string, args: Recor
 type ClaimedRow = { out_listing_id: string; out_claim_email: string | null };
 
 // Transfère les fiches au compte `userId` en une seule transaction (fonction SQL
-// claim_listings) : propriétaire, demandes déjà reçues, abonnement gratuit tant que
-// l'offre de lancement est active (lib/launchOffer.ts). Ne dépublie jamais rien.
+// claim_listings) : propriétaire, demandes déjà reçues. Ne dépublie jamais rien.
 // Puis avertit les anciennes adresses.
 export async function claimListingsForUser(
   admin: AdminClient,
   input: { userId: string; listingIds: string[]; tokenId?: string | null; welcome?: boolean; activateDrafts?: boolean }
 ): Promise<{ ok: true; listingIds: string[]; published: number } | { ok: false; error: string }> {
-  let freeUntil: string | null = null;
-  if (isLaunchOfferActive()) {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() + 1);
-    freeUntil = d.toISOString();
-  }
-
   const { data, error } = await admin.rpc("claim_listings", {
     p_user_id: input.userId,
     p_listing_ids: input.listingIds,
     p_token_id: input.tokenId ?? null,
-    p_free_launch_expires_at: freeUntil,
   });
   if (error) {
     console.error("claimListingsForUser: échec claim_listings", error);
@@ -50,7 +40,7 @@ export async function claimListingsForUser(
   const rows = (data ?? []) as ClaimedRow[];
 
   // Fiches en brouillon : revendiquer les met en ligne tout de suite (le propriétaire n'a rien d'autre à faire). Celles qui
-  // ne peuvent pas l'être (à compléter, abonnement à régler) restent hors ligne : bouton « Activer » dans Mes chalets.
+  // ne peuvent pas l'être (fiche à compléter) restent hors ligne : bouton « Activer » dans Mes chalets.
   // Fait AVANT les courriels : la bienvenue dépend de ce qui est réellement en ligne. Ne bloque jamais la revendication.
   let published = 0;
   if (input.activateDrafts) {
@@ -81,7 +71,7 @@ export async function claimListingsForUser(
     // L'invitation envoyée à cette adresse est marquée « revendiquée » (résultats de l'admin)
     await markInvitationsClaimed(admin, [...new Set(rows.map((r) => r.out_claim_email).filter((e): e is string => !!e))]);
     await notifyOldAddresses(admin, input.userId, rows);
-    if (input.welcome !== false) await welcomeNewOwner(admin, input.userId, rows.map((r) => r.out_listing_id), freeUntil !== null);
+    if (input.welcome !== false) await welcomeNewOwner(admin, input.userId, rows.map((r) => r.out_listing_id));
   } catch (e) {
     // La revendication a réussi : l'avis à l'ancienne adresse ne doit jamais la défaire.
     console.error("claimListingsForUser: échec de l'avis à l'ancienne adresse", e);
@@ -90,7 +80,7 @@ export async function claimListingsForUser(
 }
 
 // Un seul courriel de bienvenue par revendication, même pour plusieurs fiches.
-async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: string[], freeYear: boolean): Promise<void> {
+async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: string[]): Promise<void> {
   if (listingIds.length === 0) return;
   const [{ data: user }, { data: listings }] = await Promise.all([
     admin.from("users").select("email, name, preferred_language").eq("id", userId).maybeSingle(),
@@ -108,7 +98,6 @@ async function welcomeNewOwner(admin: AdminClient, userId: string, listingIds: s
     lang,
     firstName: ((user.name as string | null) ?? "").split(" ")[0],
     listingTitles: titles,
-    freeYear,
     draft,
   });
   if (error) console.error("welcomeNewOwner: échec envoi", error);

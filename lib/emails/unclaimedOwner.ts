@@ -96,7 +96,7 @@ export const TEMPLATE_CLAIM_WELCOME: EmailTemplateDef = {
   placeholders: [
     LISTINGS_PLACEHOLDER,
     { key: "prenom", label: "Prénom du nouveau propriétaire" },
-    { key: "offre", label: "Phrase « Votre première année est gratuite. » (vide si l’offre de lancement est terminée)", html: true },
+    { key: "offre", label: "Phrase « C’est gratuit. »", html: true },
   ],
   defaults: {
     fr: {
@@ -124,7 +124,7 @@ export const TEMPLATE_CLAIM_WELCOME_DRAFT: EmailTemplateDef = {
   placeholders: [
     LISTINGS_PLACEHOLDER,
     { key: "prenom", label: "Prénom du nouveau propriétaire" },
-    { key: "offre", label: "Phrase « Votre première année est gratuite. » (vide si l’offre de lancement est terminée)", html: true },
+    { key: "offre", label: "Phrase « C’est gratuit. »", html: true },
   ],
   defaults: {
     fr: {
@@ -278,12 +278,11 @@ export async function sendClaimWelcomeEmail(input: {
   lang: Lang;
   firstName?: string | null;
   listingTitles: string[];
-  freeYear: boolean;
   // Fiches en brouillon (pas encore en ligne) : texte « elles sont à vous, activez-les depuis Mes chalets »
   draft?: boolean;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
-  const offre = input.freeYear ? `<strong>${fr ? "C’est gratuit." : "It’s free."}</strong><br/><br/>` : "";
+  const offre = `<strong>${fr ? "C’est gratuit." : "It’s free."}</strong><br/><br/>`;
   const text = await resolveEmailText(input.draft ? TEMPLATE_CLAIM_WELCOME_DRAFT : TEMPLATE_CLAIM_WELCOME, input.lang, {
     prenom: input.firstName?.trim(),
     titresFiches: titlesHtml(input.listingTitles),

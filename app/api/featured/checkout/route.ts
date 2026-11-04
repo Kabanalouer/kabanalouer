@@ -109,12 +109,10 @@ export async function POST(request: Request) {
         quantity: 1,
       },
     ],
-    // Stripe Tax calcule maintenant la taxe automatiquement — remplace les
-    // tax_rates manuels codés en dur (lib/stripeTaxRates.ts), même
-    // changement que app/api/stripe/checkout/route.ts.
+    // Stripe Tax calcule la taxe automatiquement (pas de taux manuels codés en dur).
     automatic_tax: { enabled: true },
     billing_address_collection: "required",
-    // Pas de customer_update ici, contrairement à l'abonnement : cette
+    // Pas de customer_update ici : cette
     // session ne passe jamais de `customer` (aucun Stripe Customer
     // réutilisé/créé pour un achat de vedette), et Stripe rejette
     // customer_update si `customer` n'est pas fourni sur la session

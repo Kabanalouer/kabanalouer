@@ -9,7 +9,7 @@ export const PRIX_VEDETTE_HOME = 99;
 export const PRIX_VEDETTE_REGION = 49;
 export const MAX_MONTHS_AHEAD = 3;
 
-// Bascule test/prod : voir lib/subscriptionPricing.ts pour le choix de VERCEL_ENV.
+// Bascule test/prod : VERCEL_ENV (jamais NODE_ENV, qui vaut « production » aussi sur les aperçus Vercel).
 const isProdEnv = process.env.VERCEL_ENV === "production";
 
 const STRIPE_PRICE_FEATURED_HOME_TEST = "price_1Tq8siEVlLGcAv4aUZyRM4NY";

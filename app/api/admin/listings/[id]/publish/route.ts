@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
 import { buildListingPath } from "@/lib/listingUrl";
-import { isLaunchOfferActive } from "@/lib/launchOffer";
+import { markPublished } from "@/lib/publishedAt";
 
 function adminSupabase() {
   return createAdminClient(
@@ -53,25 +53,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Propriétaire introuvable" }, { status: 500 });
   }
 
-  // Éligibilité par ANNONCE, pas par proprio — voir /api/subscriptions/activate-free
-  // pour le même raisonnement. Une ligne subscriptions déjà existante pour CETTE
-  // annonce bloque une 2e création, peu importe l'état des autres annonces du proprio.
-  const { data: existingSub } = await admin
-    .from("subscriptions")
-    .select("id")
-    .eq("listing_id", id)
-    .maybeSingle();
-
-  // Offre de lancement terminée (lib/launchOffer.ts) : pas d'abonnement gratuit
-  // à créer, et publier sans abonnement contournerait le paiement — le proprio
-  // publie lui-même avec l'abonnement Stripe.
-  if (!existingSub && !isLaunchOfferActive()) {
-    return NextResponse.json(
-      { error: "Offre de lancement terminée : le propriétaire doit publier lui-même avec l'abonnement." },
-      { status: 409 }
-    );
-  }
-
   const { error: publishError } = await admin
     .from("listings")
     .update({ is_published: true, import_status: "published" })
@@ -82,35 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Échec de la publication" }, { status: 500 });
   }
 
-  // Abonnement offre de lancement — seulement si CETTE annonce n'en a jamais
-  // eu (voir le check existingSub ci-dessus). Si elle en a déjà eu un, on ne
-  // crée rien ici — laissé à une révision manuelle du prix plutôt que de
-  // contourner silencieusement cette règle.
-  let subscriptionCreated = false;
-  if (!existingSub) {
-    const expiresAt = new Date();
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-
-    const { error: subError } = await admin.from("subscriptions").upsert(
-      {
-        listing_id: id,
-        user_id: listing.host_id,
-        stripe_subscription_id: null,
-        status: "active",
-        expires_at: expiresAt.toISOString(),
-        is_free_launch: true,
-        price_tier: "free",
-        price_cents: 0,
-      },
-      { onConflict: "listing_id" }
-    );
-
-    if (subError) {
-      console.error("admin/listings/publish: échec upsert subscriptions", subError);
-    } else {
-      subscriptionCreated = true;
-    }
-  }
+  await markPublished(admin, [id]);
 
   // Courriel de bienvenue — ne doit jamais faire échouer la publication déjà
   // réussie.
@@ -128,7 +81,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       firstName: hostRow.name?.trim().split(/\s+/)[0],
       listingPath,
       listingTitle: (lang === "en" ? listing.title_en : null) || listing.title || (lang === "en" ? "your listing" : "ton chalet"),
-      isFreeLaunch: subscriptionCreated,
     });
     if (emailError) {
       console.error("admin/listings/publish: échec envoi courriel de bienvenue", emailError);
@@ -137,5 +89,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     console.error("admin/listings/publish: échec envoi courriel de bienvenue", err);
   }
 
-  return NextResponse.json({ ok: true, subscriptionCreated });
+  return NextResponse.json({ ok: true });
 }

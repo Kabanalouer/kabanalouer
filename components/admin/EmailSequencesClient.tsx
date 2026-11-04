@@ -324,7 +324,7 @@ export default function EmailSequencesClient() {
                 </summary>
                 <div className="border-t border-[#ebebeb] p-4">
                   <p className="text-sm text-charcoal-500 mb-4">
-                    Boosts, offre gratuite et abonnements, anciennes invitations. Rangés seulement dans cette page : le texte reste modifiable et les envois ne changent pas.
+                    Boosts, anciennes invitations. Rangés seulement dans cette page : le texte reste modifiable et les envois ne changent pas.
                   </p>
                   {renderGroups(rangés, true)}
                 </div>

@@ -36,7 +36,7 @@ export default async function ConditionsPage() {
     { id: "inscription", label: t("toc3") },
     { id: "hotes", label: t("toc4") },
     { id: "voyageurs", label: t("toc5") },
-    { id: "abonnement", label: t("toc6") },
+    { id: "publication-gratuite", label: t("toc6") },
     { id: "contenu-interdit", label: t("toc7") },
     { id: "propriete-intellectuelle", label: t("toc8") },
     { id: "responsabilite", label: t("toc9") },
@@ -135,7 +135,7 @@ export default async function ConditionsPage() {
           </section>
 
           {/* 6 */}
-          <section id="abonnement" className="scroll-mt-24">
+          <section id="publication-gratuite" className="scroll-mt-24">
             <H2>{t("s6Title")}</H2>
             <div className="space-y-3 text-base leading-relaxed">
               <p>{t("s6P1")}</p>

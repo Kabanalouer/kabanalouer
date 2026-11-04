@@ -66,17 +66,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
   const isAdminReview = isAdmin && !isOwner;
   const hostId = listing.host_id as string;
 
-  const [{ data: subscription }, { data: blockedDates }] = await Promise.all([
-    // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
-    // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
-    // Sert aussi à l'éligibilité de l'offre de lancement : l'existence d'une
-    // ligne pour CE listing_id (peu importe son statut) suffit à prouver que
-    // cette annonce précise a déjà eu un abonnement, gratuit ou payant.
-    supabase
-      .from("subscriptions")
-      .select("status, expires_at, is_free_launch")
-      .eq("listing_id", id)
-      .maybeSingle(),
+  const [{ data: blockedDates }] = await Promise.all([
     supabase
       .from("availability")
       .select("date, source")
@@ -162,7 +152,6 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         initialCity={listing.city ?? ""}
         initialLat={listing.latitude ?? null}
         initialLng={listing.longitude ?? null}
-        subscriptionStatus={subscription?.status ?? null}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}

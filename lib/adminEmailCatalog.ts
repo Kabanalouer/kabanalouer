@@ -224,12 +224,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     mechanism: "daily", dailyAt: "11 h", testable: true, archived: true,
   },
   {
-    id: "welcome-subscription", category: "proprio", group: "Publication",
-    name: "Abonnement actif — annonce publiée",
-    when: "Dès l’activation de l’offre gratuite ou le paiement d’une annonce.",
-    mechanism: "event", testable: true, archived: true,
-  },
-  {
     id: "import-published", category: "proprio", group: "Publication",
     name: "Annonce importée publiée par l’admin",
     when: "Quand l’admin publie une annonce importée d’Airbnb au nom du proprio.",
@@ -259,34 +253,6 @@ export const EMAIL_CATALOG: CatalogEmail[] = [
     name: "Boost — terminé",
     when: "À la fin du mois de boost.",
     mechanism: "daily", dailyAt: "23 h", testable: true, ...BOOST_PAUSE, archived: true,
-  },
-  {
-    id: "auto-renewal", category: "proprio", group: "Offre gratuite et abonnement",
-    name: "Abonnement payant — renouvellement à venir",
-    when: "30 jours avant le renouvellement automatique.",
-    conditions: "Une seule fois par cycle de renouvellement.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, archived: true,
-  },
-  {
-    id: "payment-failed", category: "proprio", group: "Offre gratuite et abonnement",
-    name: "Paiement refusé",
-    when: "Le jour où Stripe passe l’abonnement en retard de paiement.",
-    conditions: "Une seule fois par abonnement en retard.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, archived: true,
-  },
-  {
-    id: "winback-3", category: "proprio", group: "Annonce dépubliée",
-    name: "Annonce dépubliée — relance 3 jours",
-    when: "3 jours après une dépublication liée à l’abonnement.",
-    conditions: "Une seule fois par dépublication.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, archived: true,
-  },
-  {
-    id: "winback-14", category: "proprio", group: "Annonce dépubliée",
-    name: "Annonce dépubliée — relance 14 jours",
-    when: "14 jours après une dépublication liée à l’abonnement.",
-    conditions: "Une seule fois par dépublication.",
-    mechanism: "daily", dailyAt: "9 h", testable: true, archived: true,
   },
 
   // ── Voyageurs ──

@@ -4,12 +4,9 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendProfileTipEmail, sendRoomsTipEmail, sendSmsInviteEmail } from "@/lib/emails/hostOnboarding";
 
 // Cron quotidien — séquence d'accueil des proprios, UNE SEULE FOIS PAR PROPRIO (jamais par chalet), à partir
-// de sa première publication ou de sa première revendication. Une annonce ne peut être publiée qu'avec un
-// abonnement actif : la date du premier abonnement du proprio sert de date de première publication (aucune
-// colonne published_at en base) ; pour une fiche revendiquée on prend aussi listings.claimed_at (utile après
-// la fin de l'offre de lancement, quand la revendication ne crée plus d'abonnement). Chaque courriel a sa
-// propre fenêtre, sans chevauchement, et n'est envoyé que si le sujet n'est pas déjà réglé (un sujet réglé
-// est sauté sans décaler les suivants) :
+// de sa première publication (listings.published_at) ou de sa première revendication (listings.claimed_at).
+// Chaque courriel a sa propre fenêtre, sans chevauchement, et n'est envoyé que si le sujet n'est pas déjà réglé
+// (un sujet réglé est sauté sans décaler les suivants) :
 // - 24 h → 4 jours : photo de profil et présentation (users.profile_tip_email_sent_at), seulement ce qui manque
 // - 48 h : invitation à booster (users.boost_invite_email_sent_at) — boosts désactivés pour le lancement
 // - 4 → 8 jours : section Chambres (users.rooms_tip_email_sent_at), seulement s'il reste un chalet publié sans chambre
@@ -17,11 +14,8 @@ import { sendBoostInviteEmail, sendDraftReminderEmail, sendProfileTipEmail, send
 //   guide d'installation de l'app) — sautée si le proprio reçoit déjà les textos
 // Seulement pour les proprios de moins de 14 jours : les comptes déjà établis ne reçoivent pas ces courriels d'un
 // coup au lancement.
-// Aussi : rappel « complète ton annonce » pour chaque brouillon jamais publié
-// (aucune ligne subscriptions), créé il y a 48 h à 14 jours
+// Aussi : rappel « complète ton annonce » pour chaque brouillon jamais publié, créé il y a 48 h à 14 jours
 // (listings.draft_reminder_sent_at, un seul rappel par brouillon).
-// Et : avis à l'admin quand il reste exactement 7 jours à l'offre de
-// lancement (lib/launchOffer.ts) — cron quotidien, donc un seul envoi.
 
 const H24 = 24 * 60 * 60 * 1000;
 const H48 = 48 * 60 * 60 * 1000;
@@ -45,21 +39,23 @@ export async function GET(request: NextRequest) {
   const supabase = adminSupabase();
   const now = Date.now();
 
-  const { data: subs, error: subsError } = await supabase
-    .from("subscriptions")
-    .select("user_id, created_at")
-    .order("created_at", { ascending: true });
-  if (subsError) {
-    console.error("[host-onboarding-emails] lecture subscriptions", subsError);
+  // Première publication par proprio (listings.published_at, posée à la première mise en ligne par le proprio)
+  const { data: published1, error: pubError } = await supabase
+    .from("listings")
+    .select("host_id, published_at")
+    .not("published_at", "is", null)
+    .or("claim_status.is.null,claim_status.eq.claimed")
+    .eq("is_test", false)
+    .order("published_at", { ascending: true });
+  if (pubError) {
+    console.error("[host-onboarding-emails] lecture des publications", pubError);
     return NextResponse.json({ error: "Erreur de lecture." }, { status: 500 });
   }
-
-  // Première publication par proprio
   const firstByUser = new Map<string, number>();
-  for (const s of subs ?? []) {
-    const uid = s.user_id as string | null;
+  for (const l of published1 ?? []) {
+    const uid = l.host_id as string | null;
     if (!uid || firstByUser.has(uid)) continue;
-    firstByUser.set(uid, new Date(s.created_at as string).getTime());
+    firstByUser.set(uid, new Date(l.published_at as string).getTime());
   }
 
   // Première revendication par proprio (fiches importées activées) : la séquence démarre aussi à ce moment
@@ -181,6 +177,8 @@ async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, no
     .or("claim_status.is.null,claim_status.eq.claimed")
     .eq("is_test", false)
     .is("draft_reminder_sent_at", null)
+    // Jamais mise en ligne : sinon c'est une annonce dépubliée, pas un brouillon à terminer
+    .is("published_at", null)
     .lte("created_at", new Date(now - H48).toISOString())
     .gte("created_at", new Date(now - WINDOW_MS).toISOString());
   if (error) {
@@ -190,11 +188,6 @@ async function sendDraftReminders(supabase: ReturnType<typeof adminSupabase>, no
 
   let sent = 0;
   for (const draft of drafts ?? []) {
-    // Déjà publiée un jour (abonnement existant) : c'est une annonce
-    // dépubliée, pas un brouillon à terminer — relances win-back à part.
-    const { data: sub } = await supabase.from("subscriptions").select("id").eq("listing_id", draft.id).maybeSingle();
-    if (sub) continue;
-
     const { data: user } = await supabase
       .from("users")
       .select("email, name, preferred_language")

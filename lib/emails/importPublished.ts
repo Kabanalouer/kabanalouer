@@ -1,8 +1,6 @@
 // Courriel de bienvenue envoyé au propriétaire quand un admin publie une
 // annonce importée en son nom (voir app/api/admin/listings/[id]/publish).
-// Distinct de welcomeSubscription.ts, qui invite à compléter/publier — ici,
-// l'annonce est déjà en ligne, le lien pointe directement vers la fiche
-// publique.
+// L'annonce est déjà en ligne : le lien pointe directement vers la fiche publique.
 // Textes modifiables dans Admin → Séquences courriel (TEMPLATE_* ci-dessous =
 // textes par défaut, lib/emailTemplates).
 import { SITE_URL } from "@/lib/siteUrl";
@@ -21,7 +19,7 @@ export const TEMPLATE_IMPORT_PUBLISHED: EmailTemplateDef = {
     { key: "titreChalet", label: "Titre du chalet" },
     {
       key: "anneeGratuite",
-      label: "Bout de phrase « , et c’est gratuit » (vide si l’offre de lancement ne s’applique pas)",
+      label: "Bout de phrase « , et c’est gratuit »",
       html: true,
     },
   ],
@@ -57,21 +55,14 @@ export async function sendImportPublishedEmail({
   firstName,
   listingPath,
   listingTitle,
-  isFreeLaunch,
 }: {
   email: string;
   preferredLanguage: "fr" | "en";
   firstName?: string | null;
   listingPath: string;
   listingTitle: string;
-  isFreeLaunch: boolean;
 }): Promise<{ error: Error | null }> {
-  // Offre de lancement : mention de la première année gratuite.
-  const freeYear = isFreeLaunch
-    ? preferredLanguage === "fr"
-      ? ", et c'est gratuit"
-      : ", and it's free"
-    : "";
+  const freeYear = preferredLanguage === "fr" ? ", et c'est gratuit" : ", and it's free";
 
   const text = await resolveEmailText(TEMPLATE_IMPORT_PUBLISHED, preferredLanguage, {
     prenom: firstName?.trim(),

@@ -2,18 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { TEXT_LINK_CLASSNAME } from "@/lib/textLinkClassName";
-
-export type HostSubscription = {
-  listingId: string;
-  listingTitle: string;
-  isFreeLaunch: boolean;
-  expiresAt: string | null;
-  createdAt: string | null;
-  subLabel: SubLabel;
-};
-
-export type SubLabel = "active" | "free_launch" | "expired" | "none";
 
 export type HostRow = {
   id: string;
@@ -23,26 +11,18 @@ export type HostRow = {
   totalListings: number;
   publishedListings: number;
   createdAt: string;
-  subscriptions: HostSubscription[];
 };
 
 type SortKey = "createdAt" | "totalListings";
 type SortDir = "asc" | "desc";
 
-const SUB_LABELS: { key: SubLabel | "all"; label: string }[] = [
-  { key: "all", label: "Tous" },
-  { key: "active", label: "Abonnement actif" },
-  { key: "free_launch", label: "Gratuit lancement" },
-  { key: "expired", label: "Expiré" },
-  { key: "none", label: "Sans abonnement" },
-];
+type LiveFilter = "all" | "live" | "none";
 
-const SUB_BADGE: Record<SubLabel, { bg: string; text: string; label: string }> = {
-  active:      { bg: "bg-success-50",      text: "text-success-700", label: "Actif" },
-  free_launch: { bg: "bg-[#f5f6ec]",     text: "text-primary",   label: "Gratuit lancement" },
-  expired:     { bg: "bg-error-50",        text: "text-error-700",   label: "Expiré" },
-  none:        { bg: "bg-charcoal-100",  text: "text-charcoal-500", label: "Aucun" },
-};
+const FILTERS: { key: LiveFilter; label: string }[] = [
+  { key: "all", label: "Tous" },
+  { key: "live", label: "Au moins une annonce en ligne" },
+  { key: "none", label: "Aucune annonce en ligne" },
+];
 
 function Initials({ name }: { name: string }) {
   const parts = name.trim().split(/\s+/);
@@ -59,7 +39,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
-  const [filter, setFilter] = useState<SubLabel | "all">("all");
+  const [filter, setFilter] = useState<LiveFilter>("all");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -73,8 +53,8 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
     const q = search.toLowerCase().trim();
     return hosts
       .filter((h) => {
-        if (filter === "none" && h.subscriptions.length > 0) return false;
-        if (filter !== "all" && filter !== "none" && !h.subscriptions.some((s) => s.subLabel === filter)) return false;
+        if (filter === "live" && h.publishedListings === 0) return false;
+        if (filter === "none" && h.publishedListings > 0) return false;
         if (q && !h.name.toLowerCase().includes(q) && !h.email.toLowerCase().includes(q)) return false;
         return true;
       })
@@ -91,7 +71,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex gap-1.5 flex-wrap">
-          {SUB_LABELS.map(({ key, label }) => (
+          {FILTERS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
@@ -133,7 +113,6 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                 >
                   Annonces <SortIcon active={sortKey === "totalListings"} dir={sortDir} />
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide">Abonnement</th>
                 <th
                   className="text-left px-4 py-3 text-xs font-semibold text-charcoal-400 uppercase tracking-wide cursor-pointer select-none hover:text-charcoal-600 whitespace-nowrap"
                   onClick={() => toggleSort("createdAt")}
@@ -169,27 +148,6 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                       <span className="text-charcoal-400"> / {h.totalListings}</span>
                     </td>
 
-                    {/* Abonnement */}
-                    <td className="px-4 py-3">
-                      {h.subscriptions.length === 0 ? (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_BADGE.none.bg} ${SUB_BADGE.none.text}`}>
-                          {SUB_BADGE.none.label}
-                        </span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {h.subscriptions.map((s) => (
-                            <span
-                              key={s.listingId}
-                              title={s.listingTitle}
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_BADGE[s.subLabel].bg} ${SUB_BADGE[s.subLabel].text}`}
-                            >
-                              {SUB_BADGE[s.subLabel].label}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-
                     {/* Date */}
                     <td className="px-4 py-3 text-charcoal-400 whitespace-nowrap">
                       {new Date(h.createdAt).toLocaleDateString("fr-CA", { day: "numeric", month: "short", year: "numeric" })}
@@ -204,12 +162,6 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
                         >
                           Voir les annonces
                         </Link>
-                        <Link
-                          href={`/admin/subscriptions?q=${encodeURIComponent(h.name)}`}
-                          className={`text-xs ${TEXT_LINK_CLASSNAME}`}
-                        >
-                          Gérer les abonnements
-                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -217,7 +169,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-charcoal-400">
+                  <td colSpan={4} className="px-4 py-10 text-center text-charcoal-400">
                     Aucun propriétaire ne correspond aux filtres sélectionnés.
                   </td>
                 </tr>

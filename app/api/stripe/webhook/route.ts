@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendFeaturedConfirmationEmail, type FeaturedType } from "@/lib/emails/featuredListing";
-import { centsForTier, type PriceTier } from "@/lib/subscriptionPricing";
 import { createInvoice } from "@/lib/invoicing";
 
 // Use service role for webhook (bypasses RLS — server-only, never exposed to browser)
@@ -60,7 +58,7 @@ export async function POST(request: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      // Vedette (paiement unique) — distinct de l'abonnement annuel via mode "payment"
+      // Seules les vedettes (boosts, paiement unique) passent par Stripe .
       if (session.mode === "payment") {
         const listingId = session.metadata?.listing_id;
         const type = session.metadata?.type;
@@ -143,158 +141,6 @@ export async function POST(request: NextRequest) {
 
         break;
       }
-
-      const userId = session.metadata?.supabase_user_id;
-      const listingId = session.metadata?.listing_id;
-      const priceTier = session.metadata?.price_tier as PriceTier | undefined;
-      const subscriptionId = session.subscription as string;
-      if (!userId || !listingId || !subscriptionId) {
-        console.error("checkout.session.completed: métadonnée manquante (supabase_user_id/listing_id/subscription)");
-        break;
-      }
-
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      // current_period_end moved to SubscriptionItem in newer Stripe API versions
-      const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
-
-      // Un vrai renouvellement annuel ne passe jamais par checkout.session.completed
-      // (Stripe facture l'abonnement existant sans nouvelle Checkout Session). Le seul
-      // cas à exclure ici est la redélivrance du même événement par Stripe. Vérifié par
-      // annonce (listing_id) — chaque annonce a son propre abonnement indépendant.
-      const { data: existingSub } = await supabase
-        .from("subscriptions")
-        .select("status")
-        .eq("listing_id", listingId)
-        .maybeSingle();
-      const isFirstActivation = !existingSub || existingSub.status !== "active";
-
-      const { error: subError } = await supabase.from("subscriptions").upsert({
-        listing_id: listingId,
-        user_id: userId,
-        stripe_subscription_id: subscriptionId,
-        stripe_customer_id: session.customer as string,
-        status: "active",
-        is_free_launch: false,
-        price_tier: priceTier ?? null,
-        price_cents: priceTier ? centsForTier(priceTier) : null,
-        expires_at: currentPeriodEnd,
-      }, { onConflict: "listing_id" });
-
-      if (subError) {
-        console.error("checkout.session.completed: échec upsert subscriptions", subError);
-        return NextResponse.json({ error: "Erreur lors de l'enregistrement de l'abonnement." }, { status: 500 });
-      }
-
-      // Facture — cette branche ne traite jamais l'offre de lancement
-      // (is_free_launch=true n'arrive jamais via Stripe, voir activate-free
-      // route), donc chaque upsert ici correspond à un vrai paiement.
-      if (session.amount_subtotal != null && session.amount_total != null) {
-        await createInvoice(supabase, {
-          userId,
-          listingId,
-          transactionType: "publication",
-          amountBeforeTaxCents: session.amount_subtotal,
-          totalChargedCents: session.amount_total,
-          stripePaymentId: subscriptionId,
-        });
-      }
-
-      await supabase
-        .from("users")
-        .update({ role: "host", stripe_customer_id: session.customer as string })
-        .eq("id", userId);
-
-      // Publie/republie CETTE annonce précise (une par abonnement désormais) — ne
-      // touche jamais les dépublications manuelles (brouillon, "Désactiver mon
-      // compte") puisqu'elles ne portent jamais unpublished_reason.
-      await supabase
-        .from("listings")
-        .update({
-          is_published: true,
-          unpublished_reason: null,
-          unpublished_at: null,
-          reminder_winback_3d_sent: false,
-          reminder_winback_14d_sent: false,
-        })
-        .eq("id", listingId);
-
-      // Email de bienvenue "nouveau proprio payant" : uniquement au tier1 (rang 1),
-      // qui ne peut survenir que si ce proprio n'a aucune autre annonce payante
-      // active en ce moment — donc soit sa toute première, soit un retour après
-      // avoir tout annulé. Une 2e/3e/4e annonce du même proprio ne redéclenche pas
-      // ce courriel "bienvenue chez Kabanalouer".
-      if (isFirstActivation && priceTier === "tier1") {
-        const [{ data: profile }, { data: listingRow }] = await Promise.all([
-          supabase.from("users").select("email, preferred_language, name").eq("id", userId).single(),
-          supabase.from("listings").select("title, title_en").eq("id", listingId).single(),
-        ]);
-        if (profile?.email) {
-          const lang: "fr" | "en" = profile.preferred_language === "en" ? "en" : "fr";
-          const { error: emailError } = await sendWelcomeSubscriptionEmail({
-            email: profile.email,
-            preferredLanguage: lang,
-            firstName: profile.name?.trim().split(/\s+/)[0],
-            listingTitle: (lang === "en" ? listingRow?.title_en : null) || listingRow?.title || (lang === "en" ? "your listing" : "ton chalet"),
-          });
-          if (emailError) {
-            console.error("checkout.session.completed: échec envoi email de bienvenue", emailError);
-          }
-        }
-      }
-
-      break;
-    }
-
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString();
-
-      // Ne pas écraser 'past_due' en 'inactive' — la contrainte CHECK de la table
-      // l'autorise déjà, mais ce mapping le collapsait silencieusement, rendant
-      // impossible de distinguer "jamais abonné" de "paiement en échec".
-      const statusMap: Record<string, string> = {
-        active: "active",
-        past_due: "past_due",
-        trialing: "trialing",
-        canceled: "canceled",
-      };
-      const mappedStatus = statusMap[subscription.status] ?? "inactive";
-
-      const updatePayload: Record<string, unknown> = {
-        status: mappedStatus,
-        expires_at: currentPeriodEnd,
-      };
-      // Efface le flag de notification dès qu'on quitte l'état past_due (récupération
-      // ou annulation) — tant qu'on y reste, on laisse le cron gérer ce flag lui-même.
-      if (mappedStatus !== "past_due") {
-        updatePayload.reminder_past_due_sent = false;
-      }
-
-      // Résout la ligne par stripe_subscription_id (unique) plutôt que par
-      // stripe_customer_id — un même customer Stripe porte désormais un abonnement
-      // par annonce ; cibler par customer mettrait à jour la mauvaise annonce, ou
-      // toutes en même temps, au lieu de celle réellement concernée par l'événement.
-      const { error: subUpdateError } = await supabase
-        .from("subscriptions")
-        .update(updatePayload)
-        .eq("stripe_subscription_id", subscription.id);
-
-      if (subUpdateError) {
-        console.error("customer.subscription.updated: échec update subscriptions", subUpdateError);
-        return NextResponse.json({ error: "Erreur lors de la mise à jour de l'abonnement." }, { status: 500 });
-      }
-
-      break;
-    }
-
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-
-      // Même logique : cible l'abonnement précis (une annonce), pas tous ceux du customer.
-      await supabase
-        .from("subscriptions")
-        .update({ status: "canceled" })
-        .eq("stripe_subscription_id", subscription.id);
 
       break;
     }

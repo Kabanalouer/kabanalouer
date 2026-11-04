@@ -1,19 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
-import AdminHostsClient, { type HostRow, type SubLabel } from "@/components/admin/AdminHostsClient";
+import AdminHostsClient, { type HostRow } from "@/components/admin/AdminHostsClient";
 
 export const metadata = { title: "Propriétaires — Administration" };
 
 export default async function AdminHostsPage() {
   const supabase = await createClient();
 
-  const [{ data: users }, { data: listings }, { data: subscriptions }] = await Promise.all([
+  const [{ data: users }, { data: listings }] = await Promise.all([
     supabase
       .from("users")
       .select("id, name, email, avatar_url, created_at")
       .eq("role", "host")
       .order("created_at", { ascending: false }),
     supabase.from("listings").select("id, host_id, title, is_published"),
-    supabase.from("subscriptions").select("user_id, listing_id, status, is_free_launch, expires_at, created_at"),
   ]);
 
   // Listing counts per host
@@ -22,37 +21,6 @@ export default async function AdminHostsPage() {
     const id = l.host_id as string;
     const prev = listingMap.get(id) ?? { total: 0, published: 0 };
     listingMap.set(id, { total: prev.total + 1, published: prev.published + (l.is_published ? 1 : 0) });
-  }
-
-  // Titre de chaque annonce, pour l'affichage par abonnement
-  const listingTitleMap = new Map<string, string>();
-  for (const l of (listings ?? [])) {
-    listingTitleMap.set(l.id as string, (l.title as string) || "Chalet sans titre");
-  }
-
-  function getSubLabel(status: string, isFreeLaunch: boolean): SubLabel {
-    if (status === "active" && isFreeLaunch) return "free_launch";
-    if (status === "active") return "active";
-    return "expired";
-  }
-
-  // Abonnements par proprio — un proprio multi-annonces a une entrée par annonce,
-  // plus de collapsing par user_id (chaque annonce a son propre abonnement depuis
-  // la restructuration per-listing).
-  const subsByHost = new Map<string, HostRow["subscriptions"]>();
-  for (const s of (subscriptions ?? [])) {
-    const hostId = s.user_id as string;
-    const listingId = s.listing_id as string;
-    const arr = subsByHost.get(hostId) ?? [];
-    arr.push({
-      listingId,
-      listingTitle: listingTitleMap.get(listingId) ?? "Chalet sans titre",
-      isFreeLaunch: !!(s.is_free_launch as boolean),
-      expiresAt: (s.expires_at as string | null) ?? null,
-      createdAt: (s.created_at as string | null) ?? null,
-      subLabel: getSubLabel(s.status as string, !!(s.is_free_launch as boolean)),
-    });
-    subsByHost.set(hostId, arr);
   }
 
   const rows: HostRow[] = (users ?? []).map((u) => {
@@ -66,7 +34,6 @@ export default async function AdminHostsPage() {
       totalListings: counts.total,
       publishedListings: counts.published,
       createdAt: (u.created_at as string) ?? "",
-      subscriptions: subsByHost.get(id) ?? [],
     };
   });
 

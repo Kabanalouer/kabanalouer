@@ -1,13 +1,10 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { SITE_URL } from "@/lib/siteUrl";
-import { sendWelcomeSubscriptionEmail } from "@/lib/emails/welcomeSubscription";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
 import { sendBoostInviteEmail, sendDraftReminderEmail, sendSmsInviteEmail, sendProfileTipEmail, sendRoomsTipEmail } from "@/lib/emails/hostOnboarding";
 import { sendNewMessageNotificationEmail } from "@/lib/emails/newMessageNotification";
 import { sendReviewReceivedEmail } from "@/lib/emails/reviewReceived";
 import { sendFeaturedConfirmationEmail, sendFeaturedExpiringEmail, sendFeaturedExpiredEmail } from "@/lib/emails/featuredListing";
-import { sendAutoRenewalReminderEmail, sendPaymentFailedEmail } from "@/lib/emails/subscriptionReminder";
-import { sendWinbackReminderEmail } from "@/lib/emails/winbackReminder";
 import { sendWelcomeTravelerEmail } from "@/lib/emails/welcomeTraveler";
 import { sendGuestRequestEmail } from "@/lib/emails/guestRequest";
 import { sendReviewRequestEmail, sendStayReviewRequestEmail } from "@/lib/emails/reviewRequest";
@@ -51,7 +48,6 @@ export type Sender = (to: string, lang: Lang) => Promise<{ error: Error | null }
 export function emailTestSenders(): Record<string, Sender> {
   const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const month = new Date().toISOString().slice(0, 7);
-  const inDays = (d: number) => new Date(Date.now() + d * 86400000);
   const base = (to: string, lang: Lang) => ({ email: to, preferredLanguage: lang, firstName: "Simon" });
   const featured = (to: string, lang: Lang) => ({
     ...base(to, lang), listingId: LISTING_ID, listingTitle: TITLE, type: "region" as const, region: "Laurentides", month,
@@ -69,8 +65,7 @@ export function emailTestSenders(): Record<string, Sender> {
     lang === "fr" ? "Nous avons visité votre site web et adoré vos chalets au bord du lac." : "We visited your website and loved your lakeside cabins.";
 
   return {
-    "welcome-subscription": (to, lang) => sendWelcomeSubscriptionEmail({ ...base(to, lang), listingTitle: TITLE }),
-    "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE, isFreeLaunch: true }),
+    "import-published": (to, lang) => sendImportPublishedEmail({ ...base(to, lang), listingPath: `${prefix(lang)}${LISTING_PATH}`, listingTitle: TITLE }),
     "draft-reminder": (to, lang) => sendDraftReminderEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
     "boost-invite": (to, lang) => sendBoostInviteEmail({ email: to, lang, firstName: "Simon", listingTitle: TITLE, listingId: LISTING_ID }),
     "profile-tip": (to, lang) => sendProfileTipEmail({ email: to, lang, firstName: "Simon", missingPhoto: true, missingBio: true }),
@@ -88,10 +83,6 @@ export function emailTestSenders(): Record<string, Sender> {
     "featured-confirmation": (to, lang) => sendFeaturedConfirmationEmail(featured(to, lang)),
     "featured-expiring": (to, lang) => sendFeaturedExpiringEmail(featured(to, lang)),
     "featured-expired": (to, lang) => sendFeaturedExpiredEmail(featured(to, lang)),
-    "auto-renewal": (to, lang) => sendAutoRenewalReminderEmail({ ...base(to, lang), expiresAt: inDays(30), listingTitle: TITLE, priceCents: 29900 }),
-    "payment-failed": (to, lang) => sendPaymentFailedEmail({ ...base(to, lang), listingTitle: TITLE, priceCents: 29900 }),
-    "winback-3": (to, lang) => sendWinbackReminderEmail({ ...base(to, lang), threshold: 3, listingTitle: TITLE }),
-    "winback-14": (to, lang) => sendWinbackReminderEmail({ ...base(to, lang), threshold: 14, listingTitle: TITLE }),
 
     "welcome-traveler": (to, lang) => sendWelcomeTravelerEmail(base(to, lang)),
     "guest-request": (to, lang) => sendGuestRequestEmail({
@@ -223,8 +214,8 @@ export function emailTestSenders(): Record<string, Sender> {
       to, lang, kind: "draft_reminder_10", listings: DRAFT_LISTINGS(lang),
       buttonUrl: previewLink(lang, "exemple"), removeUrl: removeLink(lang, "exemple"),
     }),
-    "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"], freeYear: true }),
-    "claim-welcome-draft": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], freeYear: true, draft: true }),
+    "claim-welcome": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2"] }),
+    "claim-welcome-draft": (to, lang) => sendClaimWelcomeEmail({ to, lang, firstName: "Marie", listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], draft: true }),
     "claim-approved": (to, lang) => sendClaimDecisionEmail({ to, lang, listingTitle: TITLE, listingTitles: [TITLE, "Chalet exemple 2", "Chalet exemple 3"], firstName: "Marie", approved: true }),
     "claim-refused": (to, lang) => sendClaimDecisionEmail({
       to, lang, listingTitle: TITLE, firstName: "Marie", approved: false,

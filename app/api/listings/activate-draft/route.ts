@@ -5,7 +5,7 @@ import { getRequestLocale, t2 } from "@/lib/requestLocale";
 import { activateClaimedDrafts } from "@/lib/claims/activateDrafts";
 
 // Bouton « Activer » de Mes chalets, pour les fiches en brouillon déjà revendiquées qui n'ont pas pu être mises en ligne
-// à la revendication (fiche à compléter, CITQ manquant, abonnement à régler). Aucune confirmation des droits sur les
+// à la revendication (fiche à compléter). Aucune confirmation des droits sur les
 // photos (décision de Simon, 2026-10-31) ; le CITQ n'est demandé que s'il manque. Logique partagée avec la revendication :
 // lib/claims/activateDrafts.ts (client service, propriété vérifiée, sans limite quotidienne).
 

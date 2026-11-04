@@ -4,7 +4,6 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { resolveEmailText } from "@/lib/emailTemplates/resolve";
 import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
 import { SITE_URL } from "@/lib/siteUrl";
-import { SITE_IS_FREE } from "@/lib/siteIsFree";
 
 // Invitation à revendiquer une fiche (envoyée automatiquement après la publication, ou depuis
 // Admin → Invitations) et relance 3 jours plus tard. Part de info@kabanalouer.ca : les réponses arrivent chez Simon.
@@ -149,10 +148,7 @@ export async function sendClaimInvitationEmail(input: {
   const removeLabel = multiple ? (fr ? "Retirer mes fiches" : "Remove my listings") : fr ? "Retirer ma fiche" : "Remove my listing";
   const lienRetrait = input.removeUrl ? link(input.removeUrl, removeLabel) : "";
 
-  const offerActive = SITE_IS_FREE;
-  const offre = offerActive
-    ? `<br/><br/>${escapeHtml(fr ? "L’activation est gratuite." : "Activation is free.")}`
-    : "";
+  const offre = `<br/><br/>${escapeHtml(fr ? "L’activation est gratuite." : "Activation is free.")}`;
   const suivi = input.trackToken
     ? `<img src="${SITE_URL}/api/invitations/open/${input.trackToken}.gif" width="1" height="1" alt="" style="display:block;border:0;width:1px;height:1px;" />`
     : "";
@@ -173,7 +169,7 @@ export async function sendClaimInvitationEmail(input: {
       nombre: String(input.listings.length),
       fiches,
       offre,
-      gratuitement: offerActive ? (fr ? " gratuitement" : " for free") : "",
+      gratuitement: fr ? " gratuitement" : " for free",
       lienRetrait,
       suivi,
     }

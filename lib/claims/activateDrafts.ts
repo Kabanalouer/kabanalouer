@@ -5,9 +5,11 @@
 // Écritures avec le client service : mode_publication et import_raw_data sont protégées contre les sessions.
 // Jamais de publie_le : ces fiches ne comptent pas dans les 15 par jour de publish-unclaimed.
 
+import { markPublished } from "@/lib/publishedAt";
+
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type ActivationError = "not_eligible" | "incomplete" | "subscription_required" | "failed";
+export type ActivationError = "not_eligible" | "incomplete" | "failed";
 export type ActivationResult = { id: string; ok: boolean; error?: ActivationError };
 
 export type DraftRow = {
@@ -25,7 +27,7 @@ export type DraftRow = {
 };
 
 // Pourquoi une fiche ne peut pas être mise en ligne maintenant (null = elle peut). Mêmes minimums que publish-unclaimed.
-export function draftBlocker(l: DraftRow, userId: string, hasActiveSubscription: boolean): ActivationError | null {
+export function draftBlocker(l: DraftRow, userId: string): ActivationError | null {
   if (l.host_id !== userId || l.claim_status !== "claimed" || l.mode_publication !== "brouillon" || l.is_published) return "not_eligible";
   const complete =
     (l.title ?? "").trim().length > 0 &&
@@ -33,7 +35,6 @@ export function draftBlocker(l: DraftRow, userId: string, hasActiveSubscription:
     Array.isArray(l.photos) && l.photos.length >= 5 &&
     (l.region ?? "").trim().length > 0;
   if (!complete) return "incomplete";
-  if (!hasActiveSubscription) return "subscription_required";
   return null;
 }
 
@@ -49,15 +50,11 @@ export async function activateClaimedDrafts(
   input: { userId: string; listingIds: string[] }
 ): Promise<ActivationResult[]> {
   if (input.listingIds.length === 0) return [];
-  const [{ data: rows }, { data: subs }] = await Promise.all([
-    admin
-      .from("listings")
-      .select("id, host_id, claim_status, mode_publication, is_published, title, description, photos, region, citq_number, import_raw_data")
-      .in("id", input.listingIds),
-    admin.from("subscriptions").select("listing_id, status").in("listing_id", input.listingIds),
-  ]);
+  const { data: rows } = await admin
+    .from("listings")
+    .select("id, host_id, claim_status, mode_publication, is_published, title, description, photos, region, citq_number, import_raw_data")
+    .in("id", input.listingIds);
   const byId = new Map<string, DraftRow>(((rows ?? []) as DraftRow[]).map((r) => [r.id, r]));
-  const activeSub = new Set<string>(((subs ?? []) as { listing_id: string; status: string }[]).filter((s) => s.status === "active").map((s) => s.listing_id));
   const today = montrealDate();
 
   const results: ActivationResult[] = [];
@@ -67,7 +64,7 @@ export async function activateClaimedDrafts(
       results.push({ id, ok: false, error: "not_eligible" });
       continue;
     }
-    const blocker = draftBlocker(l, input.userId, activeSub.has(id));
+    const blocker = draftBlocker(l, input.userId);
     if (blocker) {
       results.push({ id, ok: false, error: blocker });
       continue;
@@ -94,5 +91,6 @@ export async function activateClaimedDrafts(
     }
     results.push({ id, ok: true });
   }
+  await markPublished(admin, results.filter((r) => r.ok).map((r) => r.id));
   return results;
 }

@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { trackEvent } from "@/lib/analytics";
 
-// Fiches importées en brouillon, revendiquées mais pas mises en ligne à la revendication (fiche à compléter ou
-// abonnement à régler) : « Activer » pour une fiche ou pour toutes. Aucune confirmation des droits sur les
+// Fiches importées en brouillon, revendiquées mais pas mises en ligne à la revendication (fiche à compléter) : « Activer » pour une fiche ou pour toutes. Aucune confirmation des droits sur les
 // photos ni du CITQ (décision de Simon, 2026-10-31) : le propriétaire ajoute son CITQ après la mise en ligne.
 // POST /api/listings/activate-draft (lib/claims/activateDrafts.ts).
 
 export type DraftToActivate = { id: string; title: string; city: string | null };
 
-type ResultError = "not_eligible" | "incomplete" | "subscription_required" | "failed";
+type ResultError = "not_eligible" | "incomplete" | "failed";
 type ApiResult = { id: string; ok: boolean; error?: ResultError };
 
 export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] }) {
@@ -47,7 +46,6 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
   const errorText = (e?: ResultError) =>
     e === "not_eligible" ? t("errNotEligible")
     : e === "incomplete" ? t("errIncomplete")
-    : e === "subscription_required" ? t("errSubscription")
     : t("errFailed");
 
   const submit = async () => {
@@ -140,7 +138,7 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
             <h2 id="draft-activation-modal-title" className="text-heading-2 font-semibold text-charcoal-800">{t("modalTitle", { count: ids.length })}</h2>
             <p className="mt-2 text-sm text-charcoal-600">{t("modalIntro", { count: ids.length })}</p>
 
-            {/* Erreurs par fiche (fiche à compléter, abonnement…) */}
+            {/* Erreurs par fiche (fiche à compléter…) */}
             {Object.keys(errors).length > 0 && (
               <ul className="mt-4 space-y-1">
                 {ids.filter((id) => errors[id]).map((id) => (

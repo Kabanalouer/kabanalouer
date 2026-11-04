@@ -36,7 +36,6 @@ export default function DeleteListingModal({ listingId, onClose, onDeleted }: Pr
         <div className="bg-error-50 border border-error-100 rounded-xl px-4 py-3 mb-6 text-base text-error-700 space-y-1.5 leading-relaxed">
           <p>{t("irreversible")}</p>
           <p>{t("warning")}</p>
-          <p>{t("subscriptionNote")}</p>
         </div>
 
         {error && <p className="text-sm text-error-500 mb-4">{error}</p>}
