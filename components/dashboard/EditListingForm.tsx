@@ -178,7 +178,6 @@ export default function EditListingForm({
   initialLat,
   initialLng,
   subscriptionStatus: initialSubStatus,
-  subscriptionExpiresAt: initialSubExpiresAt,
   initialBlocked,
   icalUrl,
   icalLastSync,
@@ -199,7 +198,6 @@ export default function EditListingForm({
   initialLat: number | null;
   initialLng: number | null;
   subscriptionStatus: string | null;
-  subscriptionExpiresAt: string | null;
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
   icalLastSync: string | null;
@@ -282,7 +280,6 @@ export default function EditListingForm({
   // avec un message de succès au-dessus.
   const [justPublished, setJustPublished] = useState(false);
   const [subStatus, setSubStatus] = useState<string | null>(initialSubStatus);
-  const [subExpiresAt, setSubExpiresAt] = useState<string | null>(initialSubExpiresAt);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [localImportStatus, setLocalImportStatus] = useState(importStatus ?? null);
@@ -640,11 +637,8 @@ export default function EditListingForm({
       setPublishLoading(false);
       return;
     }
-    const expires = new Date();
-    expires.setFullYear(expires.getFullYear() + 1);
     setIsPublished(true);
     setSubStatus("active");
-    setSubExpiresAt(expires.toISOString());
     setPublishLoading(false);
     setJustPublished(true);
     trackEvent("listing_publish", { offer: "gratuite", listing_id: listingId });
@@ -1896,10 +1890,6 @@ export default function EditListingForm({
             // eu d'abonnement — par annonce, pas par proprio. Un proprio avec
             // plusieurs chalets a droit à l'offre séparément pour chacun.
             const canPublish = allRequiredComplete;
-            const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
-            const daysUntilExpiry = expiryDate
-              ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-              : null;
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -1990,14 +1980,6 @@ export default function EditListingForm({
                             {publishedDate.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })}
                           </p>
                         </div>
-                        {expiryDate && (
-                          <div>
-                            <p className="text-charcoal-400 text-xs mb-0.5">{tEdit("renewalOn")}</p>
-                            <p className="font-semibold text-charcoal-800">
-                              {expiryDate.toLocaleDateString(locale === "en" ? "en-CA" : "fr-CA", { year: "numeric", month: "long", day: "numeric" })}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -2020,21 +2002,6 @@ export default function EditListingForm({
                         </div>
                       </div>
                     </div>
-
-                    {daysUntilExpiry !== null && daysUntilExpiry <= 30 && (
-                      <div className="bg-warning-50 border border-warning-200 rounded-xl p-4">
-                        <p className="text-sm text-warning-800 font-medium mb-2">
-                          {tEdit(daysUntilExpiry === 1 ? "expiringWarningDay" : "expiringWarningDays", { days: daysUntilExpiry })}
-                        </p>
-                        <Link
-                          href={localePath("/dashboard/subscription", locale)}
-                          className="text-sm text-warning-700 font-semibold hover:underline"
-                        >
-                          {tEdit("renewNow")}
-                        </Link>
-                      </div>
-                    )}
-
                   </div>
                 </SectionShell>
               );

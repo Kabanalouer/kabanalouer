@@ -11,7 +11,6 @@ import { parseAccessibility } from "@/lib/accessibility";
 import { getLocale } from "next-intl/server";
 import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
-import { FREE_UNTIL_FURTHER_NOTICE } from "@/lib/launchOffer";
 
 function adminSupabase() {
   return createAdminClient(
@@ -164,7 +163,6 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         initialLat={listing.latitude ?? null}
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
-        subscriptionExpiresAt={subscription?.is_free_launch && FREE_UNTIL_FURTHER_NOTICE ? null : subscription?.expires_at ?? null}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}
