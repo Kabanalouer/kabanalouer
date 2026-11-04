@@ -24,8 +24,6 @@ import AnalyseSection from "./AnalyseSection";
 import CustomSlugField from "./CustomSlugField";
 import TranslateButton, { HELPER_BUTTON_CLASSNAME } from "./TranslateButton";
 import { computeScore, getScoreLevel } from "@/lib/listingScore";
-import { formatPriceLabel } from "@/lib/subscriptionPricing";
-import { isLaunchOfferActive } from "@/lib/launchOffer";
 import { safeHttpUrl } from "@/lib/safeUrl";
 import { useAutosave } from "@/lib/useAutosave";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
@@ -181,8 +179,6 @@ export default function EditListingForm({
   initialLng,
   subscriptionStatus: initialSubStatus,
   subscriptionExpiresAt: initialSubExpiresAt,
-  hasExistingSubscription,
-  nextPaidPriceCents,
   initialBlocked,
   icalUrl,
   icalLastSync,
@@ -204,8 +200,6 @@ export default function EditListingForm({
   initialLng: number | null;
   subscriptionStatus: string | null;
   subscriptionExpiresAt: string | null;
-  hasExistingSubscription: boolean;
-  nextPaidPriceCents: number;
   initialBlocked: BlockedEntry[];
   icalUrl: string | null;
   icalLastSync: string | null;
@@ -614,11 +608,32 @@ export default function EditListingForm({
   const handleActivateFree = async () => {
     setPublishLoading(true);
     setPublishError("");
-    const res = await fetch("/api/subscriptions/activate-free", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId }),
-    });
+    let res: Response;
+    if (subStatus === "active") {
+      // Abonnement gratuit déjà en place (fiche revendiquée) : brouillon → activate-draft, sinon republication simple
+      const draftRes = await fetch("/api/listings/activate-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [{ id: listingId }] }),
+      });
+      const draftData = (await draftRes.json().catch(() => ({}))) as { results?: { ok: boolean; error?: string }[] };
+      const result = draftData.results?.[0];
+      if (draftRes.ok && result?.ok) {
+        res = draftRes;
+      } else if (draftRes.ok && result?.error === "not_eligible") {
+        res = await fetch(`/api/listings/${listingId}/publish`, { method: "POST" });
+      } else {
+        setPublishError(tEdit("activateError"));
+        setPublishLoading(false);
+        return;
+      }
+    } else {
+      res = await fetch("/api/subscriptions/activate-free", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
+    }
     if (!res.ok) {
       const data = await res.json();
       setPublishError(data.error ?? tEdit("activateError"));
@@ -653,29 +668,6 @@ export default function EditListingForm({
     setLocalImportStatus("published");
     setPublishLoading(false);
     router.push("/admin/imports?published=1");
-  };
-
-  const handleStripeCheckout = async () => {
-    setPublishLoading(true);
-    setPublishError("");
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId }),
-    });
-    if (!res.ok) {
-      setPublishError(tEdit("stripeError"));
-      setPublishLoading(false);
-      return;
-    }
-    const { url } = await res.json();
-    if (url) {
-      trackEvent("begin_checkout", { listing_id: listingId });
-      window.location.href = url;
-    } else {
-      setPublishError(tEdit("stripeUrlMissing"));
-      setPublishLoading(false);
-    }
   };
 
   const handleTitleChange = (value: string) => {
@@ -799,7 +791,7 @@ export default function EditListingForm({
   };
 
   // Point d'entrée commun pour les 3 déclencheurs de publication
-  // (handleActivateFree, handleAdminPublish, handleStripeCheckout) — n'y
+  // (handleActivateFree, handleAdminPublish) — n'y
   // touche pas lui-même, se contente d'attendre la confirmation du flush
   // juste avant de les appeler.
   const runPublishAction = async (action: () => Promise<void>) => {
@@ -1903,16 +1895,11 @@ export default function EditListingForm({
             // L'offre gratuite n'est proposée que si CETTE annonce n'a jamais
             // eu d'abonnement — par annonce, pas par proprio. Un proprio avec
             // plusieurs chalets a droit à l'offre séparément pour chacun.
-            // Offre gratuite : annonce jamais abonnée ET offre de lancement en
-            // cours (lib/launchOffer.ts) — sinon paiement Stripe.
-            const isFree = !hasExistingSubscription && isLaunchOfferActive();
             const canPublish = allRequiredComplete;
             const expiryDate = subExpiresAt ? new Date(subExpiresAt) : null;
             const daysUntilExpiry = expiryDate
               ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
               : null;
-            const lang: "fr" | "en" = locale === "en" ? "en" : "fr";
-            const nextPaidPriceLabel = formatPriceLabel(nextPaidPriceCents, lang);
 
             // Admin en train de réviser une annonce importée d'un autre proprio —
             // remplace entièrement le flux gratuit/payant normal, jamais visible
@@ -2065,50 +2052,24 @@ export default function EditListingForm({
                     />
                   )}
 
-                  {isFree ? (
-                    // Affichage « Gratuit » seulement : aucune durée, date ni prix barré (lib/siteIsFree.ts)
-                    <div className="rounded-2xl bg-primary-50 border border-primary-100 p-6">
-                      <p className="text-3xl font-extrabold leading-tight text-charcoal-800">{t("publish.launchOfferTitle")}</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-2xl font-extrabold text-charcoal-800 mb-0.5">{t("publish.paidPrice", { price: nextPaidPriceLabel })}</p>
-                      <p className="text-sm text-charcoal-400 mb-1">{t("publish.perYear")}</p>
-                    </div>
-                  )}
+                  <div className="rounded-2xl bg-primary-50 border border-primary-100 p-6">
+                    <p className="text-3xl font-extrabold leading-tight text-charcoal-800">{t("publish.launchOfferTitle")}</p>
+                  </div>
 
                   {publishError && (
                     <p className="text-sm text-error-600 bg-error-50 rounded-xl px-4 py-3">{publishError}</p>
                   )}
 
-                  {isFree ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (!canPublish) { setShowPublishErrors(true); return; }
-                          void runPublishAction(handleActivateFree);
-                        }}
-                        disabled={publishLoading}
-                        className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
-                      >
-                        {publishLoading ? t("publish.publishing") : t("publish.activateFree")}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (!canPublish) { setShowPublishErrors(true); return; }
-                          void runPublishAction(handleStripeCheckout);
-                        }}
-                        disabled={publishLoading}
-                        className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
-                      >
-                        {publishLoading ? t("publish.redirecting") : t("publish.payAndPublish", { price: nextPaidPriceLabel })}
-                      </button>
-                      <p className="text-xs text-charcoal-400">{t("publish.securePayment")}</p>
-                    </>
-                  )}
+                  <button
+                    onClick={() => {
+                      if (!canPublish) { setShowPublishErrors(true); return; }
+                      void runPublishAction(handleActivateFree);
+                    }}
+                    disabled={publishLoading}
+                    className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
+                  >
+                    {publishLoading ? t("publish.publishing") : t("publish.activateFree")}
+                  </button>
                 </div>
               </SectionShell>
             );

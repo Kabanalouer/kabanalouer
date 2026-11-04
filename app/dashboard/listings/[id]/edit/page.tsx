@@ -5,7 +5,6 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import EditListingForm from "@/components/dashboard/EditListingForm";
 import { normalizePhotos } from "@/lib/photo";
 import type { BlockedEntry } from "@/components/dashboard/AvailabilityCalendar";
-import { getNextPaidRank, priceForRank } from "@/lib/subscriptionPricing";
 import type { AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogPolicy } from "@/lib/dogPolicy";
 import { parseAccessibility } from "@/lib/accessibility";
@@ -68,9 +67,7 @@ export default async function EditListingPage({ params, searchParams }: Props) {
   const isAdminReview = isAdmin && !isOwner;
   const hostId = listing.host_id as string;
 
-  const admin = adminSupabase();
-
-  const [{ data: subscription }, nextPaidRank, { data: blockedDates }] = await Promise.all([
+  const [{ data: subscription }, { data: blockedDates }] = await Promise.all([
     // Par listing_id, pas user_id — un proprio peut avoir plusieurs annonces,
     // donc plusieurs lignes subscriptions ; .maybeSingle() échouerait sinon.
     // Sert aussi à l'éligibilité de l'offre de lancement : l'existence d'une
@@ -81,14 +78,12 @@ export default async function EditListingPage({ params, searchParams }: Props) {
       .select("status, expires_at, is_free_launch")
       .eq("listing_id", id)
       .maybeSingle(),
-    getNextPaidRank(admin, hostId),
     supabase
       .from("availability")
       .select("date, source")
       .eq("listing_id", id),
   ]);
 
-  const { cents: nextPaidPriceCents } = priceForRank(nextPaidRank);
   const dogPolicy = parseDogPolicy(listing);
   const accessibility = parseAccessibility(listing);
   const publicHref =
@@ -170,8 +165,6 @@ export default async function EditListingPage({ params, searchParams }: Props) {
         initialLng={listing.longitude ?? null}
         subscriptionStatus={subscription?.status ?? null}
         subscriptionExpiresAt={subscription?.is_free_launch && FREE_UNTIL_FURTHER_NOTICE ? null : subscription?.expires_at ?? null}
-        hasExistingSubscription={!!subscription}
-        nextPaidPriceCents={nextPaidPriceCents}
         initialBlocked={(blockedDates ?? []) as BlockedEntry[]}
         icalUrl={(listing.ical_url as string | null) ?? null}
         icalLastSync={(listing.ical_last_sync as string | null) ?? null}
