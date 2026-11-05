@@ -174,9 +174,9 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                 {chips.map(({ label, sent, due }) => (
                   <span
                     key={label}
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sent ? "bg-success-50 text-success-700" : due ? "bg-accent/10 text-accent" : "bg-charcoal-100 text-charcoal-500"}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sent ? (sent.openedAt ? "bg-success-50 text-success-700" : "bg-warning-50 text-warning-700") : due ? "bg-accent/10 text-accent" : "bg-charcoal-100 text-charcoal-500"}`}
                   >
-                    {label} : {sent ? `envoyée le ${fmt(sent.sentAt)}` : due ? "à envoyer" : "pas envoyée"}
+                    {label} : {sent ? `envoyée le ${fmt(sent.sentAt)}, ${sent.openedAt ? `ouverte le ${fmt(sent.openedAt)}` : "pas ouverte"}` : due ? "à envoyer" : "pas envoyée"}
                   </span>
                 ))}
               </span>
