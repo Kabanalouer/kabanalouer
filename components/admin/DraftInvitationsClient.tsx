@@ -151,17 +151,20 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-start justify-between gap-3 text-left">
         <span className="min-w-0">
           <span className="flex flex-wrap items-center gap-2">
-            <span className="text-base font-semibold text-charcoal-800">{row.email}</span>
+            <span className="text-base font-semibold text-charcoal-800">{row.displayName || row.email}</span>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${status.tone}`}>{status.label}</span>
             <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 text-xs font-medium text-charcoal-600">{en ? "Anglais" : "Français"}</span>
             {row.due && <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Relance {dueLabel} due</span>}
           </span>
+          {(row.displayName || !open) && (
+            <span className="mt-1 block truncate text-sm font-normal text-charcoal-500">
+              {row.displayName ? row.email : ""}
+              {row.displayName && !open ? " · " : ""}
+              {!open ? `${row.listings.length} chalet${row.listings.length > 1 ? "s" : ""}` : ""}
+            </span>
+          )}
           {!open && (
             <>
-              <span className="mt-1 block truncate text-sm text-charcoal-500">
-                {row.displayName ? `${row.displayName} · ` : ""}
-                {row.listings.length} chalet{row.listings.length > 1 ? "s" : ""}
-              </span>
               <span className="mt-1.5 flex flex-wrap gap-1.5">
                 {finished && (
                   <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 text-xs font-medium text-charcoal-500">
