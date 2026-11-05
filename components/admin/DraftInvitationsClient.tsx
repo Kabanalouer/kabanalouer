@@ -138,6 +138,13 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
 
   const history = [sentLine("Invitation envoyée", row.invite), sentLine("Relance J+3 envoyée", row.reminder3), sentLine("Relance J+10 envoyée", row.reminder10)].filter(Boolean);
   const dueLabel = row.due === "draft_reminder_3" ? "J+3" : "J+10";
+  // Fiches activées ou propriétaire retiré : plus aucune relance possible, on n'affiche pas de relances « à venir »
+  const finished = row.status === "actif" || row.status === "retire";
+  const chips = [
+    { label: "Invitation", sent: row.invite, due: false },
+    { label: "Relance J+3", sent: row.reminder3, due: row.due === "draft_reminder_3" },
+    { label: "Relance J+10", sent: row.reminder10, due: row.due === "draft_reminder_10" },
+  ].filter((c) => (finished ? c.sent : true));
 
   return (
     <li className={`rounded-2xl border bg-white p-5 ${row.due ? "border-accent/40" : "border-[#ebebeb]"}`}>
@@ -156,11 +163,12 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                 {row.listings.length} chalet{row.listings.length > 1 ? "s" : ""}
               </span>
               <span className="mt-1.5 flex flex-wrap gap-1.5">
-                {[
-                  { label: "Invitation", sent: row.invite, due: false },
-                  { label: "Relance J+3", sent: row.reminder3, due: row.due === "draft_reminder_3" },
-                  { label: "Relance J+10", sent: row.reminder10, due: row.due === "draft_reminder_10" },
-                ].map(({ label, sent, due }) => (
+                {finished && (
+                  <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 text-xs font-medium text-charcoal-500">
+                    Relances : aucune prévue ({row.status === "actif" ? "fiches activées" : "propriétaire retiré"})
+                  </span>
+                )}
+                {chips.map(({ label, sent, due }) => (
                   <span
                     key={label}
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sent ? "bg-success-50 text-success-700" : due ? "bg-accent/10 text-accent" : "bg-charcoal-100 text-charcoal-500"}`}
