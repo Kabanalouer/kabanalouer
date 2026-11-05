@@ -44,6 +44,8 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [preview, setPreview] = useState<{ kind: Kind; subject: string; html: string } | null>(null);
+  // Une fois l'invitation envoyée (ou le propriétaire retiré), la carte est pliée : seul le statut reste visible. Une relance due la garde ouverte.
+  const [open, setOpen] = useState(() => !(row.invite || row.status === "retire") || !!row.due);
 
   const status = STATUS_LABEL[row.status];
   const incomplete = row.listings.some((l) => l.issues.length > 0 && l.state === "brouillon");
@@ -130,6 +132,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
     if (!res.ok) return setMessage({ ok: false, text: String(res.data.error ?? "Échec de l’envoi") });
     setMessage({ ok: true, text: "Envoyé." });
     setPreview(null);
+    setOpen(false);
     router.refresh();
   }
 
@@ -138,229 +141,250 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
 
   return (
     <li className={`rounded-2xl border bg-white p-5 ${row.due ? "border-accent/40" : "border-[#ebebeb]"}`}>
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-base font-semibold text-charcoal-800">{row.email}</p>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${status.tone}`}>{status.label}</span>
-        <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 text-xs font-medium text-charcoal-600">{en ? "Anglais" : "Français"}</span>
-        {row.due && <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Relance {dueLabel} due</span>}
-      </div>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-start justify-between gap-3 text-left">
+        <span className="min-w-0">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-base font-semibold text-charcoal-800">{row.email}</span>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${status.tone}`}>{status.label}</span>
+            <span className="rounded-full bg-charcoal-100 px-2.5 py-0.5 text-xs font-medium text-charcoal-600">{en ? "Anglais" : "Français"}</span>
+            {row.due && <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Relance {dueLabel} due</span>}
+          </span>
+          {!open && (
+            <span className="mt-1 block truncate text-sm text-charcoal-500">
+              {row.displayName ? `${row.displayName} · ` : ""}
+              {row.listings.length} chalet{row.listings.length > 1 ? "s" : ""}
+              {history.length > 0 ? ` · ${history[history.length - 1]}` : ""}
+            </span>
+          )}
+        </span>
+        <span className="mt-0.5 flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
+          {open ? "Replier" : "Déplier"}
+          <svg className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </span>
+      </button>
 
-      <ul className="mt-3 divide-y divide-[#ebebeb] rounded-xl border border-[#ebebeb]">
-        {row.listings.length === 0 && <li className="p-3 text-sm text-charcoal-500">Aucune fiche importée pour l’instant.</li>}
-        {row.listings.map((l) => (
-          <li key={l.id} className="flex items-center gap-3 p-3">
-            <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-charcoal-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {l.photoUrl && <img src={l.photoUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-charcoal-800">{l.title}</p>
-              <p className="truncate text-xs text-charcoal-500">
-                {[l.city, l.region].filter(Boolean).join(", ") || "Lieu inconnu"} · {l.photoCount} photo{l.photoCount > 1 ? "s" : ""}
-                {l.state !== "brouillon" ? ` · ${l.state === "en_ligne" ? "en ligne" : "revendiquée"}` : ""}
-              </p>
-              {l.issues.length > 0 && <p className="text-xs font-medium text-warning-700">À compléter avant la mise en ligne automatique : {l.issues.join(", ")}</p>}
-            </div>
-            {l.state === "brouillon" && (
-              <a href={`/apercu/admin/${l.id}`} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-medium text-primary hover:underline">
-                Voir la fiche
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      {row.pendingImports > 0 && (
-        <p className="mt-2 text-sm text-warning-700">
-          {row.pendingImports} fiche{row.pendingImports > 1 ? "s" : ""} encore en cours d’import (une toutes les 5 minutes). L’invitation sera possible quand tout sera importé.
-        </p>
-      )}
-      {row.rejectedImports > 0 && (
-        <p className="mt-2 text-sm text-charcoal-500">
-          {row.rejectedImports} ligne{row.rejectedImports > 1 ? "s" : ""} de la file d’import refusée{row.rejectedImports > 1 ? "s" : ""} ou en pause, non comptée{row.rejectedImports > 1 ? "s" : ""} dans les fiches ci-dessus (détail dans Admin, Invitations, file d’import).
-        </p>
-      )}
-      {incomplete && row.status !== "actif" && (
-        <p className="mt-2 text-sm text-charcoal-500">
-          Une fiche à compléter reste en brouillon après la revendication : le propriétaire la complète puis l’active dans Mes chalets.
-        </p>
-      )}
-
-      {row.status !== "retire" && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="contents">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-charcoal-700">Nom du chalet ou du site (objet et titre)</span>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setSaved(false);
-                }}
-                maxLength={120}
-                placeholder={row.listings.length > 1 ? "Chalets Exemple" : row.listings[0]?.title ?? "Nom du chalet"}
-                className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-              />
-              <span className="mt-1 block text-xs text-charcoal-400">Vide : le titre du chalet (ou « Titre et N autres chalets »).</span>
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-charcoal-700">Site du propriétaire</span>
-              <input
-                type="text"
-                value={site}
-                onChange={(e) => {
-                  setSite(e.target.value);
-                  setSaved(false);
-                }}
-                placeholder="exemple.ca"
-                className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-              />
-              {row.siteUrl && (
-                <a href={row.siteUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block truncate text-xs text-primary hover:underline">
-                  Ouvrir le site
+      {open && (
+        <>
+        <ul className="mt-3 divide-y divide-[#ebebeb] rounded-xl border border-[#ebebeb]">
+          {row.listings.length === 0 && <li className="p-3 text-sm text-charcoal-500">Aucune fiche importée pour l’instant.</li>}
+          {row.listings.map((l) => (
+            <li key={l.id} className="flex items-center gap-3 p-3">
+              <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-charcoal-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {l.photoUrl && <img src={l.photoUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-charcoal-800">{l.title}</p>
+                <p className="truncate text-xs text-charcoal-500">
+                  {[l.city, l.region].filter(Boolean).join(", ") || "Lieu inconnu"} · {l.photoCount} photo{l.photoCount > 1 ? "s" : ""}
+                  {l.state !== "brouillon" ? ` · ${l.state === "en_ligne" ? "en ligne" : "revendiquée"}` : ""}
+                </p>
+                {l.issues.length > 0 && <p className="text-xs font-medium text-warning-700">À compléter avant la mise en ligne automatique : {l.issues.join(", ")}</p>}
+              </div>
+              {l.state === "brouillon" && (
+                <a href={`/apercu/admin/${l.id}`} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-medium text-primary hover:underline">
+                  Voir la fiche
                 </a>
               )}
-            </label>
-          </div>
-        </div>
-      )}
-
-      {row.status !== "retire" && !row.invite && row.listings.some((l) => l.state === "brouillon") && (
-        <div className="mt-4">
-          <button type="button" onClick={openTextEditor} disabled={busy !== null} className="text-sm font-medium text-primary hover:underline disabled:text-charcoal-400">
-            {editing ? "Fermer le texte du courriel" : row.customBody ? "Modifier le texte de ce courriel (texte personnalisé)" : "Modifier le texte de ce courriel"}
-          </button>
-          {editing && (
-            <div className="mt-2 space-y-3 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3">
-              <p className="text-xs text-charcoal-500">
-                Ce texte ne sert que pour ce propriétaire : le modèle d’Admin → Séquences courriel n’est pas modifié. Gardez les mots entre accolades ({"{nom}"}, {"{fiches}"}, {"{nombre}"}, {"{offre}"}) : ils sont remplacés à l’envoi. Gras : **comme ceci**. Une ligne vide sépare deux paragraphes.
-              </p>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-charcoal-700">Objet</span>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => {
-                    setSubject(e.target.value);
-                    setSaved(false);
-                  }}
-                  maxLength={200}
-                  className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-charcoal-700">Salutation (le « Bonjour, » du début)</span>
-                <input
-                  type="text"
-                  value={greeting}
-                  onChange={(e) => {
-                    setGreeting(e.target.value);
-                    setSaved(false);
-                  }}
-                  maxLength={200}
-                  className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-charcoal-700">Texte</span>
-                <textarea
-                  value={text}
-                  onChange={(e) => {
-                    setText(e.target.value);
-                    setSaved(false);
-                  }}
-                  maxLength={5000}
-                  rows={14}
-                  className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
-                />
-              </label>
-              <p className="text-xs text-charcoal-400">Le titre du courriel (en gras, sous le logo), le bouton et le lien « Retirer » viennent du modèle. Cliquez sur « Enregistrer » plus bas, puis « Voir le courriel d’invitation ».</p>
-              <button type="button" onClick={backToModel} disabled={busy !== null} className="text-sm font-medium text-charcoal-600 hover:underline disabled:text-charcoal-400">
-                Revenir au texte du modèle
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {history.length > 0 && (
-        <ul className="mt-3 space-y-0.5 text-sm text-charcoal-500">
-          {history.map((h) => (
-            <li key={h}>{h}</li>
+            </li>
           ))}
         </ul>
-      )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+        {row.pendingImports > 0 && (
+          <p className="mt-2 text-sm text-warning-700">
+            {row.pendingImports} fiche{row.pendingImports > 1 ? "s" : ""} encore en cours d’import (une toutes les 5 minutes). L’invitation sera possible quand tout sera importé.
+          </p>
+        )}
+        {row.rejectedImports > 0 && (
+          <p className="mt-2 text-sm text-charcoal-500">
+            {row.rejectedImports} ligne{row.rejectedImports > 1 ? "s" : ""} de la file d’import refusée{row.rejectedImports > 1 ? "s" : ""} ou en pause, non comptée{row.rejectedImports > 1 ? "s" : ""} dans les fiches ci-dessus (détail dans Admin, Invitations, file d’import).
+          </p>
+        )}
+        {incomplete && row.status !== "actif" && (
+          <p className="mt-2 text-sm text-charcoal-500">
+            Une fiche à compléter reste en brouillon après la revendication : le propriétaire la complète puis l’active dans Mes chalets.
+          </p>
+        )}
+
         {row.status !== "retire" && (
-          <button
-            type="button"
-            onClick={save}
-            disabled={saved || busy !== null}
-            className="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-400 disabled:text-charcoal-400 transition-colors"
-          >
-            {busy === "save" ? "Enregistrement…" : "Enregistrer"}
-          </button>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="contents">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-charcoal-700">Nom du chalet ou du site (objet et titre)</span>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setSaved(false);
+                  }}
+                  maxLength={120}
+                  placeholder={row.listings.length > 1 ? "Chalets Exemple" : row.listings[0]?.title ?? "Nom du chalet"}
+                  className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                />
+                <span className="mt-1 block text-xs text-charcoal-400">Vide : le titre du chalet (ou « Titre et N autres chalets »).</span>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-charcoal-700">Site du propriétaire</span>
+                <input
+                  type="text"
+                  value={site}
+                  onChange={(e) => {
+                    setSite(e.target.value);
+                    setSaved(false);
+                  }}
+                  placeholder="exemple.ca"
+                  className="w-full rounded-xl border border-[#ebebeb] px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                />
+                {row.siteUrl && (
+                  <a href={row.siteUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block truncate text-xs text-primary hover:underline">
+                    Ouvrir le site
+                  </a>
+                )}
+              </label>
+            </div>
+          </div>
         )}
-        {row.listings.some((l) => l.state === "brouillon") && (
-          <button
-            type="button"
-            onClick={() => showPreview("draft_invite")}
-            disabled={busy !== null}
-            className="rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] disabled:text-charcoal-400 transition-colors"
-          >
-            {busy === "preview-draft_invite" ? "Chargement…" : "Voir le courriel d’invitation"}
-          </button>
+
+        {row.status !== "retire" && !row.invite && row.listings.some((l) => l.state === "brouillon") && (
+          <div className="mt-4">
+            <button type="button" onClick={openTextEditor} disabled={busy !== null} className="text-sm font-medium text-primary hover:underline disabled:text-charcoal-400">
+              {editing ? "Fermer le texte du courriel" : row.customBody ? "Modifier le texte de ce courriel (texte personnalisé)" : "Modifier le texte de ce courriel"}
+            </button>
+            {editing && (
+              <div className="mt-2 space-y-3 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3">
+                <p className="text-xs text-charcoal-500">
+                  Ce texte ne sert que pour ce propriétaire : le modèle d’Admin → Séquences courriel n’est pas modifié. Gardez les mots entre accolades ({"{nom}"}, {"{fiches}"}, {"{nombre}"}, {"{offre}"}) : ils sont remplacés à l’envoi. Gras : **comme ceci**. Une ligne vide sépare deux paragraphes.
+                </p>
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-charcoal-700">Objet</span>
+                  <input
+                    type="text"
+                    value={subject}
+                    onChange={(e) => {
+                      setSubject(e.target.value);
+                      setSaved(false);
+                    }}
+                    maxLength={200}
+                    className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-charcoal-700">Salutation (le « Bonjour, » du début)</span>
+                  <input
+                    type="text"
+                    value={greeting}
+                    onChange={(e) => {
+                      setGreeting(e.target.value);
+                      setSaved(false);
+                    }}
+                    maxLength={200}
+                    className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-charcoal-700">Texte</span>
+                  <textarea
+                    value={text}
+                    onChange={(e) => {
+                      setText(e.target.value);
+                      setSaved(false);
+                    }}
+                    maxLength={5000}
+                    rows={14}
+                    className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <p className="text-xs text-charcoal-400">Le titre du courriel (en gras, sous le logo), le bouton et le lien « Retirer » viennent du modèle. Cliquez sur « Enregistrer » plus bas, puis « Voir le courriel d’invitation ».</p>
+                <button type="button" onClick={backToModel} disabled={busy !== null} className="text-sm font-medium text-charcoal-600 hover:underline disabled:text-charcoal-400">
+                  Revenir au texte du modèle
+                </button>
+              </div>
+            )}
+          </div>
         )}
-        {row.status === "pret" && (
-          <button
-            type="button"
-            onClick={() => send("draft_invite")}
-            disabled={busy !== null}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
-          >
-            {busy === "send-draft_invite" ? "Envoi…" : "Envoyer l’invitation"}
-          </button>
+
+        {history.length > 0 && (
+          <ul className="mt-3 space-y-0.5 text-sm text-charcoal-500">
+            {history.map((h) => (
+              <li key={h}>{h}</li>
+            ))}
+          </ul>
         )}
-        {row.due && (
-          <>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {row.status !== "retire" && (
             <button
               type="button"
-              onClick={() => showPreview(row.due as Kind)}
+              onClick={save}
+              disabled={saved || busy !== null}
+              className="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-400 disabled:text-charcoal-400 transition-colors"
+            >
+              {busy === "save" ? "Enregistrement…" : "Enregistrer"}
+            </button>
+          )}
+          {row.listings.some((l) => l.state === "brouillon") && (
+            <button
+              type="button"
+              onClick={() => showPreview("draft_invite")}
               disabled={busy !== null}
               className="rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] disabled:text-charcoal-400 transition-colors"
             >
-              Voir le courriel de relance
+              {busy === "preview-draft_invite" ? "Chargement…" : "Voir le courriel d’invitation"}
             </button>
+          )}
+          {row.status === "pret" && (
             <button
               type="button"
-              onClick={() => send(row.due as Kind)}
+              onClick={() => send("draft_invite")}
               disabled={busy !== null}
               className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
             >
-              {busy === `send-${row.due}` ? "Envoi…" : `Envoyer la relance ${dueLabel}`}
+              {busy === "send-draft_invite" ? "Envoi…" : "Envoyer l’invitation"}
             </button>
-          </>
-        )}
-      </div>
-
-      {message && <p className={`mt-2 text-sm ${message.ok ? "text-success-600" : "text-error-600"}`}>{message.text}</p>}
-
-      {preview && (
-        <div className="mt-4 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm text-charcoal-700">
-              <span className="text-charcoal-400">Objet </span>
-              <span className="font-medium">{preview.subject}</span>
-            </p>
-            <button type="button" onClick={() => setPreview(null)} className="text-sm text-charcoal-500 hover:text-charcoal-800">
-              Fermer
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-charcoal-400">Aperçu avec des liens d’exemple : les vrais liens sont créés à l’envoi.</p>
-          <iframe title="Aperçu du courriel" sandbox="" srcDoc={preview.html} className="mt-2 h-[560px] w-full rounded-lg border border-[#ebebeb] bg-white" />
+          )}
+          {row.due && (
+            <>
+              <button
+                type="button"
+                onClick={() => showPreview(row.due as Kind)}
+                disabled={busy !== null}
+                className="rounded-full border border-primary/40 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-[#f5f6ec] disabled:text-charcoal-400 transition-colors"
+              >
+                Voir le courriel de relance
+              </button>
+              <button
+                type="button"
+                onClick={() => send(row.due as Kind)}
+                disabled={busy !== null}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+              >
+                {busy === `send-${row.due}` ? "Envoi…" : `Envoyer la relance ${dueLabel}`}
+              </button>
+            </>
+          )}
         </div>
+
+        {message && <p className={`mt-2 text-sm ${message.ok ? "text-success-600" : "text-error-600"}`}>{message.text}</p>}
+
+        {preview && (
+          <div className="mt-4 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-charcoal-700">
+                <span className="text-charcoal-400">Objet </span>
+                <span className="font-medium">{preview.subject}</span>
+              </p>
+              <button type="button" onClick={() => setPreview(null)} className="text-sm text-charcoal-500 hover:text-charcoal-800">
+                Fermer
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-charcoal-400">Aperçu avec des liens d’exemple : les vrais liens sont créés à l’envoi.</p>
+            <iframe title="Aperçu du courriel" sandbox="" srcDoc={preview.html} className="mt-2 h-[560px] w-full rounded-lg border border-[#ebebeb] bg-white" />
+          </div>
+        )}
+        </>
       )}
     </li>
   );
