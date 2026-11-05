@@ -150,11 +150,26 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
             {row.due && <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Relance {dueLabel} due</span>}
           </span>
           {!open && (
-            <span className="mt-1 block truncate text-sm text-charcoal-500">
-              {row.displayName ? `${row.displayName} · ` : ""}
-              {row.listings.length} chalet{row.listings.length > 1 ? "s" : ""}
-              {history.length > 0 ? ` · ${history[history.length - 1]}` : ""}
-            </span>
+            <>
+              <span className="mt-1 block truncate text-sm text-charcoal-500">
+                {row.displayName ? `${row.displayName} · ` : ""}
+                {row.listings.length} chalet{row.listings.length > 1 ? "s" : ""}
+              </span>
+              <span className="mt-1.5 flex flex-wrap gap-1.5">
+                {[
+                  { label: "Invitation", sent: row.invite, due: false },
+                  { label: "Relance J+3", sent: row.reminder3, due: row.due === "draft_reminder_3" },
+                  { label: "Relance J+10", sent: row.reminder10, due: row.due === "draft_reminder_10" },
+                ].map(({ label, sent, due }) => (
+                  <span
+                    key={label}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sent ? "bg-success-50 text-success-700" : due ? "bg-accent/10 text-accent" : "bg-charcoal-100 text-charcoal-500"}`}
+                  >
+                    {label} : {sent ? `envoyée le ${fmt(sent.sentAt)}` : due ? "à envoyer" : "pas envoyée"}
+                  </span>
+                ))}
+              </span>
+            </>
           )}
         </span>
         <span className="mt-0.5 flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
