@@ -46,7 +46,7 @@
     },
     {
       "path": "/api/cron/import-queue",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/send-invitations",
