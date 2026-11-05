@@ -1,5 +1,6 @@
 import { renderEmail } from "./renderEmail";
 import { sendEmail } from "./send";
+import { listingBullets, MAX_LISTED_LISTINGS, othersLabel } from "./listingList";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { resolveEmailText } from "@/lib/emailTemplates/resolve";
 import type { EmailTemplateDef } from "@/lib/emailTemplates/types";
@@ -136,14 +137,11 @@ export async function sendClaimInvitationEmail(input: {
     `<a href="${escapeHtml(href)}" style="color:#636e40;${bold ? "font-weight:600;" : ""}">${escapeHtml(label)}</a>`;
 
   const multiple = input.listings.length > 1;
-  // Puces faites à la main (pas de <ul> : le texte du courriel est dans un <p>) : retrait suspendu, « • » en tête ;
-  // marge négative sous la dernière : le saut de ligne qui suit un bloc ajouterait sinon une ligne vide de trop.
-  const bullets = (list: string[]) =>
-    list
-      .map((html, i) => `<span style="display:block;padding-left:14px;text-indent:-14px;margin:0 0 ${i === list.length - 1 ? -22 : 6}px 0;">•&nbsp; ${html}</span>`)
-      .join("");
   const items = input.listings.map((l) => (l.path ? link(`${SITE_URL}${l.path}`, l.title, true) : `<strong>${escapeHtml(l.title)}</strong>`));
-  const fiches = multiple ? bullets(items) : items[0] ?? "";
+  // 3 fiches au plus ; les autres sont derrière un lien vers la page d'activation, qui les liste toutes
+  const hidden = input.listings.length - MAX_LISTED_LISTINGS;
+  const more = hidden > 0 ? link(input.claimUrl, othersLabel(hidden, fr)) : undefined;
+  const fiches = multiple ? listingBullets(items, more) : items[0] ?? "";
   // Un seul lien pour toutes les fiches : la page de retrait laisse cocher celles à retirer
   const removeLabel = multiple ? (fr ? "Retirer mes fiches" : "Remove my listings") : fr ? "Retirer ma fiche" : "Remove my listing";
   const lienRetrait = input.removeUrl ? link(input.removeUrl, removeLabel) : "";
