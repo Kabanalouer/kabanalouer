@@ -19,6 +19,6 @@ export function listingBullets(items: string[], moreHtml?: string): string {
       return `<span style="display:block;padding-left:14px;text-indent:-14px;margin:0 0 ${margin(isLast)}px 0;">•&nbsp; ${html}</span>`;
     })
     .join("");
-  const more = moreHtml ? `<span style="display:block;margin:0 0 ${margin(true)}px 0;">${moreHtml}</span>` : "";
+  const more = moreHtml ? `<span style="display:block;margin:16px 0${margin(true)}px 0;">${moreHtml}</span>` : "";
   return bullets + more;
 }
