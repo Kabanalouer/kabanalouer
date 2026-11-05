@@ -33,7 +33,8 @@ const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const MIN_PHOTO_WIDTH = 400;
 const MAX_ATTEMPTS = 3;
 // Une fiche par passage : vérifier les filigranes et agrandir une trentaine de photos prend
-// plusieurs minutes (le cron tourne toutes les 15 minutes, soit 96 fiches par jour au plus).
+// plusieurs minutes (le cron tourne chaque minute depuis le 2026-11-05 ; la prise en charge de
+// la ligne évite qu'un passage en retard traite la même fiche que le précédent).
 export const IMPORT_BATCH_SIZE = 1;
 
 type Admin = SupabaseClient;
