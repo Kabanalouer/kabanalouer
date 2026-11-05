@@ -8,8 +8,9 @@ import sharp from "sharp";
 
 const MODEL_URL = "https://api.replicate.com/v1/models/nightmareai/real-esrgan/predictions";
 const MAX_OUTPUT_WIDTH = 2048;
-// Le modèle refuse une image de plus de 2 096 704 pixels (mémoire du GPU) : marge de sécurité
-const MAX_INPUT_PIXELS = 2_000_000;
+// Le modèle manque de mémoire (GPU de 14,5 Go) bien avant sa limite officielle de 2 096 704 pixels : une photo de 1,5 à 2 millions de pixels
+// fait échouer l'agrandissement (« CUDA out of memory »). Les sources à 800 px (environ 0,4 million de pixels) passent sans problème.
+const MAX_INPUT_PIXELS = 1_000_000;
 
 type Prediction = { status?: string; output?: unknown; error?: string | null; urls?: { get?: string } };
 
