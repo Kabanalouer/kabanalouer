@@ -8,6 +8,8 @@ import sharp from "sharp";
 
 const MODEL_URL = "https://api.replicate.com/v1/models/nightmareai/real-esrgan/predictions";
 const MAX_OUTPUT_WIDTH = 2048;
+// Le modèle refuse une image de plus de 2 096 704 pixels (mémoire du GPU) : marge de sécurité
+const MAX_INPUT_PIXELS = 2_000_000;
 
 type Prediction = { status?: string; output?: unknown; error?: string | null; urls?: { get?: string } };
 
@@ -25,6 +27,8 @@ export async function enhancePhoto(webp: Buffer): Promise<Buffer | null> {
   try {
     const meta = await sharp(webp).metadata();
     if (!meta.width || meta.width >= MAX_OUTPUT_WIDTH) return null;
+    // Photo verticale ou déjà grande : elle n'a pas besoin d'être agrandie et le modèle la refuserait
+    if (meta.height && meta.width * meta.height > MAX_INPUT_PIXELS) return null;
     const jpeg = await sharp(webp).jpeg({ quality: 92 }).toBuffer();
     const input = { image: `data:image/jpeg;base64,${jpeg.toString("base64")}`, scale: 2, face_enhance: false };
 
