@@ -58,7 +58,8 @@ export function emailTestSenders(): Record<string, Sender> {
       ? "Bonjour ! Nous sommes une famille de 4 et aimerions réserver du 10 au 13 octobre. Le spa est-il disponible ?"
       : "Hi! We’re a family of 4 and would like to book October 10 to 13. Is the hot tub available?";
 
-  const MULTI_TITLES = [TITLE, "Chalet exemple 2", "Chalet exemple 3"];
+  // 5 chalets : montre la limite de 3 liens et « Voir mes 2 autres fiches » (lib/emails/listingList.ts)
+  const MULTI_TITLES = [TITLE, "Chalet exemple 2", "Chalet exemple 3", "Chalet exemple 4", "Chalet exemple 5"];
   const MULTI_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, path: lang === "en" ? `/en/cabins/laurentians/mille-isles/4834${7 + i}` : `/chalets/laurentides/mille-isles/4834${7 + i}` }));
   const DRAFT_LISTINGS = (lang: Lang) => MULTI_TITLES.map((title, i) => ({ title, url: previewLink(lang, "exemple", `00000000-0000-4000-8000-00000000000${i + 1}`) }));
   const DRAFT_INTRO = (lang: Lang) =>
