@@ -13,6 +13,7 @@ export async function sendEmail(payload: {
   subject: string;
   html: string;
   replyTo?: string;
+  cc?: string[];
 }): Promise<{ error: { message: string } | null }> {
   const capture = emailContext.getStore()?.capture;
   if (capture) {

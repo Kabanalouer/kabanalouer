@@ -356,12 +356,13 @@ export async function sendDraftInvitation(admin: AdminClient, candidate: DraftCa
   }
 
   // Première phrase personnalisée selon le site du propriétaire (invitation seulement), écrite dans Admin → Brouillons
-  const note = kind === "draft_invite" ? await loadDraftNote(admin, candidate.claimEmail) : null;
-  const intro = lang === "en" ? note?.intro_en : note?.intro_fr;
+  // La note sert aussi aux relances : la personne en copie reçoit tous les courriels de brouillon
+  const note = await loadDraftNote(admin, candidate.claimEmail);
+  const intro = kind === "draft_invite" ? (lang === "en" ? note?.intro_en : note?.intro_fr) : null;
   const displayName = note?.display_name;
   const customText = kind === "draft_invite" ? { subject: note?.custom_subject, greeting: note?.custom_greeting, body: note?.custom_body } : null;
 
-  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName, customText });
+  const { error } = await sendDraftInvitationEmail({ to: candidate.claimEmail, lang, kind, listings, buttonUrl, removeUrl, claimed: candidate.claimed, trackToken, intro, displayName, customText, cc: note?.cc_email });
   if (error) {
     console.error("sendDraftInvitation: échec d'envoi", candidate.claimEmail, error.message);
     await undo();

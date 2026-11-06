@@ -193,6 +193,8 @@ export async function sendDraftInvitationEmail(input: {
   intro?: string | null;
   // Objet et texte propres à ce propriétaire (Admin → Brouillons), invitation seulement ; vide = texte du modèle
   customText?: { subject?: string | null; greeting?: string | null; body?: string | null } | null;
+  // Personne en copie (courriel), par exemple une deuxième personne qui gère les chalets
+  cc?: string | null;
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
   const link = (href: string, label: string, bold = false) =>
@@ -242,7 +244,8 @@ export async function sendDraftInvitationEmail(input: {
     suivi,
   }, input.kind === "draft_invite" ? input.customText ?? undefined : undefined);
   const html = renderEmail({ lang: input.lang, ...text, buttonUrl: input.buttonUrl });
-  const { error } = await sendEmail({ from: FROM, to: [input.to], subject: text.subject, html });
+  const cc = input.cc && input.cc.toLowerCase() !== input.to.toLowerCase() ? [input.cc] : undefined;
+  const { error } = await sendEmail({ from: FROM, to: [input.to], ...(cc ? { cc } : {}), subject: text.subject, html });
   return { error: error ? new Error(error.message) : null };
 }
 
