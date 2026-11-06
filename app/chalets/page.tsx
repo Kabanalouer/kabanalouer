@@ -149,7 +149,8 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
     }
   }
-  if (dogsCount) query = query.eq("dogs_allowed", true).gte("dogs_max", dogsCount);
+  // Le nombre maximum de chiens est facultatif : une fiche qui n'en précise aucun reste dans les résultats
+  if (dogsCount) query = query.eq("dogs_allowed", true).or(`dogs_max.is.null,dogs_max.gte.${dogsCount}`);
   if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 

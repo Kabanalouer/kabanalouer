@@ -39,13 +39,6 @@ export function parseDogPolicy(row: Record<string, unknown>): DogPolicy {
   };
 }
 
-export function isDogPolicyComplete(p: DogPolicy): boolean {
-  if (!p.allowed) return true;
-  if (!p.max || !p.sizeLimit || !p.feeType) return false;
-  if (p.feeType !== "free" && !(p.feeAmount && p.feeAmount > 0)) return false;
-  return true;
-}
-
 export function dogSizeLabel(size: DogSizeLimit, locale: string): string {
   const isEn = locale === "en";
   switch (size) {

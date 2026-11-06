@@ -263,7 +263,6 @@
       "deleteButton": "Delete my listing",
       "featuredSectionTitle": "Listing boost",
       "citqError": "CITQ number must be exactly 6 digits.",
-      "dogsIncompleteError": "Please specify the weight restrictions and fees for dogs (with an amount if there is a fee).",
       "saveError": "Error saving. Please try again.",
       "flushBeforePublishError": "We couldn't save your latest changes — try again before publishing.",
       "activateError": "An error occurred.",

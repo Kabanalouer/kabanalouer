@@ -263,7 +263,6 @@
       "deleteButton": "Supprimer mon annonce",
       "featuredSectionTitle": "Boost de l'annonce",
       "citqError": "Le numéro CITQ doit contenir exactement 6 chiffres.",
-      "dogsIncompleteError": "Précisez les restrictions de poids et les frais pour les chiens (avec un montant s'il y a des frais).",
       "saveError": "Erreur lors de l'enregistrement. Réessayez.",
       "flushBeforePublishError": "Impossible d'enregistrer tes derniers changements — réessaie avant de publier.",
       "activateError": "Une erreur s'est produite.",
