@@ -192,7 +192,7 @@ export async function sendDraftInvitationEmail(input: {
   // Première phrase personnalisée (texte brut), invitation seulement : écrite dans Admin → Brouillons selon le site du propriétaire
   intro?: string | null;
   // Objet et texte propres à ce propriétaire (Admin → Brouillons), invitation seulement ; vide = texte du modèle
-  customText?: { subject?: string | null; greeting?: string | null; body?: string | null } | null;
+  customText?: { subject?: string | null; greeting?: string | null; heading?: string | null; body?: string | null } | null;
   // Personne en copie (courriel), par exemple une deuxième personne qui gère les chalets
   cc?: string | null;
 }): Promise<{ error: Error | null }> {
@@ -251,7 +251,7 @@ export async function sendDraftInvitationEmail(input: {
 
 // Objet et texte du modèle d'invitation (version enregistrée dans l'admin, sinon celle du code), avec leurs repères {cle} :
 // point de départ du texte propre à un propriétaire dans Admin → Brouillons. {intro} n'est plus utilisé : retiré.
-export async function loadDraftInvitationBase(lang: "fr" | "en", multiple: boolean): Promise<{ subject: string; greeting: string; body: string }> {
+export async function loadDraftInvitationBase(lang: "fr" | "en", multiple: boolean): Promise<{ subject: string; greeting: string; heading: string; body: string }> {
   const f = await loadBaseFields(templateFor("draft_invite", multiple), lang);
-  return { subject: f.subject, greeting: f.greeting, body: f.body.replace(/\{intro\}/g, "") };
+  return { subject: f.subject, greeting: f.greeting, heading: f.heading, body: f.body.replace(/\{intro\}/g, "") };
 }

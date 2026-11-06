@@ -14,13 +14,14 @@ export type DraftNote = {
   display_name: string | null;
   custom_subject: string | null;
   custom_greeting: string | null;
+  custom_heading: string | null;
   custom_body: string | null;
   cc_email: string | null;
   reminder_3_notified_at: string | null;
   reminder_10_notified_at: string | null;
 };
 
-const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, custom_subject, custom_greeting, custom_body, cc_email, reminder_3_notified_at, reminder_10_notified_at";
+const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, custom_subject, custom_greeting, custom_heading, custom_body, cc_email, reminder_3_notified_at, reminder_10_notified_at";
 
 // Personne en copie des courriels de brouillon (invitation et relances) : un seul courriel valide, en minuscules, sinon rien.
 export function cleanCcEmail(value: unknown): string | null {
@@ -59,6 +60,13 @@ export function cleanCustomGreeting(value: unknown): string | null {
   const text = value.replace(/\s+/g, " ").trim().slice(0, CUSTOM_GREETING_MAX_LENGTH);
   return text.length > 0 ? text : null;
 }
+// Grand titre du courriel (« Vos dômes sur Kabanalouer ») : une ligne, mêmes repères {cle} et **gras** que le modèle
+export const CUSTOM_HEADING_MAX_LENGTH = 200;
+export function cleanCustomHeading(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/\s+/g, " ").trim().slice(0, CUSTOM_HEADING_MAX_LENGTH);
+  return text.length > 0 ? text : null;
+}
 export function cleanCustomBody(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const text = value.replace(/\r\n/g, "\n").trim().slice(0, CUSTOM_BODY_MAX_LENGTH);
@@ -95,7 +103,7 @@ export async function loadDraftNote(admin: AdminClient, email: string): Promise<
 export async function saveDraftNote(
   admin: AdminClient,
   email: string,
-  fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown; custom_subject?: unknown; custom_greeting?: unknown; custom_body?: unknown; cc_email?: unknown }
+  fields: { intro_fr?: unknown; intro_en?: unknown; site_url?: unknown; display_name?: unknown; custom_subject?: unknown; custom_greeting?: unknown; custom_heading?: unknown; custom_body?: unknown; cc_email?: unknown }
 ): Promise<{ error: string | null }> {
   const row: Record<string, unknown> = { claim_email: email.trim().toLowerCase(), updated_at: new Date().toISOString() };
   if ("intro_fr" in fields) row.intro_fr = cleanIntro(fields.intro_fr);
@@ -104,6 +112,7 @@ export async function saveDraftNote(
   if ("display_name" in fields) row.display_name = cleanDisplayName(fields.display_name);
   if ("custom_subject" in fields) row.custom_subject = cleanCustomSubject(fields.custom_subject);
   if ("custom_greeting" in fields) row.custom_greeting = cleanCustomGreeting(fields.custom_greeting);
+  if ("custom_heading" in fields) row.custom_heading = cleanCustomHeading(fields.custom_heading);
   if ("custom_body" in fields) row.custom_body = cleanCustomBody(fields.custom_body);
   if ("cc_email" in fields) row.cc_email = cleanCcEmail(fields.cc_email);
   const { error } = await admin.from("draft_invitation_notes").upsert(row, { onConflict: "claim_email" });

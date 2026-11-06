@@ -37,8 +37,9 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   const [name, setName] = useState(row.displayName);
   const [subject, setSubject] = useState(row.customSubject);
   const [greeting, setGreeting] = useState(row.customGreeting);
+  const [heading, setHeading] = useState(row.customHeading);
   const [text, setText] = useState(row.customBody);
-  const [base, setBase] = useState<{ subject: string; greeting: string; body: string } | null>(null);
+  const [base, setBase] = useState<{ subject: string; greeting: string; heading: string; body: string } | null>(null);
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -61,14 +62,17 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   }
 
   // Texte inchangé par rapport au modèle = rien d'enregistré : le modèle reste la référence
-  const sameAsBase = base !== null && subject === base.subject && greeting === base.greeting && text === base.body;
-  const customCleared = subject.trim() === "" && greeting.trim() === "" && text.trim() === "";
-  const customPayload = sameAsBase || customCleared ? { custom_subject: null, custom_greeting: null, custom_body: null } : { custom_subject: subject, custom_greeting: greeting, custom_body: text };
+  const sameAsBase = base !== null && subject === base.subject && greeting === base.greeting && heading === base.heading && text === base.body;
+  const customCleared = subject.trim() === "" && greeting.trim() === "" && heading.trim() === "" && text.trim() === "";
+  const customPayload =
+    sameAsBase || customCleared
+      ? { custom_subject: null, custom_greeting: null, custom_heading: null, custom_body: null }
+      : { custom_subject: subject, custom_greeting: greeting, custom_heading: heading, custom_body: text };
 
   async function save(): Promise<boolean> {
     setBusy("save");
     setMessage(null);
-    const { ok, data } = await call("PUT", { email: row.email, site_url: site, display_name: name, ...(editing || row.customBody ? customPayload : {}) });
+    const { ok, data } = await call("PUT", { email: row.email, site_url: site, display_name: name, ...(editing || row.customBody || row.customHeading ? customPayload : {}) });
     setBusy(null);
     if (!ok) {
       setMessage({ ok: false, text: String(data.error ?? "Enregistrement impossible") });
@@ -83,7 +87,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   async function showPreview(kind: Kind) {
     setBusy(`preview-${kind}`);
     setMessage(null);
-    const custom = kind === "draft_invite" && !sameAsBase && !customCleared ? { customSubject: subject, customGreeting: greeting, customBody: text } : {};
+    const custom = kind === "draft_invite" && !sameAsBase && !customCleared ? { customSubject: subject, customGreeting: greeting, customHeading: heading, customBody: text } : {};
     const { ok, data } = await call("POST", { action: "preview", email: row.email, kind, displayName: name, ...custom });
     setBusy(null);
     if (!ok) return setMessage({ ok: false, text: String(data.error ?? "Aperçu impossible") });
@@ -97,11 +101,12 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
     const { ok, data } = await call("POST", { action: "base", email: row.email, kind: "draft_invite" });
     setBusy(null);
     if (!ok) return setMessage({ ok: false, text: String(data.error ?? "Texte du modèle introuvable") });
-    const b = { subject: String(data.subject ?? ""), greeting: String(data.greeting ?? ""), body: String(data.body ?? "") };
+    const b = { subject: String(data.subject ?? ""), greeting: String(data.greeting ?? ""), heading: String(data.heading ?? ""), body: String(data.body ?? "") };
     setBase(b);
-    if (!subject.trim() && !greeting.trim() && !text.trim()) {
+    if (!subject.trim() && !greeting.trim() && !heading.trim() && !text.trim()) {
       setSubject(b.subject);
       setGreeting(b.greeting);
+      setHeading(b.heading);
       setText(b.body);
     }
     setEditing(true);
@@ -111,11 +116,12 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
     if (!window.confirm("Revenir au texte du modèle ? Le texte écrit pour ce propriétaire sera effacé.")) return;
     setBusy("save");
     setMessage(null);
-    const { ok, data } = await call("PUT", { email: row.email, custom_subject: null, custom_greeting: null, custom_body: null });
+    const { ok, data } = await call("PUT", { email: row.email, custom_subject: null, custom_greeting: null, custom_heading: null, custom_body: null });
     setBusy(null);
     if (!ok) return setMessage({ ok: false, text: String(data.error ?? "Enregistrement impossible") });
     setSubject("");
     setGreeting("");
+    setHeading("");
     setText("");
     setEditing(false);
     setMessage({ ok: true, text: "Texte du modèle rétabli." });
@@ -277,7 +283,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
         {row.status !== "retire" && !row.invite && row.listings.some((l) => l.state === "brouillon") && (
           <div className="mt-4">
             <button type="button" onClick={openTextEditor} disabled={busy !== null} className="text-sm font-medium text-primary hover:underline disabled:text-charcoal-400">
-              {editing ? "Fermer le texte du courriel" : row.customBody ? "Modifier le texte de ce courriel (texte personnalisé)" : "Modifier le texte de ce courriel"}
+              {editing ? "Fermer le texte du courriel" : row.customBody || row.customHeading ? "Modifier le texte de ce courriel (texte personnalisé)" : "Modifier le texte de ce courriel"}
             </button>
             {editing && (
               <div className="mt-2 space-y-3 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3">
@@ -311,6 +317,19 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                   />
                 </label>
                 <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-charcoal-700">Titre du courriel (le grand titre, sous le logo)</span>
+                  <input
+                    type="text"
+                    value={heading}
+                    onChange={(e) => {
+                      setHeading(e.target.value);
+                      setSaved(false);
+                    }}
+                    maxLength={200}
+                    className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="block">
                   <span className="mb-1 block text-sm font-medium text-charcoal-700">Texte</span>
                   <textarea
                     value={text}
@@ -323,7 +342,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                     className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-sm text-charcoal-800 focus:border-primary focus:outline-none"
                   />
                 </label>
-                <p className="text-xs text-charcoal-400">Le titre du courriel (en gras, sous le logo), le bouton et le lien « Retirer » viennent du modèle. Cliquez sur « Enregistrer » plus bas, puis « Voir le courriel d’invitation ».</p>
+                <p className="text-xs text-charcoal-400">Le bouton et le lien « Retirer » viennent du modèle. Cliquez sur « Enregistrer » plus bas, puis « Voir le courriel d’invitation ».</p>
                 <button type="button" onClick={backToModel} disabled={busy !== null} className="text-sm font-medium text-charcoal-600 hover:underline disabled:text-charcoal-400">
                   Revenir au texte du modèle
                 </button>
