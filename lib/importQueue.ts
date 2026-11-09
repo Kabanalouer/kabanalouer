@@ -125,6 +125,8 @@ export type PhotoSource = { url: string };
 
 export type NormalizedImport = {
   title: string;
+  // Nom du site ou du village de chalets (ex. « Au Chalet en Bois Rond ») : affiché sur la carte quand plusieurs chalets partagent la même position
+  siteName: string | null;
   descriptionOriginal: string | null;
   claimEmail: string;
   claimLanguage: "fr" | "en";
@@ -236,6 +238,7 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
       priceLow: price !== null && price >= 10 && price <= 10000 ? price : null,
       photos: photoUrls.map((url) => ({ url })),
       modePublication: mode.mode,
+      siteName: asStr(pick(p, "site_name", "nom_du_site", "nom_site")).slice(0, 120) || null,
     },
   };
 }
@@ -886,6 +889,7 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       is_published: false,
       // 'brouillon' : jamais publiée par publish-unclaimed ni comptée dans les 15 par jour ; le propriétaire l'active lui-même
       ...(d.modePublication ? { mode_publication: d.modePublication } : {}),
+      site_name: d.siteName,
       claim_status: "unclaimed",
       claim_email: d.claimEmail,
       claim_language: d.claimLanguage,

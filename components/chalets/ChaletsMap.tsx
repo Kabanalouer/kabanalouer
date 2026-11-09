@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { PUBLIC_MAP_ID } from "@/lib/googleMaps";
 import type { ListingForMap } from "./ChaletsMapLayout";
@@ -158,45 +158,74 @@ function MapContent({
     regionFallback();
   }, [map, listings, destination.city, destination.region, geocodingLib]);
 
-  const withCoords = listings.filter((l) => l.lat != null && l.lng != null);
-  const selected = selectedId ? withCoords.find((l) => l.id === selectedId) ?? null : null;
+  // Chalets d'un même site (même position et même nom de site) : un seul repère, la liste s'ouvre au clic.
+  // Un chalet seul garde son propre repère, identifié par son id.
+  const groups = useMemo(() => {
+    // Objet simple : `Map` est ici le composant Google Maps (importé plus haut)
+    const byKey: Record<string, ListingForMap[]> = {};
+    for (const l of listings) {
+      if (l.lat == null || l.lng == null) continue;
+      const key = `${l.lat.toFixed(5)},${l.lng.toFixed(5)}|${l.siteName ?? ""}`;
+      (byKey[key] ??= []).push(l);
+    }
+    return Object.entries(byKey).map(([key, members]) => ({ key: members.length > 1 ? key : members[0].id, members }));
+  }, [listings]);
+  const selectedGroup = selectedId ? groups.find((g) => g.key === selectedId) ?? null : null;
+  const selected = selectedGroup && selectedGroup.members.length === 1 ? selectedGroup.members[0] : null;
   const selectedRegion = selected
     ? (locale === "en" ? getRegionByDbValue(selected.region)?.nameEn ?? selected.region : selected.region)
     : "";
+  const hrefFor = (l: ListingForMap) =>
+    buildListingPath(
+      { region: l.region, city: l.city ?? null, listing_number: l.listing_number ?? null, custom_slug: l.custom_slug ?? null },
+      locale === "en" ? "en" : "fr"
+    ) ?? localePath(`/chalets/${l.id}`, locale);
+  const priceLabel = (l: ListingForMap) => (l.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: l.price }));
 
   return (
     <>
-      {withCoords.map((listing) => {
-        const isActive = listing.id === hoveredId || listing.id === selectedId;
+      {groups.map(({ key, members }) => {
+        const first = members[0];
+        const isActive = key === selectedId || members.some((m) => m.id === hoveredId);
         return (
           <AdvancedMarker
-            key={listing.id}
-            position={{ lat: listing.lat!, lng: listing.lng! }}
-            onClick={() => setSelectedId((prev) => (prev === listing.id ? null : listing.id))}
+            key={key}
+            position={{ lat: first.lat!, lng: first.lng! }}
+            onClick={() => setSelectedId((prev) => (prev === key ? null : key))}
             zIndex={isActive ? 20 : 1}
           >
-            {/* Vignette photo ronde : bordure blanche, anneau olive à l'état actif */}
-            <div
-              onMouseEnter={() => onHoverChange(listing.id)}
-              onMouseLeave={() => onHoverChange(null)}
-              className={`w-14 h-14 rounded-full overflow-hidden border-[3px] border-white bg-white cursor-pointer transition-[transform,box-shadow] duration-[140ms] ease-out ${
-                isActive ? "scale-110" : ""
-              }`}
-              style={{
-                boxShadow: isActive
-                  ? "0 0 0 2px #636e40, 0 6px 16px rgba(35,30,22,.3)"
-                  : "0 2px 8px rgba(35,30,22,.22)",
-              }}
-            >
-              {listing.photos[0] ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={thumb(listing.photos[0], 128)} alt="" className="w-full h-full object-cover" width={56} height={56} loading="lazy" draggable={false} />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-charcoal-50">
-                  <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                  </svg>
-                </div>
+            <div className="relative">
+              {/* Vignette photo ronde : bordure blanche, anneau olive à l'état actif */}
+              <div
+                onMouseEnter={() => onHoverChange(first.id)}
+                onMouseLeave={() => onHoverChange(null)}
+                className={`w-14 h-14 rounded-full overflow-hidden border-[3px] border-white bg-white cursor-pointer transition-[transform,box-shadow] duration-[140ms] ease-out ${
+                  isActive ? "scale-110" : ""
+                }`}
+                style={{
+                  boxShadow: isActive
+                    ? "0 0 0 2px #636e40, 0 6px 16px rgba(35,30,22,.3)"
+                    : "0 2px 8px rgba(35,30,22,.22)",
+                }}
+              >
+                {first.photos[0] ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={thumb(first.photos[0], 128)} alt="" className="w-full h-full object-cover" width={56} height={56} loading="lazy" draggable={false} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-charcoal-50">
+                    <svg className="w-5 h-5 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {members.length > 1 && (
+                <span
+                  className="absolute -top-1 -right-1 min-w-[24px] h-6 px-1.5 rounded-full bg-primary border-2 border-white text-white text-xs font-bold flex items-center justify-center pointer-events-none"
+                  aria-label={tMap("groupCount", { count: members.length })}
+                >
+                  {members.length > 99 ? "99+" : members.length}
+                </span>
               )}
             </div>
           </AdvancedMarker>
@@ -223,20 +252,49 @@ function MapContent({
             <p className="text-xs text-charcoal-500 mb-2">
               {selected.city ? `${selected.city}, ${selectedRegion}` : selectedRegion}
             </p>
-            <p className="text-sm font-bold text-charcoal-900 mb-3">
-              {selected.priceOnRequest ? tMap("priceOnRequest") : tMap("priceFrom", { price: selected.price })}
-            </p>
+            <p className="text-sm font-bold text-charcoal-900 mb-3">{priceLabel(selected)}</p>
             <a
-              href={
-                buildListingPath(
-                  { region: selected.region, city: selected.city ?? null, listing_number: selected.listing_number ?? null, custom_slug: selected.custom_slug ?? null },
-                  locale === "en" ? "en" : "fr"
-                ) ?? localePath(`/chalets/${selected.id}`, locale)
-              }
+              href={hrefFor(selected)}
               className="block text-center text-xs bg-primary text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
               {tMap("viewCabin")}
             </a>
+          </div>
+        </InfoWindow>
+      )}
+
+      {selectedGroup && selectedGroup.members.length > 1 && (
+        <InfoWindow
+          position={{ lat: selectedGroup.members[0].lat!, lng: selectedGroup.members[0].lng! }}
+          pixelOffset={[0, -58]}
+          onCloseClick={() => setSelectedId(null)}
+        >
+          <div className="w-64 font-sans text-left">
+            <p className="font-semibold text-charcoal-900 text-sm leading-snug mb-0.5">
+              {selectedGroup.members[0].siteName
+                ?? (selectedGroup.members[0].city
+                  ? tMap("groupAt", { count: selectedGroup.members.length, city: selectedGroup.members[0].city! })
+                  : tMap("groupList"))}
+            </p>
+            <p className="text-xs text-charcoal-500 mb-2">{tMap("groupCount", { count: selectedGroup.members.length })}</p>
+            <ul className="max-h-60 overflow-y-auto overscroll-contain space-y-0.5 pr-1">
+              {selectedGroup.members.map((m) => (
+                <li key={m.id}>
+                  <a href={hrefFor(m)} className="flex items-center gap-2.5 rounded-lg p-1 hover:bg-charcoal-50 transition-colors">
+                    {m.photos[0] ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={thumb(m.photos[0], 128)} alt="" className="w-12 h-12 rounded-md object-cover shrink-0" width={48} height={48} loading="lazy" draggable={false} />
+                    ) : (
+                      <span className="w-12 h-12 rounded-md bg-charcoal-50 shrink-0" />
+                    )}
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-charcoal-900 leading-snug line-clamp-2">{m.title}</span>
+                      <span className="block text-xs text-charcoal-500">{priceLabel(m)}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </InfoWindow>
       )}

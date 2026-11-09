@@ -21,7 +21,7 @@ export const LISTING_PUBLIC_COLUMNS = [
   "quote_inclusions", "quote_exclusions", "quote_booking_instructions", "listing_number", "custom_slug",
   "previous_custom_slug", "dogs_max", "dogs_size_limit", "dogs_fee_type", "dogs_fee_amount", "cleaning_fee_included", "cleaning_fee_amount", "min_nights", "max_nights",
   "reduced_mobility", "accessibility_features", "draft_reminder_sent_at", "content_updated_at",
-  "claim_status", "is_test",
+  "claim_status", "is_test", "site_name",
 ].join(", ") as "*";
 // claim_email, claim_language, claimed_at et claimed_by restent privées (serveur seulement).
 // unclaimed_rank n'est lisible que pour trier : .order("unclaimed_rank") avant created_at.

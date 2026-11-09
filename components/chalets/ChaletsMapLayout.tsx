@@ -13,6 +13,8 @@ import { useMediaQuery } from "@/components/search/useMediaQuery";
 export interface ListingForMap extends Listing {
   lat: number | null;
   lng: number | null;
+  // Nom du site de chalets : titre du repère groupé sur la carte
+  siteName?: string | null;
 }
 
 // Cartes affichées d'un coup dans la liste ; les suivantes s'ouvrent avec « Afficher plus ».

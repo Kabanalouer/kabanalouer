@@ -130,7 +130,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug")
+    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name")
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("score", { ascending: false })
@@ -220,6 +220,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
         city: (row.city as string | null) ?? null,
         listing_number: (row.listing_number as number | null) ?? null,
         custom_slug: (row.custom_slug as string | null) ?? null,
+        siteName: (row.site_name as string | null) ?? null,
         price: row.price_low as number,
         priceOnRequest: !!(row.price_on_request),
         capacity: row.capacity as number,
