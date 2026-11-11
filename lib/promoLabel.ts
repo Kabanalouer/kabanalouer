@@ -91,9 +91,11 @@ export function formatPromoLabel(promo: PromoDisplay, locale?: string): string {
       return period ? `${amount} ${period}` : amount;
     }
     case "duration": {
-      const base = l === "en"
-        ? `${min_nights} nights for the price of ${value}`
-        : `${min_nights} nuits pour le prix de ${value}`;
+      const base = value === 0
+        ? (l === "en" ? `${min_nights} FREE nights` : `${min_nights} nuits gratuites`)
+        : (l === "en"
+          ? `${min_nights} nights for the price of ${value}`
+          : `${min_nights} nuits pour le prix de ${value}`);
       if (period) return `${base} ${period}`;
       if (end_date) return l === "en" ? `${base} — until ${fmtDate(end_date, l)}` : `${base} — jusqu'au ${fmtDate(end_date, l)}`;
       return base;
@@ -139,7 +141,11 @@ export function formatPromoLines(promo: PromoDisplay, locale?: string): { line1:
           : `Sur tous les séjours de ${nights} nuits minimum du ${from} au ${to}.`;
       }
     }
-    return { line1: l === "en" ? "FREE night" : "Nuitée GRATUITE", line2 };
+    const free = Math.max(1, nights - value);
+    const line1 = l === "en"
+      ? (free > 1 ? `${free} FREE nights` : "FREE night")
+      : (free > 1 ? `${free} nuitées GRATUITES` : "Nuitée GRATUITE");
+    return { line1, line2 };
   }
   if (type === "lastminute" || type === "lastminute_amount") {
     return {

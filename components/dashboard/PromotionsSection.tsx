@@ -99,6 +99,8 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
   const [lmUnit, setLmUnit] = useState<"percent" | "amount">("percent");
   const [lmValue, setLmValue] = useState("");
   const [lmDays, setLmDays] = useState("7");
+  // Séjour minimum toujours 2 nuits ; `value` = nuits payées (1 gratuite → 1, 2 gratuites → 0)
+  const [freeNights, setFreeNights] = useState<1 | 2>(1);
 
   const fetchPromo = useCallback(async () => {
     setLoading(true);
@@ -155,6 +157,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     setLmUnit("percent");
     setLmValue("");
     setLmDays("7");
+    setFreeNights(1);
     setError("");
   };
 
@@ -180,7 +183,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       endDateVal = endDate;
     } else if (formType === "duree") {
       type = "duration";
-      value = 1;
+      value = 2 - freeNights;
       minNights = 2;
       if (!startDate || !endDate) { setError(t("errors.datesRequired")); setSaving(false); return; }
       if (startDate >= endDate) { setError(t("errors.dateOrder")); setSaving(false); return; }
@@ -192,7 +195,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
       daysBefore = parseInt(lmDays) || 0;
       if (value <= 0) { setError(t("errors.invalidAmount")); setSaving(false); return; }
       if (lmUnit === "percent" && value > 100) { setError(t("errors.percentTooHigh")); setSaving(false); return; }
-      if (daysBefore < 7 || daysBefore > 21) { setError(t("errors.daysRange")); setSaving(false); return; }
+      if (daysBefore < 5 || daysBefore > 21) { setError(t("errors.daysRange")); setSaving(false); return; }
     }
 
     const { error: err } = await supabase.from("promotions").insert({
@@ -227,7 +230,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
     : null;
   const dureePreview = hasPeriod
     ? formatPromoLines({
-        type: "duration", value: 1, min_nights: 2, days_before: null,
+        type: "duration", value: 2 - freeNights, min_nights: 2, days_before: null,
         start_date: startDate, end_date: endDate, date_basis: dateBasis,
       }, locale)
     : null;
@@ -371,9 +374,29 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                 <div className="border-t border-[#e8ead8] px-4 pb-5 pt-4 bg-[#f5f6ec] rounded-b-[10px] space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-charcoal-700 mb-2">{t("freeNightOfferLabel")}</label>
-                    <p className="text-sm text-charcoal-600">
-                      {t("freeNightOffer")}
-                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-label={t("freeNightOfferLabel")}>
+                      {([1, 2] as const).map((n) => {
+                        const selected = freeNights === n;
+                        return (
+                          <button
+                            key={n}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => { setFreeNights(n); setNoPromoChecked(false); }}
+                            className={`text-left rounded-xl border-2 p-3 transition-colors bg-white ${selected ? "border-primary" : "border-[#ebebeb] hover:border-charcoal-300"}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${selected ? "border-primary" : "border-charcoal-300"}`}>
+                                {selected && <span className="w-2 h-2 rounded-full bg-primary" />}
+                              </span>
+                              <span className="text-sm font-semibold text-charcoal-800">{t(n === 1 ? "freeNightOffer1Title" : "freeNightOffer2Title")}</span>
+                            </span>
+                            <span className="block text-sm text-charcoal-500 mt-1 leading-snug">{t(n === 1 ? "freeNightOffer1Desc" : "freeNightOffer2Desc")}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <PromoPeriodFields
                     basis={dateBasis} onBasis={setBasis}
@@ -446,10 +469,10 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     <label className="block text-sm font-medium text-charcoal-700 mb-1.5">{t("lastMinuteDaysLabel")}</label>
                     <div className="flex items-center gap-2">
                       <input
-                        type="number" min={7} max={21} value={lmDays}
+                        type="number" min={5} max={21} value={lmDays}
                         onChange={(e) => {
-                          const v = parseInt(e.target.value) || 7;
-                          setLmDays(String(Math.min(21, Math.max(7, v))));
+                          const v = parseInt(e.target.value) || 5;
+                          setLmDays(String(Math.min(21, Math.max(5, v))));
                           setNoPromoChecked(false);
                         }}
                         className={inputCls} placeholder={locale === "en" ? "e.g. 7" : "ex. 7"}
