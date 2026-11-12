@@ -7,6 +7,8 @@ import { getRegionByDbValue } from "@/lib/regions";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import type { MapBounds } from "./ChaletsMap";
 import ChaletsSearchSubBar from "./ChaletsSearchSubBar";
+import ResultsPagination from "./ResultsPagination";
+import { PAGE_SIZE } from "@/lib/searchPaging";
 import { useTranslations, useLocale } from "next-intl";
 import { useMediaQuery } from "@/components/search/useMediaQuery";
 
@@ -17,15 +19,16 @@ export interface ListingForMap extends Listing {
   siteName?: string | null;
 }
 
-// Cartes affichées d'un coup dans la liste ; les suivantes s'ouvrent avec « Afficher plus ».
-const PAGE_SIZE = 48;
-
 const ChaletsMap = dynamic(() => import("./ChaletsMap"), { ssr: false });
 
 interface Props {
+  // Page de résultats affichée dans la liste (24 fiches complètes)
   initialListings: ListingForMap[];
-  // Vrai nombre de chalets de la recherche : les fiches chargées sont plafonnées à 200.
+  // Toutes les fiches de la recherche, en version légère, pour les épingles de la carte
+  initialPins: ListingForMap[];
   initialTotal: number;
+  initialPage: number;
+  initialPageCount: number;
   currentUserId: string | null;
   filters: {
     region?: string;
@@ -42,15 +45,17 @@ interface Props {
   };
 }
 
-export default function ChaletsMapLayout({ initialListings, initialTotal, currentUserId, filters }: Props) {
+export default function ChaletsMapLayout({ initialListings, initialPins, initialTotal, initialPage, initialPageCount, currentUserId, filters }: Props) {
   const t = useTranslations("chaletsMap");
   const locale = useLocale();
   const regionLabel = filters.region && locale === "en" ? getRegionByDbValue(filters.region)?.nameEn ?? filters.region : filters.region;
   const destination = filters.city || regionLabel || null;
   const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
+  const [pins, setPins] = useState<ListingForMap[]>(initialPins);
   const [total, setTotal] = useState(initialTotal);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(initialPage);
+  const [pageCount, setPageCount] = useState(initialPageCount);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -79,15 +84,22 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
   // écraser la liste d'un déplacement plus récent.
   const lastRequest = useRef(0);
 
-  const handleBoundsChange = useCallback(async (bounds: MapBounds) => {
+  // Dernière zone de la carte : un changement de page garde la zone que l'utilisateur regarde.
+  const lastBounds = useRef<MapBounds | null>(null);
+
+  // Charge une page de résultats pour la zone donnée (toute la recherche si aucune zone). Les épingles ne sont
+  // redemandées que quand la zone change : tourner les pages ne change pas ce que la carte montre.
+  const loadResults = useCallback(async (bounds: MapBounds | null, nextPage: number, withPins: boolean) => {
     const requestId = ++lastRequest.current;
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        minLat: bounds.minLat.toString(),
-        maxLat: bounds.maxLat.toString(),
-        minLng: bounds.minLng.toString(),
-        maxLng: bounds.maxLng.toString(),
+        ...(bounds && {
+          minLat: bounds.minLat.toString(),
+          maxLat: bounds.maxLat.toString(),
+          minLng: bounds.minLng.toString(),
+          maxLng: bounds.maxLng.toString(),
+        }),
         ...(filters.region && { region: filters.region }),
         ...(filters.city && { city: filters.city }),
         ...(filters.capacity && { capacity: filters.capacity }),
@@ -99,22 +111,39 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
         ...(filters.amenities && { amenities: filters.amenities }),
         ...(filters.dogs && { dogs: filters.dogs }),
         ...(filters.accessible && { accessible: filters.accessible }),
+        page: String(nextPage),
+        ...(!withPins && { pins: "0" }),
         locale,
       });
       const res = await fetch(`/api/listings/geo?${params}`);
       if (res.ok) {
-        const next = await res.json();
+        const next = (await res.json()) as { listings: ListingForMap[]; pins: ListingForMap[]; total: number; page: number; pageCount: number };
         if (requestId !== lastRequest.current) return;
-        setListings(next);
-        const headerTotal = parseInt(res.headers.get("X-Total-Count") ?? "", 10);
-        setTotal(Number.isNaN(headerTotal) ? next.length : headerTotal);
-        setVisibleCount(PAGE_SIZE);
+        setListings(next.listings);
+        if (withPins) setPins(next.pins);
+        setTotal(next.total);
+        setPage(next.page);
+        setPageCount(next.pageCount);
+        // L'adresse suit la page (partage, rechargement) sans ajouter d'entrée à l'historique.
+        const url = new URL(window.location.href);
+        if (next.page > 1) url.searchParams.set("page", String(next.page));
+        else url.searchParams.delete("page");
+        window.history.replaceState(window.history.state, "", url);
       }
     } finally {
       if (requestId === lastRequest.current) setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, locale]);
 
+  const handleBoundsChange = useCallback((bounds: MapBounds) => {
+    lastBounds.current = bounds;
+    void loadResults(bounds, 1, true);
+  }, [loadResults]);
+
+  const goToPage = useCallback((nextPage: number) => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    void loadResults(lastBounds.current, nextPage, false);
+  }, [loadResults]);
 
   const EmptyState = () => (
     <div className="col-span-2 py-24 text-center">
@@ -148,7 +177,7 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
       {listings.length === 0 ? (
         isLoading ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />) : <EmptyState />
       ) : (
-        listings.slice(0, visibleCount).map((listing, i) => (
+        listings.map((listing, i) => (
           <div
             key={listing.id}
             onMouseEnter={() => setHoveredId(listing.id)}
@@ -161,18 +190,14 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
         ))
       )}
     </div>
-    {listings.length > visibleCount && (
-      <div className="mt-10 flex flex-col items-center gap-2">
-        <p className="text-sm text-charcoal-500">{t("shownOf", { shown: visibleCount, total })}</p>
-        <button
-          type="button"
-          onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-          className="rounded-full border border-charcoal-300 bg-white px-6 py-3 text-sm font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors"
-        >
-          {t("showMore")}
-        </button>
-      </div>
-    )}
+    <ResultsPagination
+      page={page}
+      pageCount={pageCount}
+      from={(page - 1) * PAGE_SIZE + 1}
+      to={(page - 1) * PAGE_SIZE + listings.length}
+      total={total}
+      onPageChange={goToPage}
+    />
     </>
   );
 
@@ -182,7 +207,7 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
       style={{ height, boxShadow: "0 2px 16px rgba(0,0,0,0.10)" }}
     >
       <ChaletsMap
-        listings={listings}
+        listings={pins}
         hoveredId={hoveredId}
         onHoverChange={setHoveredId}
         onBoundsChange={handleBoundsChange}
@@ -270,7 +295,7 @@ export default function ChaletsMapLayout({ initialListings, initialTotal, curren
         {showMobileMap && (
           <div className="fixed inset-0 z-50" style={{ height: "100dvh" }}>
             <ChaletsMap
-              listings={listings}
+              listings={pins}
               hoveredId={hoveredId}
               onHoverChange={setHoveredId}
               onBoundsChange={handleBoundsChange}

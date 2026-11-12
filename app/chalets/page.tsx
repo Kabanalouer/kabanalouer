@@ -2,16 +2,14 @@ import OwnersSection from "@/components/OwnersSection";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ChaletsMapLayout, { type ListingForMap } from "@/components/chalets/ChaletsMapLayout";
-import { normalizePhotos } from "@/lib/photo";
+import ChaletsMapLayout from "@/components/chalets/ChaletsMapLayout";
 import { getTranslations, getLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
-import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
-import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { getRegionByDbValue } from "@/lib/regions";
 import { isKnownMunicipality } from "@/lib/municipalities";
+import { searchListings } from "@/lib/searchListings";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const params = await searchParams;
@@ -86,9 +84,6 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   };
 }
 
-// Fiches chargées d'un coup (liste + épingles de la carte). Avant : 48, donc les suivantes n'étaient jamais atteignables.
-const MAX_LOADED = 200;
-
 interface PageProps {
   searchParams: Promise<{
     region?: string;
@@ -102,13 +97,14 @@ interface PageProps {
     amenities?: string;
     dogs?: string;
     accessible?: string;
+    page?: string;
   }>;
 }
 
 export default async function ChaletsPage({ searchParams }: PageProps) {
   const {
     region, city, capacity, checkin, checkout,
-    minBedrooms, minBeds, minBathrooms, amenities, dogs, accessible,
+    minBedrooms, minBeds, minBathrooms, amenities, dogs, accessible, page,
   } = await searchParams;
   const accessibleOnly = accessible === "1";
   const dogsCount = parseDogsParam(dogs);
@@ -116,129 +112,12 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const [{ data: { user } }, locale] = await Promise.all([supabase.auth.getUser(), getLocale()]);
 
-  // Availability exclusion
-  let excludedIds: string[] = [];
-  if (checkin && checkout && checkin < checkout) {
-    const { data: blocked } = await supabase
-      .from("availability")
-      .select("listing_id")
-      .gte("date", checkin)
-      .lt("date", checkout)
-      .eq("is_blocked", true);
-    excludedIds = [...new Set((blocked ?? []).map((b) => b.listing_id as string))];
-  }
-
-  let query = supabase
-    .from("listings")
-    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name", { count: "exact" })
-    .eq("is_published", true)
-    .order("unclaimed_rank", { ascending: true })
-    .order("score", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(MAX_LOADED); // la liste en montre 48 à la fois (« Afficher plus »), la carte les épingle toutes
-
-  if (region) query = query.eq("region", region);
-  if (city) query = query.eq("city", city);
-  if (capacity) query = query.gte("capacity", parseInt(capacity));
-  if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
-  if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
-  if (amenities) {
-    const amenityList = amenities.split(",").filter(Boolean);
-    if (amenityList.length > 0) {
-      // Chaîne JSON obligatoire : un tableau d'objets passé tel quel devient « {[object Object]} » dans l'URL PostgREST.
-      query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
-    }
-  }
-  // Le nombre maximum de chiens est facultatif : une fiche qui n'en précise aucun reste dans les résultats
-  if (dogsCount) query = query.eq("dogs_allowed", true).or(`dogs_max.is.null,dogs_max.gte.${dogsCount}`);
-  if (accessibleOnly) query = query.eq("reduced_mobility", true);
-  if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
-
-  const { data: rows, count: exactCount } = await query;
-
-  let listings: ListingForMap[] = [];
-
-  if (rows && rows.length > 0) {
-    const listingIds = rows.map((r) => r.id as string);
-
-    const [{ data: allRooms }, { data: favs }] = await Promise.all([
-      supabase.from("rooms").select("listing_id, type, beds").in("listing_id", listingIds),
-      user
-        ? supabase.from("favorites").select("listing_id").eq("user_id", user.id).in("listing_id", listingIds)
-        : Promise.resolve({ data: [] as { listing_id: string }[] }),
-    ]);
-
-    const roomsByListing: Record<string, { type: string; beds: unknown }[]> = {};
-    for (const room of allRooms ?? []) {
-      const lid = room.listing_id as string;
-      if (!roomsByListing[lid]) roomsByListing[lid] = [];
-      roomsByListing[lid].push(room as { type: string; beds: unknown });
-    }
-
-    const bedsByListing: Record<string, number | null> = {};
-    for (const id of listingIds) {
-      const rooms = roomsByListing[id];
-      if (!rooms || rooms.length === 0) { bedsByListing[id] = null; continue; }
-      const bedroomBeds = rooms
-        .filter((r) => r.type === "bedroom")
-        .reduce((sum, room) => {
-          const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
-          return sum + beds.filter((b) => b.type !== "sofa_bed").reduce((s, b) => s + b.quantity, 0);
-        }, 0);
-      const sofaBeds = rooms
-        .filter((r) => r.type === "living_room")
-        .reduce((sum, room) => {
-          const beds = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
-          return sum + beds.filter((b) => b.type === "sofa_bed").reduce((s, b) => s + b.quantity, 0);
-        }, 0);
-      bedsByListing[id] = bedroomBeds + sofaBeds || null;
-    }
-
-    const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
-
-    const today = new Date().toISOString().split("T")[0];
-    const { data: activePromos } = await supabase
-      .from("promotions")
-      .select(`listing_id, ${PROMO_DISPLAY_COLUMNS}`)
-      .in("listing_id", listingIds)
-      .eq("is_active", true)
-      .or(visiblePromoFilter(today));
-    const promoMap = new Map((activePromos ?? []).map((p) => [p.listing_id as string, p]));
-
-    const minBedsNum = minBeds ? parseInt(minBeds) : null;
-
-    listings = rows
-      .filter((row) => {
-        if (!minBedsNum) return true;
-        const beds = bedsByListing[row.id as string];
-        return beds !== null && beds >= minBedsNum;
-      })
-      .map((row) => ({
-        id: row.id as string,
-        title: (locale === "en" && (row.title_en as string | null)) || (row.title as string),
-        region: row.region as string,
-        city: (row.city as string | null) ?? null,
-        listing_number: (row.listing_number as number | null) ?? null,
-        custom_slug: (row.custom_slug as string | null) ?? null,
-        siteName: (row.site_name as string | null) ?? null,
-        price: row.price_low as number,
-        priceOnRequest: !!(row.price_on_request),
-        capacity: row.capacity as number,
-        bedrooms: row.bedrooms as number,
-        beds: bedsByListing[row.id as string] ?? null,
-        photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
-        isFavorite: favSet.has(row.id as string),
-        tags: Array.isArray(row.amenities) ? getAmenityLabels(row.amenities as AmenityValue[], locale).slice(0, 3) : [],
-        hasPromo: promoMap.has(row.id as string),
-        promoData: promoMap.get(row.id as string) ?? null,
-        lat: (row.latitude as number | null) ?? null,
-        lng: (row.longitude as number | null) ?? null,
-      }));
-  }
-
-  // Vrai total des chalets correspondant à la recherche (les fiches chargées sont plafonnées à MAX_LOADED).
-  // Le filtre « lits » se fait après coup en JS : le total exact n'est alors pas connu.
-  const totalCount = minBeds ? listings.length : exactCount ?? listings.length;
+  const { listings, pins, total, page: currentPage, pageCount } = await searchListings(
+    supabase,
+    user?.id ?? null,
+    { region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount, accessibleOnly, locale: locale === "en" ? "en" : "fr" },
+    parseInt(page ?? "1", 10) || 1
+  );
 
   const initialGuests = capacity
     ? parseInt(capacity) >= 25 ? "25+" : capacity
@@ -260,7 +139,10 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       <ChaletsMapLayout
         key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount, accessibleOnly])}
         initialListings={listings}
-        initialTotal={totalCount}
+        initialPins={pins}
+        initialTotal={total}
+        initialPage={currentPage}
+        initialPageCount={pageCount}
         currentUserId={user?.id ?? null}
         filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
       />

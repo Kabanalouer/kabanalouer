@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { normalizePhotos } from "@/lib/photo";
-import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { parseDogsParam } from "@/lib/dogPolicy";
-import { visiblePromoFilter } from "@/lib/promoLabel";
+import { searchListings } from "@/lib/searchListings";
 
+// Résultats de la recherche pour la zone visible de la carte : une page de fiches complètes (`listings`)
+// et, sauf `pins=0`, toutes les fiches de la zone sous forme légère pour les épingles (`pins`).
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
@@ -12,148 +12,32 @@ export async function GET(req: Request) {
   const maxLat = parseFloat(searchParams.get("maxLat") ?? "");
   const minLng = parseFloat(searchParams.get("minLng") ?? "");
   const maxLng = parseFloat(searchParams.get("maxLng") ?? "");
-
-  const region = searchParams.get("region") || undefined;
-  const city = searchParams.get("city") || undefined;
-  const capacity = searchParams.get("capacity") || undefined;
-  const checkin = searchParams.get("checkin") || undefined;
-  const checkout = searchParams.get("checkout") || undefined;
-  const minBedrooms = searchParams.get("minBedrooms") || undefined;
-  const minBeds = searchParams.get("minBeds") || undefined;
-  const minBathrooms = searchParams.get("minBathrooms") || undefined;
-  const amenitiesParam = searchParams.get("amenities") || undefined;
-  const amenityList = amenitiesParam ? amenitiesParam.split(",").filter(Boolean) : [];
-  const dogsCount = parseDogsParam(searchParams.get("dogs"));
-  const accessibleOnly = searchParams.get("accessible") === "1";
-  const locale = searchParams.get("locale") === "en" ? "en" : "fr";
+  const hasBounds = ![minLat, maxLat, minLng, maxLng].some(Number.isNaN);
 
   const supabase = await createClient();
-
-  // Availability exclusion
-  let excludedIds: string[] = [];
-  if (checkin && checkout && checkin < checkout) {
-    const { data: blocked } = await supabase
-      .from("availability")
-      .select("listing_id")
-      .gte("date", checkin)
-      .lt("date", checkout)
-      .eq("is_blocked", true);
-    excludedIds = [...new Set((blocked ?? []).map((b) => b.listing_id as string))];
-  }
-
-  let query = supabase
-    .from("listings")
-    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name", { count: "exact" })
-    .eq("is_published", true)
-    .order("unclaimed_rank", { ascending: true })
-    .order("score", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(200);
-
-  if (!isNaN(minLat) && !isNaN(maxLat) && !isNaN(minLng) && !isNaN(maxLng)) {
-    query = query
-      .gte("latitude", minLat)
-      .lte("latitude", maxLat)
-      .gte("longitude", minLng)
-      .lte("longitude", maxLng);
-  }
-
-  if (region) query = query.eq("region", region);
-  if (city) query = query.eq("city", city);
-  if (capacity) query = query.gte("capacity", parseInt(capacity));
-  if (minBedrooms) query = query.gte("bedrooms", parseInt(minBedrooms));
-  if (minBathrooms) query = query.gte("bathrooms", parseInt(minBathrooms));
-  if (amenityList.length > 0) {
-    // Chaîne JSON obligatoire : un tableau d'objets passé tel quel devient « {[object Object]} » dans l'URL PostgREST.
-    query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
-  }
-  // Le nombre maximum de chiens est facultatif : une fiche qui n'en précise aucun reste dans les résultats
-  if (dogsCount) query = query.eq("dogs_allowed", true).or(`dogs_max.is.null,dogs_max.gte.${dogsCount}`);
-  if (accessibleOnly) query = query.eq("reduced_mobility", true);
-  if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
-
-  const { data: rows, count } = await query;
-
-  if (!rows || rows.length === 0) return NextResponse.json([], { headers: { "X-Total-Count": "0" } });
-
-  const listingIds = rows.map((r) => r.id as string);
-
-  // Rooms for bed counts + favorites in parallel
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: allRooms }, { data: favs }] = await Promise.all([
-    supabase.from("rooms").select("listing_id, type, beds").in("listing_id", listingIds),
-    user
-      ? supabase.from("favorites").select("listing_id").eq("user_id", user.id).in("listing_id", listingIds)
-      : Promise.resolve({ data: [] as { listing_id: string }[] }),
-  ]);
+  const result = await searchListings(
+    supabase,
+    user?.id ?? null,
+    {
+      region: searchParams.get("region") || undefined,
+      city: searchParams.get("city") || undefined,
+      capacity: searchParams.get("capacity") || undefined,
+      checkin: searchParams.get("checkin") || undefined,
+      checkout: searchParams.get("checkout") || undefined,
+      minBedrooms: searchParams.get("minBedrooms") || undefined,
+      minBeds: searchParams.get("minBeds") || undefined,
+      minBathrooms: searchParams.get("minBathrooms") || undefined,
+      amenities: searchParams.get("amenities") || undefined,
+      dogsCount: parseDogsParam(searchParams.get("dogs")),
+      accessibleOnly: searchParams.get("accessible") === "1",
+      bounds: hasBounds ? { minLat, maxLat, minLng, maxLng } : undefined,
+      locale: searchParams.get("locale") === "en" ? "en" : "fr",
+    },
+    parseInt(searchParams.get("page") ?? "1", 10) || 1,
+    searchParams.get("pins") !== "0"
+  );
 
-  const roomsByListing: Record<string, { type: string; beds: unknown }[]> = {};
-  for (const room of allRooms ?? []) {
-    const lid = room.listing_id as string;
-    if (!roomsByListing[lid]) roomsByListing[lid] = [];
-    roomsByListing[lid].push(room as { type: string; beds: unknown });
-  }
-
-  const favSet = new Set((favs ?? []).map((f) => (f as { listing_id: string }).listing_id));
-
-  const today = new Date().toISOString().split("T")[0];
-  const { data: activePromos } = await supabase
-    .from("promotions")
-    .select("listing_id")
-    .in("listing_id", listingIds)
-    .eq("is_active", true)
-    .or(visiblePromoFilter(today));
-  const promoSet = new Set((activePromos ?? []).map((p) => p.listing_id as string));
-
-  const listings = rows.map((row) => {
-    const id = row.id as string;
-    const rooms = roomsByListing[id];
-    let beds: number | null = null;
-    if (rooms && rooms.length > 0) {
-      const bedroomBeds = rooms
-        .filter((r) => r.type === "bedroom")
-        .reduce((sum, room) => {
-          const b = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
-          return sum + b.filter((x) => x.type !== "sofa_bed").reduce((s, x) => s + x.quantity, 0);
-        }, 0);
-      const sofaBeds = rooms
-        .filter((r) => r.type === "living_room")
-        .reduce((sum, room) => {
-          const b = Array.isArray(room.beds) ? room.beds as { type: string; quantity: number }[] : [];
-          return sum + b.filter((x) => x.type === "sofa_bed").reduce((s, x) => s + x.quantity, 0);
-        }, 0);
-      beds = bedroomBeds + sofaBeds || null;
-    }
-
-    return {
-      id,
-      title: (locale === "en" && (row.title_en as string | null)) || (row.title as string),
-      region: row.region as string,
-      city: (row.city as string | null) ?? null,
-      listing_number: (row.listing_number as number | null) ?? null,
-      custom_slug: (row.custom_slug as string | null) ?? null,
-      siteName: (row.site_name as string | null) ?? null,
-      price: row.price_low as number,
-      priceOnRequest: !!(row.price_on_request),
-      capacity: row.capacity as number,
-      bedrooms: row.bedrooms as number,
-      beds,
-      photos: normalizePhotos(row.photos).slice(0, 5).map((p) => p.url),
-      isFavorite: favSet.has(id),
-      tags: Array.isArray(row.amenities) ? getAmenityLabels(row.amenities as AmenityValue[], locale).slice(0, 3) : [],
-      hasPromo: promoSet.has(id),
-      lat: (row.latitude as number | null) ?? null,
-      lng: (row.longitude as number | null) ?? null,
-    };
-  });
-
-  const minBedsNum = minBeds ? parseInt(minBeds) : null;
-  const filtered = minBedsNum
-    ? listings.filter((l) => l.beds !== null && l.beds >= minBedsNum)
-    : listings;
-
-  // Le filtre « lits » se fait après coup : le total exact n'est alors pas connu.
-  const total = minBedsNum ? filtered.length : count ?? filtered.length;
-  return NextResponse.json(filtered, { headers: { "X-Total-Count": String(total) } });
+  return NextResponse.json(result);
 }
