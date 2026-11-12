@@ -24,6 +24,8 @@ const ChaletsMap = dynamic(() => import("./ChaletsMap"), { ssr: false });
 
 interface Props {
   initialListings: ListingForMap[];
+  // Vrai nombre de chalets de la recherche : les fiches chargées sont plafonnées à 200.
+  initialTotal: number;
   currentUserId: string | null;
   filters: {
     region?: string;
@@ -40,13 +42,14 @@ interface Props {
   };
 }
 
-export default function ChaletsMapLayout({ initialListings, currentUserId, filters }: Props) {
+export default function ChaletsMapLayout({ initialListings, initialTotal, currentUserId, filters }: Props) {
   const t = useTranslations("chaletsMap");
   const locale = useLocale();
   const regionLabel = filters.region && locale === "en" ? getRegionByDbValue(filters.region)?.nameEn ?? filters.region : filters.region;
   const destination = filters.city || regionLabel || null;
   const pageTitle = destination ? t("titleDestination", { destination }) : t("titleAll");
   const [listings, setListings] = useState<ListingForMap[]>(initialListings);
+  const [total, setTotal] = useState(initialTotal);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +106,8 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
         const next = await res.json();
         if (requestId !== lastRequest.current) return;
         setListings(next);
+        const headerTotal = parseInt(res.headers.get("X-Total-Count") ?? "", 10);
+        setTotal(Number.isNaN(headerTotal) ? next.length : headerTotal);
         setVisibleCount(PAGE_SIZE);
       }
     } finally {
@@ -158,7 +163,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
     </div>
     {listings.length > visibleCount && (
       <div className="mt-10 flex flex-col items-center gap-2">
-        <p className="text-sm text-charcoal-500">{t("shownOf", { shown: visibleCount, total: listings.length })}</p>
+        <p className="text-sm text-charcoal-500">{t("shownOf", { shown: visibleCount, total })}</p>
         <button
           type="button"
           onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
@@ -216,7 +221,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
                 d'écran (l'autre est masqué), sans dupliquer la balise. */}
             <div role="heading" aria-level={1} className="text-2xl font-bold text-charcoal-800">{pageTitle}</div>
             <span className="text-sm text-charcoal-400 mt-0.5 block">
-              {t("resultCount", { count: listings.length })}
+              {t("resultCount", { count: total })}
             </span>
           </div>
           {listGrid("grid-cols-2")}
@@ -238,7 +243,7 @@ export default function ChaletsMapLayout({ initialListings, currentUserId, filte
             <h1 className="text-2xl font-bold text-charcoal-800">{pageTitle}</h1>
             {listings.length > 0 && (
               <span className="text-sm text-charcoal-400 mt-0.5 block">
-                {t("resultCount", { count: listings.length })}
+                {t("resultCount", { count: total })}
               </span>
             )}
           </div>

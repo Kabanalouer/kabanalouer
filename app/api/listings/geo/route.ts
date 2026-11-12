@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name")
+    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name", { count: "exact" })
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("score", { ascending: false })
@@ -72,9 +72,9 @@ export async function GET(req: Request) {
   if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
-  const { data: rows } = await query;
+  const { data: rows, count } = await query;
 
-  if (!rows || rows.length === 0) return NextResponse.json([]);
+  if (!rows || rows.length === 0) return NextResponse.json([], { headers: { "X-Total-Count": "0" } });
 
   const listingIds = rows.map((r) => r.id as string);
 
@@ -153,5 +153,7 @@ export async function GET(req: Request) {
     ? listings.filter((l) => l.beds !== null && l.beds >= minBedsNum)
     : listings;
 
-  return NextResponse.json(filtered);
+  // Le filtre « lits » se fait après coup : le total exact n'est alors pas connu.
+  const total = minBedsNum ? filtered.length : count ?? filtered.length;
+  return NextResponse.json(filtered, { headers: { "X-Total-Count": String(total) } });
 }

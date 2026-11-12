@@ -130,7 +130,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
 
   let query = supabase
     .from("listings")
-    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name")
+    .select("id, title, title_en, region, city, capacity, bedrooms, bathrooms, price_low, price_on_request, photos, amenities, latitude, longitude, created_at, listing_number, custom_slug, site_name", { count: "exact" })
     .eq("is_published", true)
     .order("unclaimed_rank", { ascending: true })
     .order("score", { ascending: false })
@@ -154,7 +154,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   if (accessibleOnly) query = query.eq("reduced_mobility", true);
   if (excludedIds.length > 0) query = query.not("id", "in", `(${excludedIds.join(",")})`);
 
-  const { data: rows } = await query;
+  const { data: rows, count: exactCount } = await query;
 
   let listings: ListingForMap[] = [];
 
@@ -236,6 +236,10 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       }));
   }
 
+  // Vrai total des chalets correspondant à la recherche (les fiches chargées sont plafonnées à MAX_LOADED).
+  // Le filtre « lits » se fait après coup en JS : le total exact n'est alors pas connu.
+  const totalCount = minBeds ? listings.length : exactCount ?? listings.length;
+
   const initialGuests = capacity
     ? parseInt(capacity) >= 25 ? "25+" : capacity
     : undefined;
@@ -256,6 +260,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       <ChaletsMapLayout
         key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogsCount, accessibleOnly])}
         initialListings={listings}
+        initialTotal={totalCount}
         currentUserId={user?.id ?? null}
         filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
       />
