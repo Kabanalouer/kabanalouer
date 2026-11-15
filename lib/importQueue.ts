@@ -328,7 +328,9 @@ export async function fetchPublicImage(url: string): Promise<Buffer | null> {
       current = new URL(location, current).toString();
       continue;
     }
-    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) return null;
+    // Guesty sert des photos sans extension en application/octet-stream : sharp refuse ensuite tout ce qui n'est pas une image.
+    const type = res.headers.get("content-type") ?? "";
+    if (!res.ok || !(type.startsWith("image/") || type.startsWith("application/octet-stream"))) return null;
     if (Number(res.headers.get("content-length") ?? 0) > MAX_PHOTO_BYTES) return null;
     return readCapped(res, MAX_PHOTO_BYTES);
   }
