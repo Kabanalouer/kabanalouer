@@ -4,6 +4,8 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { parseIcal, expandDates } from "@/lib/ical";
 
+const ICAL_PAUSE_MS = 500;
+
 function adminSupabase() {
   return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,6 +55,11 @@ async function syncOneListing(
       headers: { "User-Agent": "Kabanalouer/1.0" },
       signal: AbortSignal.timeout(10_000),
     });
+    if (res.status === 429) {
+      // Limite de débit du fournisseur (Airbnb surtout) : passager, le calendrier garde la dernière synchro réussie.
+      console.warn(`[sync-ical] 429 (trop de demandes) pour listing ${listingId}, réessai à la prochaine synchro`);
+      return { ok: false, error: { fr: "Le calendrier est temporairement indisponible, réessaie plus tard.", en: "The calendar is temporarily unavailable, please try again later." } };
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     icalText = await res.text();
   } catch (err) {
@@ -110,11 +117,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, synced: 0 });
   }
 
-  const results = await Promise.allSettled(
-    listings.map((l) => syncOneListing(supabase, l.id, l.ical_url!))
-  );
+  // Une à la fois, avec une courte pause : tout lancer d'un coup fait refuser des demandes par Airbnb (429).
+  let synced = 0;
+  for (const [i, l] of listings.entries()) {
+    if (i > 0) await new Promise((resolve) => setTimeout(resolve, ICAL_PAUSE_MS));
+    try {
+      const result = await syncOneListing(supabase, l.id, l.ical_url!);
+      if (result.ok) synced++;
+    } catch (err) {
+      console.error(`[sync-ical] erreur inattendue pour listing ${l.id}:`, err);
+    }
+  }
 
-  const synced = results.filter((r) => r.status === "fulfilled" && r.value.ok).length;
   return NextResponse.json({ ok: true, synced, total: listings.length });
 }
 

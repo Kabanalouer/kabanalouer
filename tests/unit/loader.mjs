@@ -18,6 +18,11 @@ export async function resolve(specifier, context, nextResolve) {
   else if ((specifier.startsWith("./") || specifier.startsWith("../")) && context.parentURL?.startsWith("file:")) {
     base = path.resolve(path.dirname(fileURLToPath(context.parentURL)), specifier);
   }
+  // « next/server » n'a pas d'extension dans le paquet : Node natif exige « next/server.js ».
+  if (!base && specifier.startsWith("next/") && !specifier.endsWith(".js")) {
+    const nextFile = path.join(root, "node_modules", specifier + ".js");
+    if (isFile(nextFile)) return nextResolve(pathToFileURL(nextFile).href, context);
+  }
   const file = base && find(base);
   return nextResolve(file ? pathToFileURL(file).href : specifier, context);
 }
