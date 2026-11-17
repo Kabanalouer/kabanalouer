@@ -232,3 +232,15 @@ test("import : les photos en http:// passent en https:// (sans doublon), le http
   assert.equal(upgradeToHttps("https://exemple.test/d.jpg"), "https://exemple.test/d.jpg");
   assert.equal(isSafeImageUrl("http://exemple.test/e.jpg"), false);
 });
+
+test("import : la région « Estrie » est reconnue, et « Centre-du-Québec » ne tombe plus dans « Québec »", async () => {
+  const { matchRegion } = await import("@/lib/listingImportMapping");
+  assert.equal(matchRegion("Estrie"), "Estrie (Cantons-de-l'Est)");
+  assert.equal(matchRegion("Estrie (Stanstead)"), "Estrie (Cantons-de-l'Est)");
+  assert.equal(matchRegion("Estrie (Cantons-de-l'Est)"), "Estrie (Cantons-de-l'Est)");
+  assert.equal(matchRegion("Centre-du-Québec"), "Centre-du-Québec");
+  assert.equal(matchRegion("Québec"), "Québec (ville et région)");
+  assert.equal(matchRegion("Côte-Nord (Tadoussac)"), "Côte-Nord");
+  assert.equal(matchRegion("Laurentides"), "Laurentides");
+  assert.equal(matchRegion("Atlantide"), null);
+});

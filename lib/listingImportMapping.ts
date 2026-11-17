@@ -137,12 +137,15 @@ export function matchRegion(candidate: string | null): string | null {
   if (!candidate) return null;
   const norm = candidate.trim().toLowerCase();
   if (!norm) return null;
-  const found = REGIONS.find(
-    (r) =>
-      r.name.toLowerCase() === norm ||
-      r.dbValue.toLowerCase() === norm ||
-      norm.includes(r.name.toLowerCase())
-  );
+  // Correspondance exacte d'abord : sinon « Centre-du-Québec » tombait dans « Québec (ville et région) ».
+  const exact = REGIONS.find((r) => r.name.toLowerCase() === norm || r.dbValue.toLowerCase() === norm);
+  if (exact) return exact.dbValue;
+  // « Estrie » (ou « Estrie (Stanstead) ») est le nom courant des Cantons-de-l'Est.
+  if (/^estrie\b/.test(norm)) return REGIONS.find((r) => r.name === "Cantons-de-l'Est")?.dbValue ?? null;
+  // Sinon le nom de région le plus long contenu dans le texte (« Côte-Nord (Tadoussac) »).
+  const found = [...REGIONS]
+    .sort((a, b) => b.name.length - a.name.length)
+    .find((r) => norm.includes(r.name.toLowerCase()));
   return found ? found.dbValue : null;
 }
 
