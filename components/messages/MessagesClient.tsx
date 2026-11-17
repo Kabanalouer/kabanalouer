@@ -397,21 +397,37 @@ export default function MessagesClient({
   }, [messages]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !selectedListingId || !selectedWithId) return;
+    if (!newMessage.trim() || !selectedListingId || !selectedWithId || sending) return;
     setSending(true);
 
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        listingId: selectedListingId,
-        receiverId: selectedWithId,
-        content: newMessage.trim(),
-      }),
-    });
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: selectedListingId,
+          receiverId: selectedWithId,
+          content: newMessage.trim(),
+        }),
+      });
+      // Échec : on garde le texte pour que l'utilisateur puisse réessayer.
+      if (!res.ok) return;
 
-    setNewMessage("");
-    setSending(false);
+      // Son propre message s'affiche tout de suite, sans attendre l'événement Realtime
+      // (qui peut tarder ou se perdre). Le test de doublon évite de l'afficher deux fois.
+      const { id } = (await res.json()) as { id: string };
+      const { data } = await supabase
+        .from("messages")
+        .select("*, sender:sender_id(id, name, avatar_url), receiver:receiver_id(id, name, avatar_url)")
+        .eq("id", id)
+        .single();
+      if (data) {
+        setMessages((prev) => (prev.some((m) => m.id === (data as Message).id) ? prev : [...prev, data as Message]));
+      }
+      setNewMessage("");
+    } finally {
+      setSending(false);
+    }
   };
 
   // Ordinateur : Entrée envoie (Maj+Entrée = nouvelle ligne). Écran tactile :
