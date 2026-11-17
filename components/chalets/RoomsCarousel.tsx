@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -49,51 +49,101 @@ function displayRoomName(room: Room, locale: string): string {
   return (locale === "en" && room.name_en) ? room.name_en : room.name;
 }
 
-export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
+// Espace entre les cartes (gap-4 = 16 px) : un « pas » de page = largeur visible + cet espace.
+const GAP = 16;
+
+// Cartes visibles à la fois : 2 dès md (768 px), 1 en dessous. Lu côté serveur comme 2
+// (ordinateur) puis corrigé à l'hydratation sur mobile.
+const DESKTOP_QUERY = "(min-width: 768px)";
+function subscribeDesktop(onChange: () => void) {
+  const mq = window.matchMedia(DESKTOP_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+function useCardsPerPage(): number {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    () => (window.matchMedia(DESKTOP_QUERY).matches ? 2 : 1),
+    () => 2
+  );
+}
+
+export default function RoomsCarousel({ rooms, title }: { rooms: Room[]; title: string }) {
   const locale = useLocale();
   const t = useTranslations("listing");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(false);
-  const [activeRoomIdx, setActiveRoomIdx] = useState(0);
+  const perPage = useCardsPerPage();
+  const totalPages = Math.max(1, Math.ceil(rooms.length / perPage));
+  const [page, setPage] = useState(0);
 
-  const checkScroll = useCallback(() => {
+  // Page courante à partir du défilement (flèches, balayage au doigt, redimensionnement).
+  // Au bout de la rangée on est toujours sur la dernière page, même si elle est incomplète.
+  const syncPage = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    setCanLeft(el.scrollLeft > 4);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-    // With snap-start each card's left edge aligns with scrollLeft when snapped
-    const items = Array.from(el.children) as HTMLElement[];
-    let minDist = Infinity;
-    let idx = 0;
-    items.forEach((item, i) => {
-      const dist = Math.abs(item.offsetLeft - el.scrollLeft);
-      if (dist < minDist) { minDist = dist; idx = i; }
-    });
-    setActiveRoomIdx(idx);
-  }, []);
+    const max = el.scrollWidth - el.clientWidth;
+    const step = el.clientWidth + GAP;
+    const atEnd = el.scrollLeft >= max - 4;
+    setPage(atEnd ? totalPages - 1 : Math.min(totalPages - 1, Math.max(0, Math.round(el.scrollLeft / step))));
+  }, [totalPages]);
 
   useEffect(() => {
-    checkScroll();
+    syncPage();
     const el = scrollRef.current;
-    el?.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
+    el?.addEventListener("scroll", syncPage, { passive: true });
+    window.addEventListener("resize", syncPage);
     return () => {
-      el?.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
+      el?.removeEventListener("scroll", syncPage);
+      window.removeEventListener("resize", syncPage);
     };
-  }, [checkScroll]);
+  }, [syncPage]);
 
-  const scroll = (dir: "left" | "right") => {
+  const goToPage = (target: number) => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ left: (dir === "left" ? -1 : 1) * (el.clientWidth / 2 + 8), behavior: "smooth" });
+    const max = el.scrollWidth - el.clientWidth;
+    el.scrollTo({ left: Math.min(target * (el.clientWidth + GAP), max), behavior: "smooth" });
   };
 
-  const showArrows = rooms.length > 2;
+  const showControls = totalPages > 1;
 
   return (
-    <div className="relative">
+    <div>
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <h2 className="text-heading-2 font-semibold text-charcoal-800">{title}</h2>
+        {showControls && (
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-base text-charcoal-700 tabular-nums" aria-live="polite">
+              {page + 1} / {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(page - 1)}
+                disabled={page === 0}
+                aria-label={t("roomsPrevious")}
+                className="w-10 h-10 rounded-full bg-white border border-[#ebebeb] flex items-center justify-center transition-colors hover:enabled:border-primary disabled:opacity-35 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 text-charcoal-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPage(page + 1)}
+                disabled={page === totalPages - 1}
+                aria-label={t("roomsNext")}
+                className="w-10 h-10 rounded-full bg-white border border-[#ebebeb] flex items-center justify-center transition-colors hover:enabled:border-primary disabled:opacity-35 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 text-charcoal-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1 scrollbar-none"
@@ -101,60 +151,12 @@ export default function RoomsCarousel({ rooms }: { rooms: Room[] }) {
         {rooms.map((room) => (
           <div
             key={room.id}
-            className="snap-start shrink-0 w-[calc(50%-8px)]"
+            className="snap-start shrink-0 w-full md:w-[calc(50%-8px)]"
           >
             <RoomCard room={room} locale={locale} />
           </div>
         ))}
       </div>
-
-      {showArrows && (
-        <>
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canLeft}
-            aria-label={t("previousRoom")}
-            className="hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
-          >
-            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canRight}
-            aria-label={t("nextRoom")}
-            className="hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-[#ebebeb] shadow-sm items-center justify-center transition-opacity disabled:opacity-25 hover:enabled:bg-charcoal-50"
-          >
-            <svg className="w-4 h-4 text-charcoal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </>
-      )}
-
-      {/* Mobile pagination dots — rooms */}
-      {rooms.length > 1 && (
-        <div className="md:hidden flex items-center justify-center mt-1.5">
-          {rooms.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                const el = scrollRef.current;
-                if (!el) return;
-                const items = Array.from(el.children) as HTMLElement[];
-                if (items[i]) el.scrollTo({ left: items[i].offsetLeft, behavior: "smooth" });
-              }}
-              aria-label={t("goToRoom", { number: i + 1 })}
-              aria-current={i === activeRoomIdx ? "true" : undefined}
-              className="w-6 h-6 flex items-center justify-center"
-            >
-              {/* Point visuel de 6 px, zone tactile de 24 px (WCAG 2.2, taille de cible) */}
-              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeRoomIdx ? "bg-primary" : "bg-[#ebebeb]"}`} />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -177,7 +179,7 @@ function RoomCard({ room, locale }: { room: Room; locale: string }) {
             src={photos[photoIdx]}
             alt={`${displayRoomName(room, locale)} – photo ${photoIdx + 1}`}
             fill
-            sizes="(max-width: 768px) 50vw, 380px"
+            sizes="(max-width: 768px) 100vw, 380px"
             unoptimized={!isOptimizableHost(photos[photoIdx])}
             className="object-cover"
           />

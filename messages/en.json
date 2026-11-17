@@ -930,6 +930,8 @@
     "reviewsDefaultAuthor": "Traveler",
     "previousRoom": "Previous room",
     "nextRoom": "Next room",
+    "roomsPrevious": "Previous rooms",
+    "roomsNext": "Next rooms",
     "goToRoom": "Go to room {number}",
     "noPhoto": "No photo",
     "roomCapacity": "{count, plural, one {{count} person} other {{count} people}}",

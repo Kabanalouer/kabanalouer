@@ -472,8 +472,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
               <>
                 <hr className="border-[#ebebeb]" />
                 <div>
-                  <h2 className="text-heading-2 font-semibold text-charcoal-800 mb-4">{t("roomsTitle")}</h2>
                   <RoomsCarousel
+                    title={t("roomsTitle")}
                     rooms={rooms.map((r, i) => {
                       // Noms standard selon l'ordre dans chaque type (jamais le nom saisi)
                       const n = rooms.slice(0, i + 1).filter((x) => x.type === r.type).length;

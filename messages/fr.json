@@ -930,6 +930,8 @@
     "reviewsDefaultAuthor": "Voyageur",
     "previousRoom": "Chambre précédente",
     "nextRoom": "Chambre suivante",
+    "roomsPrevious": "Chambres précédentes",
+    "roomsNext": "Chambres suivantes",
     "goToRoom": "Aller à la chambre {number}",
     "noPhoto": "Aucune photo",
     "roomCapacity": "{count} pers.",
