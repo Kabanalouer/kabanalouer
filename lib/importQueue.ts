@@ -269,13 +269,14 @@ export function isSafeImageUrl(u: string): boolean {
 // Adresse IP interne, de bouclage, de lien local ou réservée : jamais téléchargée.
 export function isPrivateAddress(ip: string): boolean {
   if (net.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number);
+    const [a, b, c] = ip.split(".").map(Number);
     return (
       a === 0 || a === 10 || a === 127 || a >= 224 ||
       (a === 100 && b >= 64 && b <= 127) ||
       (a === 169 && b === 254) ||
       (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && (b === 168 || b === 0)) ||
+      // Seulement 192.0.0.0/24 et 192.0.2.0/24 : le reste de 192.0.x.x est public (WordPress.com, 192.0.78.x)
+      (a === 192 && (b === 168 || (b === 0 && (c === 0 || c === 2)))) ||
       (a === 198 && (b === 18 || b === 19))
     );
   }

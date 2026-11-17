@@ -244,3 +244,13 @@ test("import : la région « Estrie » est reconnue, et « Centre-du-Québec » 
   assert.equal(matchRegion("Laurentides"), "Laurentides");
   assert.equal(matchRegion("Atlantide"), null);
 });
+
+test("import : les adresses internes restent refusées, mais 192.0.78.x (WordPress.com) est publique", async () => {
+  const { isPrivateAddress } = await import("@/lib/importQueue");
+  for (const ip of ["10.0.0.1", "127.0.0.1", "192.168.1.1", "192.0.0.5", "192.0.2.9", "169.254.1.1", "172.16.0.1", "::1"]) {
+    assert.equal(isPrivateAddress(ip), true, ip);
+  }
+  for (const ip of ["192.0.78.24", "192.0.78.25", "192.0.1.1", "8.8.8.8"]) {
+    assert.equal(isPrivateAddress(ip), false, ip);
+  }
+});
