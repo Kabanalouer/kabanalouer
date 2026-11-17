@@ -218,3 +218,17 @@ test("import : le CITQ est facultatif pour un brouillon, toujours exigé pour un
   const normale = normalizePayload(base);
   assert.equal(normale.ok, false);
 });
+
+test("import : les photos en http:// passent en https:// (sans doublon), le http reste refusé par la vérification de sécurité", async () => {
+  const { normalizePayload, isSafeImageUrl, upgradeToHttps } = await import("@/lib/importQueue");
+  const base = { nom: "Chalet exemple", courriel: "a@exemple.test", region: "Laurentides", mode_publication: "brouillon" };
+  const r = normalizePayload({
+    ...base,
+    photos: ["http://www.exemple.test/a.jpg", { url: "http://www.exemple.test/b.jpg" }, "https://www.exemple.test/a.jpg"],
+  });
+  assert.equal(r.ok, true);
+  if (r.ok) assert.deepEqual(r.data.photos.map((p) => p.url), ["https://www.exemple.test/a.jpg", "https://www.exemple.test/b.jpg"]);
+  assert.equal(upgradeToHttps("HTTP://exemple.test/c.jpg"), "https://exemple.test/c.jpg");
+  assert.equal(upgradeToHttps("https://exemple.test/d.jpg"), "https://exemple.test/d.jpg");
+  assert.equal(isSafeImageUrl("http://exemple.test/e.jpg"), false);
+});

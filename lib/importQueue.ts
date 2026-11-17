@@ -162,6 +162,12 @@ export function readModePublication(raw: unknown): { ok: true; mode: "brouillon"
   return { ok: false, error: `mode_publication inconnu : « ${String(v).slice(0, 40)} » (seule la valeur « brouillon » existe).` };
 }
 
+// Beaucoup de vieux sites donnent leurs photos en http:// alors qu'elles se servent aussi en https :
+// on passe à https avant la vérification (isSafeImageUrl refuse toujours le http, par sécurité).
+export function upgradeToHttps(u: string): string {
+  return /^http:\/\//i.test(u) ? u.replace(/^http:/i, "https:") : u;
+}
+
 // Noms de champs acceptés (français ou anglais) : voir CLAUDE.md, section « File d'import ».
 export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImport } | { ok: false; error: string } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ok: false, error: "Le lot n'est pas un objet JSON." };
@@ -187,7 +193,7 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
   const photosRaw = pick(p, "photos", "images");
   const photoUrls: string[] = [];
   for (const item of Array.isArray(photosRaw) ? photosRaw : []) {
-    const url = typeof item === "string" ? item : asStr(item && typeof item === "object" ? pick(item as Obj, "url", "src", "image") : "");
+    const url = upgradeToHttps(typeof item === "string" ? item : asStr(item && typeof item === "object" ? pick(item as Obj, "url", "src", "image") : ""));
     if (url && !photoUrls.includes(url)) photoUrls.push(url);
     if (photoUrls.length >= MAX_PHOTOS) break;
   }
