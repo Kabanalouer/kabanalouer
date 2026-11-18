@@ -63,6 +63,11 @@ async function syncOneListing(
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     icalText = await res.text();
   } catch (err) {
+    if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+      // Fournisseur lent (Lodgify, Airbnb…) : passager comme le 429, le calendrier garde la dernière synchro réussie.
+      console.warn(`[sync-ical] délai dépassé pour listing ${listingId}, réessai à la prochaine synchro`);
+      return { ok: false, error: { fr: "Le calendrier est temporairement indisponible, réessaie plus tard.", en: "The calendar is temporarily unavailable, please try again later." } };
+    }
     console.error(`[sync-ical] fetch error for listing ${listingId}:`, err);
     return { ok: false, error: { fr: "Impossible de récupérer le calendrier iCal.", en: "Unable to fetch the iCal calendar." } };
   }
