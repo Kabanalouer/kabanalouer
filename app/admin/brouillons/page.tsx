@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDraftsPage() {
   await requireAdminPage();
-  const rows = await listDraftOwners(adminSupabase());
+  // Rien à faire pour un propriétaire retiré ou sans aucune fiche (import refusé ou retiré) : pas de carte.
+  // Les données restent en base (exclusions d'envoi, file d'import) ; seul l'écran les masque.
+  const rows = (await listDraftOwners(adminSupabase())).filter((r) => r.status !== "retire" && r.status !== "sans_fiche");
 
   const ready = rows.filter((r) => r.status === "pret").length;
   const due = rows.filter((r) => r.due).length;
