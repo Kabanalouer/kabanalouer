@@ -39,8 +39,9 @@ export default async function DashboardPage() {
     adminSupabase().from("listings").select("id, ical_url").eq("host_id", userId),
   ]);
 
-  // Fiches non activées au même courriel que ce compte : bandeau « activez-les au lieu d'en créer »
-  const unclaimedMatches = user.email ? await findUnclaimedByEmail(user.email, locale === "en" ? "en" : "fr") : [];
+  // Fiches non activées au même courriel que ce compte : bandeau « activez-les au lieu d'en créer ».
+  // Seulement une adresse confirmée : sinon un inconnu verrait les titres des brouillons d'un autre.
+  const unclaimedMatches = user.email && user.email_confirmed_at ? await findUnclaimedByEmail(user.email, locale === "en" ? "en" : "fr") : [];
 
   const icalById = new Map((icalRows ?? []).map((r) => [r.id as string, (r.ical_url as string | null) ?? null]));
   const listingIds = (listings ?? []).map((l) => l.id as string);

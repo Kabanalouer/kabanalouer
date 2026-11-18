@@ -154,7 +154,7 @@ async function claim(request: NextRequest, locale: "fr" | "en") {
   return NextResponse.json({ ok: true, count: result.listingIds.length, published: result.published });
 }
 
-// Le compte a une adresse confirmée qui est celle d'une invitation (ou du même domaine d'entreprise) : l'adresse est la preuve, sans jeton.
+// Le compte a une adresse confirmée qui est exactement celle d'une invitation : l'adresse est la preuve, sans jeton.
 async function claimMine(locale: "fr" | "en") {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
