@@ -3,6 +3,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { firstPhotoUrl } from "@/lib/photo";
 import { maskEmail } from "@/lib/claims/maskedEmail";
 import { normalizeDest } from "@/lib/destinationSearch";
+import { claimEmailPatterns } from "@/lib/claims/emailMatch";
 
 // Fiches non revendiquées déjà en ligne qui pourraient être celles d'un proprio qui arrive pour
 // inscrire son chalet : trouvées par CITQ (étape « Votre chalet est peut-être déjà sur Kabanalouer »)
@@ -77,17 +78,25 @@ export async function findUnclaimedByCity(city: string, locale: "fr" | "en"): Pr
     .map((r) => toMatch(r, locale));
 }
 
+// Fiches non activées (brouillons compris) de l'adresse d'un compte ou de son domaine d'entreprise (voir emailMatch.ts).
+// Une requête par motif plutôt qu'un filtre `.or()` : l'adresse ne passe jamais dans une chaîne de filtre.
+export async function selectUnclaimedForEmail<T extends { id: string }>(columns: string, email: string, limit = 100): Promise<T[]> {
+  const found = new Map<string, T>();
+  for (const pattern of claimEmailPatterns(email)) {
+    const { data } = await adminSupabase()
+      .from("listings")
+      .select(columns)
+      .ilike("claim_email", pattern)
+      .eq("claim_status", "unclaimed")
+      .eq("is_test", false)
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    for (const row of (data ?? []) as unknown as T[]) found.set(row.id, row);
+  }
+  return [...found.values()];
+}
+
 export async function findUnclaimedByEmail(email: string, locale: "fr" | "en"): Promise<UnclaimedMatch[]> {
-  const normalized = email.trim().toLowerCase();
-  if (!normalized) return [];
-  const { data } = await adminSupabase()
-    .from("listings")
-    .select(COLUMNS)
-    .ilike("claim_email", normalized.replace(/[\\%_]/g, "\\$&"))
-    .eq("claim_status", "unclaimed")
-    .eq("is_published", true)
-    .eq("is_test", false)
-    .order("created_at", { ascending: true })
-    .limit(10);
-  return ((data ?? []) as Row[]).map((r) => toMatch(r, locale));
+  const rows = await selectUnclaimedForEmail<Row>(COLUMNS, email, 10);
+  return rows.map((r) => toMatch(r, locale));
 }

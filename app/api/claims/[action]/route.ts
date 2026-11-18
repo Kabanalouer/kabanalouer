@@ -14,7 +14,7 @@ import {
 } from "@/lib/claims/tokens";
 import { claimListingsForUser, removeUnclaimedListings, reportClaimProblem } from "@/lib/claims/actions";
 import { sendClaimAdminAlert, sendClaimLinkEmail } from "@/lib/emails/unclaimedOwner";
-import { findUnclaimedByCitq } from "@/lib/claims/lookup";
+import { findUnclaimedByCitq, selectUnclaimedForEmail } from "@/lib/claims/lookup";
 
 // Actions publiques des fiches non revendiquées (supabase/add-unclaimed-listings.sql) :
 //   send-link : « Envoyer le lien à l'adresse que vous avez » (option A, sans connexion)
@@ -46,6 +46,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return sendLink(request, locale);
     case "claim":
       return claim(request, locale);
+    case "claim-mine":
+      return claimMine(locale);
     case "remove":
       return remove(request, locale);
     case "report":
@@ -148,6 +150,24 @@ async function claim(request: NextRequest, locale: "fr" | "en") {
 
   // activateDrafts : les fiches en brouillon sont mises en ligne tout de suite (published = combien l'ont été)
   const result = await claimListingsForUser(admin, { userId: user.id, listingIds, tokenId: lookup.token.id, activateDrafts: true });
+  if (!result.ok) return bad(locale, "L'activation a échoué.", "Activation failed.", 400);
+  return NextResponse.json({ ok: true, count: result.listingIds.length, published: result.published });
+}
+
+// Le compte a une adresse confirmée qui est celle d'une invitation (ou du même domaine d'entreprise) : l'adresse est la preuve, sans jeton.
+async function claimMine(locale: "fr" | "en") {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return bad(locale, "Non authentifié", "Not authenticated", 401);
+  if (!user.email || !user.email_confirmed_at) {
+    return bad(locale, "Confirmez d'abord votre adresse courriel.", "Confirm your email address first.", 403);
+  }
+
+  const admin = adminSupabase();
+  const listingIds = (await selectUnclaimedForEmail<{ id: string }>("id", user.email)).map((l) => l.id);
+  if (listingIds.length === 0) return bad(locale, "Aucune fiche à activer.", "No listings to activate.", 404);
+
+  const result = await claimListingsForUser(admin, { userId: user.id, listingIds, activateDrafts: true });
   if (!result.ok) return bad(locale, "L'activation a échoué.", "Activation failed.", 400);
   return NextResponse.json({ ok: true, count: result.listingIds.length, published: result.published });
 }
