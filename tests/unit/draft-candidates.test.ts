@@ -147,6 +147,8 @@ test("table Brouillons : état d'un propriétaire et fiches à compléter", asyn
   assert.equal(deriveStatus(base), "pret");
   assert.equal(deriveStatus({ ...base, pendingImports: 2 }), "import");
   assert.equal(deriveStatus({ ...base, listingCount: 0 }), "import");
+  assert.equal(deriveStatus({ ...base, listingCount: 0, rejectedImports: 1 }), "sans_fiche", "tout refusé ou retiré : plus d'import en cours");
+  assert.equal(deriveStatus({ ...base, listingCount: 0, rejectedImports: 1, pendingImports: 1 }), "import");
   assert.equal(deriveStatus({ ...base, invited: true }), "invite");
   assert.equal(deriveStatus({ ...base, invited: true, anyClaimed: true }), "revendique");
   assert.equal(deriveStatus({ ...base, invited: true, anyClaimed: true, anyActive: true }), "actif");

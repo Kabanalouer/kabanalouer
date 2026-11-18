@@ -9,7 +9,7 @@ import { normalizePhotos } from "@/lib/photo";
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type DraftReminderKind = "draft_reminder_3" | "draft_reminder_10";
-export type DraftOwnerStatus = "import" | "pret" | "invite" | "revendique" | "actif" | "retire";
+export type DraftOwnerStatus = "import" | "sans_fiche" | "pret" | "invite" | "revendique" | "actif" | "retire";
 
 export type SentInfo = { sentAt: string; openedAt: string | null; claimedAt: string | null };
 
@@ -81,6 +81,7 @@ export function deriveStatus(input: {
   removed: boolean;
   listingCount: number;
   pendingImports: number;
+  rejectedImports?: number;
   invited: boolean;
   anyActive: boolean;
   anyClaimed: boolean;
@@ -88,7 +89,9 @@ export function deriveStatus(input: {
   if (input.removed) return "retire";
   if (input.anyActive) return "actif";
   if (input.invited) return input.anyClaimed ? "revendique" : "invite";
-  if (input.pendingImports > 0 || input.listingCount === 0) return "import";
+  if (input.pendingImports > 0) return "import";
+  // Plus rien à importer et aucune fiche : tout a été refusé ou retiré (pas un import en cours)
+  if (input.listingCount === 0) return (input.rejectedImports ?? 0) > 0 ? "sans_fiche" : "import";
   return "pret";
 }
 
@@ -193,6 +196,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
         removed: removed.has(email),
         listingCount: listings.length,
         pendingImports,
+        rejectedImports: rejectedBy.get(email) ?? 0,
         invited: !!invite,
         anyActive: listings.some((l) => l.state === "en_ligne"),
         anyClaimed: listings.some((l) => l.state !== "brouillon"),
@@ -201,6 +205,6 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
     });
   }
 
-  const rank: Record<DraftOwnerStatus, number> = { pret: 1, import: 2, invite: 3, revendique: 4, actif: 5, retire: 6 };
+  const rank: Record<DraftOwnerStatus, number> = { pret: 1, import: 2, sans_fiche: 3, invite: 4, revendique: 5, actif: 6, retire: 7 };
   return out.sort((a, b) => (a.due ? 0 : 1) - (b.due ? 0 : 1) || rank[a.status] - rank[b.status] || a.email.localeCompare(b.email));
 }

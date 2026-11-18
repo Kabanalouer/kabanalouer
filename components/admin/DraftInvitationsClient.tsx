@@ -11,6 +11,7 @@ type Kind = "draft_invite" | DraftReminderKind;
 const STATUS_LABEL: Record<DraftOwnerStatus, { label: string; tone: string }> = {
   pret: { label: "Prêt à envoyer", tone: "bg-success-50 text-success-700" },
   import: { label: "Import en cours", tone: "bg-warning-50 text-warning-700" },
+  sans_fiche: { label: "Aucune fiche créée (import refusé ou retiré)", tone: "bg-charcoal-100 text-charcoal-600" },
   invite: { label: "Invitation envoyée", tone: "bg-primary/10 text-primary" },
   revendique: { label: "Revendiquée, pas encore activée", tone: "bg-warning-50 text-warning-700" },
   actif: { label: "Activée", tone: "bg-success-50 text-success-700" },

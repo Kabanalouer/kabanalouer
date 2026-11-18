@@ -445,6 +445,7 @@ export async function detectWatermark(webp: Buffer, model: string = MODEL_STRONG
                 type: "text",
                 text:
                   "Cette image est la BANDE DU BAS d'une photo de chalet. Contient-elle un filigrane, un logo (même sans texte : symbole, initiales, forme semi-transparente), une adresse web ou du texte incrusté dans l'image (par exemple « ChaletsAuQuebec.com », même petit, discret ou semi-transparent) ? Regarde très attentivement les coins et les bords ; au moindre doute, réponds true. " +
+                  "EXCEPTION : l'écusson officiel d'attestation de classification de Tourisme Québec (blason violet et or avec des étoiles, le nom de l'établissement et la mention « Attestation de classification ») n'est PAS un filigrane : ne le signale pas. Tout autre logo, texte ou adresse web reste un filigrane. " +
                   'Réponds UNIQUEMENT par un objet JSON : {"watermark": true|false, "text": "le texte lu ou vide", "position": "bas-gauche|bas-droite|bas-centre|autre|aucune", "band": nombre entre 0 et 1 = fraction de la hauteur de CETTE image, mesurée depuis son bord du bas, qu\'il faut couper pour retirer entièrement le filigrane}',
               },
             ],
@@ -498,7 +499,8 @@ async function applyCrop(webp: Buffer, fraction: number): Promise<Buffer> {
 
 // Renvoie la photo propre (éventuellement rognée), ou null si elle doit être écartée.
 export async function cleanPhoto(webp: Buffer, cache?: AdminLike): Promise<Buffer | null> {
-  const key = `wm:${createHash("sha1").update(webp).digest("hex")}`;
+  // wm2 : l'écusson officiel de classification n'est plus un filigrane (2026-11-18) ; les verdicts « wm: » d'avant sont refaits
+  const key = `wm2:${createHash("sha1").update(webp).digest("hex")}`;
   const cached = await cacheGet<Decision>(cache, key);
   if (cached) {
     cacheHits += 1;
