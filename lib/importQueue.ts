@@ -6,6 +6,7 @@ import { enhancePhotos } from "@/lib/photoEnhance";
 import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { slugify } from "@/lib/slugify";
+import { canonicalCityName } from "@/lib/normalizeCityName";
 import { matchAmenities, matchRegion } from "@/lib/listingImportMapping";
 import { NEARBY_BY_CATEGORY } from "@/lib/nearbyActivities";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
@@ -226,7 +227,7 @@ export function normalizePayload(raw: unknown): { ok: true; data: NormalizedImpo
       claimLanguage: /^en/i.test(asStr(pick(p, "claim_language", "langue", "language"))) ? "en" : "fr",
       citq: citqMatch ? citqMatch[0] : null,
       region,
-      city: asStr(pick(p, "city", "ville")) || null,
+      city: asStr(pick(p, "city", "ville")) ? canonicalCityName(asStr(pick(p, "city", "ville"))) : null,
       latitude: geoOk ? lat : null,
       longitude: geoOk ? lng : null,
       capacity: int(pick(p, "capacity", "capacite", "capacité", "personnes"), 1, 60),

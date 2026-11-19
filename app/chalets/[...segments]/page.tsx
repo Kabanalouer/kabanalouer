@@ -12,6 +12,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { normalizePhotos } from "@/lib/photo";
 import { slugify } from "@/lib/slugify";
 import { isKnownMunicipality } from "@/lib/municipalities";
+import { expandSaintSlug } from "@/lib/normalizeCityName";
 import { metaDescription, metaDescriptionWithCity, metaTitle } from "@/lib/metaText";
 import RegionLanding from "./_components/RegionLanding";
 import CityLanding from "./_components/CityLanding";
@@ -557,6 +558,10 @@ async function renderTwoSegments([slug, citySlug]: [string, string], isEn: boole
   const regionConfig = isEn ? getRegionByEnSlug(slug) : getRegionBySlug(slug);
   if (!regionConfig) notFound();
 
+  // Ancien slug abrégé (st-raymond) : une seule URL par ville, en « saint- »/« sainte- ».
+  const expandedCity = expandSaintSlug(citySlug);
+  if (expandedCity) permanentRedirect(`${isEn ? "/en/cabins" : "/chalets"}/${slug}/${expandedCity}`);
+
   const comboTheme = getComboThemeBySlug(citySlug, isEn);
   if (comboTheme) return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={null} />;
 
@@ -585,6 +590,8 @@ async function renderThreeSegments([slug, city, chaletSlug]: [string, string, st
 
   const comboTheme = getComboThemeBySlug(chaletSlug, isEn);
   if (comboTheme) {
+    const expandedCity = expandSaintSlug(city);
+    if (expandedCity) permanentRedirect(`${isEn ? "/en/cabins" : "/chalets"}/${slug}/${expandedCity}/${chaletSlug}`);
     const cityName = await resolveCityName(supabase, regionConfig, city);
     if (!cityName) notFound();
     return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={cityName} />;

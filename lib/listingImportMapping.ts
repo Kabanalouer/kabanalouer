@@ -13,6 +13,7 @@ import { REGIONS } from "@/lib/regions";
 import { truncateToLastWord } from "@/lib/aiText";
 import { slugify } from "@/lib/slugify";
 import { getMunicipalityBySlug } from "@/lib/municipalities";
+import { normalizeCityName } from "@/lib/normalizeCityName";
 
 // Doit rester synchronisé avec CAPTION_MAX dans components/dashboard/PhotoUpload.tsx.
 const CAPTION_MAX_LENGTH = 200;
@@ -237,7 +238,7 @@ export function mapAirbnbItem(item: Record<string, unknown>): ImportedListingDat
     bedrooms: bedroomsMatch ? Number(bedroomsMatch[1]) : null,
     bathrooms: bathroomsMatch ? Number(bathroomsMatch[1]) : null,
     amenities: matched,
-    city: typeof item.location === "string" ? item.location : null,
+    city: typeof item.location === "string" ? normalizeCityName(item.location) : null,
     region: matchRegion(regionCandidate) ?? regionFromCity(typeof item.location === "string" ? item.location : null),
     latitude: toNumberOrNull(coordinates.latitude),
     longitude: toNumberOrNull(coordinates.longitude),
@@ -282,7 +283,8 @@ export function mapVrboItem(flatItem: Record<string, unknown>): ImportedListingD
 
   const location = (raw.location as Record<string, unknown>) ?? {};
   const address = typeof location.address === "string" ? location.address : null;
-  const city = address ? address.split(",")[0]?.trim() || null : null;
+  const cityRaw = address ? address.split(",")[0]?.trim() || null : null;
+  const city = cityRaw ? normalizeCityName(cityRaw) : null;
 
   const rooms = (raw.rooms as Record<string, unknown>) ?? {};
 

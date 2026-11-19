@@ -1,3 +1,6 @@
+import { getMunicipalityBySlug } from "./municipalities";
+import { slugify } from "./slugify";
+
 // Normalise un nom de ville québécoise saisi manuellement, pour réduire les
 // variantes orthographiques qui créeraient des pages "ville" distinctes pour
 // le même endroit (ex. "St-Sauveur" vs "Saint-Sauveur") — voir lib/slugify.ts,
@@ -24,4 +27,22 @@ export function normalizeCityName(input: string): string {
   // complet, qui casserait les connecteurs français en minuscule
   // (ex. "Saint-Jean-sur-Richelieu" doit garder "sur" en minuscule).
   return city.charAt(0).toUpperCase() + city.slice(1);
+}
+
+// Nom à enregistrer dans listings.city : St/Ste étendus, puis, si le résultat
+// est une municipalité officielle (même slug), son orthographe exacte
+// (« Saint Come » → « Saint-Côme », « Saint-Denis-De La Bouteillerie »). Un nom
+// hors liste (secteur, texte libre) reste tel quel : la page ville exige un nom
+// officiel (voir app/chalets/[...segments]/page.tsx).
+export function canonicalCityName(input: string): string {
+  const city = normalizeCityName(input);
+  return getMunicipalityBySlug(slugify(city))?.name ?? city;
+}
+
+// Ancien segment d'URL « st-raymond » / « ste-agathe-des-monts » → « saint-… » /
+// « sainte-… » (redirection 301). null si le segment n'est pas abrégé.
+export function expandSaintSlug(slug: string): string | null {
+  const m = /^(ste?)-(.+)$/.exec(slug);
+  if (!m) return null;
+  return `${m[1] === "ste" ? "sainte" : "saint"}-${m[2]}`;
 }
