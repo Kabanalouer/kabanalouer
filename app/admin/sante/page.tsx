@@ -175,6 +175,19 @@ export default async function AdminHealthPage({ searchParams }: { searchParams: 
             )}
           />
           <WatchList
+            title="Localisation à corriger"
+            empty="Chaque annonce en ligne a une municipalité officielle et une région cohérente."
+            items={watch.badLocation}
+            render={(l) => (
+              <>
+                <p className="font-medium text-charcoal-800">{l.title}</p>
+                <p className="text-charcoal-500">
+                  {l.hostName} · {l.problem === "city" ? `ville absente ou non officielle (${l.city ?? "vide"})` : l.problem === "region" ? `région vide (${l.city})` : `région incohérente avec ${l.city} (${l.region})`}
+                </p>
+              </>
+            )}
+          />
+          <WatchList
             title="Annonces sans demande depuis 30 jours"
             empty="Chaque annonce publiée depuis plus de 14 jours a reçu au moins une demande ce mois-ci."
             items={watch.quietListings}

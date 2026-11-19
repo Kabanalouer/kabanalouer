@@ -46,3 +46,9 @@ export function expandSaintSlug(slug: string): string | null {
   if (!m) return null;
   return `${m[1] === "ste" ? "sainte" : "saint"}-${m[2]}`;
 }
+
+// Municipalité officielle correspondant au nom donné par Google Places (« St-Raymond » → Saint-Raymond).
+// Correspondance par slug seulement : jamais de devinette sur un nom qui n'existe pas dans la liste.
+export function officialMunicipalityFromPlaceName(raw: string) {
+  return getMunicipalityBySlug(slugify(normalizeCityName(raw)));
+}

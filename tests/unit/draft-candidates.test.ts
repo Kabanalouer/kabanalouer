@@ -165,7 +165,7 @@ test("revendication d'un brouillon : mise en ligne tout de suite (même sans CIT
   const row = (id: string, extra: Row = {}): Row => ({
     id, host_id: owner, claim_status: "claimed", mode_publication: "brouillon", is_published: false,
     title: "Chalet", description: "Une description complète de plus de quarante caractères.", photos: [1, 2, 3, 4, 5],
-    region: "Laurentides", citq_number: "298960", import_raw_data: { fixture: true }, ...extra,
+    region: "Laurentides", city: "Mont-Tremblant", citq_number: "298960", import_raw_data: { fixture: true }, ...extra,
   });
   const rows = [
     row("ok"), row("peu-de-photos", { photos: [1, 2, 3, 4] }), row("sans-citq", { citq_number: null }),

@@ -1,4 +1,5 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { locationProblem, type LocationProblem } from "@/lib/listingLocation";
 
 // Indicateurs de santé de la plateforme (Admin → Santé de la plateforme).
 // Calculés à la volée depuis Supabase avec le client service (la page est
@@ -91,6 +92,8 @@ export type PlatformHealth = {
     unanswered: (Conversation & { ageHours: number })[];
     abandonedDrafts: { id: string; title: string; hostName: string; ageDays: number }[];
     quietListings: { id: string; title: string; hostName: string; publishedDays: number }[];
+    /** Fiches en ligne sans municipalité officielle ou avec une région qui ne correspond pas (adresse /autre/, page ville absente) */
+    badLocation: { id: string; title: string; hostName: string; city: string | null; region: string | null; problem: LocationProblem }[];
   };
 };
 
@@ -209,6 +212,12 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
     .filter(({ l, since }) => now - since >= 14 * DAY && !recentConvListings.has(l.id))
     .map(({ l, since }) => ({ id: l.id, title: l.title ?? "Sans titre", hostName: nameOf(l.host_id), publishedDays: Math.floor((now - since) / DAY) }));
 
+  const badLocation = published
+    .flatMap((l) => {
+      const problem = locationProblem(l.city, l.region);
+      return problem ? [{ id: l.id, title: l.title ?? "Sans titre", hostName: nameOf(l.host_id), city: l.city, region: l.region, problem }] : [];
+    });
+
   const newConversations = compare(conversations.map((c) => c.startedAt));
 
   // ── Tunnels : compteurs du navigateur (par jour, heure du Québec) + étapes tirées de la base
@@ -270,6 +279,6 @@ export async function getPlatformHealth(days: number): Promise<PlatformHealth> {
       averageRating,
     },
     funnels,
-    watch: { openErrors, unanswered, abandonedDrafts, quietListings },
+    watch: { openErrors, unanswered, abandonedDrafts, quietListings, badLocation },
   };
 }

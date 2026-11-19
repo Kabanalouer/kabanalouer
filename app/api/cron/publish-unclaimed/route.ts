@@ -5,6 +5,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { SITE_URL } from "@/lib/siteUrl";
 import { sendUnclaimedPublishedNotice } from "@/lib/emails/unclaimedPublished";
 import { AUTO_INVITATIONS_ENABLED, emailsStillImporting, listInvitationCandidates, sendInvitation, withoutWaiting } from "@/lib/claims/invitations";
+import { locationProblem } from "@/lib/listingLocation";
 
 export const maxDuration = 120;
 
@@ -137,6 +138,8 @@ async function publishToday(admin: Admin): Promise<{ error: string } | { publish
         ((l.title as string | null) ?? "").trim().length > 0 &&
         /[.!?…»)]$/.test(((l.description as string | null) ?? "").trim()) && ((l.description as string | null) ?? "").trim().length >= 40 && // jamais en ligne sans description complète (finit par une fin de phrase)
         ((l.photos ?? []) as PhotoItem[]).length >= 5 &&
+        // Jamais en ligne sans municipalité officielle ni région cohérente (sinon l'adresse devient /autre/)
+        locationProblem(l.city as string | null, l.region as string | null) === null &&
         // Jamais en ligne sans la vérification des filigranes (lib/importQueue.ts, cleanPhoto)
         (l.import_raw_data as { photos_filigrane_verifiees?: boolean } | null)?.photos_filigrane_verifiees === true
     )

@@ -7,6 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { slugify } from "@/lib/slugify";
 import { canonicalCityName } from "@/lib/normalizeCityName";
+import { locationProblem, suggestCityFromText } from "@/lib/listingLocation";
 import { matchAmenities, matchRegion } from "@/lib/listingImportMapping";
 import { NEARBY_BY_CATEGORY } from "@/lib/nearbyActivities";
 import { generateUniqueListingNumber } from "@/lib/generateListingNumber";
@@ -919,6 +920,9 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
         photos_importees: photos.length,
         photos_dans_le_lot: d.photos.length,
         ...(duplicates.length > 0 ? { doublon_possible: duplicates } : {}),
+        // Pas de municipalité officielle : la fiche ne sera pas publiable (locationProblem). La ville lue dans la
+        // description n'est qu'une suggestion pour la personne qui valide, jamais appliquée seule.
+        ...(locationProblem(d.city, d.region) ? { ville_a_confirmer: true, ville_suggeree: suggestCityFromText(d.descriptionOriginal) ?? suggestCityFromText(description.text) } : {}),
       },
     });
     if (insertError) {

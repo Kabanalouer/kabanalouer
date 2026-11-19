@@ -539,6 +539,7 @@
       "cityLabel": "City",
       "cityPlaceholder": "Search for a municipality…",
       "cityHint": "Select the cabin's exact municipality from Quebec's official list.",
+      "cityRequired": "Choose your cabin's city: without it, the listing can't be published.",
       "cityNoResults": "No municipality found",
       "notFoundOption": "I can't find my location",
       "manualHint": "For an unorganized territory (TNO) or a place missing from the official list.",

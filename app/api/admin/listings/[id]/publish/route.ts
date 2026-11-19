@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendImportPublishedEmail } from "@/lib/emails/importPublished";
 import { buildListingPath } from "@/lib/listingUrl";
 import { markPublished } from "@/lib/publishedAt";
+import { locationProblem } from "@/lib/listingLocation";
 
 function adminSupabase() {
   return createAdminClient(
@@ -29,12 +30,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: listing } = await admin
     .from("listings")
-    .select("id, title, title_en, host_id, import_status")
+    .select("id, title, title_en, host_id, import_status, city, region")
     .eq("id", id)
     .single();
 
   if (!listing) {
     return NextResponse.json({ error: "Annonce introuvable" }, { status: 404 });
+  }
+  if (locationProblem(listing.city as string | null, listing.region as string | null)) {
+    return NextResponse.json({ error: "Municipalité officielle ou région manquante ou incohérente (section Localisation)." }, { status: 400 });
   }
   if (listing.import_status !== "pending_review") {
     return NextResponse.json(

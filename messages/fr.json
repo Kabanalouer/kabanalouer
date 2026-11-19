@@ -539,6 +539,7 @@
       "cityLabel": "Ville",
       "cityPlaceholder": "Rechercher une municipalité…",
       "cityHint": "Sélectionnez la municipalité exacte du chalet dans la liste officielle du Québec.",
+      "cityRequired": "Choisissez la ville de votre chalet : sans elle, l'annonce ne peut pas être publiée.",
       "cityNoResults": "Aucune municipalité trouvée",
       "notFoundOption": "Je ne trouve pas ma localité",
       "manualHint": "Pour un territoire non organisé (TNO) ou un lieu absent de la liste officielle.",

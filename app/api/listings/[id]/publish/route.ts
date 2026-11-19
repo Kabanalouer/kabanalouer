@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { activateClaimedDrafts } from "@/lib/claims/activateDrafts";
 import { markPublished } from "@/lib/publishedAt";
+import { LOCATION_PROBLEM_MESSAGE, locationProblem } from "@/lib/listingLocation";
 
 // Mise en ligne d'une annonce par son propriétaire : toujours gratuite, aucun paiement ni abonnement.
 // Un brouillon revendiqué passe par les mêmes contrôles que le bouton « Activer » de Mes chalets.
@@ -19,7 +20,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const { data: ownedListing } = await supabase
     .from("listings")
-    .select("id, import_status, region")
+    .select("id, import_status, region, city")
     .eq("id", id)
     .eq("host_id", user.id)
     .maybeSingle();
@@ -28,9 +29,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: t2(locale, "Annonce introuvable", "Listing not found") }, { status: 404 });
   }
 
-  // Jamais d'annonce en ligne sans région : elle n'apparaîtrait sur aucune page région ni dans le fil d'Ariane.
-  if (!(ownedListing.region as string | null)?.trim()) {
-    return NextResponse.json({ error: t2(locale, "Choisissez la région de votre chalet (section Localisation) avant de publier.", "Choose your cabin's region (Location section) before publishing.") }, { status: 400 });
+  // Jamais d'annonce en ligne sans municipalité officielle et région cohérente : sans ville l'adresse devient /autre/,
+  // sans région elle n'apparaîtrait sur aucune page région ni dans le fil d'Ariane.
+  if (locationProblem(ownedListing.city as string | null, ownedListing.region as string | null)) {
+    return NextResponse.json({ error: t2(locale, LOCATION_PROBLEM_MESSAGE.fr, LOCATION_PROBLEM_MESSAGE.en) }, { status: 400 });
   }
 
   const admin = adminSupabase();

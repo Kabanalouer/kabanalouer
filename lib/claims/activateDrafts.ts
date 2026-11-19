@@ -6,6 +6,7 @@
 // Jamais de publie_le : ces fiches ne comptent pas dans les 15 par jour de publish-unclaimed.
 
 import { markPublished } from "@/lib/publishedAt";
+import { locationProblem } from "@/lib/listingLocation";
 
 type AdminClient = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -22,6 +23,7 @@ export type DraftRow = {
   description: string | null;
   photos: unknown;
   region: string | null;
+  city: string | null;
   citq_number: string | null;
   import_raw_data: Record<string, unknown> | null;
 };
@@ -33,7 +35,7 @@ export function draftBlocker(l: DraftRow, userId: string): ActivationError | nul
     (l.title ?? "").trim().length > 0 &&
     (l.description ?? "").trim().length >= 40 &&
     Array.isArray(l.photos) && l.photos.length >= 5 &&
-    (l.region ?? "").trim().length > 0;
+    locationProblem(l.city, l.region) === null;
   if (!complete) return "incomplete";
   return null;
 }
@@ -52,7 +54,7 @@ export async function activateClaimedDrafts(
   if (input.listingIds.length === 0) return [];
   const { data: rows } = await admin
     .from("listings")
-    .select("id, host_id, claim_status, mode_publication, is_published, title, description, photos, region, citq_number, import_raw_data")
+    .select("id, host_id, claim_status, mode_publication, is_published, title, description, photos, region, city, citq_number, import_raw_data")
     .in("id", input.listingIds);
   const byId = new Map<string, DraftRow>(((rows ?? []) as DraftRow[]).map((r) => [r.id, r]));
   const today = montrealDate();

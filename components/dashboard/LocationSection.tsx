@@ -10,8 +10,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { slugify } from "@/lib/slugify";
-import { getMunicipalityBySlug } from "@/lib/municipalities";
+import { officialMunicipalityFromPlaceName } from "@/lib/normalizeCityName";
 import MunicipalityCombobox from "./MunicipalityCombobox";
 import { getRegionByDbValue } from "@/lib/regions";
 
@@ -90,7 +89,8 @@ function LocationForm({
       // sur le texte de Google : si aucune municipalité officielle ne
       // correspond, on n'invente rien, le proprio choisit manuellement dans
       // MunicipalityCombobox ci-dessous.
-      const matched = detectedCityRaw ? getMunicipalityBySlug(slugify(detectedCityRaw)) : undefined;
+      // Google écrit « St-Raymond », la liste officielle « Saint-Raymond » : St/Ste sont étendus avant la comparaison.
+      const matched = detectedCityRaw ? officialMunicipalityFromPlaceName(detectedCityRaw) : undefined;
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
 
@@ -186,7 +186,11 @@ function LocationForm({
             className={inputCls}
             placeholder={t("cityPlaceholder")}
           />
-          <p className="text-xs text-charcoal-400 mt-1">{t("cityHint")}</p>
+          {city ? (
+            <p className="text-xs text-charcoal-400 mt-1">{t("cityHint")}</p>
+          ) : (
+            <p className="text-xs text-warning-700 mt-1">{t("cityRequired")}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
