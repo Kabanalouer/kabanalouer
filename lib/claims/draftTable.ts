@@ -1,4 +1,4 @@
-import { emailsWithPendingImport, listDraftCandidates, removedOwnerEmails } from "@/lib/claims/invitations";
+import { emailsWithPendingImport, fetchAllRows, listDraftCandidates, removedOwnerEmails } from "@/lib/claims/invitations";
 import { loadDraftNotes } from "@/lib/claims/draftNotes";
 import { normalizePhotos } from "@/lib/photo";
 
@@ -115,11 +115,38 @@ function isDraftPayload(payload: unknown): boolean {
 }
 
 export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow[]> {
-  const [{ data: draftData }, { data: activeData }, { data: inviteData }, { data: queueData }, notes, removed, due3, due10, stillWaiting] = await Promise.all([
-    admin.from("listings").select(LISTING_SELECT).eq("mode_publication", "brouillon").eq("is_test", false).not("claim_email", "is", null).order("title"),
-    admin.from("listings").select(LISTING_SELECT).not("import_raw_data->>active_le", "is", null).eq("is_test", false).not("claim_email", "is", null),
-    admin.from("listing_invitations").select("claim_email, kind, sent_at, opened_at, claimed_at").in("kind", ["draft_invite", "draft_reminder_3", "draft_reminder_10"]),
-    admin.from("listing_import_queue").select("status, payload").in("status", ["pending", "rejected"]),
+  // Chaque lecture passe par tranches de 1000 (limite d'une requête Supabase) avec un tri complet par id : sans cela, les
+  // fiches au-delà de la 1000ᵉ (par ordre de titre) manquaient et leur propriétaire s'affichait « sans fiche ».
+  const [draftData, activeData, inviteData, queueData, notes, removed, due3, due10, stillWaiting] = await Promise.all([
+    fetchAllRows<ListingRow>((from, to) =>
+      admin.from("listings").select(LISTING_SELECT).eq("mode_publication", "brouillon").eq("is_test", false).not("claim_email", "is", null).order("title").order("id").range(from, to)
+    ),
+    fetchAllRows<ListingRow>((from, to) =>
+      admin.from("listings").select(LISTING_SELECT).not("import_raw_data->>active_le", "is", null).eq("is_test", false).not("claim_email", "is", null).order("id").range(from, to)
+    ),
+    fetchAllRows<{ claim_email: string; kind: string; sent_at: string; opened_at: string | null; claimed_at: string | null }>((from, to) =>
+      admin
+        .from("listing_invitations")
+        .select("claim_email, kind, sent_at, opened_at, claimed_at")
+        .in("kind", ["draft_invite", "draft_reminder_3", "draft_reminder_10"])
+        .order("claim_email")
+        .order("kind")
+        .range(from, to)
+    ),
+    // Seuls le mode et les adresses du lot sont lus (pas les photos du lot) : les lignes refusées s'accumulent
+    fetchAllRows<{ status: string; mode: string | null; e1: string | null; e2: string | null; e3: string | null; e4: string | null; e5: string | null }>((from, to) =>
+      admin
+        .from("listing_import_queue")
+        .select("status, mode:payload->>mode_publication, e1:payload->>claim_email, e2:payload->>courriel, e3:payload->>email, e4:payload->>courriel_contact, e5:payload->>contact_email")
+        .in("status", ["pending", "rejected"])
+        .order("id")
+        .range(from, to)
+    ).then((rows) =>
+      rows.map((r) => ({
+        status: r.status,
+        payload: { mode_publication: r.mode, claim_email: r.e1, courriel: r.e2, email: r.e3, courriel_contact: r.e4, contact_email: r.e5 },
+      }))
+    ),
     loadDraftNotes(admin),
     removedOwnerEmails(admin),
     listDraftCandidates(admin, "draft_reminder_3"),

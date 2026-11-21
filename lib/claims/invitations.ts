@@ -42,7 +42,8 @@ export type InvitationCandidate = {
 
 const LISTING_COLUMNS = "id, title, title_en, region, city, listing_number, custom_slug, claim_email, claim_language, claim_status";
 
-async function fetchAllRows<T>(build: (from: number, to: number) => PromiseLike<{ data: unknown; error: { message: string } | null }>): Promise<T[]> {
+// Une requête Supabase ne renvoie jamais plus de 1000 lignes : toute lecture « complète » passe par ici.
+export async function fetchAllRows<T>(build: (from: number, to: number) => PromiseLike<{ data: unknown; error: { message: string } | null }>): Promise<T[]> {
   const rows: T[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await build(from, from + 999);
