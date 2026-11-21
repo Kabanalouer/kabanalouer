@@ -39,6 +39,8 @@ export type DraftOwnerRow = {
   listings: DraftOwnerListing[];
   pendingImports: number;
   rejectedImports: number;
+  // Lignes de la file toujours « en attente » mais épuisées (5 essais ratés) : l'import ne se fera pas tout seul
+  stuckImports: number;
   invite: SentInfo | null;
   reminder3: SentInfo | null;
   reminder10: SentInfo | null;
@@ -82,6 +84,7 @@ export function deriveStatus(input: {
   listingCount: number;
   pendingImports: number;
   rejectedImports?: number;
+  stuckImports?: number;
   invited: boolean;
   anyActive: boolean;
   anyClaimed: boolean;
@@ -90,8 +93,8 @@ export function deriveStatus(input: {
   if (input.anyActive) return "actif";
   if (input.invited) return input.anyClaimed ? "revendique" : "invite";
   if (input.pendingImports > 0) return "import";
-  // Plus rien à importer et aucune fiche : tout a été refusé ou retiré (pas un import en cours)
-  if (input.listingCount === 0) return (input.rejectedImports ?? 0) > 0 ? "sans_fiche" : "import";
+  // Plus rien à importer et aucune fiche : tout a été refusé, retiré ou n'a pas marché (pas un import en cours)
+  if (input.listingCount === 0) return (input.rejectedImports ?? 0) > 0 || (input.stuckImports ?? 0) > 0 ? "sans_fiche" : "import";
   return "pret";
 }
 
@@ -175,6 +178,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
     const note = notes.get(email);
     const invite = sent("draft_invite");
     const pendingImports = stillWaiting.has(email) ? (pendingBy.get(email) ?? 1) : 0;
+    const stuckImports = stillWaiting.has(email) ? 0 : (pendingBy.get(email) ?? 0);
     out.push({
       email,
       lang: mine[0]?.claim_language === "en" ? "en" : "fr",
@@ -189,6 +193,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
       listings,
       pendingImports,
       rejectedImports: rejectedBy.get(email) ?? 0,
+      stuckImports,
       invite,
       reminder3: sent("draft_reminder_3"),
       reminder10: sent("draft_reminder_10"),
@@ -197,6 +202,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
         listingCount: listings.length,
         pendingImports,
         rejectedImports: rejectedBy.get(email) ?? 0,
+        stuckImports,
         invited: !!invite,
         anyActive: listings.some((l) => l.state === "en_ligne"),
         anyClaimed: listings.some((l) => l.state !== "brouillon"),

@@ -6,41 +6,23 @@ import DraftInvitationsClient from "@/components/admin/DraftInvitationsClient";
 export const metadata = { title: "Brouillons — Administration" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminDraftsPage() {
+export default async function AdminDraftsPage({ searchParams }: { searchParams: Promise<{ onglet?: string }> }) {
   await requireAdminPage();
-  // Rien à faire pour un propriétaire retiré ou sans aucune fiche (import refusé ou retiré) : pas de carte.
-  // Les données restent en base (exclusions d'envoi, file d'import) ; seul l'écran les masque.
-  const rows = (await listDraftOwners(adminSupabase())).filter((r) => r.status !== "retire" && r.status !== "sans_fiche");
-
-  const ready = rows.filter((r) => r.status === "pret").length;
-  const due = rows.filter((r) => r.due).length;
-  const invited = rows.filter((r) => r.invite).length;
-  const active = rows.filter((r) => r.status === "actif").length;
+  const { onglet } = await searchParams;
+  // Toutes les lignes sont gardées : chaque propriétaire tombe dans un onglet (« Problèmes » pour les imports qui n'ont pas
+  // marché, « Retirés » pour ceux qui ont demandé le retrait). Les données restent en base dans tous les cas.
+  const rows = await listDraftOwners(adminSupabase());
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-charcoal-800">Brouillons</h1>
         <p className="text-sm text-charcoal-400 mt-0.5">
           Fiches préparées pour des propriétaires de plusieurs chalets, hors ligne. Vérifiez les fiches et le courriel, puis cliquez sur « Envoyer » quand vous êtes prêt : rien ne part tout seul. Quand une relance est due, vous recevez un courriel.
         </p>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ["Prêts à envoyer", String(ready)],
-          ["Relances dues", String(due)],
-          ["Invités", String(invited)],
-          ["Activés", String(active)],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-2xl border border-[#ebebeb] bg-white p-4">
-            <p className="text-xs text-charcoal-400">{label}</p>
-            <p className="mt-1 text-xl font-semibold text-charcoal-800">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      <DraftInvitationsClient rows={rows} />
+      <DraftInvitationsClient rows={rows} initialTab={onglet ?? null} />
     </div>
   );
 }

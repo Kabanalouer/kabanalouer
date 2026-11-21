@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DraftOwnerRow, DraftOwnerStatus, DraftReminderKind, SentInfo } from "@/lib/claims/draftTable";
+import { DRAFT_TABS, DRAFT_TAB_INFO, draftTab, parseDraftTab, type DraftTab } from "@/lib/claims/draftTabs";
 
 // Table d'Admin → Brouillons : une carte par propriétaire. Rien ne part sans un clic ici, un courriel à la fois.
 
@@ -11,7 +12,7 @@ type Kind = "draft_invite" | DraftReminderKind;
 const STATUS_LABEL: Record<DraftOwnerStatus, { label: string; tone: string }> = {
   pret: { label: "Prêt à envoyer", tone: "bg-success-50 text-success-700" },
   import: { label: "Import en cours", tone: "bg-warning-50 text-warning-700" },
-  sans_fiche: { label: "Aucune fiche créée (import refusé ou retiré)", tone: "bg-charcoal-100 text-charcoal-600" },
+  sans_fiche: { label: "Aucune fiche créée (import refusé, retiré ou en échec)", tone: "bg-error-50 text-error-600" },
   invite: { label: "Invitation envoyée", tone: "bg-primary/10 text-primary" },
   revendique: { label: "Revendiquée, pas encore activée", tone: "bg-warning-50 text-warning-700" },
   actif: { label: "Activée", tone: "bg-success-50 text-success-700" },
@@ -230,6 +231,11 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
             {row.pendingImports} fiche{row.pendingImports > 1 ? "s" : ""} encore en cours d’import (une toutes les 5 minutes). L’invitation sera possible quand tout sera importé.
           </p>
         )}
+        {row.stuckImports > 0 && (
+          <p className="mt-2 text-sm font-medium text-error-600">
+            {row.stuckImports} fiche{row.stuckImports > 1 ? "s" : ""} n’a pas pu être importée{row.stuckImports > 1 ? "s" : ""} après plusieurs essais (voir Admin, Invitations, file d’import, pour l’erreur).
+          </p>
+        )}
         {row.rejectedImports > 0 && (
           <p className="mt-2 text-sm text-charcoal-500">
             {row.rejectedImports} ligne{row.rejectedImports > 1 ? "s" : ""} de la file d’import refusée{row.rejectedImports > 1 ? "s" : ""} ou en pause, non comptée{row.rejectedImports > 1 ? "s" : ""} dans les fiches ci-dessus (détail dans Admin, Invitations, file d’import).
@@ -436,7 +442,36 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   );
 }
 
-export default function DraftInvitationsClient({ rows }: { rows: DraftOwnerRow[] }) {
+export default function DraftInvitationsClient({ rows, initialTab }: { rows: DraftOwnerRow[]; initialTab: string | null }) {
+  const byTab = useMemo(() => {
+    const map = new Map<DraftTab, DraftOwnerRow[]>(DRAFT_TABS.map((t) => [t, []]));
+    for (const r of rows) map.get(draftTab(r))?.push(r);
+    return map;
+  }, [rows]);
+  const count = (t: DraftTab) => byTab.get(t)?.length ?? 0;
+
+  // Onglet de départ : celui de l'adresse, sinon le premier où il y a quelque chose à faire
+  const [tab, setTab] = useState<DraftTab>(() => parseDraftTab(initialTab) ?? DRAFT_TABS.find((t) => (t === "invitations" || t === "relances") && count(t) > 0) ?? "ouverts");
+  const [search, setSearch] = useState("");
+
+  function chooseTab(t: DraftTab) {
+    setTab(t);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("onglet", t);
+      window.history.replaceState(null, "", url);
+    } catch {
+      // L'adresse n'est qu'un confort (retrouver l'onglet après un rechargement)
+    }
+  }
+
+  const q = search.trim().toLowerCase();
+  const matches = (r: DraftOwnerRow) => r.email.toLowerCase().includes(q) || r.displayName.toLowerCase().includes(q) || r.listings.some((l) => l.title.toLowerCase().includes(q));
+  const list = (byTab.get(tab) ?? []).filter((r) => !q || matches(r));
+  // Une recherche regarde tous les onglets : on montre où se trouvent les autres résultats
+  const elsewhere = q ? DRAFT_TABS.filter((t) => t !== tab && (byTab.get(t) ?? []).some(matches)) : [];
+  const info = DRAFT_TAB_INFO[tab];
+
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-[#ebebeb] bg-white p-8 text-center text-sm text-charcoal-400">
@@ -444,11 +479,83 @@ export default function DraftInvitationsClient({ rows }: { rows: DraftOwnerRow[]
       </div>
     );
   }
+
   return (
-    <ul className="space-y-4">
-      {rows.map((row) => (
-        <OwnerCard key={row.email} row={row} />
-      ))}
-    </ul>
+    <div>
+      <div role="tablist" aria-label="Brouillons" className="mb-4 flex flex-wrap gap-2">
+        {DRAFT_TABS.map((t) => {
+          const n = count(t);
+          const active = tab === t;
+          // « À envoyer » en accent quand il y a du travail : seules ces deux pastilles demandent un geste de Simon
+          const todo = (t === "invitations" || t === "relances") && n > 0;
+          return (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => chooseTab(t)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                active ? "border-charcoal-800 bg-charcoal-800 text-white" : "border-[#ebebeb] bg-white text-charcoal-700 hover:border-charcoal-300"
+              }`}
+            >
+              {DRAFT_TAB_INFO[t].label}{" "}
+              <span
+                className={
+                  active ? "text-white/70" : todo ? "rounded-full bg-accent px-1.5 py-0.5 text-xs font-semibold text-white" : "text-charcoal-400"
+                }
+              >
+                {n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nom, courriel ou chalet…"
+            aria-label="Rechercher un propriétaire"
+            className="rounded-full border border-[#ebebeb] bg-white py-1.5 pl-9 pr-4 text-base text-charcoal-700 placeholder-charcoal-300 hover:border-charcoal-300 focus:border-primary focus:outline-none"
+          />
+        </div>
+        <span className="text-xs text-charcoal-400">
+          {list.length} propriétaire{list.length > 1 ? "s" : ""}
+        </span>
+      </div>
+
+      <p className="mb-4 text-sm text-charcoal-500">{info.hint}</p>
+
+      {elsewhere.length > 0 && (
+        <p className="mb-4 text-sm text-charcoal-500">
+          Aussi trouvé dans :{" "}
+          {elsewhere.map((t, i) => (
+            <span key={t}>
+              {i > 0 && ", "}
+              <button type="button" onClick={() => chooseTab(t)} className="font-medium text-primary hover:underline">
+                {DRAFT_TAB_INFO[t].label}
+              </button>
+            </span>
+          ))}
+        </p>
+      )}
+
+      {list.length === 0 ? (
+        <div className="rounded-2xl border border-[#ebebeb] bg-white p-8 text-center text-sm text-charcoal-400">{q ? "Aucun résultat dans cet onglet." : info.empty}</div>
+      ) : (
+        <ul className="space-y-4">
+          {list.map((row) => (
+            <OwnerCard key={row.email} row={row} />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
