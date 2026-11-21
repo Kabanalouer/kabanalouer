@@ -8,8 +8,9 @@ import { loadDraftInvitationBase, type DraftInvitationKind } from "@/lib/emails/
 export const maxDuration = 60;
 
 // Invitations et relances brouillon, envoyées à la main depuis Admin → Brouillons (admin seulement).
-// Un courriel par clic : aucun envoi automatique, aucun « tout envoyer ». La clé unique de listing_invitations
-// (adresse + type) empêche un double envoi même si deux clics arrivent en même temps.
+// Un courriel par appel, toujours déclenché par un admin : aucun envoi automatique. « Tout envoyer » (Admin → Brouillons)
+// rappelle simplement l'action « send » une adresse à la fois : chaque envoi repasse par les mêmes contrôles. La clé unique
+// de listing_invitations (adresse + type) empêche un double envoi même si deux clics arrivent en même temps.
 
 const KINDS: DraftInvitationKind[] = ["draft_invite", "draft_reminder_3", "draft_reminder_10"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

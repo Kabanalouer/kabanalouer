@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DraftOwnerRow, DraftOwnerStatus, DraftReminderKind, SentInfo } from "@/lib/claims/draftTable";
 import { DRAFT_TABS, DRAFT_TAB_INFO, draftTab, parseDraftTab, type DraftTab } from "@/lib/claims/draftTabs";
@@ -453,6 +453,49 @@ export default function DraftInvitationsClient({ rows, initialTab }: { rows: Dra
   // Onglet de départ : celui de l'adresse, sinon le premier où il y a quelque chose à faire
   const [tab, setTab] = useState<DraftTab>(() => parseDraftTab(initialTab) ?? DRAFT_TABS.find((t) => (t === "invitations" || t === "relances") && count(t) > 0) ?? "ouverts");
   const [search, setSearch] = useState("");
+  const router = useRouter();
+  const [bulk, setBulk] = useState<{ running: boolean; done: number; total: number; sent: number; skipped: number; failed: string[]; stopped: boolean } | null>(null);
+  const stopRef = useRef(false);
+
+  // « Tout envoyer » : rejoue l'envoi d'une carte, un propriétaire à la fois, avec les mêmes contrôles côté serveur
+  // (prêt, relance due, pas déjà envoyé). Les textes non enregistrés d'une carte ne sont pas envoyés.
+  async function sendAll(targets: DraftOwnerRow[]) {
+    const kindOf = (r: DraftOwnerRow): Kind | null => (tab === "invitations" ? "draft_invite" : r.due);
+    const what = tab === "invitations" ? "l’invitation" : "la relance";
+    if (
+      !window.confirm(
+        `Envoyer ${what} à ${targets.length} propriétaire${targets.length > 1 ? "s" : ""} ?\n\nLes courriels partent tout de suite, un à la fois, depuis info@kabanalouer.ca. Le texte enregistré de chaque propriétaire est utilisé (un texte modifié dans une carte mais pas enregistré n’est pas envoyé). Vous pouvez arrêter en cours de route.`
+      )
+    )
+      return;
+    stopRef.current = false;
+    const state = { running: true, done: 0, total: targets.length, sent: 0, skipped: 0, failed: [] as string[], stopped: false };
+    setBulk({ ...state });
+    for (const row of targets) {
+      if (stopRef.current) {
+        state.stopped = true;
+        break;
+      }
+      const kind = kindOf(row);
+      if (!kind) {
+        state.skipped += 1;
+      } else {
+        try {
+          const res = await fetch("/api/admin/draft-invitations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "send", email: row.email, kind }) });
+          if (res.ok) state.sent += 1;
+          else if (res.status === 409) state.skipped += 1; // déjà envoyé ou plus à envoyer : rien n'est parti
+          else state.failed.push(row.displayName || row.email);
+        } catch {
+          state.failed.push(row.displayName || row.email);
+        }
+      }
+      state.done += 1;
+      setBulk({ ...state, failed: [...state.failed] });
+      await new Promise((r) => setTimeout(r, 700));
+    }
+    setBulk({ ...state, running: false, failed: [...state.failed] });
+    router.refresh();
+  }
 
   function chooseTab(t: DraftTab) {
     setTab(t);
@@ -529,7 +572,43 @@ export default function DraftInvitationsClient({ rows, initialTab }: { rows: Dra
         <span className="text-xs text-charcoal-400">
           {list.length} propriétaire{list.length > 1 ? "s" : ""}
         </span>
+        {(tab === "invitations" || tab === "relances") && list.length > 0 && !bulk?.running && (
+          <button
+            type="button"
+            onClick={() => sendAll(list)}
+            className="ml-auto rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+          >
+            Tout envoyer ({list.length})
+          </button>
+        )}
       </div>
+
+      {bulk && (
+        <div className="mb-4 rounded-xl border border-[#ebebeb] bg-charcoal-50 p-3 text-sm text-charcoal-700" role="status">
+          {bulk.running ? (
+            <div className="flex items-center justify-between gap-3">
+              <span>
+                Envoi en cours : {bulk.done} sur {bulk.total}. Ne fermez pas la page.
+              </span>
+              <button type="button" onClick={() => (stopRef.current = true)} className="font-medium text-primary hover:underline">
+                Arrêter
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-start justify-between gap-3">
+              <span>
+                {bulk.stopped ? "Arrêté : " : "Terminé : "}
+                {bulk.sent} envoyé{bulk.sent > 1 ? "s" : ""}
+                {bulk.skipped > 0 ? `, ${bulk.skipped} ignoré${bulk.skipped > 1 ? "s" : ""} (déjà envoyé ou plus à envoyer)` : ""}
+                {bulk.failed.length > 0 ? `, ${bulk.failed.length} en échec, rien n’est parti pour : ${bulk.failed.join(", ")}` : ""}.
+              </span>
+              <button type="button" onClick={() => setBulk(null)} className="shrink-0 text-charcoal-500 hover:text-charcoal-800">
+                Fermer
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <p className="mb-4 text-sm text-charcoal-500">{info.hint}</p>
 
