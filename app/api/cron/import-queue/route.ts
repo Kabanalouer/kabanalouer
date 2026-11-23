@@ -6,7 +6,7 @@ export const maxDuration = 300;
 
 // On ne commence plus de nouvelle fiche passé ce délai (une fiche = téléchargement et
 // ré-encodage des photos + appels à l'IA, de 30 s à 1 min).
-const START_BUDGET_MS = 200_000;
+const START_BUDGET_MS = 150_000;
 
 // GET — appelé par le cron Vercel (toutes les 5 minutes) : transforme les lignes
 // 'pending' de listing_import_queue en fiches non revendiquées, non publiées, détenues

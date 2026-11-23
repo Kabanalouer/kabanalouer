@@ -34,11 +34,11 @@ const MAX_PHOTOS = 40;
 const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const MIN_PHOTO_WIDTH = 400;
 const MAX_ATTEMPTS = 3;
-// Une fiche par passage : vérifier les filigranes et agrandir une trentaine de photos prend
-// plusieurs minutes (le cron tourne toutes les 5 minutes). Ne pas raccourcir : la ligne reste
-// « pending » pendant le traitement et `attempts` sert à la fois de compteur d'échecs et de
-// verrou, donc un passage plus rapproché que la durée d'une fiche la retraiterait en double.
-export const IMPORT_BATCH_SIZE = 1;
+// Jusqu'à 4 fiches par passage (2026-11-23, demande de Simon : file d'attente trop longue). Le cron
+// s'arrête d'en commencer une nouvelle passé START_BUDGET_MS : la limite de la fonction est de 300 s.
+// La ligne reste « pending » pendant le traitement et `attempts` sert à la fois de compteur d'échecs
+// et de verrou : un passage ne doit donc jamais déborder sur le suivant (toutes les 5 minutes).
+export const IMPORT_BATCH_SIZE = 4;
 
 type Admin = SupabaseClient;
 
