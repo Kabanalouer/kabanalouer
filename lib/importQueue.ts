@@ -323,6 +323,8 @@ async function readCapped(res: Response, max: number): Promise<Buffer | null> {
   return Buffer.concat(chunks);
 }
 
+const BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+
 // Téléchargement d'une photo d'un site tiers : https seulement, nom de domaine vérifié,
 // redirections suivies à la main (3 au plus) en revérifiant chaque étape, taille plafonnée
 // pendant le téléchargement. Jamais une adresse interne.
@@ -330,7 +332,8 @@ export async function fetchPublicImage(url: string): Promise<Buffer | null> {
   let current = url;
   for (let hop = 0; hop <= 3; hop++) {
     if (!isSafeImageUrl(current) || !(await assertPublicHost(new URL(current).hostname))) return null;
-    const res = await fetch(current, { redirect: "manual", signal: AbortSignal.timeout(20000) });
+    // Certains pare-feu (condosmontsvalin.com : 405/202) refusent un client sans User-Agent de navigateur.
+    const res = await fetch(current, { redirect: "manual", signal: AbortSignal.timeout(20000), headers: { "User-Agent": BROWSER_USER_AGENT, Accept: "image/avif,image/webp,image/*,*/*;q=0.8" } });
     if (res.status >= 300 && res.status < 400) {
       const location = res.headers.get("location");
       if (!location) return null;

@@ -70,7 +70,15 @@ export async function GET(request: NextRequest) {
       const newPath = `${listing.host_id}/${fileName}`;
       const { error: moveError } = await admin.storage.from(BUCKET).move(path, newPath);
       // Déjà présent à destination (nom déterministe, même contenu) : l'adresse peut être réécrite.
-      if (moveError && !/already exists|duplicate/i.test(moveError.message)) {
+      // « Object not found » : le fichier a déjà été déplacé (une sauvegarde du proprio avec l'ancienne liste de
+      // photos a pu remettre l'ancienne adresse) : s'il est bien à destination, on réécrit l'adresse au lieu de
+      // refaire l'échec toutes les 10 minutes.
+      let alreadyMoved = false;
+      if (moveError && /not found/i.test(moveError.message)) {
+        const { data: found } = await admin.storage.from(BUCKET).list(listing.host_id, { search: fileName, limit: 5 });
+        alreadyMoved = (found ?? []).some((f) => f.name === fileName);
+      }
+      if (moveError && !alreadyMoved && !/already exists|duplicate/i.test(moveError.message)) {
         console.error("[cron move-claimed-photos] échec du déplacement", moveError.message, path);
         failed++;
         continue;
