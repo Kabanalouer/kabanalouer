@@ -19,9 +19,26 @@ export type DraftNote = {
   cc_email: string | null;
   reminder_3_notified_at: string | null;
   reminder_10_notified_at: string | null;
+  // Date du clic « Retirer » (Admin → Brouillons) : plus d'invitation ni de relance pour cette adresse
+  contact_stopped_at: string | null;
 };
 
-const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, custom_subject, custom_greeting, custom_heading, custom_body, cc_email, reminder_3_notified_at, reminder_10_notified_at";
+const NOTE_COLUMNS = "claim_email, intro_fr, intro_en, site_url, display_name, custom_subject, custom_greeting, custom_heading, custom_body, cc_email, reminder_3_notified_at, reminder_10_notified_at, contact_stopped_at";
+
+// Adresses retirées des envois par un admin (bouton « Retirer »)
+export async function stoppedContactEmails(admin: AdminClient): Promise<Set<string>> {
+  const { data, error } = await admin.from("draft_invitation_notes").select("claim_email").not("contact_stopped_at", "is", null);
+  if (error) console.error("[draftNotes] adresses retirées", error.message);
+  return new Set(((data ?? []) as { claim_email: string }[]).map((r) => r.claim_email.trim().toLowerCase()));
+}
+
+// « Retirer » (stopped = true) ou « Rétablir » (false) : l'adresse n'est jamais supprimée, seulement exclue des envois
+export async function setContactStopped(admin: AdminClient, email: string, stopped: boolean): Promise<{ error: string | null }> {
+  const { error } = await admin
+    .from("draft_invitation_notes")
+    .upsert({ claim_email: email.trim().toLowerCase(), contact_stopped_at: stopped ? new Date().toISOString() : null, updated_at: new Date().toISOString() }, { onConflict: "claim_email" });
+  return { error: error ? error.message : null };
+}
 
 // Personne en copie des courriels de brouillon (invitation et relances) : un seul courriel valide, en minuscules, sinon rien.
 export function cleanCcEmail(value: unknown): string | null {

@@ -45,8 +45,8 @@ export const DRAFT_TAB_INFO: Record<DraftTab, { label: string; hint: string; emp
   },
   retires: {
     label: "Retirés",
-    hint: "Le propriétaire a demandé le retrait de ses fiches : on ne lui écrit plus.",
-    empty: "Aucun propriétaire n’a demandé le retrait.",
+    hint: "Le propriétaire a demandé le retrait de ses fiches, ou vous l’avez retiré des envois (bouton « Retirer ») : on ne lui écrit plus. « Rétablir » remet l’adresse dans les envois.",
+    empty: "Aucun propriétaire retiré.",
   },
 };
 

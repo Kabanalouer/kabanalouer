@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase } from "@/lib/sendMessage";
 import { listDraftCandidates, previewDraftInvitation, sendDraftInvitation, type DraftCandidate } from "@/lib/claims/invitations";
+import { setContactStopped } from "@/lib/claims/draftNotes";
 import { cleanCustomBody, cleanCustomGreeting, cleanCustomHeading, cleanCustomSubject, cleanDisplayName, cleanIntro, saveDraftNote } from "@/lib/claims/draftNotes";
 import { loadDraftInvitationBase, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 
@@ -37,6 +38,17 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const email = readEmail(body.email);
   const kind = body.kind as DraftInvitationKind;
+
+  // « Retirer » : l'adresse ne reçoit plus ni invitation ni relance (rien n'est supprimé) ; « Rétablir » l'annule
+  if (email && (body.action === "stop" || body.action === "resume")) {
+    const { error } = await setContactStopped(adminSupabase(), email, body.action === "stop");
+    if (error) {
+      console.error("[admin draft-invitations] retrait", error);
+      return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   if (!email || !KINDS.includes(kind)) return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
   const admin = adminSupabase();
 

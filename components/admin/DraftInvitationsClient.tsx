@@ -50,7 +50,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
   // Une fois l'invitation envoyée (ou le propriétaire retiré), la carte est pliée : seul le statut reste visible. Une relance due la garde ouverte.
   const [open, setOpen] = useState(() => !(row.invite || row.status === "retire") || !!row.due);
 
-  const status = STATUS_LABEL[row.status];
+  const status = row.stopped ? { label: "Retiré des envois", tone: "bg-charcoal-100 text-charcoal-600" } : STATUS_LABEL[row.status];
   const incomplete = row.listings.some((l) => l.issues.length > 0 && l.state === "brouillon");
 
   async function call(method: "POST" | "PUT", body: Record<string, unknown>): Promise<{ ok: boolean; data: Record<string, unknown> }> {
@@ -140,6 +140,18 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
     if (!res.ok) return setMessage({ ok: false, text: String(res.data.error ?? "Échec de l’envoi") });
     setMessage({ ok: true, text: "Envoyé." });
     setPreview(null);
+    setOpen(false);
+    router.refresh();
+  }
+
+  // « Retirer » : plus aucune invitation ni relance pour cette adresse (rien n'est supprimé) ; « Rétablir » l'annule
+  async function stop(stopped: boolean) {
+    if (stopped && !window.confirm(`Retirer ${row.email} des envois ?\n\nAucune invitation ni relance ne lui sera envoyée, « Tout envoyer » compris. Vous pourrez le rétablir.`)) return;
+    setBusy("stop");
+    setMessage(null);
+    const res = await call("POST", { action: stopped ? "stop" : "resume", email: row.email });
+    setBusy(null);
+    if (!res.ok) return setMessage({ ok: false, text: String(res.data.error ?? "Échec") });
     setOpen(false);
     router.refresh();
   }
@@ -416,6 +428,26 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                 {busy === `send-${row.due}` ? "Envoi…" : `Envoyer la relance ${dueLabel}`}
               </button>
             </>
+          )}
+          {(row.status === "pret" || row.due) && !row.stopped && (
+            <button
+              type="button"
+              onClick={() => stop(true)}
+              disabled={busy !== null}
+              className="rounded-full border border-error-600/30 bg-white px-4 py-2 text-sm font-medium text-error-600 hover:bg-error-50 disabled:text-charcoal-400 transition-colors"
+            >
+              {busy === "stop" ? "Retrait…" : "Retirer"}
+            </button>
+          )}
+          {row.stopped && (
+            <button
+              type="button"
+              onClick={() => stop(false)}
+              disabled={busy !== null}
+              className="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-charcoal-700 hover:border-charcoal-400 disabled:text-charcoal-400 transition-colors"
+            >
+              {busy === "stop" ? "Rétablissement…" : "Rétablir"}
+            </button>
           )}
         </div>
 

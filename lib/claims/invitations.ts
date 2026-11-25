@@ -5,7 +5,7 @@ import { sendClaimInvitationEmail } from "@/lib/emails/claimInvitation";
 import { sendDraftInvitationEmail, type DraftInvitationKind } from "@/lib/emails/draftInvitation";
 import { buildListingPath } from "@/lib/listingUrl";
 import { localePath } from "@/lib/localePath";
-import { loadDraftNote } from "@/lib/claims/draftNotes";
+import { loadDraftNote, stoppedContactEmails } from "@/lib/claims/draftNotes";
 import { SITE_URL } from "@/lib/siteUrl";
 
 // Invitations à revendiquer, envoyées chaque jour par le cron send-invitations ou à la main depuis
@@ -270,7 +270,8 @@ async function draftListings(admin: AdminClient, testMode: boolean, claimStatus:
 // À relancer : invitée (draft_invite) depuis la durée voulue, aucune fiche activée, pas déjà relancée à ce moment-là, au
 // moins une fiche encore en brouillon (non revendiquée, ou revendiquée mais pas activée : le bouton mène alors au tableau de bord).
 export async function listDraftCandidates(admin: AdminClient, kind: DraftInvitationKind, testMode = false): Promise<DraftCandidate[]> {
-  const removed = testMode ? new Set<string>() : await removedOwnerEmails(admin);
+  // Propriétaire qui a retiré ses fiches, ou adresse retirée des envois par un admin (bouton « Retirer »)
+  const removed = testMode ? new Set<string>() : new Set<string>([...(await removedOwnerEmails(admin)), ...(await stoppedContactEmails(admin))]);
   const keep = (rows: Row[]) => rows.filter((r) => !removed.has(r.claim_email.trim().toLowerCase()));
   const unclaimed = keep(await draftListings(admin, testMode, "unclaimed"));
   const claimedRows = keep(await draftListings(admin, testMode, "claimed"));

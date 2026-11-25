@@ -46,6 +46,8 @@ export type DraftOwnerRow = {
   reminder10: SentInfo | null;
   status: DraftOwnerStatus;
   due: DraftReminderKind | null;
+  // Retiré des envois par un admin (bouton « Retirer ») : aucune invitation ni relance, « Rétablir » possible
+  stopped: boolean;
 };
 
 type ListingRow = {
@@ -225,7 +227,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
       reminder3: sent("draft_reminder_3"),
       reminder10: sent("draft_reminder_10"),
       status: deriveStatus({
-        removed: removed.has(email),
+        removed: removed.has(email) || !!note?.contact_stopped_at,
         listingCount: listings.length,
         pendingImports,
         rejectedImports: rejectedBy.get(email) ?? 0,
@@ -235,6 +237,7 @@ export async function listDraftOwners(admin: AdminClient): Promise<DraftOwnerRow
         anyClaimed: listings.some((l) => l.state !== "brouillon"),
       }),
       due: dueBy.get(email) ?? null,
+      stopped: !!note?.contact_stopped_at,
     });
   }
 
