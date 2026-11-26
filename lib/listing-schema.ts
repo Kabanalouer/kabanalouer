@@ -55,28 +55,10 @@ export interface ListingSchemaInput {
 export function buildListingJsonLd(input: ListingSchemaInput): Record<string, unknown> {
   const isEn = input.locale === "en";
 
-  // Google (VacationRental) exige l'heure d'arrivée et de départ dans l'offre, au format HH:MM:SS :
-  // sans l'une des deux, ou sans prix (« Prix sur demande »), aucune offre n'est déclarée plutôt qu'une offre invalide.
+  // Google (VacationRental) : heures d'arrivée et de départ directement sur la fiche, au format HH:MM:SS.
+  // Le format n'accepte ni offre (makesOffer) ni prix : le prix reste affiché sur la page seulement.
   const checkin = toSchemaTime(input.checkinTime);
   const checkout = toSchemaTime(input.checkoutTime);
-  const makesOffer = !input.priceOnRequest && input.priceLow > 0 && checkin && checkout
-    ? {
-        "@type": "Offer",
-        priceSpecification: {
-          "@type": "UnitPriceSpecification",
-          price: input.priceLow,
-          priceCurrency: "CAD",
-          unitCode: "DAY",
-        },
-        checkinTime: checkin,
-        checkoutTime: checkout,
-      }
-    : null;
-  const priceRange = makesOffer
-    ? isEn
-      ? `$${input.priceLow}${input.priceHigh > input.priceLow ? `–$${input.priceHigh}` : "+"} CAD per night`
-      : `${input.priceLow}${input.priceHigh > input.priceLow ? `\u00a0$ – ${input.priceHigh}` : ""}\u00a0$ CAD par nuit`
-    : null;
 
   // Le logement lui-même (chambres, capacité, équipements) : VacationRental
   // le place dans containsPlace, pas à la racine.
@@ -160,7 +142,6 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     ],
     // Google exige une chaîne ; le numéro CITQ reste disponible dans additionalProperty
     identifier: input.id,
-    ...(makesOffer ? { makesOffer, priceRange } : {}),
     ...(input.reviewCount >= MIN_REVIEWS_FOR_RATING
       ? {
           aggregateRating: {
