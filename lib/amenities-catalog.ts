@@ -67,9 +67,12 @@ export interface AmenityValue {
   details?: Record<string, unknown>;
 }
 
-// Détails posés d'emblée quand un équipement est ajouté (décision de Simon, 2026-11-26) : spa, sauna et piscines
+// Détails posés d'emblée quand un équipement est ajouté (décision de Simon, 2026-11-26) : ces équipements
 // sont privés tant que le proprio ne choisit pas « Partagé ». Partagé par l'import et le sélecteur du tableau de bord.
-const PRIVATE_BY_DEFAULT = new Set(["spa", "sauna", "piscine-interieure", "piscine-exterieure"]);
+const PRIVATE_BY_DEFAULT = new Set([
+  "spa", "sauna", "piscine-interieure", "piscine-exterieure",
+  "table-billard", "babyfoot", "table-ping-pong", "arcades", "bbq", "buanderie", "espace-travail", "quai", "acces-lac",
+]);
 export function defaultAmenityDetails(id: string): Record<string, unknown> {
   return PRIVATE_BY_DEFAULT.has(id) ? { acces: "Privé" } : {};
 }
