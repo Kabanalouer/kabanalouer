@@ -307,6 +307,8 @@ export default async function ListingDetail({ listing, user, searchParams, local
   // auto-servants). Le seuil minimal est appliqué dans buildListingJsonLd.
   const schemaReviews = reviews.filter((r) => r.author_id !== listing.host_id);
   const schemaInput = {
+    id: String(listing.id),
+    bedCount: totalBeds,
     title: displayTitle,
     description: displayDescription ?? null,
     photoUrls: photos.map((p) => p.url),

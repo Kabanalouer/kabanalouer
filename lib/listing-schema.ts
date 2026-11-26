@@ -13,7 +13,15 @@ import { accessibilityFeatureLabel, accessibleLabel, type AccessibilityInfo } fr
 // partir de quelques avis (elle reste toujours affichée sur la fiche).
 const MIN_REVIEWS_FOR_RATING = 3;
 
+// « 15:00 » ou « 15:00:00 » → « 15:00:00 » ; tout autre format est ignoré (jamais une valeur invalide).
+function toSchemaTime(value: string | null): string | null {
+  const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec((value ?? "").trim());
+  if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) return null;
+  return `${m[1].padStart(2, "0")}:${m[2]}:${m[3] ?? "00"}`;
+}
+
 export interface ListingSchemaInput {
+  id: string;
   title: string;
   description: string | null;
   photoUrls: string[];
@@ -31,6 +39,7 @@ export interface ListingSchemaInput {
   locale: string;
   // null = inconnu (fiche importée) : le champ est omis du JSON-LD, jamais inventé
   bedroomCount: number | null;
+  bedCount: number | null;
   bathrooms: number | null;
   capacity: number | null;
   dogPolicy: DogPolicy;
@@ -46,18 +55,21 @@ export interface ListingSchemaInput {
 export function buildListingJsonLd(input: ListingSchemaInput): Record<string, unknown> {
   const isEn = input.locale === "en";
 
-  // « Prix sur demande » : aucune offre déclarée plutôt qu'une offre sans prix
-  const makesOffer = !input.priceOnRequest && input.priceLow > 0
+  // Google (VacationRental) exige l'heure d'arrivée et de départ dans l'offre, au format HH:MM:SS :
+  // sans l'une des deux, ou sans prix (« Prix sur demande »), aucune offre n'est déclarée plutôt qu'une offre invalide.
+  const checkin = toSchemaTime(input.checkinTime);
+  const checkout = toSchemaTime(input.checkoutTime);
+  const makesOffer = !input.priceOnRequest && input.priceLow > 0 && checkin && checkout
     ? {
         "@type": "Offer",
         priceSpecification: {
           "@type": "UnitPriceSpecification",
           price: input.priceLow,
-          ...(input.priceHigh > input.priceLow ? { minPrice: input.priceLow, maxPrice: input.priceHigh } : {}),
           priceCurrency: "CAD",
           unitCode: "DAY",
-          unitText: isEn ? "night" : "nuit",
         },
+        checkinTime: checkin,
+        checkoutTime: checkout,
       }
     : null;
   const priceRange = makesOffer
@@ -74,8 +86,9 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     ...(input.bedroomCount !== null ? { numberOfBedrooms: input.bedroomCount } : {}),
     ...(input.bathrooms !== null ? { numberOfBathroomsTotal: input.bathrooms } : {}),
     ...(input.capacity !== null
-      ? { occupancy: { "@type": "QuantitativeValue", maxValue: input.capacity, unitText: isEn ? "people" : "personnes" } }
+      ? { occupancy: { "@type": "QuantitativeValue", value: input.capacity } }
       : {}),
+    ...(input.bedCount !== null && input.bedCount > 0 ? { bed: { "@type": "BedDetails", numberOfBeds: input.bedCount } } : {}),
     ...(input.dogsKnown ? { petsAllowed: input.dogPolicy.allowed } : {}),
     amenityFeature: [
       ...(input.accessibility.accessible
@@ -124,8 +137,8 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     ...(input.latitude && input.longitude
       ? { latitude: input.latitude, longitude: input.longitude, geo: { "@type": "GeoCoordinates", latitude: input.latitude, longitude: input.longitude } }
       : {}),
-    ...(input.checkinTime ? { checkinTime: input.checkinTime } : {}),
-    ...(input.checkoutTime ? { checkoutTime: input.checkoutTime } : {}),
+    ...(checkin ? { checkinTime: checkin } : {}),
+    ...(checkout ? { checkoutTime: checkout } : {}),
     containsPlace: accommodation,
     // petsAllowed (aussi dans containsPlace) reste booléen ; seuls les
     // chiens sont acceptés sur Kabanalouer, précisé avec les détails dans
@@ -135,6 +148,7 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
     // additionalProperty (mécanisme d'extension générique) plutôt qu'inventé
     // comme propriété directe. Omis quand l'information est inconnue.
     additionalProperty: [
+      ...(input.citqNumber ? [{ "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber }] : []),
       ...(input.smokingAllowed !== null
         ? [{
             "@type": "PropertyValue",
@@ -144,9 +158,8 @@ export function buildListingJsonLd(input: ListingSchemaInput): Record<string, un
         : []),
       ...(input.dogsKnown ? buildDogProperties(input.dogPolicy, input.locale) : []),
     ],
-    ...(input.citqNumber
-      ? { identifier: { "@type": "PropertyValue", propertyID: "CITQ", value: input.citqNumber } }
-      : {}),
+    // Google exige une chaîne ; le numéro CITQ reste disponible dans additionalProperty
+    identifier: input.id,
     ...(makesOffer ? { makesOffer, priceRange } : {}),
     ...(input.reviewCount >= MIN_REVIEWS_FOR_RATING
       ? {
