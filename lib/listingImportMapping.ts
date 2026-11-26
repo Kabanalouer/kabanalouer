@@ -8,7 +8,7 @@
 // qui ne matche rien est conservé dans `rawAmenities`/`rawRegionCandidate`
 // pour révision admin plutôt que d'être perdu silencieusement.
 
-import { AMENITY_CATALOG, type AmenityValue } from "@/lib/amenities-catalog";
+import { AMENITY_CATALOG, defaultAmenityDetails, type AmenityValue } from "@/lib/amenities-catalog";
 import { REGIONS } from "@/lib/regions";
 import { truncateToLastWord } from "@/lib/aiText";
 import { slugify } from "@/lib/slugify";
@@ -131,7 +131,7 @@ export function matchAmenities(rawLabels: string[]): { matched: AmenityValue[]; 
     if (!found) unmatched.push(raw);
   }
 
-  return { matched: Array.from(matchedIds).map((id) => ({ id, details: {} })), unmatched };
+  return { matched: Array.from(matchedIds).map((id) => ({ id, details: defaultAmenityDetails(id) })), unmatched };
 }
 
 export function matchRegion(candidate: string | null): string | null {

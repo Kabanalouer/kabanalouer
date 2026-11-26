@@ -6,6 +6,7 @@ import AmenityIcon from "@/components/AmenityIcon";
 import {
   AMENITY_CATALOG,
   AMENITY_CATEGORIES,
+  defaultAmenityDetails,
   getAmenityCatalogEntry,
   summarizeAmenityDetails,
   type AmenityValue,
@@ -402,7 +403,7 @@ export default function AmenitiesPicker({
 
   const selectedIds = new Set(selected.map((a) => a.id));
 
-  const addAmenity = (id: string) => onChange([...selected, { id, details: {} }]);
+  const addAmenity = (id: string) => onChange([...selected, { id, details: defaultAmenityDetails(id) }]);
   // Retire toutes les entrées de cet id — utilisé par le bouton coché de la
   // colonne droite (toggle global d'un équipement du catalogue).
   const removeAllOfId = (id: string) => onChange(selected.filter((a) => a.id !== id));
