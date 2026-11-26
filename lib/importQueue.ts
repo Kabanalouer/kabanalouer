@@ -894,8 +894,9 @@ export async function importQueueRow(admin: Admin, row: QueueRow, systemId: stri
       // Inconnu = NULL (jamais les valeurs par défaut de la base : la fiche masque ce qui est vide)
       dogs_allowed: d.dogsAllowed,
       smoking_allowed: d.smokingAllowed,
-      checkin_time: d.checkinTime,
-      checkout_time: d.checkoutTime,
+      // Heures par défaut (décision de Simon, 2026-11-26) quand la source n'en donne pas ; le propriétaire peut les changer
+      checkin_time: d.checkinTime ?? "16:00",
+      checkout_time: d.checkoutTime ?? "11:00",
       checkin_type: null,
       min_age: null,
       price_low: d.priceLow,
