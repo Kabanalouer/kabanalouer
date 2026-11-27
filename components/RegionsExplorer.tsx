@@ -39,15 +39,16 @@ export default async function RegionsExplorer() {
       <Link
         key={r.slug}
         href={isEn ? `/en/cabins/${r.slugEn}` : `/chalets/${r.slug}`}
-        className="group relative block aspect-[4/3] rounded-2xl overflow-hidden"
+        className="group relative block aspect-[4/5] rounded-[var(--radius-xl)] overflow-hidden"
       >
         <Image src={r.heroImage} alt={isEn ? `Cabin rentals in ${name}` : `Location de chalet ${r.locative}`} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
-        <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" aria-hidden="true" />
+        <span className="absolute inset-0 bg-gradient-to-t from-[rgba(20,24,12,.85)] via-[rgba(20,24,12,.25)] to-transparent" aria-hidden="true" />
         <span className="absolute left-4 bottom-4 right-4 text-white">
-          <span className="block text-heading-3 font-bold">{name}</span>
-          <span className="block text-sm text-white/85">
-            {isEn ? `${n} cabin${n > 1 ? "s" : ""}` : `${n} chalet${n > 1 ? "s" : ""}`}
+          <span className="block text-[44px] leading-none font-extrabold tracking-[-0.045em]">
+            {n}
+            <span className="ml-1.5 text-base font-bold tracking-normal text-white/85">{isEn ? `cabin${n > 1 ? "s" : ""}` : `chalet${n > 1 ? "s" : ""}`}</span>
           </span>
+          <span className="block mt-1 text-heading-3 font-bold">{name}</span>
         </span>
       </Link>
     );
@@ -55,7 +56,7 @@ export default async function RegionsExplorer() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 w-full">
-      <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-8">
+      <h2 className="text-[length:var(--fs-display)] font-extrabold tracking-[-0.04em] leading-none text-charcoal-800 mb-8">
         {isEn ? "Explore by region" : "Explorer par région"}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{regions.slice(0, VISIBLE_REGIONS).map(card)}</div>

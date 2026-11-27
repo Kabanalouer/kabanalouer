@@ -220,17 +220,17 @@ export default function ListingCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {listing.isFeatured && (
-            <span className="bg-moss-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-moss-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
               {t("featured")}
             </span>
           )}
           {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
-            <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className={`${listing.promoData.type.startsWith("lastminute") ? "bg-inverse" : "bg-highlight"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
               {formatPromoLines(listing.promoData, locale).line1}
             </span>
           )}
           {listing.isNew && (
-            <span className="bg-white text-charcoal-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+            <span className="bg-white text-charcoal-800 text-xs font-semibold px-3 py-1.5 rounded-full">
               {t("isNew")}
             </span>
           )}
@@ -251,7 +251,7 @@ export default function ListingCard({
       {/* ── Info ── */}
       <div>
         {/* Title */}
-        <h3 className="font-semibold text-base text-charcoal-800 leading-snug truncate mb-1">
+        <h3 className="font-bold text-base text-charcoal-800 leading-snug truncate mb-1">
           {listing.title}
         </h3>
 

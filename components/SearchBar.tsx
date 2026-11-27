@@ -231,14 +231,14 @@ export default function SearchBar({
   return (
     <>
     {/* ── Téléphones : rangées entièrement cliquables → feuille plein écran ── */}
-    <div className="md:hidden bg-white rounded-2xl shadow-xl p-1.5 w-full">
+    <div className="md:hidden bg-white rounded-2xl shadow-[0_24px_56px_rgba(0,0,0,.3)] p-1.5 w-full">
       {phoneRow("dest", PIN_ICON, destValue, t("destinationPlaceholder"))}
       {phoneRow("dates", CAL_ICON, datesLabel, t("datesLabel"))}
       {phoneRow("guests", USERS_ICON, guestsValue, t("guestsPlaceholder"), true)}
       <button
         type="button"
         onClick={handleSearch}
-        className="mt-1.5 w-full h-12 bg-action text-white rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:bg-action-hover transition-colors"
+        className="mt-1.5 w-full h-14 bg-action text-white rounded-full font-bold text-base flex items-center justify-center gap-2 hover:bg-action-hover transition-colors"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -249,7 +249,7 @@ export default function SearchBar({
     {sheet}
 
     {/* ── Tablette et ordinateur : barre en ligne et menus déroulants ── */}
-    <div className="hidden md:flex bg-white rounded-2xl shadow-xl p-1.5 sm:p-2 flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
+    <div className="hidden md:flex bg-white rounded-2xl shadow-[0_24px_56px_rgba(0,0,0,.3)] p-1.5 sm:p-2 flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
       <div ref={destRef} className="relative flex-[1.3] min-w-[150px] flex border-b border-charcoal-100 sm:border-b-0">
@@ -423,7 +423,7 @@ export default function SearchBar({
       <button
         onClick={handleSearch}
         aria-label={t("searchAriaLabel")}
-        className={`bg-action text-white rounded-xl hover:bg-action-hover transition-colors flex items-center justify-center shrink-0 ml-2 ${iconOnly ? "p-3.5" : "px-5 py-2.5 sm:py-3 gap-2 font-semibold"}`}
+        className={`bg-action text-white rounded-xl hover:bg-action-hover transition-colors flex items-center justify-center shrink-0 ml-2 ${iconOnly ? "p-3.5" : "px-[30px] py-[18px] gap-2 text-base font-bold"}`}
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

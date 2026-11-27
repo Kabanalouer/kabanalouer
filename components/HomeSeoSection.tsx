@@ -36,7 +36,7 @@ export default async function HomeSeoSection() {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 w-full">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
-      <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-6">{t("title")}</h2>
+      <h2 className="text-[length:var(--fs-display)] font-extrabold tracking-[-0.04em] leading-none text-charcoal-800 mb-6">{t("title")}</h2>
       <div className="space-y-5 text-base leading-relaxed text-charcoal-600">
         <p>{t("p1")}</p>
         <p>{t("p2")}</p>
