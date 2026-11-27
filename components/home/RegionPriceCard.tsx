@@ -41,12 +41,9 @@ export default function RegionPriceCard({ stats, locale }: { stats: RegionPriceS
             return (
               <tr key={r.slug} className="group border-t border-[var(--border-2)]">
                 <th scope="row" className="min-w-0 px-1 py-3 text-left align-top font-normal">
-                  <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                    <Link href={regionHref(r)} className="min-w-0 text-[15px] font-bold text-charcoal-800 transition-colors group-hover:text-action">
-                      {name}
-                    </Link>
-                    <span className="text-xs text-charcoal-400">{c.pricedCount(r.pricedCount)}</span>
-                  </span>
+                  <Link href={regionHref(r)} className="block min-w-0 text-[15px] font-bold text-charcoal-800 transition-colors group-hover:text-action">
+                    {name}
+                  </Link>
                   <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[var(--border-1)]" aria-hidden="true">
                     <span
                       className={`block h-full rounded-full ${r.slug === cheapest.slug ? "bg-highlight" : "bg-primary"}`}

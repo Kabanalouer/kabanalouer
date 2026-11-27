@@ -20,7 +20,6 @@ export interface HomeSeoContent {
     caption: string;
     colRegion: string;
     colPrice: string;
-    pricedCount: (n: number) => string;
     perNight: string;
     cheapest: (name: string) => string;
     note: (date: string) => string;
@@ -54,7 +53,6 @@ export const HOME_SEO: { fr: HomeSeoContent; en: HomeSeoContent } = {
       caption: "Prix de départ moyen par nuit d’un chalet selon la région au Québec",
       colRegion: "Région",
       colPrice: "À partir de",
-      pricedCount: (n) => `${n} chalets avec prix`,
       perNight: "/ nuit",
       cheapest: (name) => `${name} a les prix de départ les plus bas.`,
       note: (date) =>
@@ -91,7 +89,6 @@ export const HOME_SEO: { fr: HomeSeoContent; en: HomeSeoContent } = {
       caption: "Average starting price per night of a cabin by region in Quebec",
       colRegion: "Region",
       colPrice: "From",
-      pricedCount: (n) => `${n} cabins with a price`,
       perNight: "/ night",
       cheapest: (name) => `${name} has the lowest starting prices.`,
       note: (date) =>

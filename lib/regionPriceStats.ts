@@ -11,6 +11,8 @@ import { REGIONS } from "@/lib/regions";
 
 export const MIN_PRICED_LISTINGS = 5;
 export const MAX_ROWS = 7;
+// Plafond d'affichage (décision de Simon, 2026-11-27) : une moyenne plus haute s'affiche à 495 $ (Québec : 645 $ calculé).
+export const MAX_DISPLAYED_AVERAGE = 495;
 const TRIM_SHARE = 0.05;
 // Même règle que « Explorer par région » (components/RegionsExplorer.tsx) : le lien « Voir les N régions ».
 const MIN_LISTINGS_PER_REGION = 3;
@@ -71,7 +73,7 @@ async function computeRegionPriceStats(): Promise<RegionPriceStats> {
   for (const r of REGIONS) {
     const list = prices.get(r.dbValue);
     if (!list || list.length < MIN_PRICED_LISTINGS) continue;
-    rows.push({ slug: r.slug, slugEn: r.slugEn, name: r.name, nameEn: r.nameEn, average: trimmedAverageRounded(list), pricedCount: list.length });
+    rows.push({ slug: r.slug, slugEn: r.slugEn, name: r.name, nameEn: r.nameEn, average: Math.min(trimmedAverageRounded(list), MAX_DISPLAYED_AVERAGE), pricedCount: list.length });
   }
   rows.sort((a, b) => b.average - a.average);
 
@@ -80,4 +82,4 @@ async function computeRegionPriceStats(): Promise<RegionPriceStats> {
 }
 
 // Recalculé au plus une fois par jour (revalidate: 86400), jamais à chaque visite.
-export const getRegionPriceStats = unstable_cache(computeRegionPriceStats, ["region-price-stats-v1"], { revalidate: 86400 });
+export const getRegionPriceStats = unstable_cache(computeRegionPriceStats, ["region-price-stats-v2"], { revalidate: 86400 });
