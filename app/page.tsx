@@ -158,7 +158,7 @@ export default async function HomePage() {
             {t("heroSubtitle")}
           </p>
           {/* md+ : la pastille se limite à 860 px ; en dessous, carte pleine largeur */}
-          <div className="w-full md:[&>div]:max-w-[860px] md:[&>div]:mx-0">
+          <div data-hero-search className="w-full md:[&>div]:max-w-[860px] md:[&>div]:mx-0">
             <SearchBar />
           </div>
         </div>

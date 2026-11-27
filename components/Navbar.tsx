@@ -106,6 +106,25 @@ export default function Navbar() {
     ? (pathname.slice(3) || "/")
     : pathname;
 
+  // Accueil : la recherche de l'en-tête (comme sur les autres pages) n'apparaît qu'au défilement, quand la recherche du hero
+  // (repérée par data-hero-search) est sortie par le haut, sous l'en-tête de 80 px.
+  const [heroSearchGone, setHeroSearchGone] = useState(false);
+  const onHome = strippedPathname === "/";
+  useEffect(() => {
+    if (!onHome) {
+      setHeroSearchGone(false);
+      return;
+    }
+    const el = document.querySelector("[data-hero-search]");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setHeroSearchGone(!entry.isIntersecting && entry.boundingClientRect.bottom < 80),
+      { rootMargin: "-80px 0px 0px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [onHome]);
+
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -265,6 +284,8 @@ export default function Navbar() {
 
   const isHost = profile?.role === "host" || profile?.role === "admin";
   const isHome = strippedPathname === "/";
+  // Recherche du centre de l'en-tête : toujours hors accueil ; sur l'accueil, seulement une fois la recherche du hero passée.
+  const navSearch = !isHome ? <NavSearchBar /> : heroSearchGone ? <div className="nav-search-in"><NavSearchBar /></div> : null;
 
   // Shared nav wrapper classes
   const navWrap = "bg-white/85 backdrop-blur-[12px] border-b border-[#ebebeb] sticky top-0 z-50";
@@ -396,7 +417,7 @@ export default function Navbar() {
           </div>
 
           {/* Center */}
-          {!isHome && <NavSearchBar />}
+          {navSearch}
 
           {/* Right */}
           <div className="flex items-center justify-end gap-3 flex-1">
@@ -501,7 +522,7 @@ export default function Navbar() {
           </div>
 
           {/* Center */}
-          {!isHome && <NavSearchBar />}
+          {navSearch}
 
           {/* Desktop right */}
           <div className="hidden md:flex items-center justify-end gap-1.5 flex-1">

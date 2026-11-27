@@ -228,6 +228,16 @@ body {
   }
 }
 
+/* ── En-tête : la recherche apparaît en douceur quand elle est ajoutée au défilement (accueil) ── */
+@keyframes navSearchIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.nav-search-in { animation: navSearchIn 220ms var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .nav-search-in { animation: none; }
+}
+
 /* ── Accueil : rangées de chalets (option 2b) ──
    .show-wrap : conteneur de requête (cqw = largeur de la page sans la barre de défilement) ;
    .show-inner : contenu centré 1280 px ; .show-rail : rail mobile (carrousel) qui devient une grille 2 colonnes dès 640 px. */
