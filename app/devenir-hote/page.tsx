@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import OwnersBanner, { BannerPlusIcon, BannerSearchIcon, OWNERS_BANNER_PRIMARY_BTN, OWNERS_BANNER_SECONDARY_BTN } from "@/components/OwnersBanner";
+import OwnersClaimBanner from "@/components/OwnersClaimBanner";
 import { CreateListingLink, FindCabinLink, OwnerAccessProvider } from "@/components/devenir-hote/OwnerAccess";
 import {
   FaqAccordion,
@@ -288,18 +288,7 @@ export default async function DevenirHotePage() {
           </section>
 
           {/* ── 07 CTA final ── */}
-          <section className={`${SECTION_X} py-[clamp(56px,7vw,96px)]`}>
-            <OwnersBanner title={c.finalCta.h2} subtitle={c.finalCta.subtitle}>
-              <FindCabinLink emplacement="cta_final" className={OWNERS_BANNER_PRIMARY_BTN}>
-                <BannerSearchIcon />
-                {c.finalCta.createBtn}
-              </FindCabinLink>
-              <CreateListingLink emplacement="cta_final_creer" className={OWNERS_BANNER_SECONDARY_BTN}>
-                <BannerPlusIcon />
-                {c.finalCta.importBtn}
-              </CreateListingLink>
-            </OwnersBanner>
-          </section>
+          <OwnersClaimBanner emplacement="cta_final" />
         </main>
 
         <Footer />

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import OwnerCTA from "@/components/OwnerCTA";
+import OwnersClaimBanner from "@/components/OwnersClaimBanner";
 import { createClient } from "@/lib/supabase/server";
 import { REGIONS } from "@/lib/regions";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -152,7 +152,7 @@ export default async function RegionsPage() {
           </div>
         </div>
 
-        <OwnerCTA className="mt-8" />
+        <OwnersClaimBanner emplacement="banniere_regions" />
       </main>
 
       <Footer />

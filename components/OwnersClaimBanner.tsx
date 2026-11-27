@@ -8,9 +8,10 @@ import { localePath } from "@/lib/localePath";
 import { trackEvent } from "@/lib/analytics";
 import { StandaloneCreateListingLink } from "@/components/devenir-hote/OwnerAccess";
 
-// Bannière « Pour les proprios » de l'accueil (option 6a, 2026-11-27) : invite un propriétaire à retrouver sa fiche (déjà
-// en ligne mais non revendiquée) par le nom de son chalet ou sa ville → /trouver-mon-chalet?q=… ; sinon « Créer mon annonce ».
-// Les autres pages (recherche, régions, thèmes, /devenir-hote) gardent la bannière partagée components/OwnersBanner.tsx.
+// Bannière « Pour les proprios » (option 6a, 2026-11-27), utilisée sur l'accueil, la recherche, les pages région, ville,
+// thème et /devenir-hote : invite un propriétaire à retrouver sa fiche (déjà en ligne mais non revendiquée) par le nom de
+// son chalet ou sa ville → /trouver-mon-chalet?q=… ; sinon « Créer mon annonce ». `emplacement` distingue la page dans
+// les statistiques. L'ancienne bannière components/OwnersBanner.tsx n'est plus utilisée.
 // Typographie : U+00A0 avant « % $ », U+202F avant « ? ». Le troisième chiffre n'est pas un délai : la validation par
 // lien envoyé à l'adresse au dossier est rapide, mais la vérification manuelle (permis CITQ) dépend d'une approbation.
 
@@ -51,7 +52,7 @@ const TEXTS = {
   },
 } as const;
 
-export default function HomeOwnersBanner() {
+export default function OwnersClaimBanner({ emplacement = "banniere_accueil" }: { emplacement?: string }) {
   const locale = useLocale();
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -61,7 +62,7 @@ export default function HomeOwnersBanner() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = q.trim();
-    trackEvent("owner_claim_search", { has_query: value.length > 0 });
+    trackEvent("owner_claim_search", { has_query: value.length > 0, emplacement });
     router.push(value ? `${findPath}?q=${encodeURIComponent(value)}` : findPath);
   };
 
@@ -121,7 +122,7 @@ export default function HomeOwnersBanner() {
               </form>
               <p className="text-[15px] text-white/[.88]">
                 {t.notOnline}{" "}
-                <StandaloneCreateListingLink emplacement="banniere_accueil" className="-my-3 inline-block py-3 font-bold text-white underline underline-offset-[3px]">
+                <StandaloneCreateListingLink emplacement={emplacement} className="-my-3 inline-block py-3 font-bold text-white underline underline-offset-[3px]">
                   {t.create}
                 </StandaloneCreateListingLink>
               </p>
