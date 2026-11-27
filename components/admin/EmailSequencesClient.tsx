@@ -241,7 +241,7 @@ export default function EmailSequencesClient() {
                 type="button"
                 onClick={() => setLang(l)}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  lang === l ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"
+                  lang === l ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"
                 }`}
               >
                 {l === "fr" ? "Français" : "English"}
@@ -264,7 +264,7 @@ export default function EmailSequencesClient() {
               type="button"
               onClick={() => setFilter(f.value)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                filter === f.value ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"
+                filter === f.value ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"
               }`}
             >
               {f.label}
@@ -302,7 +302,7 @@ export default function EmailSequencesClient() {
                   type="button"
                   onClick={() => sendCategory(category)}
                   disabled={runningCategory !== null}
-                  className="self-start sm:self-auto shrink-0 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+                  className="self-start sm:self-auto shrink-0 rounded-full bg-action px-5 py-2.5 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
                 >
                   {running ? "Envoi en cours…" : "Envoyer toute la séquence"}
                 </button>

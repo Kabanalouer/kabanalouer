@@ -127,7 +127,7 @@ export default function DashboardStats({ listings = [] }: { listings?: { id: str
             onClick={() => setPeriod(opt.value)}
             className={`text-sm px-4 py-1.5 rounded-full font-medium transition-colors border ${
               period === opt.value
-                ? "bg-primary text-white border-primary"
+                ? "bg-action text-white border-action"
                 : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"
             }`}
           >

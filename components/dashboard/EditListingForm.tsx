@@ -852,7 +852,7 @@ export default function EditListingForm({
       />
     )}
     {isAdminReview && localImportStatus === "pending_review" && safeImportSourceUrl && (
-      <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3 mb-6">
+      <div className="border-l-[3px] border-moss-500 bg-[#f5f6ec] rounded-r-xl px-4 py-3 mb-6">
         <p className="text-sm text-charcoal-700">
           {locale === "en" ? "Listing imported from Airbnb —" : "Annonce importée depuis Airbnb —"}{" "}
           <a
@@ -929,7 +929,7 @@ export default function EditListingForm({
                 className={[
                   "flex items-center justify-between gap-3 py-2.5 text-sm text-left transition-colors",
                   active
-                    ? "pl-3 border-l-[3px] border-[#636e40] font-semibold text-[#636e40]"
+                    ? "pl-3 border-l-[3px] border-moss-500 font-semibold text-moss-500"
                     : "pl-4 font-medium text-charcoal-600 hover:text-charcoal-800",
                 ].join(" ")}
               >
@@ -951,7 +951,7 @@ export default function EditListingForm({
             ) : (
               <button
                 onClick={() => { setActiveSection("publier"); setSaveError(""); setJustSaved(false); }}
-                className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
+                className="w-full py-2.5 rounded-full text-sm font-semibold bg-action text-white hover:bg-action-hover transition-colors flex items-center justify-center"
               >
                 {tEdit("publishButton")}
               </button>
@@ -962,7 +962,7 @@ export default function EditListingForm({
                 type="button"
                 onClick={() => { setActiveSection("vedette"); setSaveError(""); setJustSaved(false); }}
                 disabled={!isPublished}
-                className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+                className={`w-full py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-moss-500 text-moss-500 bg-white hover:bg-moss-500/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
               >
                 {tEdit("boostButton")}
               </button>
@@ -1460,7 +1460,7 @@ export default function EditListingForm({
                   onClick={() => setCalendarMode("manual")}
                   className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "manual"
-                      ? "bg-primary text-white"
+                      ? "bg-action text-white"
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
                   }`}
                 >
@@ -1471,7 +1471,7 @@ export default function EditListingForm({
                   onClick={() => setCalendarMode("ical")}
                   className={`sm:flex-1 py-2.5 px-4 rounded-full text-sm font-semibold transition-colors ${
                     calendarMode === "ical"
-                      ? "bg-primary text-white"
+                      ? "bg-action text-white"
                       : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-400"
                   }`}
                 >
@@ -1717,11 +1717,11 @@ export default function EditListingForm({
                   <SettingRow label={tEdit("cleaningFeeLabel")}>
                     <div className="flex rounded-xl border border-[#ebebeb] overflow-hidden text-sm w-fit">
                       <button type="button" onClick={() => set("cleaning_fee_included", false)}
-                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === false ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === false ? "bg-action text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
                         {tEdit("cleaningNotIncluded")}
                       </button>
                       <button type="button" onClick={() => set("cleaning_fee_included", true)}
-                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === true ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+                        className={`px-5 py-2 font-medium transition-colors ${form.cleaning_fee_included === true ? "bg-action text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
                         {tEdit("cleaningIncluded")}
                       </button>
                     </div>
@@ -1882,7 +1882,7 @@ export default function EditListingForm({
                         void runPublishAction(handleAdminPublish);
                       }}
                       disabled={publishLoading}
-                      className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
+                      className="w-full bg-action text-white py-3 rounded-full font-bold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
                     >
                       {publishLoading ? (locale === "en" ? "Publishing…" : "Publication…") : t("publish.adminPublishButton")}
                     </button>
@@ -1911,7 +1911,7 @@ export default function EditListingForm({
                                 href={publicPath}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center bg-primary text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-primary/90 transition-colors"
+                                className="inline-flex items-center justify-center bg-action text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-action-hover transition-colors"
                               >
                                 {t("publish.viewLiveListing")}
                               </a>
@@ -1993,7 +1993,7 @@ export default function EditListingForm({
                       void runPublishAction(handlePublish);
                     }}
                     disabled={publishLoading}
-                    className="w-full bg-primary text-white py-3 rounded-full font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
+                    className="w-full bg-action text-white py-3 rounded-full font-bold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
                   >
                     {publishLoading ? t("publish.publishing") : t("publish.activateFree")}
                   </button>
@@ -2059,7 +2059,7 @@ export default function EditListingForm({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => void triggerSave(activeSection)}
                   disabled={saving || descBelowMin}
-                  className="shrink-0 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="shrink-0 bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {saving ? (
                     <><Spinner />{tCommon("saving")}</>
@@ -2126,7 +2126,7 @@ export default function EditListingForm({
           ) : (
             <button
               onClick={() => goToSection("publier")}
-              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center"
+              className="w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold bg-action text-white hover:bg-action-hover transition-colors flex items-center justify-center"
             >
               {tEdit("publishButton")}
             </button>
@@ -2137,7 +2137,7 @@ export default function EditListingForm({
               type="button"
               onClick={() => goToSection("vedette")}
               disabled={!isPublished}
-              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-[#636e40] text-[#636e40] bg-white hover:bg-[#636e40]/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
+              className={`w-full min-h-[44px] py-2.5 rounded-full text-sm font-semibold border transition-colors flex items-center justify-center ${isPublished ? "border-moss-500 text-moss-500 bg-white hover:bg-moss-500/5" : "border-[#ebebeb] text-charcoal-300 bg-charcoal-50 cursor-not-allowed"}`}
             >
               {tEdit("boostButton")}
             </button>
@@ -2173,7 +2173,7 @@ export default function EditListingForm({
 }
 
 function Req() {
-  return <span className="text-[#636e40] font-medium">*</span>;
+  return <span className="text-moss-500 font-medium">*</span>;
 }
 
 function RequiredNote({ tEdit }: { tEdit: ReturnType<typeof useTranslations> }) {
@@ -2440,11 +2440,11 @@ function ToggleField({ value, onChange, tEdit }: { value: boolean; onChange: (v:
   return (
     <div className="flex rounded-xl border border-[#ebebeb] overflow-hidden text-sm w-fit">
       <button type="button" onClick={() => onChange(false)}
-        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+        className={`px-5 py-2 font-medium transition-colors ${!value ? "bg-action text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
         {tEdit("no")}
       </button>
       <button type="button" onClick={() => onChange(true)}
-        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-primary text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
+        className={`px-5 py-2 font-medium transition-colors ${value ? "bg-action text-white" : "text-charcoal-500 hover:bg-charcoal-50"}`}>
         {tEdit("yes")}
       </button>
     </div>

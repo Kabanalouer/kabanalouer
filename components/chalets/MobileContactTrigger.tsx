@@ -53,7 +53,7 @@ export default function MobileContactTrigger({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="bg-primary text-white px-5 py-2.5 min-h-[44px] rounded-full font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
+        className="bg-action text-white px-5 py-2.5 min-h-[44px] rounded-full font-bold text-sm hover:bg-action-hover transition-colors flex items-center justify-center"
       >
         {label}
       </button>

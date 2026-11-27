@@ -174,7 +174,7 @@ export default async function FaqHotesPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href={localePath("/contact", locale)}
-              className="inline-flex items-center justify-center bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center bg-action text-white font-bold px-8 py-4 rounded-full hover:bg-action-hover transition-colors"
             >
               {t("ctaContact")}
             </Link>

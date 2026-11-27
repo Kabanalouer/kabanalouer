@@ -55,13 +55,13 @@ export function renderEmail({
             </tr>` : ""}
             <tr>
               <td style="padding:0 32px;text-align:center;">
-                <a href="${buttonUrl}" style="display:inline-block;background-color:#636e40;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:14px 32px;border-radius:9999px;">${buttonLabel}</a>
+                <a href="${buttonUrl}" style="display:inline-block;background-color:#c2461a;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:14px 32px;border-radius:9999px;">${buttonLabel}</a>
               </td>
             </tr>
             ${secondaryButtonLabel && secondaryButtonUrl ? `
             <tr>
               <td style="padding:12px 32px 0 32px;text-align:center;">
-                <a href="${secondaryButtonUrl}" style="display:inline-block;background-color:#ffffff;color:#636e40;text-decoration:none;font-weight:600;font-size:16px;padding:13px 32px;border-radius:9999px;border:1px solid #636e40;">${secondaryButtonLabel}</a>
+                <a href="${secondaryButtonUrl}" style="display:inline-block;background-color:#ffffff;color:#c2461a;text-decoration:none;font-weight:600;font-size:16px;padding:13px 32px;border-radius:9999px;border:1px solid #c2461a;">${secondaryButtonLabel}</a>
               </td>
             </tr>` : ""}
             <tr>

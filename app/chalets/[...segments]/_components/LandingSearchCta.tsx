@@ -17,7 +17,7 @@ export default function LandingSearchCta({ href, isEn }: { href: string; isEn: b
       </div>
       <Link
         href={href}
-        className="shrink-0 inline-flex justify-center bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+        className="shrink-0 inline-flex justify-center bg-action text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
       >
         {isEn ? "Check availability →" : "Voir les disponibilités →"}
       </Link>

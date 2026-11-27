@@ -46,7 +46,7 @@ export default function ExistingListingCheck({ onContinue }: { onContinue: () =>
   }
 
   const primary =
-    "w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60";
+    "w-full inline-flex items-center justify-center rounded-full bg-action px-6 py-3.5 text-base font-semibold text-white hover:bg-action-hover transition-colors disabled:opacity-60";
   const secondary =
     "w-full inline-flex items-center justify-center rounded-full border border-[#d6d6d6] bg-white px-6 py-3.5 text-base font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors";
   const textLink = "mt-5 block w-full text-center text-base text-primary underline underline-offset-4 hover:text-primary-dark";

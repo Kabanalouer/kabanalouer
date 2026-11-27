@@ -93,7 +93,7 @@ export default function SejourReviewClient({ token }: { token: string }) {
       <button
         onClick={handleSubmit}
         disabled={!rating || sending}
-        className="w-full bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-action text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {sending ? t("submitting") : t("submit")}
       </button>

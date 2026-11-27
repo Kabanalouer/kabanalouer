@@ -100,7 +100,7 @@ export default function RoomPhotoPickerModal({
             type="button"
             onClick={() => onConfirm(selected)}
             disabled={selected.length === 0}
-            className="flex-1 bg-primary text-white py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-action text-white py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isEn
               ? (selected.length > 0 ? `Add (${selected.length})` : "Add")

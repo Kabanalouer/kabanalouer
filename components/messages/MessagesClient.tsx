@@ -499,7 +499,7 @@ export default function MessagesClient({
               {!isHost && (
                 <Link
                   href={localePath("/chalets", locale)}
-                  className="md:hidden mt-4 inline-flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                  className="md:hidden mt-4 inline-flex bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
                 >
                   {t("browseCabins")}
                 </Link>
@@ -577,7 +577,7 @@ export default function MessagesClient({
               {conversations.length === 0 && !isHost && (
                 <Link
                   href={localePath("/chalets", locale)}
-                  className="mt-6 inline-flex bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                  className="mt-6 inline-flex bg-action text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
                 >
                   {t("browseCabins")}
                 </Link>
@@ -748,7 +748,7 @@ export default function MessagesClient({
                         <div
                           className={`max-w-[80%] md:max-w-sm min-w-0 px-4 py-2.5 rounded-2xl text-base leading-relaxed [overflow-wrap:anywhere] ${
                             isMine
-                              ? "bg-primary text-white rounded-br-sm"
+                              ? "bg-action text-white rounded-br-sm"
                               : "bg-white text-charcoal-800 shadow-sm rounded-bl-sm"
                           }`}
                         >
@@ -831,7 +831,7 @@ export default function MessagesClient({
                               <button
                                 type="button"
                                 onClick={() => setActiveQuickReply({ messageId: msg.id, type: "quote" })}
-                                className="max-sm:w-full flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                                className="max-sm:w-full flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-action text-white hover:bg-action-hover transition-colors"
                               >
                                 {tq("sendQuoteCta")}
                               </button>
@@ -930,7 +930,7 @@ export default function MessagesClient({
                   onClick={handleSend}
                   disabled={sending || !newMessage.trim()}
                   aria-label={isEn ? "Send" : "Envoyer"}
-                  className="bg-primary text-white w-11 h-11 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-40 flex-shrink-0 flex items-center justify-center"
+                  className="bg-action text-white w-11 h-11 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-40 flex-shrink-0 flex items-center justify-center"
                 >
                   <svg className="w-5 h-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />

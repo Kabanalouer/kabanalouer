@@ -18,7 +18,7 @@ export default function ListYourCabinPromo() {
       <p className="mt-2 text-base text-charcoal-600 text-pretty">{t("body")}</p>
       <Link
         href={localePath("/devenir-hote", locale)}
-        className="mt-5 inline-flex items-center justify-center bg-primary text-white font-semibold text-sm px-6 py-3 rounded-full hover:bg-primary/90 transition-colors"
+        className="mt-5 inline-flex items-center justify-center bg-action text-white font-semibold text-sm px-6 py-3 rounded-full hover:bg-action-hover transition-colors"
       >
         {t("cta")}
       </Link>

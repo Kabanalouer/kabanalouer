@@ -286,7 +286,7 @@ export default function FiltersPanel({
           <button
             type="button"
             onClick={onApply}
-            className="bg-primary text-white px-5 md:px-6 h-12 rounded-full whitespace-nowrap text-base md:text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="bg-action text-white px-5 md:px-6 h-12 rounded-full whitespace-nowrap text-base md:text-sm font-semibold hover:bg-action-hover transition-colors"
           >
             {t("showResults")}
           </button>

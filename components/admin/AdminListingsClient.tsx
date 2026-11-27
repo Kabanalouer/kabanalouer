@@ -151,7 +151,7 @@ export default function AdminListingsClient({
               onClick={() => handleFilterChange(() => setStatus(s))}
               className={`text-sm px-4 py-1.5 rounded-full font-medium border transition-colors ${
                 status === s
-                  ? "bg-primary text-white border-primary"
+                  ? "bg-action text-white border-action"
                   : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"
               }`}
             >
@@ -333,7 +333,7 @@ export default function AdminListingsClient({
                     key={n}
                     onClick={() => setPage(n)}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                      page === n ? "bg-primary text-white" : "text-charcoal-600 hover:bg-charcoal-50"
+                      page === n ? "bg-action text-white" : "text-charcoal-600 hover:bg-charcoal-50"
                     }`}
                   >
                     {n}

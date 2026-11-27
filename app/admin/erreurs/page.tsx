@@ -83,7 +83,7 @@ export default async function AdminErrorsPage({ searchParams }: { searchParams: 
                   key={t.value}
                   href={`/admin/erreurs?tab=${t.value}`}
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                    t.value === tab ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"
+                    t.value === tab ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"
                   }`}
                 >
                   {t.label} ({counts[t.value]})
@@ -128,7 +128,7 @@ export default async function AdminErrorsPage({ searchParams }: { searchParams: 
                       {tab === "open" ? (
                         <>
                           <form action={setErrorStatus.bind(null, g.fingerprint, "resolved")}>
-                            <button className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">
+                            <button className="rounded-full bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover transition-colors">
                               Marquer comme réglée
                             </button>
                           </form>

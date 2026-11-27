@@ -404,7 +404,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
               type="button"
               onClick={() => send("draft_invite")}
               disabled={busy !== null}
-              className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+              className="rounded-full bg-action px-5 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
             >
               {busy === "send-draft_invite" ? "Envoi…" : "Envoyer l’invitation"}
             </button>
@@ -423,7 +423,7 @@ function OwnerCard({ row }: { row: DraftOwnerRow }) {
                 type="button"
                 onClick={() => send(row.due as Kind)}
                 disabled={busy !== null}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+                className="rounded-full bg-action px-5 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
               >
                 {busy === `send-${row.due}` ? "Envoi…" : `Envoyer la relance ${dueLabel}`}
               </button>
@@ -608,7 +608,7 @@ export default function DraftInvitationsClient({ rows, initialTab }: { rows: Dra
           <button
             type="button"
             onClick={() => sendAll(list)}
-            className="ml-auto rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+            className="ml-auto rounded-full bg-action px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-action-hover"
           >
             Tout envoyer ({list.length})
           </button>

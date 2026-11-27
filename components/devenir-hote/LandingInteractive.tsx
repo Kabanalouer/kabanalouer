@@ -106,7 +106,7 @@ export function ImportForm({ c }: { c: DevenirHoteContent["importSection"] }) {
         <button
           type="submit"
           disabled={submitting}
-          className="flex-[0_0_auto] max-[420px]:flex-1 inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-full bg-primary text-white text-base font-bold transition-[background-color,transform] duration-[140ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-dark active:scale-[0.97] disabled:opacity-70 focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
+          className="flex-[0_0_auto] max-[420px]:flex-1 inline-flex items-center justify-center gap-2 h-[52px] px-6 rounded-full bg-action text-white text-base font-bold transition-[background-color,transform] duration-[140ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-action-hover active:scale-[0.97] disabled:opacity-70 focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
         >
           {c.submit}
           <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -211,7 +211,7 @@ export function SavingsCalculator({ c, locale }: { c: DevenirHoteContent["calcul
         </p>
         <CreateListingLink
           emplacement="calculatrice"
-          className="bg-primary text-white text-[15px] font-bold px-[18px] py-3 rounded-full transition-[background-color,transform] duration-[140ms] hover:bg-primary-dark active:scale-[0.97] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
+          className="bg-action text-white text-[15px] font-bold px-[18px] py-3 rounded-full transition-[background-color,transform] duration-[140ms] hover:bg-action-hover active:scale-[0.97] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
         >
           {c.cta}
         </CreateListingLink>
@@ -282,7 +282,7 @@ export function StickyCta({ c }: { c: DevenirHoteContent["sticky"] }) {
       </div>
       <CreateListingLink
         emplacement="barre_mobile"
-        className="inline-flex items-center h-12 px-[18px] rounded-full bg-primary text-white text-[15px] font-bold active:scale-[0.97] transition-transform"
+        className="inline-flex items-center h-12 px-[18px] rounded-full bg-action text-white text-[15px] font-bold active:scale-[0.97] transition-transform"
       >
         {c.cta}
       </CreateListingLink>

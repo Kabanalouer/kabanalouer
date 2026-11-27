@@ -98,7 +98,7 @@ export default function FeedbackModal({ open, onClose }: { open: boolean; onClos
             <button
               type="button"
               onClick={close}
-              className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
+              className="mt-6 rounded-full bg-action px-6 py-2.5 text-sm font-semibold text-white hover:bg-action-hover transition-colors"
             >
               {t("close")}
             </button>
@@ -149,7 +149,7 @@ export default function FeedbackModal({ open, onClose }: { open: boolean; onClos
                 type="button"
                 onClick={submit}
                 disabled={state === "sending"}
-                className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+                className="rounded-full bg-action px-6 py-2.5 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
               >
                 {state === "sending" ? t("sending") : t("send")}
               </button>

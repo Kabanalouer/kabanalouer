@@ -295,7 +295,7 @@ export default async function AmenityLanding({ config }: { config: AmenityLandin
             </p>
             <Link
               href={localePath("/chalets", locale)}
-              className="inline-flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
             >
               {isEn ? "See all cabins" : "Voir tous les chalets"}
             </Link>

@@ -513,7 +513,7 @@ export default function Navbar() {
             </Link>
             <Link
               href={lp("/signup")}
-              className="whitespace-nowrap bg-primary text-white text-base px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
+              className="whitespace-nowrap bg-action text-white text-base px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-action-hover transition-colors font-semibold"
             >
               {t("createAccount")}
             </Link>
@@ -551,7 +551,7 @@ export default function Navbar() {
             </Link>
             <Link
               href={lp("/signup")}
-              className="flex items-center justify-center min-h-[44px] bg-primary text-white py-3 rounded-full font-semibold text-sm"
+              className="flex items-center justify-center min-h-[44px] bg-action text-white py-3 rounded-full font-semibold text-sm"
             >
               {t("createAccount")}
             </Link>

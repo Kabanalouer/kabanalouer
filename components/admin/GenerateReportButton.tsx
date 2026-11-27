@@ -18,7 +18,7 @@ export default function GenerateReportButton() {
             setMessage(error ?? "Rapport généré et envoyé par courriel.");
           })
         }
-        className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+        className="rounded-full bg-action px-5 py-2.5 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
       >
         {pending ? "Analyse en cours… (1 à 2 min)" : "Générer un rapport maintenant"}
       </button>

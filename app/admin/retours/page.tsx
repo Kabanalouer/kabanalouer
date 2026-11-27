@@ -82,7 +82,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
               <Link
                 key={t.value}
                 href={`/admin/retours?tab=${t.value}`}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${t.value === tab ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"}`}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${t.value === tab ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"}`}
               >
                 {t.label} ({counts[t.value]})
               </Link>

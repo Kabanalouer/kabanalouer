@@ -30,7 +30,7 @@ export default async function NotFound() {
           </p>
           <Link
             href={localePath("/", locale)}
-            className="inline-block bg-primary text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-dark transition-colors"
+            className="inline-block bg-action text-white font-semibold px-6 py-3 rounded-full hover:bg-action-hover transition-colors"
           >
             {isEn ? "Back to home" : "Retour à l'accueil"}
           </Link>

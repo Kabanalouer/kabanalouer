@@ -111,7 +111,7 @@ function ResetPasswordForm() {
           <p className="text-charcoal-500 text-base leading-relaxed mb-6">{t("successDesc")}</p>
           <button
             onClick={() => router.push(loginHref)}
-            className="bg-primary text-white py-3 px-8 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
+            className="bg-action text-white py-3 px-8 rounded-full font-semibold hover:bg-action-hover transition-colors text-sm"
           >
             {t("goToLogin")}
           </button>
@@ -170,7 +170,7 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+            className="w-full bg-action text-white py-3 rounded-full font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
           >
             {loading ? t("submitting") : t("submit")}
           </button>

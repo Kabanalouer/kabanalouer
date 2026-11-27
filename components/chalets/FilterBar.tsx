@@ -143,7 +143,7 @@ export default function FilterBar() {
               onClick={() => { const next = amenity === a ? "" : a; setAmenity(next); apply({ amenity: next }); }}
               className={`text-sm px-3 py-1.5 rounded-full border transition-all ${
                 amenity === a
-                  ? "bg-primary text-white border-primary"
+                  ? "bg-action text-white border-action"
                   : "border-charcoal-100 text-charcoal-600 hover:border-primary hover:text-primary"
               }`}
             >

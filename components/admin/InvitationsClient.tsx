@@ -77,7 +77,7 @@ export default function InvitationsClient({ kind, rows }: { kind: Kind; rows: In
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <button type="button" disabled={!!busy} onClick={() => send(null)} className={`${BUTTON} bg-primary text-white hover:bg-primary-dark`}>
+        <button type="button" disabled={!!busy} onClick={() => send(null)} className={`${BUTTON} bg-action text-white hover:bg-action-hover`}>
           {busy === "all" ? "Envoi en cours…" : kind === "invite" ? "Tout envoyer" : "Tout relancer"}
         </button>
         {message && <p className="text-sm text-charcoal-600" role="status">{message}</p>}
@@ -115,7 +115,7 @@ export default function InvitationsClient({ kind, rows }: { kind: Kind; rows: In
             <p className="mt-2 text-xs text-charcoal-400">Les liens de cet aperçu sont des exemples ; le courriel envoyé contient les vrais liens personnels.</p>
             <div className="mt-3 flex justify-end gap-2">
               <button type="button" onClick={() => setPreview(null)} className={`${BUTTON} border border-charcoal-300 bg-white text-charcoal-800 hover:bg-charcoal-50`}>Fermer</button>
-              <button type="button" disabled={!!busy} onClick={() => { const e = preview.email; setPreview(null); void send([e]); }} className={`${BUTTON} bg-primary text-white hover:bg-primary-dark`}>Envoyer</button>
+              <button type="button" disabled={!!busy} onClick={() => { const e = preview.email; setPreview(null); void send([e]); }} className={`${BUTTON} bg-action text-white hover:bg-action-hover`}>Envoyer</button>
             </div>
           </div>
         </div>

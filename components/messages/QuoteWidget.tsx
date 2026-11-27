@@ -358,7 +358,7 @@ export default function QuoteWidget({
           <button
             onClick={handleSend}
             disabled={sending || !canSend}
-            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            className="bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 disabled:pointer-events-none"
           >
             {sending ? t("sendingGeneric") : t("sendQuoteButton")}
           </button>

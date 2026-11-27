@@ -198,7 +198,7 @@ export async function sendDraftInvitationEmail(input: {
 }): Promise<{ error: Error | null }> {
   const fr = input.lang === "fr";
   const link = (href: string, label: string, bold = false) =>
-    `<a href="${escapeHtml(href)}" style="color:#636e40;${bold ? "font-weight:600;" : ""}">${escapeHtml(label)}</a>`;
+    `<a href="${escapeHtml(href)}" style="color:#c2461a;${bold ? "font-weight:600;" : ""}">${escapeHtml(label)}</a>`;
 
   const multiple = input.listings.length > 1;
   const items = input.listings.map((l) => link(l.url, l.title, true));

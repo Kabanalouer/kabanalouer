@@ -109,7 +109,7 @@ function CalendarMonth({
                 onMouseLeave={onDayLeave}
                 className={["relative z-10 w-9 h-9 flex items-center justify-center text-sm rounded-full transition-all",
                   isPast ? "text-charcoal-300 cursor-not-allowed" :
-                  isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
+                  isStart || isEnd ? "bg-action text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
                   "hover:bg-charcoal-50 text-charcoal-800 cursor-pointer"].join(" ")}
               >{day}</button>
@@ -528,7 +528,7 @@ function NavSearchBarInner() {
         <button
           onClick={handleSearch}
           aria-label={t("searchAriaLabel")}
-          className="m-1.5 w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shrink-0 hover:bg-primary-dark transition-colors"
+          className="m-1.5 w-9 h-9 bg-action text-white rounded-full flex items-center justify-center shrink-0 hover:bg-action-hover transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

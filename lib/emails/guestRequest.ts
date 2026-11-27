@@ -76,7 +76,7 @@ export async function sendGuestRequestEmail(input: {
       ? "Répondez directement à ce message (reply) pour contacter le propriétaire directement."
       : "Reply directly to this message to contact the owner directly."
   );
-  const mail = `<a href="mailto:${SUPPORT}" style="color:#636e40;">${SUPPORT}</a>`;
+  const mail = `<a href="mailto:${SUPPORT}" style="color:#c2461a;">${SUPPORT}</a>`;
   const accountNote = fr
     ? `Cette adresse avait déjà un compte Kabanalouer. Si ce n’était pas vous, écrivez-nous à ${mail}.`
     : `This address already had a Kabanalouer account. If this wasn’t you, write to us at ${mail}.`;

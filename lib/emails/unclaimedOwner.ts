@@ -204,7 +204,7 @@ function titlesHtml(titles: string[]): string {
 
 function removeAnchor(lang: Lang, url: string, multiple = false): string {
   const label = multiple ? (lang === "fr" ? "Retirer mes fiches" : "Remove my listings") : lang === "fr" ? "Retirer ma fiche" : "Remove my listing";
-  return `<a href="${url}" style="color:#636e40;">${label}</a>`;
+  return `<a href="${url}" style="color:#c2461a;">${label}</a>`;
 }
 
 // Demande d'un voyageur, transmise au propriétaire qui n'a pas encore de compte.

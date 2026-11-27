@@ -139,7 +139,7 @@ export default function ProspectsClient({ rows }: { rows: ProspectRow[] }) {
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {r.status === "nouveau" && (
                     <>
-                      <button type="button" disabled={working || !url} onClick={() => act(r.id, "queue")} className={`${button} bg-primary text-white hover:bg-primary-dark`} title={url ? undefined : "Site à trouver avant de créer les brouillons"}>
+                      <button type="button" disabled={working || !url} onClick={() => act(r.id, "queue")} className={`${button} bg-action text-white hover:bg-action-hover`} title={url ? undefined : "Site à trouver avant de créer les brouillons"}>
                         {working ? "…" : "Créer brouillon / invitation"}
                       </button>
                       <button type="button" disabled={working} onClick={() => act(r.id, "ignore")} className={`${button} border border-charcoal-300 bg-white text-charcoal-800 hover:bg-charcoal-50`}>

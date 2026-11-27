@@ -220,7 +220,7 @@ export default function ListingCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {listing.isFeatured && (
-            <span className="bg-[#636e40] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-moss-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
               {t("featured")}
             </span>
           )}

@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 // le serveur revalide le jeton et la session à chaque appel.
 
 const PRIMARY_BUTTON =
-  "inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60";
+  "inline-flex items-center justify-center rounded-full bg-action px-6 py-3 text-base font-semibold text-white hover:bg-action-hover transition-colors disabled:opacity-60";
 const SECONDARY_BUTTON =
   "inline-flex items-center justify-center rounded-full border border-charcoal-300 bg-white px-6 py-3 text-base font-semibold text-charcoal-800 hover:bg-charcoal-50 transition-colors";
 const INPUT =

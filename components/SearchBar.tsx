@@ -75,7 +75,7 @@ function CalendarMonth({
                 onMouseLeave={onDayLeave}
                 className={["relative z-10 w-9 h-9 flex items-center justify-center text-sm rounded-full transition-all",
                   isPast ? "text-charcoal-300 cursor-not-allowed" :
-                  isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
+                  isStart || isEnd ? "bg-action text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
                   "hover:bg-charcoal-100 text-charcoal-800 cursor-pointer"].join(" ")}
               >{day}</button>
@@ -238,7 +238,7 @@ export default function SearchBar({
       <button
         type="button"
         onClick={handleSearch}
-        className="mt-1.5 w-full h-12 bg-primary text-white rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors"
+        className="mt-1.5 w-full h-12 bg-action text-white rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:bg-action-hover transition-colors"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -423,7 +423,7 @@ export default function SearchBar({
       <button
         onClick={handleSearch}
         aria-label={t("searchAriaLabel")}
-        className={`bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center shrink-0 ml-2 ${iconOnly ? "p-3.5" : "px-5 py-2.5 sm:py-3 gap-2 font-semibold"}`}
+        className={`bg-action text-white rounded-xl hover:bg-action-hover transition-colors flex items-center justify-center shrink-0 ml-2 ${iconOnly ? "p-3.5" : "px-5 py-2.5 sm:py-3 gap-2 font-semibold"}`}
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

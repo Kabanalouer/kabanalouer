@@ -204,7 +204,7 @@ function MapContent({
                 }`}
                 style={{
                   boxShadow: isActive
-                    ? "0 0 0 2px #636e40, 0 6px 16px rgba(35,30,22,.3)"
+                    ? "0 0 0 2px var(--moss-500), 0 6px 16px rgba(35,30,22,.3)"
                     : "0 2px 8px rgba(35,30,22,.22)",
                 }}
               >
@@ -221,7 +221,7 @@ function MapContent({
               </div>
               {members.length > 1 && (
                 <span
-                  className="absolute -top-1 -right-1 min-w-[24px] h-6 px-1.5 rounded-full bg-primary border-2 border-white text-white text-xs font-bold flex items-center justify-center pointer-events-none"
+                  className="absolute -top-1 -right-1 min-w-[24px] h-6 px-1.5 rounded-full bg-action border-2 border-white text-white text-xs font-bold flex items-center justify-center pointer-events-none"
                   aria-label={tMap("groupCount", { count: members.length })}
                 >
                   {members.length > 99 ? "99+" : members.length}
@@ -255,7 +255,7 @@ function MapContent({
             <p className="text-sm font-bold text-charcoal-900 mb-3">{priceLabel(selected)}</p>
             <a
               href={hrefFor(selected)}
-              className="block text-center text-xs bg-primary text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity"
+              className="block text-center text-xs bg-action text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
               {tMap("viewCabin")}
             </a>

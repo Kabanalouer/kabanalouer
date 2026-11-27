@@ -1,0 +1,73 @@
+/* ============================================================
+   KABANALOUER — Tokens v4 · « Mousse pour l'identité, Braise pour l'action »
+   Importé par app/globals.css. L'exposition en classes Tailwind (bg-action, bg-braise-600…)
+   est dans le bloc @theme de globals.css.
+   ============================================================ */
+:root {
+  /* Mousse — IDENTITÉ seulement (logo, icônes, badges « Vérifié ») */
+  --moss-50:#f5f6ec; --moss-100:#e8ebdc; --moss-200:#d2d7b7; --moss-300:#afb786; --moss-400:#8d9762;
+  --moss-500:#636e40; --moss-600:#4d5631; --moss-700:#3a4124; --moss-800:#272c18; --moss-900:#15180d;
+
+  /* Braise — ACTION (boutons, prix promo, économies, favoris actifs) */
+  --braise-50:#fdf1ec; --braise-100:#fadfd3; --braise-200:#f5bda5; --braise-300:#ef9670; --braise-400:#eb7646;
+  --braise-500:#e85d2a;  /* éclatant : fonds sombres, grands chiffres */
+  --braise-600:#c2461a;  /* boutons à texte blanc sur fond blanc (4,8:1) */
+  --braise-700:#a63a14;  /* hover */
+  --braise-800:#7e2c10;  /* press */
+  --braise-900:#52200c;
+
+  /* Forêt nuit — SECTIONS SOMBRES (comparatif, bandeau proprios) */
+  --night-600:#3a4124; --night-700:#2c331d; --night-800:#1c2112; --night-900:#12160b;
+
+  /* Neutres (inchangés) */
+  --char-50:#f7f7f7; --char-100:#ebebeb; --char-200:#dddddd; --char-300:#c4c4c4; --char-400:#717171;
+  --char-500:#5e5e5e; --char-600:#484848; --char-700:#333333; --char-800:#222222; --char-900:#111111;
+  --snow:#ffffff;
+
+  /* ---------- RÔLES (c'est ce que les composants doivent utiliser) ---------- */
+  --brand-primary:        var(--moss-500);     /* identité */
+  --action:               var(--braise-600);   /* CTA sur fond clair */
+  --action-hover:         var(--braise-700);
+  --action-press:         var(--braise-800);
+  --action-on-dark:       var(--braise-500);   /* CTA et chiffres sur fond sombre */
+  --highlight:            var(--braise-500);   /* mot accentué dans un titre, gros chiffre */
+
+  --bg-page:              var(--snow);
+  --bg-surface:           var(--snow);
+  --bg-surface-alt:       var(--char-50);
+  --bg-inverse:           var(--night-800);    /* sections sombres */
+
+  --fg-1:                 var(--char-800);
+  --fg-2:                 var(--char-600);
+  --fg-3:                 var(--char-400);
+  --fg-on-action:         var(--snow);
+  --fg-on-inverse:        var(--snow);
+  --fg-muted-on-inverse:  var(--char-300);
+  --fg-eyebrow-on-inverse:var(--moss-300);
+  --fg-link:              var(--braise-600);
+
+  --border-1:             var(--char-100);
+  --border-2:             var(--char-200);
+  --shadow-focus:         0 0 0 2px var(--snow), 0 0 0 4px rgba(232, 93, 42, 0.45);
+
+  /* ---------- TYPO DISPLAY (plus grande, plus serrée) ---------- */
+  --fs-display-xl: clamp(52px, 9vw, 128px);   /* titre d'accueil */
+  --fs-display:    clamp(30px, 4vw, 48px);    /* titres de section */
+  --fs-stat:       clamp(96px, 16vw, 200px);  /* chiffre vedette (148 $) */
+  --tracking-display: -0.05em;
+  --lh-display: 0.9;
+
+  /* Rayons */
+  --radius-sm:8px; --radius-lg:12px; --radius-xl:16px; --radius-hero:24px; --radius-pill:999px;
+}
+
+/* Variante de section sombre réutilisable (« Forêt nuit »), pas encore appliquée.
+   Usage : <section class="section-dark">…</section> */
+.section-dark {
+  background: var(--bg-inverse);
+  color: var(--fg-on-inverse);
+  --fg-1: var(--fg-on-inverse);
+  --fg-2: var(--fg-muted-on-inverse);
+  --fg-3: var(--fg-muted-on-inverse);
+  --action: var(--action-on-dark);
+}

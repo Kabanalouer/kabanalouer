@@ -47,7 +47,7 @@ export default function ClaimRequestActions({ id, kind, siblingCount = 0 }: { id
       <div className="mt-2 flex flex-wrap gap-2">
         {kind === "proof" ? (
           <>
-            <button type="button" disabled={!!busy} onClick={() => act("approve")} className={`${button} bg-primary text-white hover:bg-primary-dark`}>
+            <button type="button" disabled={!!busy} onClick={() => act("approve")} className={`${button} bg-action text-white hover:bg-action-hover`}>
               {busy === "approve" ? "Transfert…" : "Approuver et transférer"}
             </button>
             <button type="button" disabled={!!busy} onClick={() => act("refuse")} className={`${button} border border-charcoal-300 bg-white text-charcoal-800 hover:bg-charcoal-50`}>

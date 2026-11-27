@@ -180,7 +180,7 @@ function LoginTab({ onAuthenticated }: { onAuthenticated: () => void }) {
       <button
         type="submit"
         disabled={loading || !turnstileToken}
-        className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+        className="w-full bg-action text-white py-3 rounded-full font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
       >
         {loading ? t("submitting") : t("submit")}
       </button>
@@ -366,7 +366,7 @@ function SignupTab({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       <button
         type="submit"
         disabled={loading || !turnstileToken}
-        className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+        className="w-full bg-action text-white py-3 rounded-full font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
       >
         {loading ? t("submitting") : t("submit")}
       </button>

@@ -313,7 +313,7 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
                   key={f.id ?? "all"}
                   href={filterHref(f.id)}
                   scroll={false}
-                  className={`px-4 py-2 rounded-full border text-sm transition-colors ${selected ? "border-primary bg-primary text-white" : "border-charcoal-100 text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5"}`}
+                  className={`px-4 py-2 rounded-full border text-sm transition-colors ${selected ? "border-action bg-action text-white" : "border-charcoal-100 text-charcoal-700 hover:border-primary hover:text-primary hover:bg-primary/5"}`}
                 >
                   {f.label} ({f.n})
                 </Link>
@@ -366,7 +366,7 @@ export default async function DealsLanding({ filter }: { filter?: string }) {
           <div className="mt-8 text-center">
             <Link
               href={localePath("/chalets", locale)}
-              className="inline-flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
             >
               {isEn ? "See all cabins" : "Voir tous les chalets"}
             </Link>

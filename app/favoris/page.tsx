@@ -128,7 +128,7 @@ export default async function FavorisPage() {
             </p>
             <Link
               href={localePath("/chalets", locale)}
-              className="inline-block bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-block bg-action text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-action-hover transition-colors"
             >
               {t("exploreCta")}
             </Link>

@@ -32,7 +32,7 @@ export default function FooterLangToggle() {
           haut/bas (::after) pour atteindre 44 px de haut, visuel de 36 px. */}
       <div
         className={`absolute rounded-full transition-transform duration-200 ease ${isEn ? "translate-x-[46px]" : "translate-x-0"}`}
-        style={{ backgroundColor: "#636e40", width: 46, height: 32, top: 2, left: 2 }}
+        style={{ backgroundColor: "var(--moss-500)", width: 46, height: 32, top: 2, left: 2 }}
       />
       <button
         type="button"

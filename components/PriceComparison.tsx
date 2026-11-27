@@ -52,7 +52,7 @@ export default async function PriceComparison() {
               p.isKabanalouer ? (
                 <div
                   key={p.name}
-                  className={`flex justify-between items-center gap-3 px-3.5 sm:px-[18px] py-3.5 rounded-xl bg-primary text-white cursor-default transition-[background-color,box-shadow] ${EASE} hover:bg-primary-dark hover:shadow-[0_8px_24px_rgba(35,30,22,0.18)]`}
+                  className={`flex justify-between items-center gap-3 px-3.5 sm:px-[18px] py-3.5 rounded-xl bg-action text-white cursor-default transition-[background-color,box-shadow] ${EASE} hover:bg-action-hover hover:shadow-[0_8px_24px_rgba(35,30,22,0.18)]`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/logo-wordmark-light.svg" alt="Kabanalouer" width={238} height={50} className="h-6 sm:h-9 w-auto shrink-0" />

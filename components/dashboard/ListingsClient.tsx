@@ -126,7 +126,7 @@ export default function ListingsClient({ listings, reviews, scores, translationP
               {isDraft && (
                 <Link
                   href={`${editHref}?section=publier`}
-                  className="relative z-10 order-last sm:order-none w-full sm:w-auto shrink-0 inline-flex items-center justify-center min-h-11 px-4 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+                  className="relative z-10 order-last sm:order-none w-full sm:w-auto shrink-0 inline-flex items-center justify-center min-h-11 px-4 rounded-full bg-action text-white text-sm font-semibold hover:bg-action-hover transition-colors"
                 >
                   {t("finishAndPublish")}
                 </Link>

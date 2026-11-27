@@ -51,7 +51,7 @@ export default function UnclaimedMatchBanner({ matches }: { matches: UnclaimedMa
           type="button"
           onClick={activate}
           disabled={busy}
-          className="shrink-0 inline-flex items-center justify-center bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-primary-dark transition-colors disabled:opacity-60"
+          className="shrink-0 inline-flex items-center justify-center bg-action text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-action-hover transition-colors disabled:opacity-60"
         >
           {busy ? t("bannerBusy") : t("bannerCta", { count })}
         </button>

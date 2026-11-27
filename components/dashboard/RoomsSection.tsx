@@ -229,7 +229,7 @@ export default function RoomsSection({
     <div className="space-y-8">
 
       {/* Value-add message */}
-      <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
+      <div className="border-l-[3px] border-moss-500 bg-[#f5f6ec] rounded-r-xl px-4 py-3">
         <p className="text-base text-charcoal-700">
           {t("proTip")}
         </p>
@@ -248,7 +248,7 @@ export default function RoomsSection({
             <button
               type="button"
               onClick={createDeclaredBedrooms}
-              className="shrink-0 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="shrink-0 bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
             >
               {t("quickCreateCta", { count: bedroomCount })}
             </button>
@@ -330,7 +330,7 @@ export default function RoomsSection({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+          className="bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
         >
           {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>

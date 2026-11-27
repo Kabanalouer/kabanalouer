@@ -70,7 +70,7 @@ export default function ReviewReplyForm({ reviewId, existingReply, allowEdit = t
         <button
           onClick={handleSave}
           disabled={saving || !reply.trim()}
-          className="bg-primary text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-action text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-action-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {saving ? t("replySaving") : t("replySave")}
         </button>

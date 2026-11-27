@@ -1,8 +1,10 @@
 @import "tailwindcss";
+@import "./tokens-v4.css";
 
 /* ============================================================
-   KABANALOUER — Design Tokens v3
-   Olive primary · Accent orange brûlé · Charcoal text · Clean white surfaces
+   KABANALOUER — Design Tokens v4
+   Mousse (identité) · Braise (action) · Forêt nuit (sections sombres)
+   Les valeurs brutes (--moss-*, --braise-*, rôles) sont dans tokens-v4.css.
    Plus Jakarta Sans · Geist Mono
    ============================================================ */
 
@@ -43,10 +45,29 @@
   /* Étoiles des avis — gris foncé, comme Airbnb (sobre, meilleur contraste) */
   --color-star: #222222;
 
-  /* Accent — orange brûlé, réservé aux signaux (promo, favoris, notifications).
-     Jamais sur le bouton d'action principal, qui reste olive (voir CLAUDE.md § Couleurs). */
-  --color-accent:      #C2410C;
-  --color-accent-dark: #9A3412;
+  /* Accent = Braise : promo, favoris, notifications ET boutons d'action (v4).
+     Mêmes classes qu'avant (bg-accent, text-accent), nouvelle teinte. */
+  --color-accent:      var(--braise-600);
+  --color-accent-dark: var(--braise-700);
+
+  /* v4 — Action (Braise) : boutons, liens d'action. bg-action, hover:bg-action-hover, active:bg-action-press */
+  --color-action:          var(--action);
+  --color-action-hover:    var(--action-hover);
+  --color-action-press:    var(--action-press);
+  --color-action-on-dark:  var(--action-on-dark);
+  --color-inverse:         var(--bg-inverse);
+
+  /* v4 — Échelles complètes : bg-moss-500, text-braise-600, bg-night-800… */
+  --color-moss-50: var(--moss-50);   --color-moss-100: var(--moss-100); --color-moss-200: var(--moss-200);
+  --color-moss-300: var(--moss-300); --color-moss-400: var(--moss-400); --color-moss-500: var(--moss-500);
+  --color-moss-600: var(--moss-600); --color-moss-700: var(--moss-700); --color-moss-800: var(--moss-800);
+  --color-moss-900: var(--moss-900);
+  --color-braise-50: var(--braise-50);   --color-braise-100: var(--braise-100); --color-braise-200: var(--braise-200);
+  --color-braise-300: var(--braise-300); --color-braise-400: var(--braise-400); --color-braise-500: var(--braise-500);
+  --color-braise-600: var(--braise-600); --color-braise-700: var(--braise-700); --color-braise-800: var(--braise-800);
+  --color-braise-900: var(--braise-900);
+  --color-night-600: var(--night-600); --color-night-700: var(--night-700);
+  --color-night-800: var(--night-800); --color-night-900: var(--night-900);
 
   /* Échelle typographique (voir CLAUDE.md § Typographie) — text-heading-2 / text-heading-3 */
   --text-heading-2: 1.375rem;              /* 22px — titres de section (H2) */
@@ -56,7 +77,7 @@
 
   /* Espacement des lettres des titres (voir CLAUDE.md § Typographie) — tracking-display / tracking-h2 / tracking-h3.
      Toujours passer par ces tokens, jamais de tracking-[-0.0Xem] en dur dans les composants. */
-  --tracking-display: -0.02em;   /* grands titres d'accroche, gros chiffres */
+  --tracking-display: -0.05em;   /* grands titres d'accroche, gros chiffres (v4) */
   --tracking-h2:      -0.015em;  /* titres de section */
   --tracking-h3:      -0.01em;   /* sous-titres, titres de carte */
 
@@ -97,7 +118,7 @@
 
 /* ── Raw CSS custom properties (design tokens, not Tailwind utilities) ── */
 :root {
-  --snow: #ffffff; /* utilisé par --shadow-focus */
+  /* --snow, --radius-sm/lg/xl/pill, --shadow-focus : définis dans tokens-v4.css */
 
   /* --- Typography --- */
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -152,12 +173,8 @@
 
   /* --- Border radius --- */
   --radius-xs:   4px;
-  --radius-sm:   8px;
   --radius-md:   8px;
-  --radius-lg:   12px;
-  --radius-xl:   16px;
   --radius-2xl:  20px;
-  --radius-pill: 999px;
 
   /* --- Shadows --- */
   --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
@@ -165,7 +182,6 @@
   --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-xl:    0 24px 56px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
-  --shadow-focus: 0 0 0 2px var(--snow), 0 0 0 4px rgba(99, 110, 64, 0.45);
   --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* --- Motion --- */

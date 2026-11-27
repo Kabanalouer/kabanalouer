@@ -308,7 +308,7 @@ export default async function RegionLanding({ regionConfig }: { regionConfig: Re
             </p>
             <Link
               href={localePath("/chalets", locale)}
-              className="inline-block bg-primary text-white font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors"
+              className="inline-block bg-action text-white font-bold px-6 py-3 rounded-xl hover:bg-action-hover transition-colors"
             >
               {isEn ? "Explore all regions →" : "Explorer toutes les régions →"}
             </Link>
