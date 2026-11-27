@@ -80,7 +80,8 @@ export async function findUnclaimedByCity(city: string, locale: "fr" | "en"): Pr
 // Fiches non revendiquées dont le titre contient tous les mots saisis (bannière « Pour les proprios » de l'accueil :
 // « Nom de votre chalet ou ville »). Comparaison sur les noms normalisés (accents, tirets, majuscules) ; 12 résultats au plus.
 export async function findUnclaimedByName(query: string, locale: "fr" | "en"): Promise<UnclaimedMatch[]> {
-  const tokens = normalizeDest(query).split(" ").filter((w) => w.length >= 2);
+  // Requête assez précise : des mots d'au moins 3 lettres (un texte comme « le » ne renvoie jamais une liste de fiches au hasard).
+  const tokens = normalizeDest(query).split(" ").filter((w) => w.length >= 3);
   if (tokens.length === 0) return [];
   const { data } = await adminSupabase()
     .from("listings")
