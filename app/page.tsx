@@ -7,7 +7,7 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import PriceComparison from "@/components/PriceComparison";
-import OwnersSection from "@/components/OwnersSection";
+import HomeOwnersBanner from "@/components/home/HomeOwnersBanner";
 import RegionsExplorer from "@/components/RegionsExplorer";
 import ThemesExplorer from "@/components/ThemesExplorer";
 import HomeThemeShowcase from "@/components/HomeThemeShowcase";
@@ -193,7 +193,7 @@ export default async function HomePage() {
       <HomeSeoSection />
 
       {/* ── Pour les propriétaires ── */}
-      <OwnersSection />
+      <HomeOwnersBanner />
 
       </main>
 

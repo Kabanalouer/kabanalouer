@@ -16,29 +16,33 @@ import { CreateListingLink, NEW_LISTING_PATH, OwnerAccessProvider } from "@/comp
 // lance la revendication. Si son chalet n'y est pas, « Créer mon annonce ».
 export default function FindMyCabin({
   city,
+  query,
   matches,
   signedIn,
   locale,
 }: {
   city: string | null;
+  query: string | null;
   matches: UnclaimedMatch[];
   signedIn: boolean;
   locale: string;
 }) {
   return (
     <OwnerAccessProvider>
-      <FindMyCabinInner city={city} matches={matches} signedIn={signedIn} locale={locale} />
+      <FindMyCabinInner city={city} query={query} matches={matches} signedIn={signedIn} locale={locale} />
     </OwnerAccessProvider>
   );
 }
 
 function FindMyCabinInner({
   city,
+  query,
   matches,
   signedIn,
   locale,
 }: {
   city: string | null;
+  query: string | null;
   matches: UnclaimedMatch[];
   signedIn: boolean;
   locale: string;
@@ -54,14 +58,20 @@ function FindMyCabinInner({
       <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-charcoal-800">{t("findTitle")}</h1>
       <p className="mt-3 text-base text-charcoal-600 max-w-xl">{t("findIntro")}</p>
 
-      <CitySearch initialCity={city ?? ""} onPick={(slug) => router.push(`${basePath}?ville=${encodeURIComponent(slug)}`)} />
+      <CitySearch
+        initialCity={city ?? query ?? ""}
+        onPick={(slug) => router.push(`${basePath}?ville=${encodeURIComponent(slug)}`)}
+        onFreeText={(text) => router.push(`${basePath}?q=${encodeURIComponent(text)}`)}
+      />
 
-      {city && (
+      {(city || query) && (
         <section className="mt-12" aria-live="polite">
           {matches.length > 0 ? (
             <>
               <h2 className="text-heading-2 font-semibold tracking-h2 text-charcoal-800">
-                {matches.length === 1 ? t("findResultsOne", { city }) : t("findResultsMany", { count: matches.length, city })}
+                {city
+                  ? matches.length === 1 ? t("findResultsOne", { city }) : t("findResultsMany", { count: matches.length, city })
+                  : matches.length === 1 ? t("findResultsNameOne", { q: query ?? "" }) : t("findResultsNameMany", { count: matches.length, q: query ?? "" })}
               </h2>
               <p className="mt-2 text-base text-charcoal-600">{t("findResultsHint")}</p>
               <ul className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -75,7 +85,7 @@ function FindMyCabinInner({
                     )}
                     <div className="flex flex-1 flex-col p-5">
                       <p className="text-base font-semibold text-charcoal-800 line-clamp-2">{m.title}</p>
-                      <p className="mt-1 text-sm text-charcoal-500">{[city, t("notActivated")].filter(Boolean).join(" · ")}</p>
+                      <p className="mt-1 text-sm text-charcoal-500">{[city ?? m.city, t("notActivated")].filter(Boolean).join(" · ")}</p>
                       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
                         <button
                           type="button"
@@ -102,8 +112,8 @@ function FindMyCabinInner({
             </>
           ) : (
             <>
-              <h2 className="text-heading-2 font-semibold tracking-h2 text-charcoal-800">{t("findNoneTitle", { city })}</h2>
-              <p className="mt-2 text-base text-charcoal-600">{t("findNoneBody")}</p>
+              <h2 className="text-heading-2 font-semibold tracking-h2 text-charcoal-800">{city ? t("findNoneTitle", { city }) : t("findNoneNameTitle", { q: query ?? "" })}</h2>
+              <p className="mt-2 text-base text-charcoal-600">{city ? t("findNoneBody") : t("findNoneNameBody")}</p>
             </>
           )}
 
@@ -177,7 +187,7 @@ function ClaimDialog({
 
 // Champ « Ville » : propositions tirées de la liste officielle des municipalités (la même que la barre de
 // recherche des chalets), jamais de ville inventée. Fautes de frappe : « Vouliez-vous dire… ».
-function CitySearch({ initialCity, onPick }: { initialCity: string; onPick: (slug: string) => void }) {
+function CitySearch({ initialCity, onPick, onFreeText }: { initialCity: string; onPick: (slug: string) => void; onFreeText: (text: string) => void }) {
   const t = useTranslations("claim");
   const [municipalities, setMunicipalities] = useState<Municipality[] | null>(null);
   const [input, setInput] = useState(initialCity);
@@ -219,6 +229,8 @@ function CitySearch({ initialCity, onPick }: { initialCity: string; onPick: (slu
     e.preventDefault();
     const chosen = resolveDestination(ranked);
     if (chosen) return pick(chosen);
+    // Texte qui n'est pas une ville (nom de chalet, ex. depuis l'accueil) : recherche par nom.
+    if (input.trim()) return onFreeText(input.trim());
     setUnknown(true);
     setOpen(true);
   }

@@ -77,6 +77,28 @@ export async function findUnclaimedByCity(city: string, locale: "fr" | "en"): Pr
     .map((r) => toMatch(r, locale));
 }
 
+// Fiches non revendiquées dont le titre contient tous les mots saisis (bannière « Pour les proprios » de l'accueil :
+// « Nom de votre chalet ou ville »). Comparaison sur les noms normalisés (accents, tirets, majuscules) ; 12 résultats au plus.
+export async function findUnclaimedByName(query: string, locale: "fr" | "en"): Promise<UnclaimedMatch[]> {
+  const tokens = normalizeDest(query).split(" ").filter((w) => w.length >= 2);
+  if (tokens.length === 0) return [];
+  const { data } = await adminSupabase()
+    .from("listings")
+    .select(COLUMNS)
+    .eq("claim_status", "unclaimed")
+    .eq("is_published", true)
+    .eq("is_test", false)
+    .order("created_at", { ascending: true })
+    .limit(1000);
+  return ((data ?? []) as Row[])
+    .filter((r) => {
+      const hay = normalizeDest(`${r.title ?? ""} ${r.title_en ?? ""}`);
+      return tokens.every((w) => hay.includes(w));
+    })
+    .slice(0, 12)
+    .map((r) => toMatch(r, locale));
+}
+
 // Fiches non activées (brouillons compris) dont l'adresse au dossier est exactement celle du compte. Jamais par
 // domaine : une liste de messageries à exclure serait toujours incomplète, et quelqu'un pourrait prendre les fiches d'un autre.
 export async function selectUnclaimedForEmail<T extends { id: string }>(columns: string, email: string, limit = 100): Promise<T[]> {
