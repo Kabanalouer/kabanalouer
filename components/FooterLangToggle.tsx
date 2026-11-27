@@ -22,34 +22,19 @@ export default function FooterLangToggle() {
     router.push(locale === "en" ? `/en${basePath}` : basePath);
   }
 
+  // Pastille à deux positions : la langue active est en noir forêt (aria-current), l'autre en gris.
+  // Zone tactile : boutons de 36 px + 3 px de marge + bordure = 44 px de haut.
+  const base =
+    "min-h-9 rounded-[var(--radius-pill)] px-3.5 py-[7px] text-[13px] font-bold leading-none transition-colors focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]";
+  const active = "bg-inverse text-white";
+  const inactive = "bg-transparent text-charcoal-600 hover:text-charcoal-800";
+
   return (
-    <div
-      className="relative flex rounded-full"
-      style={{ backgroundColor: "#e8ebdc", width: 96, height: 36, padding: 2 }}
-    >
-      {/* Sliding thumb */}
-      {/* Zone tactile : chaque bouton (46 px de large) déborde de 6 px en
-          haut/bas (::after) pour atteindre 44 px de haut, visuel de 36 px. */}
-      <div
-        className={`absolute rounded-full transition-transform duration-200 ease ${isEn ? "translate-x-[46px]" : "translate-x-0"}`}
-        style={{ backgroundColor: "var(--moss-500)", width: 46, height: 32, top: 2, left: 2 }}
-      />
-      <button
-        type="button"
-        onClick={() => switchTo("fr")}
-        aria-pressed={!isEn}
-        lang="fr"
-        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-[''] ${!isEn ? "text-white" : "text-charcoal-600"}`}
-      >
+    <div className="inline-flex gap-1 rounded-[var(--radius-pill)] border border-[var(--border-2)] bg-white p-[3px]">
+      <button type="button" onClick={() => switchTo("fr")} aria-current={!isEn ? "true" : undefined} lang="fr" className={`${base} ${!isEn ? active : inactive}`}>
         FR
       </button>
-      <button
-        type="button"
-        onClick={() => switchTo("en")}
-        aria-pressed={isEn}
-        lang="en"
-        className={`relative z-10 flex-1 flex items-center justify-center text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-[''] ${isEn ? "text-white" : "text-charcoal-600"}`}
-      >
+      <button type="button" onClick={() => switchTo("en")} aria-current={isEn ? "true" : undefined} lang="en" className={`${base} ${isEn ? active : inactive}`}>
         EN
       </button>
     </div>

@@ -61,8 +61,8 @@ export default async function Footer() {
   ];
 
   return (
-    <footer className="w-full block bg-charcoal-50 border-t border-[#ebebeb]">
-      <div className="px-6 lg:px-8 py-14">
+    <footer className="w-full block overflow-hidden bg-charcoal-50 border-t border-[#ebebeb]">
+      <div className="px-6 lg:px-8 pt-14">
 
         {/* ── Columns ── */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
@@ -145,6 +145,20 @@ export default async function Footer() {
             </svg>
             {" "}{t("inQuebec")}
           </p>
+        </div>
+
+        {/* ── Signature décorative : « kabanalouer » en très grand, calé sur la largeur du contenu ──
+            Le conteneur (1280 px au plus) mesure la largeur (cqi) : le mot fait 5,4 fois sa taille de police en largeur, donc
+            taille = largeur ÷ 5,4 ; il tient pile entre les marges, seul le bas est rogné
+            (footer en overflow-hidden, aucun padding sous la signature). Invisible pour les lecteurs d'écran. */}
+        <div className="mt-[clamp(32px,5vw,64px)] max-w-[1280px]" style={{ containerType: "inline-size" }}>
+          <div
+            aria-hidden="true"
+            className="-mb-[0.04em] -ml-[0.04em] select-none whitespace-nowrap font-extrabold leading-[.74] tracking-[-0.065em] text-primary"
+            style={{ fontFamily: "var(--font-display)", fontSize: "calc(100cqi / 5.4)" }}
+          >
+            kabanalouer
+          </div>
         </div>
       </div>
     </footer>
