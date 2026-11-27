@@ -88,22 +88,23 @@ function Heart({ listing, userId }: { listing: ShowcaseListing; userId: string |
 
 const PHOTO_ZOOM = "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none";
 
-/* ── Bord de l'eau : carte du carrousel (photo 4/5) ── */
-export function CarouselCard({ listing, locale, userId }: { listing: ShowcaseListing; locale: string; userId: string | null }) {
+/* ── Bord de l'eau : carte de la grille (photo 4/5) ── */
+// Sous 640 px : pas de ligne d'accroche, nom en 15 px et ville sous le nom (évite les coupures).
+export function GridCard({ listing, locale, userId }: { listing: ShowcaseListing; locale: string; userId: string | null }) {
   const d = cardData(listing, locale);
   return (
-    <Link href={d.href} title={listing.title} className="group show-card block">
+    <Link href={d.href} title={listing.title} className="group block min-w-0">
       <div className="relative aspect-[4/5] rounded-[var(--radius-lg)] overflow-hidden bg-charcoal-100">
-        <Image src={d.photo} alt={listing.title} fill loading="lazy" sizes="(max-width:640px) 78vw, (max-width:1024px) 40vw, 280px" className={`object-cover ${PHOTO_ZOOM}`} />
+        <Image src={d.photo} alt={listing.title} fill loading="lazy" sizes="(max-width:1024px) 50vw, 25vw" className={`object-cover ${PHOTO_ZOOM}`} />
         <PromoBadge listing={listing} locale={locale} />
         <Heart listing={listing} userId={userId} />
       </div>
       <div className="mt-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <h3 className="min-w-0 flex-1 truncate text-base font-bold text-charcoal-800">{d.name}</h3>
-          <span className="min-w-0 max-w-[50%] shrink-0 truncate whitespace-nowrap text-sm text-charcoal-400">{d.location}</span>
+        <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
+          <h3 className="min-w-0 truncate text-[15px] sm:flex-1 sm:text-base font-bold text-charcoal-800">{d.name}</h3>
+          <span className="min-w-0 truncate whitespace-nowrap text-sm text-charcoal-400 sm:max-w-[50%] sm:shrink-0">{d.location}</span>
         </div>
-        <p className="mt-0.5 truncate text-sm text-charcoal-400">
+        <p className="mt-0.5 hidden sm:block truncate text-sm text-charcoal-400">
           {d.tagline ? `${d.tagline} · ${d.guestsShort}` : d.guestsShort}
         </p>
         <Price listing={listing} locale={locale} className="mt-1 block text-[15px]" />

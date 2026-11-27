@@ -230,8 +230,7 @@ body {
 
 /* ── Accueil : rangées de chalets (option 2b) ──
    .show-wrap : conteneur de requête (cqw = largeur de la page sans la barre de défilement) ;
-   .show-inner : contenu centré 1280 px ; .show-scroller : rangée qui déborde à droite jusqu'au bord de l'écran,
-   alignée à gauche sur le contenu ; .show-rail : rail mobile (carrousel) qui devient une grille 2 colonnes dès 640 px. */
+   .show-inner : contenu centré 1280 px ; .show-rail : rail mobile (carrousel) qui devient une grille 2 colonnes dès 640 px. */
 .show-wrap {
   container-type: inline-size;
   overflow-x: clip;
@@ -243,29 +242,7 @@ body {
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
-.show-scroller {
-  --left: calc(max(0px, (100cqw - 1280px) / 2) + var(--gutter));
-  display: flex;
-  gap: var(--gap);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding-left: var(--left);
-  scrollbar-width: none;
-  padding-left: var(--left);
-  padding-right: var(--gutter);
-}
-.show-scroller::-webkit-scrollbar,
 .show-rail::-webkit-scrollbar { display: none; }
-.show-scroller > .show-card { flex: 0 0 auto; scroll-snap-align: start; width: 78cqw; }
-@media (min-width: 640px) {
-  .show-scroller > .show-card { width: calc((100cqw - var(--left) - 2 * var(--gap)) / 2.3); }
-}
-@media (min-width: 1024px) {
-  .show-scroller > .show-card { width: calc((100cqw - var(--left) - 3 * var(--gap)) / 3.3); }
-}
-@media (min-width: 1280px) {
-  .show-scroller > .show-card { width: calc((1280px - 2 * 56px - 3 * 20px) / 4.3); }
-}
 .show-rail {
   display: flex;
   gap: var(--gap);

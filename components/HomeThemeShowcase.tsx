@@ -6,19 +6,18 @@ import { localePath } from "@/lib/localePath";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { AMENITY_LANDINGS, countAmenityLandingsWith, listingMatchesLanding, type AmenityLandingKey } from "@/lib/amenityLandings";
-import ShowcaseCarousel from "@/components/home/ShowcaseCarousel";
-import { CarouselCard, FeaturedCard, RowCard, SmallCard, type ShowcaseListing } from "@/components/home/ShowcaseParts";
+import { FeaturedCard, GridCard, RowCard, SmallCard, type ShowcaseListing } from "@/components/home/ShowcaseParts";
 
-// Trois rangées de l'accueil (option 2b, 2026-11-27) : bord de l'eau (carrousel), spa (coup de cœur + grille),
+// Trois rangées de l'accueil (option 2b, 2026-11-27) : bord de l'eau (grille de 4), spa (coup de cœur + grille),
 // télétravail (intro + liste). Les chalets sont choisis comme avant (2026-10-25) : revendiquées d'abord, puis meilleur
 // score, puis plus récentes ; un chalet déjà choisi est écarté des thèmes suivants, sauf pour compléter les 3 premiers.
-// Les 3 premiers de chaque thème sont donc les mêmes qu'avant ; les rangées plus fournies (8 pour le bord de l'eau, 5 pour
+// Les 3 premiers de chaque thème sont donc les mêmes qu'avant ; les rangées plus fournies (4 pour le bord de l'eau, 5 pour
 // le spa) prolongent la même liste, sans doublon entre les thèmes.
 
 export const SHOWCASE_THEMES = ["waterfront", "spa", "remote-work"] as const satisfies readonly AmenityLandingKey[];
 type ThemeKey = (typeof SHOWCASE_THEMES)[number];
 const BASE_PER_THEME = 3;
-const TARGET: Record<ThemeKey, number> = { waterfront: 8, spa: 5, "remote-work": 3 };
+const TARGET: Record<ThemeKey, number> = { waterfront: 4, spa: 5, "remote-work": 3 };
 
 const TEXTS: Record<ThemeKey, { titleFr: string; titleEn: string }> = {
   waterfront: { titleFr: "Location de chalet au bord de l’eau", titleEn: "Waterfront cabin rentals" },
@@ -125,6 +124,10 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
   };
 
   // En-tête commun : H2 SEO, puis le lien sous le titre (6 px) avec le vrai nombre de chalets de la catégorie.
+  const linkLabel = (key: ThemeKey) => {
+    const n = counts?.[key];
+    return n && n > 0 ? (isEn ? `See all ${n} cabins →` : `Voir les ${n} chalets →`) : isEn ? "See all cabins →" : "Voir tous les chalets →";
+  };
   const header = (key: ThemeKey, href: string) => {
     const n = counts?.[key];
     const label = n && n > 0 ? (isEn ? `See all ${n} cabins →` : `Voir les ${n} chalets →`) : isEn ? "See all cabins →" : "Voir tous les chalets →";
@@ -138,6 +141,17 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
     );
   };
 
+  // En-tête des sections bord de l'eau et spa : H2 à gauche, lien à droite sur la dernière ligne du H2 ;
+  // sans assez de place (mobile), flex-wrap met le lien sous le H2, aligné à gauche.
+  const headerRow = (key: ThemeKey, href: string) => (
+    <div className="mb-6 sm:mb-8 flex flex-wrap items-end [align-items:last_baseline] justify-between gap-x-4 gap-y-2">
+      <h2 className={H2_CLASS}>{isEn ? TEXTS[key].titleEn : TEXTS[key].titleFr}</h2>
+      <Link href={href} className="whitespace-nowrap text-[15px] font-bold text-link hover:text-action-hover transition-colors">
+        {linkLabel(key)}
+      </Link>
+    </div>
+  );
+
   return (
     <>
       {picks.map(({ key, landing, ids }) => {
@@ -148,15 +162,17 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
         if (key === "waterfront") {
           return (
             <section key={key} className={SECTION_GAP}>
-              <ShowcaseCarousel
-                header={header(key, href)}
-                prevLabel={isEn ? "Previous cabins" : "Chalets précédents"}
-                nextLabel={isEn ? "Next cabins" : "Chalets suivants"}
-              >
-                {cards.map((c) => (
-                  <CarouselCard key={c.id} listing={c} locale={locale} userId={userId} />
-                ))}
-              </ShowcaseCarousel>
+              <div className="show-wrap">
+                <div className="show-inner">
+                  {headerRow(key, href)}
+                  {/* Grille fixe de 4 chalets : 4 colonnes dès 1024 px, 2 × 2 en dessous */}
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+                    {cards.slice(0, 4).map((c) => (
+                      <GridCard key={c.id} listing={c} locale={locale} userId={userId} />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </section>
           );
         }
@@ -168,7 +184,7 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
           return (
             <section key={key} className={`show-wrap ${SECTION_GAP}`}>
               <div className="show-inner">
-                <div className="mb-6 sm:mb-8">{header(key, href)}</div>
+                {headerRow(key, href)}
                 <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
                   <FeaturedCard listing={featured} locale={locale} userId={userId} />
                   {others.length > 0 && (
