@@ -29,6 +29,8 @@ import ComboLanding, { buildComboDescription, buildComboTitle } from "./_compone
 import { MIN_LISTINGS_FOR_COMBO, comboPath, getComboIndex, getComboThemeBySlug, isRedundantCityCombo, type ComboTheme } from "@/lib/comboLandings";
 import type { RegionConfig } from "@/lib/regions";
 import { getLocale } from "next-intl/server";
+import ThemeLandingPage from "./_components/ThemeLandingPage";
+import { resolveThemeTarget, buildThemeMetadata } from "@/lib/themeRouting";
 
 // SEO : une région sans chalet actif publié est du contenu quasi vide/dupliqué
 // aux yeux de Google (même gabarit sur les 15 pages région) — reste non-indexable
@@ -60,10 +62,10 @@ const DEFAULT_PHOTO =
 // - 3 segments : région/ville/nom-du-chalet (fiche canonique).
 interface Props {
   params: Promise<{ segments: string[] }>;
-  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string }>;
+  searchParams: Promise<{ checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string; acces?: string }>;
 }
 
-type SearchParams = { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string; type?: string };
+type SearchParams = { checkin?: string; checkout?: string; capacity?: string; dogs?: string; preview?: string; type?: string; acces?: string };
 
 type ListingRow = Record<string, unknown> & {
   title: string | null;
@@ -167,6 +169,13 @@ export async function generateMetadata({ params }: Props) {
   const { segments } = await params;
   const locale = await getLocale();
   const isEn = locale === "en";
+
+  // Pages thème (gabarit ThemeLandingPage, français seulement) : /chalets/bord-de-l-eau[/région[/ville]]
+  if (!isEn) {
+    const themeScope = await resolveThemeTarget(segments);
+    if (themeScope && themeScope !== "not-found") return buildThemeMetadata(themeScope);
+  }
+
   const supabase = await createClient();
 
   if (segments.length === 1) {
@@ -427,6 +436,12 @@ export default async function ChaletPage({ params, searchParams }: Props) {
   const [locale, sp] = await Promise.all([getLocale(), searchParams]);
   const isEn = locale === "en";
 
+  if (!isEn) {
+    const themeScope = await resolveThemeTarget(segments);
+    if (themeScope === "not-found") notFound();
+    if (themeScope) return <ThemeLandingPage scope={themeScope} acces={sp.acces} />;
+  }
+
   if (segments.length === 1) {
     return renderSingleSegment(segments[0], locale, isEn, sp);
   }
@@ -563,6 +578,8 @@ async function renderTwoSegments([slug, citySlug]: [string, string], isEn: boole
   if (expandedCity) permanentRedirect(`${isEn ? "/en/cabins" : "/chalets"}/${slug}/${expandedCity}`);
 
   const comboTheme = getComboThemeBySlug(citySlug, isEn);
+  // Ancienne forme /chalets/{région}/bord-de-l-eau → /chalets/bord-de-l-eau/{région} (301, thème en premier)
+  if (comboTheme?.key === "waterfront" && !isEn) permanentRedirect(`/chalets/${comboTheme.slugFr}/${regionConfig.slug}`);
   if (comboTheme) return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={null} />;
 
   const { data: cityRows } = await supabase
@@ -592,6 +609,8 @@ async function renderThreeSegments([slug, city, chaletSlug]: [string, string, st
   if (comboTheme) {
     const expandedCity = expandSaintSlug(city);
     if (expandedCity) permanentRedirect(`${isEn ? "/en/cabins" : "/chalets"}/${slug}/${expandedCity}/${chaletSlug}`);
+    // Ancienne forme /chalets/{région}/{ville}/bord-de-l-eau → /chalets/bord-de-l-eau/{région}/{ville} (301)
+    if (comboTheme.key === "waterfront" && !isEn) permanentRedirect(`/chalets/${comboTheme.slugFr}/${regionConfig.slug}/${city}`);
     const cityName = await resolveCityName(supabase, regionConfig, city);
     if (!cityName) notFound();
     return <ComboLanding theme={comboTheme} regionConfig={regionConfig} cityName={cityName} />;

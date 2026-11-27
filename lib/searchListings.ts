@@ -4,6 +4,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { PAGE_SIZE } from "@/lib/searchPaging";
+import { THEME_AMENITY_IDS } from "@/lib/themeStats";
 
 // Recherche de chalets (/chalets et /api/listings/geo) : la liste est paginée côté serveur
 // (une page = PAGE_SIZE fiches complètes), la carte épingle toutes les fiches de la recherche
@@ -35,6 +36,8 @@ export interface SearchFilters {
   minBeds?: string;
   minBathrooms?: string;
   amenities?: string;
+  // Page thème (/chalets?theme=bord-de-l-eau) : au moins un des équipements du thème
+  theme?: string;
   dogsCount?: number | null;
   accessibleOnly?: boolean;
   bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
@@ -98,6 +101,10 @@ function listingsQuery(supabase: SupabaseClient, f: SearchFilters, excludedIds: 
   if (amenityList.length > 0) {
     // Chaîne JSON obligatoire : un tableau d'objets passé tel quel devient « {[object Object]} » dans l'URL PostgREST.
     query = query.contains("amenities", JSON.stringify(amenityList.map((id) => ({ id }))));
+  }
+  const themeIds = f.theme ? THEME_AMENITY_IDS[f.theme] : undefined;
+  if (themeIds?.length) {
+    query = query.or(themeIds.map((id) => `amenities.cs.${JSON.stringify([{ id }])}`).join(","));
   }
   // Le nombre maximum de chiens est facultatif : une fiche qui n'en précise aucun reste dans les résultats
   if (f.dogsCount) query = query.eq("dogs_allowed", true).or(`dogs_max.is.null,dogs_max.gte.${f.dogsCount}`);

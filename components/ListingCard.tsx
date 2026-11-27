@@ -38,11 +38,14 @@ export default function ListingCard({
   listing,
   currentUserId,
   priority = false,
+  themeBadge,
 }: {
   listing: Listing;
   currentUserId?: string | null;
   // Cartes au-dessus de la ligne de flottaison : première photo chargée en priorité.
   priority?: boolean;
+  // Pages thème : pastille blanche en haut à gauche (« Bord de l'eau », « Accès au lac · privé »)
+  themeBadge?: string;
 }) {
   const t = useTranslations("listingCard");
   const locale = useLocale();
@@ -221,7 +224,12 @@ export default function ListingCard({
         })()}
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10">
+          {themeBadge && (
+            <span className="bg-white/[.94] text-[var(--fg-1)] text-xs font-semibold px-3 py-1 rounded-full">
+              {themeBadge}
+            </span>
+          )}
           {listing.isFeatured && (
             <span className="bg-moss-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
               {t("featured")}

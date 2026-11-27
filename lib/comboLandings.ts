@@ -127,6 +127,9 @@ export function comboPlace(region: RegionConfig, city: string | null, isEn: bool
 }
 
 export function comboPath(theme: ComboTheme, region: RegionConfig, city: string | null, isEn: boolean): string {
+  // Bord de l'eau (français) : nouveau gabarit, thème en premier (/chalets/bord-de-l-eau/laurentides/mille-isles).
+  // L'ancienne forme /chalets/laurentides/bord-de-l-eau redirige en 301 (page.tsx).
+  if (!isEn && theme.key === "waterfront") return `/chalets/${theme.slugFr}/${region.slug}${city ? `/${slugify(city)}` : ""}`;
   const base = isEn ? `/en/cabins/${region.slugEn}` : `/chalets/${region.slug}`;
   return `${base}${city ? `/${slugify(city)}` : ""}/${isEn ? theme.slugEn : theme.slugFr}`;
 }

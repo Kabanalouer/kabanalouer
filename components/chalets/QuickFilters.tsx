@@ -15,13 +15,14 @@ export interface SearchFiltersState {
   minBeds?: string;
   minBathrooms?: string;
   amenities?: string;
+  theme?: string;
   dogs?: string;
   accessible?: string;
 }
 
 const KEYS: (keyof SearchFiltersState)[] = [
   "region", "city", "capacity", "checkin", "checkout",
-  "minBedrooms", "minBeds", "minBathrooms", "amenities", "dogs", "accessible",
+  "minBedrooms", "minBeds", "minBathrooms", "amenities", "theme", "dogs", "accessible",
 ];
 
 // Pastilles d'équipement : les identifiants sont ceux du panneau Filtres (paramètre ?amenities=a,b).

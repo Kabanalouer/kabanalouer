@@ -3,7 +3,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
 
 // Bannière proprios mince, en fin de liste de la page de résultats seulement (l'accueil garde sa bannière).
-export default function OwnersSlimBanner() {
+export default function OwnersSlimBanner({ title }: { title?: string } = {}) {
   const t = useTranslations("chaletsMap");
   const locale = useLocale();
   const href = localePath(
@@ -28,7 +28,7 @@ export default function OwnersSlimBanner() {
           {t("ownersEyebrow")}
         </p>
         <p className="mt-1 text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-white">
-          {t("ownersTitle")}
+          {title ?? t("ownersTitle")}
         </p>
         <p className="mt-1 text-sm text-[var(--fg-muted-on-inverse)]">{t("ownersSub")}</p>
       </div>

@@ -113,6 +113,7 @@ export default function ChaletsMapLayout({ initialListings, initialPins, initial
         ...(filters.minBeds && { minBeds: filters.minBeds }),
         ...(filters.minBathrooms && { minBathrooms: filters.minBathrooms }),
         ...(filters.amenities && { amenities: filters.amenities }),
+        ...(filters.theme && { theme: filters.theme }),
         ...(filters.dogs && { dogs: filters.dogs }),
         ...(filters.accessible && { accessible: filters.accessible }),
         page: String(nextPage),
