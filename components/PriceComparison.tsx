@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/formatPrice";
 // Le libellé du chalet et celui du séjour viennent des traductions (home.compareCardListing / compareCardStay).
 const comparison = {
   chalet: "Chalet du Lac · Laurentides",
-  nights: 3,
+  nights: 2,
   kabanalouer: 957,
   others: [
     { name: "Airbnb", total: 1105, fee: 148 },
