@@ -166,6 +166,10 @@ export default async function HomePage() {
 
       {/* ── 3 meilleurs chalets de 3 thèmes (bord de l'eau, spa, télétravail), puis tous les thèmes en tuiles ── */}
       <HomeThemeShowcase userId={user?.id ?? null} />
+
+      {/* ── Notre différence — comparaison des prix (après les rangées de chalets) ── */}
+      <PriceComparison />
+
       <ThemesExplorer />
 
       {/* ── Chalets en vedette ── */}
@@ -181,9 +185,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* ── Notre différence — comparaison des prix ── */}
-      <PriceComparison />
 
       {/* ── Explorer par région (seulement les régions avec chalets) ── */}
       <RegionsExplorer />
