@@ -12,8 +12,8 @@ import { formatPromoLines, isLastminuteVisible } from "@/lib/promoLabel";
 // Cartes de l'accueil (option 2b) : bord de l'eau (carrousel), spa (coup de cœur + grille), télétravail (liste).
 // Présentation seulement : les chalets affichés viennent de HomeThemeShowcase, inchangés.
 
-// `featured` : champ facultatif ; un chalet qui l'a devient le coup de cœur de la section spa.
-export type ShowcaseListing = Listing & { featured?: boolean };
+// L'ordre des chalets vient toujours de l'algorithme de classement (HomeThemeShowcase) : aucun réglage manuel.
+export type ShowcaseListing = Listing;
 
 const FALLBACK_PHOTO = "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80";
 

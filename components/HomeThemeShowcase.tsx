@@ -162,9 +162,9 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
         }
 
         if (key === "spa") {
-          // Coup de cœur : le chalet marqué `featured` s'il y en a un, sinon le premier de la liste.
-          const featured = cards.find((c) => c.featured) ?? cards[0];
-          const others = cards.filter((c) => c.id !== featured.id).slice(0, 4);
+          // Coup de cœur : toujours le premier chalet de la liste de l'algorithme, puis les 4 suivants dans l'ordre.
+          const [featured, ...rest] = cards;
+          const others = rest.slice(0, 4);
           return (
             <section key={key} className={`show-wrap ${SECTION_GAP}`}>
               <div className="show-inner">
