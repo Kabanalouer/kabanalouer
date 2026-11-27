@@ -32,7 +32,7 @@ export default async function PriceComparison() {
   const mutedOnDark = "text-[color:var(--fg-muted-on-inverse)]";
 
   return (
-    <section id="comparatif" className="section-dark py-[clamp(64px,9vw,128px)]">
+    <section id="comparatif" className="section-dark scroll-mt-20 py-[clamp(64px,9vw,128px)] focus:outline-none">
       <div className="mx-auto max-w-[1280px] px-[clamp(20px,4vw,64px)] grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:items-center">
         {/* Texte : eyebrow, H2, chiffre vedette, paragraphe */}
         <div className="flex flex-col gap-5">

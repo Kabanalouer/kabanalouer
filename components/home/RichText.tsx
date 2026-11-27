@@ -3,6 +3,7 @@ import { REGIONS } from "@/lib/regions";
 import { AMENITY_LANDINGS } from "@/lib/amenityLandings";
 import { DOG_FRIENDLY_PATH_EN, DOG_FRIENDLY_PATH_FR } from "@/lib/dogPolicy";
 import { localePath } from "@/lib/localePath";
+import AnchorLink from "@/components/home/AnchorLink";
 
 // Rend un texte avec balisage [libellé](cible) : les cibles « theme:<clé> », « region:<slug> », « path:/… » et « #ancre »
 // deviennent des liens vers les pages du site, dans la langue courante. Une cible inconnue reste du texte simple
@@ -33,9 +34,14 @@ export default function RichText({ markup, locale }: { markup: string; locale: s
   while ((m = re.exec(markup)) !== null) {
     if (m.index > last) parts.push(markup.slice(last, m.index));
     const href = resolveHref(m[2], locale);
+    const linkClass = "font-semibold text-link hover:underline underline-offset-4";
     parts.push(
-      href ? (
-        <Link key={i++} href={href} className="font-semibold text-link hover:underline underline-offset-4">
+      href && href.startsWith("#") ? (
+        <AnchorLink key={i++} href={href} className={linkClass}>
+          {m[1]}
+        </AnchorLink>
+      ) : href ? (
+        <Link key={i++} href={href} className={linkClass}>
           {m[1]}
         </Link>
       ) : (
