@@ -46,9 +46,9 @@ function Inner(props: Props) {
     ? `${formatShort(checkin, intlLocale)}${checkout ? ` – ${formatShort(checkout, intlLocale)}` : ""}`
     : "";
   const guestsLabel = capacity ? `${capacity} ${locale === "en" ? "guests" : "voy."}` : "";
-  const parts = [dest, datesLabel, guestsLabel].filter(Boolean);
-  const summary = parts.length > 0 ? parts.join(" · ") : t("searchCabin");
-  const hasSearch = parts.length > 0;
+  // Deux lignes : la destination, puis « Dates · Voyageurs » (ou les valeurs choisies)
+  const title = dest || t("everywhere");
+  const subtitle = `${datesLabel || t("dates")} · ${guestsLabel || t("guests")}`;
 
   return (
     <>
@@ -57,17 +57,20 @@ function Inner(props: Props) {
       <div className="lg:hidden sticky top-20 z-40 bg-white border-b border-[#ebebeb] px-4 py-2.5 flex items-center gap-2">
         <button
           onClick={() => setOpen(true)}
-          className="flex-1 flex items-center gap-2.5 bg-charcoal-50 hover:bg-charcoal-100 transition-colors rounded-full px-4 py-2 min-h-11 text-left min-w-0"
+          aria-label={t("searchCabin")}
+          className="flex-1 flex items-center gap-3 bg-white border border-[var(--border-2)] hover:border-charcoal-400 transition-colors rounded-full pl-4 pr-4 py-1.5 min-h-11 text-left min-w-0"
         >
-          <svg className="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <svg className="w-[18px] h-[18px] text-[var(--fg-1)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <span className={`text-sm truncate ${hasSearch ? "text-charcoal-800 font-medium" : "text-charcoal-400"}`}>
-            {summary}
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-sm font-bold text-[var(--fg-1)]">{title}</span>
+            <span className="block truncate text-xs text-[var(--fg-3)]">{subtitle}</span>
           </span>
         </button>
 
         <FiltersModal
+          variant="round"
           currentParams={{
             region: region || undefined,
             city: city || undefined,

@@ -11,6 +11,7 @@ import { localePath } from "@/lib/localePath";
 import { buildListingPath } from "@/lib/listingUrl";
 import { getRegionByDbValue } from "@/lib/regions";
 import { formatPrice } from "@/lib/formatPrice";
+import { splitListingTitle } from "@/lib/splitListingTitle";
 
 export interface Listing {
   id: string;
@@ -105,11 +106,13 @@ export default function ListingCard({
 
   const regionLabel = locale === "en" ? getRegionByDbValue(listing.region)?.nameEn ?? listing.region : listing.region;
   const location = listing.city?.trim() || regionLabel;
+  // Nom court (avant « | », « - » ou « – ») ; le titre complet reste dans l'alt et le title du lien
+  const { name, tagline } = splitListingTitle(listing.title);
 
   return (
-    <Link href={listingHref} className="group block">
+    <Link href={listingHref} title={listing.title} className="group block">
       {/* ── Photo ── */}
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-charcoal-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
+      <div className="relative aspect-[4/3] rounded-[var(--radius-lg)] overflow-hidden bg-charcoal-100 mb-3 transition-shadow duration-200 group-hover:shadow-md">
         {listing.photos.length > 0 ? (
           <div
             ref={trackRef}
@@ -225,7 +228,7 @@ export default function ListingCard({
             </span>
           )}
           {listing.hasPromo && listing.promoData && isLastminuteVisible(listing.promoData, checkin) && (
-            <span className={`${listing.promoData.type.startsWith("lastminute") ? "bg-inverse" : "bg-highlight"} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
+            <span className="bg-highlight text-white text-xs font-semibold px-3 py-1 rounded-full">
               {formatPromoLines(listing.promoData, locale).line1}
             </span>
           )}
@@ -250,31 +253,31 @@ export default function ListingCard({
 
       {/* ── Info ── */}
       <div>
-        {/* Title */}
-        <h3 className="font-bold text-base text-charcoal-800 leading-snug truncate mb-1">
-          {listing.title}
-        </h3>
+        {/* Ligne 1 : nom à gauche, ville à droite */}
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="min-w-0 flex-1 truncate text-base font-bold leading-snug text-[var(--fg-1)]">{name}</h3>
+          <span className="shrink-0 whitespace-nowrap text-sm text-[var(--fg-3)]">{location}</span>
+        </div>
 
-        {/* Meta — location · capacity · bedrooms · beds */}
-        <p className="text-sm text-charcoal-400 mb-1">
-          {location}
-          {" · "}
+        {/* Ligne 2 : accroche (cachée sous 640 px) */}
+        {tagline && <p className="mt-0.5 hidden truncate text-sm text-[var(--fg-3)] sm:block">{tagline}</p>}
+
+        {/* Ligne 3 : voyageurs · chambres */}
+        <p className="mt-0.5 text-sm text-[var(--fg-3)]">
           {t("travelers", { count: listing.capacity })}
           {" · "}
           {t("bedrooms", { count: listing.bedrooms })}
-          {listing.beds != null && (
-            <>{" · "}{t("beds", { count: listing.beds })}</>
-          )}
         </p>
 
-        {/* Price */}
-        {listing.priceOnRequest ? (
-          <p className="text-sm text-charcoal-800">{t("priceOnRequest")}</p>
-        ) : listing.price > 0 ? (
-          <p className="text-sm text-charcoal-800">
-            {formatPrice(listing.price, locale)} <span className="text-charcoal-400">{t("perNight")}</span>
+        {/* Prix */}
+        {listing.priceOnRequest || !(listing.price > 0) ? (
+          <p className="mt-1.5 text-[15px] font-bold text-[var(--action)]">{t("requestPrice")}</p>
+        ) : (
+          <p className="mt-1.5 text-[15px] text-[var(--fg-1)]">
+            {t("priceFromLabel")} <strong className="font-bold">{formatPrice(listing.price, locale)}</strong>{" "}
+            <span className="text-[var(--fg-3)]">{t("perNight")}</span>
           </p>
-        ) : null}
+        )}
       </div>
     </Link>
   );

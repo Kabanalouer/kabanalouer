@@ -1,4 +1,3 @@
-import OwnersSection from "@/components/OwnersSection";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -148,8 +147,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
       />
       </main>
 
-      {/* Bandeau vert de l'accueil, aussi sur les pages de résultats */}
-      <OwnersSection />
+      {/* La bannière proprios mince est en fin de liste (ChaletsMapLayout) */}
       <Footer />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import FiltersModal from "./chalets/FiltersModal";
 import { useTranslations, useLocale } from "next-intl";
 import { localePath } from "@/lib/localePath";
@@ -133,6 +133,9 @@ function NavSearchBarInner() {
   const displayLabel = (item: DestItem) => item.type === "region" ? regionLabel(item.value) : item.label;
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Sur la page de résultats, le bouton Filtres est dans la rangée au-dessus de la liste
+  const pathname = usePathname().replace(/\/$/, "");
+  const onResultsPage = ["/chalets", "/cabins", "/en/chalets", "/en/cabins"].includes(pathname);
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
@@ -537,13 +540,15 @@ function NavSearchBarInner() {
       </div>
 
       {/* Filtres button (desktop) */}
-      <FiltersModal
-        currentParams={filtersCurrentParams}
-        initialMinBedrooms={initMinBedrooms}
-        initialMinBeds={initMinBeds}
-        initialMinBathrooms={initMinBathrooms}
-        initialAmenities={initAmenities}
-      />
+      {!onResultsPage && (
+        <FiltersModal
+          currentParams={filtersCurrentParams}
+          initialMinBedrooms={initMinBedrooms}
+          initialMinBeds={initMinBeds}
+          initialMinBathrooms={initMinBathrooms}
+          initialAmenities={initAmenities}
+        />
+      )}
       </div>{/* end desktop wrapper */}
 
     </>

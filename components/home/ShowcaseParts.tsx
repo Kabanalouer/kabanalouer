@@ -59,13 +59,12 @@ function Price({ listing, locale, className = "", onDark = false }: { listing: S
   return null;
 }
 
-// Pastille en haut à gauche de la photo : promo = highlight, dernière minute = bg-inverse.
+// Pastille en haut à gauche de la photo : toutes les promos (dernière minute comprise) = highlight.
 function PromoBadge({ listing, locale }: { listing: ShowcaseListing; locale: string }) {
   if (!listing.hasPromo || !listing.promoData || !isLastminuteVisible(listing.promoData, null)) return null;
-  const lastMinute = listing.promoData.type.startsWith("lastminute");
   return (
     <span
-      className={`absolute top-3 left-3 z-10 text-xs font-bold px-3 py-1 rounded-[var(--radius-pill)] text-white ${lastMinute ? "bg-inverse" : "bg-highlight"}`}
+      className="absolute top-3 left-3 z-10 text-xs font-bold px-3 py-1 rounded-[var(--radius-pill)] text-white bg-highlight"
     >
       {formatPromoLines(listing.promoData, locale).line1}
     </span>

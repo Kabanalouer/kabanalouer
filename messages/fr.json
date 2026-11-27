@@ -1040,10 +1040,13 @@
   },
   "searchSubBar": {
     "searchCabin": "Rechercher un chalet",
-    "back": "Retour"
+    "back": "Retour",
+    "everywhere": "Partout au Québec",
+    "dates": "Dates",
+    "guests": "Voyageurs"
   },
   "chaletsMap": {
-    "titleAll": "Chalets au Québec",
+    "titleAll": "Chalets à louer au Québec",
     "titleDestination": "Chalets · {destination}",
     "dogsFilter": "Chiens acceptés",
     "accessibleFilter": "Mobilité réduite",
@@ -1066,7 +1069,25 @@
     "collapseMap": "Réduire la carte",
     "expandMap": "Agrandir la carte",
     "zoomIn": "Zoom avant",
-    "zoomOut": "Zoom arrière"
+    "zoomOut": "Zoom arrière",
+    "countChalets": "{count, plural, one {{count} chalet} other {{count} chalets}}",
+    "countTail": "contactez les propriétaires directement",
+    "shownOf": "{shown} sur {total} chalets",
+    "loadMore": "Afficher plus de chalets",
+    "pageCompact": "{page} / {count}",
+    "quickFiltersLabel": "Filtres rapides",
+    "quickSpa": "Avec spa",
+    "quickWaterfront": "Bord de l'eau",
+    "quickSauna": "Avec sauna",
+    "quickRemote": "Télétravail",
+    "quickCheap": "Pas chers",
+    "quickPromos": "Promos",
+    "mapShort": "Carte",
+    "listShort": "Liste",
+    "ownersEyebrow": "Vous êtes proprio ?",
+    "ownersTitle": "Ajoutez votre chalet gratuitement",
+    "ownersSub": "Aucune commission sur vos réservations.",
+    "ownersCta": "Ajouter mon chalet"
   },
   "listingCard": {
     "travelers": "{count, plural, one {{count} voyageur} other {{count} voyageurs}}",
@@ -1077,7 +1098,9 @@
     "featured": "Vedette",
     "isNew": "Nouveau",
     "prevPhoto": "Photo précédente",
-    "nextPhoto": "Photo suivante"
+    "nextPhoto": "Photo suivante",
+    "priceFromLabel": "À partir de",
+    "requestPrice": "Demander un prix →"
   },
   "filtersModal": {
     "button": "Filtres",

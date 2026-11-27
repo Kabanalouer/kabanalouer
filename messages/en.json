@@ -1040,10 +1040,13 @@
   },
   "searchSubBar": {
     "searchCabin": "Search for a cabin",
-    "back": "Back"
+    "back": "Back",
+    "everywhere": "Anywhere in Quebec",
+    "dates": "Dates",
+    "guests": "Guests"
   },
   "chaletsMap": {
-    "titleAll": "Cabins in Quebec",
+    "titleAll": "Cabins for rent in Quebec",
     "titleDestination": "Cabins · {destination}",
     "dogsFilter": "Dogs allowed",
     "accessibleFilter": "Reduced mobility",
@@ -1066,7 +1069,25 @@
     "collapseMap": "Collapse map",
     "expandMap": "Expand map",
     "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out"
+    "zoomOut": "Zoom out",
+    "countChalets": "{count, plural, one {{count} cabin} other {{count} cabins}}",
+    "countTail": "contact the owners directly",
+    "shownOf": "{shown} of {total} cabins",
+    "loadMore": "Show more cabins",
+    "pageCompact": "{page} / {count}",
+    "quickFiltersLabel": "Quick filters",
+    "quickSpa": "Hot tub",
+    "quickWaterfront": "Waterfront",
+    "quickSauna": "Sauna",
+    "quickRemote": "Remote work",
+    "quickCheap": "Budget",
+    "quickPromos": "Deals",
+    "mapShort": "Map",
+    "listShort": "List",
+    "ownersEyebrow": "Are you an owner?",
+    "ownersTitle": "List your cabin for free",
+    "ownersSub": "No commission on your bookings.",
+    "ownersCta": "Add my cabin"
   },
   "listingCard": {
     "travelers": "{count, plural, one {{count} traveler} other {{count} travelers}}",
@@ -1077,7 +1098,9 @@
     "featured": "Featured",
     "isNew": "New",
     "prevPhoto": "Previous photo",
-    "nextPhoto": "Next photo"
+    "nextPhoto": "Next photo",
+    "priceFromLabel": "From",
+    "requestPrice": "Request a price →"
   },
   "filtersModal": {
     "button": "Filters",

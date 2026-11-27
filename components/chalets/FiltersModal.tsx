@@ -25,6 +25,9 @@ interface FiltersModalProps {
   initialMinBeds?: string;
   initialMinBathrooms?: string;
   initialAmenities?: string;
+  // navbar : bouton de la barre du haut (par défaut) · pill : pastille sombre au-dessus des résultats ·
+  // round : rond de 40 px de la barre de recherche compacte (mobile et tablette)
+  variant?: "navbar" | "pill" | "round";
 }
 
 export default function FiltersModal({
@@ -33,6 +36,7 @@ export default function FiltersModal({
   initialMinBeds,
   initialMinBathrooms,
   initialAmenities,
+  variant = "navbar",
 }: FiltersModalProps) {
   const t = useTranslations("filtersModal");
   const locale = useLocale();
@@ -110,14 +114,24 @@ export default function FiltersModal({
           setAccessibleOnly(!!currentParams.accessible);
           setIsOpen(true);
         }}
-        className="relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400 text-sm font-medium transition-colors shrink-0"
+        aria-label={variant === "round" ? t("button") : undefined}
+        className={
+          variant === "pill"
+            ? "flex items-center gap-2 px-4 py-[9px] min-h-10 rounded-[var(--radius-pill)] bg-[var(--bg-inverse)] text-white text-sm font-bold whitespace-nowrap shrink-0 transition-opacity hover:opacity-90"
+            : variant === "round"
+              ? "relative flex h-11 w-11 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[var(--bg-inverse)] text-white shrink-0 transition-opacity hover:opacity-90"
+              : "relative flex items-center gap-2 lg:gap-0 xl:gap-2 px-4 lg:px-3 xl:px-4 py-3 rounded-full border border-[#dddddd] bg-white text-charcoal-700 hover:border-charcoal-400 text-sm font-medium transition-colors shrink-0"
+        }
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
         </svg>
-        <span className="lg:hidden xl:inline">{t("button")}</span>
-        {activeCount > 0 && (
+        {variant === "pill" && (
+          <span>{t("button")}{activeCount > 0 ? ` · ${activeCount}` : ""}</span>
+        )}
+        {variant === "navbar" && <span className="lg:hidden xl:inline">{t("button")}</span>}
+        {variant !== "pill" && activeCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}
           </span>
