@@ -130,7 +130,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href={localePath(drafts.length === 1 ? `/dashboard/listings/${drafts[0].id}/edit` : "/dashboard/listings", locale)}
-            className="shrink-0 inline-flex items-center justify-center bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-primary-dark transition-colors"
+            className="shrink-0 inline-flex items-center justify-center bg-action text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-action-hover transition-colors"
           >
             {t("draftBannerCta")}
           </Link>
@@ -150,7 +150,7 @@ export default async function DashboardPage() {
         <Link
           href={localePath("/dashboard/listings/new", locale)}
           aria-label={t("createListing")}
-          className="shrink-0 flex items-center justify-center gap-1.5 bg-primary text-white text-sm w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
+          className="shrink-0 flex items-center justify-center gap-1.5 bg-action text-white text-sm w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-full font-semibold hover:bg-action-hover transition-colors"
         >
           <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href={localePath("/dashboard/listings/new", locale)}
-            className="inline-block bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors text-sm"
+            className="inline-block bg-action text-white px-6 py-3 rounded-full font-semibold hover:bg-action-hover transition-colors text-sm"
           >
             {t("emptyCta")}
           </Link>

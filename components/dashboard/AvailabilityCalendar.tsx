@@ -159,7 +159,7 @@ export default function AvailabilityCalendar({
               className={`text-sm font-semibold px-4 py-2 rounded-xl transition-colors ${
                 !isDirty || saving
                   ? "bg-charcoal-200 text-charcoal-400 cursor-not-allowed"
-                  : "bg-primary text-white hover:bg-primary-dark"
+                  : "bg-action text-white hover:bg-action-hover"
               }`}
             >
               {saving ? t("saving") : t("save")}

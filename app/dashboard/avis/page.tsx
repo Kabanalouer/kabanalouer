@@ -140,7 +140,7 @@ export default async function MesAvisPage() {
         <div className="flex items-center gap-3 mb-1">
           <h1 className="text-2xl font-bold text-charcoal-800">{t("heading")}</h1>
           {unansweredCount > 0 && (
-            <span className="bg-primary text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+            <span className="bg-action text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
               {unansweredCount}
             </span>
           )}

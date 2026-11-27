@@ -88,7 +88,7 @@ export async function PreviewListPage({ jeton }: { jeton: string }) {
         <p className="mt-1 text-sm text-charcoal-600">{t("activateNote")}</p>
         <a
           href={claimHrefFor(isEn, jeton)}
-          className="mt-4 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-dark"
+          className="mt-4 inline-flex items-center justify-center rounded-full bg-action px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-action-hover"
         >
           {t("activate", { count: listings.length })}
         </a>

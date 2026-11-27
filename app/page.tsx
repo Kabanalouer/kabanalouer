@@ -122,9 +122,9 @@ export default async function HomePage() {
       {/* ── Hero ── */}
       {/* min-h sur mobile : le hero grandit pour contenir le contenu. sm+ : hauteur fixe viewport. */}
       {/* flex flex-col sur la section : flex-1 (plutôt que h-full) reste centré même quand min-h remplace une hauteur fixe */}
-      <section className="relative min-h-[calc(100svh-80px)] sm:h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] flex flex-col z-40">
+      <section className="relative min-h-[min(760px,88vh)] sm:h-[min(760px,88vh)] flex flex-col z-40">
         {/* overflow-hidden uniquement sur le wrapper background pour clipper le scale-[1.02] */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-4 overflow-hidden rounded-[var(--radius-hero)]">
           {/* next/image (priority) : LCP préchargé + variantes responsive au lieu du webp 2560px en CSS */}
           <div className="absolute inset-0 scale-[1.02]">
             <Image
@@ -139,7 +139,7 @@ export default async function HomePage() {
             />
           </div>
           {/* Overlay — léger en haut, dense en bas */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black/65" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(20,24,12,.88)_0%,rgba(20,24,12,.35)_45%,transparent_75%)]" />
         </div>
 
         {/* Content — centré verticalement, mobile et desktop */}
@@ -147,10 +147,10 @@ export default async function HomePage() {
 
           {/* Contenu : badge + titre + sous-titre + recherche */}
           <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
-            <div className="hidden sm:inline-flex items-center text-center bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-[0.04em] sm:tracking-[0.06em] uppercase px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
+            <div className="hidden sm:inline-flex items-center text-center bg-highlight text-white text-xs font-bold tracking-[0.08em] uppercase px-3 sm:px-4 py-2 rounded-[var(--radius-pill)] mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
               {t("badge")}
             </div>
-            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-bold leading-[1.15] tracking-normal mb-4 sm:mb-5 max-w-3xl">
+            <h1 className="text-[length:var(--fs-display-xl)] font-extrabold tracking-[var(--tracking-display)] leading-[var(--lh-display)] text-balance mb-4 sm:mb-5 max-w-5xl">
               {t("heroTitle")}
             </h1>
             <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
@@ -173,7 +173,7 @@ export default async function HomePage() {
       {/* ── Chalets en vedette ── */}
       {vedetteListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 w-full">
-          <h2 className="text-2xl font-bold text-charcoal-800 mb-8 tracking-h3">
+          <h2 className="text-[length:var(--fs-display)] font-extrabold tracking-[-0.04em] leading-none text-charcoal-800 mb-8">
             {t("featuredTitle")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">

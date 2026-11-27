@@ -80,7 +80,7 @@ function FindMyCabinInner({
                         <button
                           type="button"
                           onClick={() => setClaiming(m)}
-                          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
+                          className="inline-flex items-center justify-center rounded-full bg-action px-5 py-2.5 text-sm font-semibold text-white hover:bg-action-hover transition-colors"
                         >
                           {t("findClaim")}
                         </button>
@@ -113,7 +113,7 @@ function FindMyCabinInner({
             <CreateListingLink
               emplacement="trouver_resultats"
               target={`${NEW_LISTING_PATH}?verifie=1`}
-              className="mt-5 inline-flex items-center justify-center min-h-12 rounded-full bg-primary px-6 py-3 text-base font-bold text-white hover:bg-primary-dark transition-colors"
+              className="mt-5 inline-flex items-center justify-center min-h-12 rounded-full bg-action px-6 py-3 text-base font-bold text-white hover:bg-action-hover transition-colors"
             >
               {t("findCreate")}
             </CreateListingLink>
@@ -264,7 +264,7 @@ function CitySearch({ initialCity, onPick }: { initialCity: string; onPick: (slu
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-white hover:bg-primary-dark transition-colors"
+          className="inline-flex items-center justify-center rounded-full bg-action px-7 py-3.5 text-base font-semibold text-white hover:bg-action-hover transition-colors"
         >
           {t("findButton")}
         </button>

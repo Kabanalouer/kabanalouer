@@ -118,7 +118,7 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
             <button
               type="button"
               onClick={() => openFor(drafts.map((d) => d.id))}
-              className="mt-4 rounded-full bg-primary px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-dark"
+              className="mt-4 rounded-full bg-action px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-action-hover"
             >
               {t("activateAll", { count: drafts.length })}
             </button>
@@ -165,7 +165,7 @@ export default function DraftActivation({ drafts }: { drafts: DraftToActivate[] 
                 type="button"
                 onClick={submit}
                 disabled={busy}
-                className="rounded-full bg-primary px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
+                className="rounded-full bg-action px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-action-hover disabled:opacity-60"
               >
                 {busy ? t("confirming") : t("confirm")}
               </button>

@@ -115,7 +115,7 @@ export default function ICalSync({
         <button
           onClick={handleSync}
           disabled={syncing || !icalUrl.trim()}
-          className="flex items-center gap-2 bg-primary text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 bg-action text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-action-hover transition-colors disabled:opacity-50"
         >
           <svg
             className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}

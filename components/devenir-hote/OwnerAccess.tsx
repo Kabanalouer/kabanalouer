@@ -207,7 +207,7 @@ function UpgradeModal({ target, onClose }: { target: string; onClose: () => void
             type="button"
             onClick={handleUpgrade}
             disabled={loading}
-            className="flex-1 bg-primary text-white font-bold py-3 rounded-full hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+            className="flex-1 bg-action text-white font-bold py-3 rounded-full hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
           >
             {loading
               ? isEn ? "Activating…" : "Activation…"

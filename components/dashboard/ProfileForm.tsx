@@ -26,7 +26,7 @@ function SaveButton({ saving, saved, onClick, tSave, tSaving, tSaved }: {
       type="button"
       onClick={onClick}
       disabled={saving}
-      className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+      className="bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
     >
       {saving ? tSaving : saved ? tSaved : tSave}
     </button>
@@ -758,7 +758,7 @@ export default function ProfileForm({
             type="button"
             onClick={changePassword}
             disabled={pwdSaving}
-            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
           >
             {pwdSaving ? t("changingPassword") : pwdSaved ? t("passwordChanged") : t("changePassword")}
           </button>

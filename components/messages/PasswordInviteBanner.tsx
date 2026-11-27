@@ -63,13 +63,13 @@ export default function PasswordInviteBanner({ onHidden }: { onHidden: () => voi
                 aria-label={t("passwordInvitePlaceholder")}
                 className="min-w-0 flex-1 rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-base text-charcoal-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
-              <button type="submit" disabled={status === "saving"} className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60">
+              <button type="submit" disabled={status === "saving"} className="rounded-full bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:opacity-60">
                 {status === "saving" ? t("passwordInviteSaving") : t("passwordInviteSave")}
               </button>
               {status === "error" && <p className="w-full text-sm text-error-600" role="alert">{t("passwordInviteError")}</p>}
             </form>
           ) : (
-            <button type="button" onClick={() => setOpen(true)} className="mt-3 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+            <button type="button" onClick={() => setOpen(true)} className="mt-3 rounded-full bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover">
               {t("passwordInviteCta")}
             </button>
           )}

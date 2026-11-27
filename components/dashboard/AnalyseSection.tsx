@@ -145,7 +145,7 @@ export default function AnalyseSection({
     <div className="space-y-8">
 
       {/* Key message */}
-      <div className="border-l-[3px] border-[#636e40] bg-[#f5f6ec] rounded-r-xl px-4 py-3">
+      <div className="border-l-[3px] border-moss-500 bg-[#f5f6ec] rounded-r-xl px-4 py-3">
         <p className="text-base text-charcoal-700">
           {t("keyMessage")}
         </p>
@@ -218,7 +218,7 @@ export default function AnalyseSection({
                   <span className="text-sm text-charcoal-700 leading-snug">{getCriterionLabel(c.key, c.label)}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-semibold text-[#636e40] bg-[#f5f6ec] border border-[#636e40]/20 rounded-full px-2 py-0.5 whitespace-nowrap">
+                  <span className="text-xs font-semibold text-moss-500 bg-[#f5f6ec] border border-moss-500/20 rounded-full px-2 py-0.5 whitespace-nowrap">
                     +{c.points} pts
                   </span>
                   {c.section && (

@@ -373,7 +373,7 @@ export default function AdminFeaturedClient({
               <button
                 onClick={handleAdd}
                 disabled={adding}
-                className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-xl bg-action text-white hover:bg-action-hover disabled:opacity-50 transition-colors"
               >
                 {adding ? "En cours…" : "Confirmer"}
               </button>

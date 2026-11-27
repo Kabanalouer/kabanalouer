@@ -727,7 +727,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   <p className="text-sm text-charcoal-500 mt-1">{t("ownerPreviewCardNote")}</p>
                   <a
                     href={ownerPreview.claimHref}
-                    className="mt-4 inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                    className="mt-4 inline-flex items-center justify-center bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
                   >
                     {t("ownerPreviewActivate")}
                   </a>
@@ -738,7 +738,7 @@ export default async function ListingDetail({ listing, user, searchParams, local
                   <p className="text-sm text-charcoal-500 mt-1">{t("ownListingNote")}</p>
                   <Link
                     href={localePath(`/dashboard/listings/${listing.id}/edit`, locale)}
-                    className="mt-4 inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+                    className="mt-4 inline-flex items-center justify-center bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
                   >
                     {t("editListingCta")}
                   </Link>

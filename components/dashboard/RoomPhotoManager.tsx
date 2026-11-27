@@ -198,7 +198,7 @@ export default function RoomPhotoManager({
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-[#636e40] bg-white px-4 py-2 text-sm font-medium text-[#636e40] hover:bg-[#f5f6ec] transition-colors"
+            className="flex items-center gap-2 rounded-full border border-moss-500 bg-white px-4 py-2 text-sm font-medium text-moss-500 hover:bg-[#f5f6ec] transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 8.25V7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 16.5v-.75m0-7.5v7.5" />
@@ -219,13 +219,13 @@ export default function RoomPhotoManager({
           className={[
             "rounded-xl border-2 border-dashed px-4 py-6 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors select-none",
             isDragOver
-              ? "border-[#636e40] bg-[#f5f6ec]"
-              : "border-[#ebebeb] bg-charcoal-50 hover:border-[#636e40] hover:bg-[#f5f6ec]",
+              ? "border-moss-500 bg-[#f5f6ec]"
+              : "border-[#ebebeb] bg-charcoal-50 hover:border-moss-500 hover:bg-[#f5f6ec]",
           ].join(" ")}
         >
           {uploading ? (
             <>
-              <svg className="w-5 h-5 text-[#636e40] animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-moss-500 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>

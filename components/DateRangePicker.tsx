@@ -77,7 +77,7 @@ export function CalendarMonth({
                 className={["relative z-10 w-8 h-8 [@media(pointer:coarse)]:w-10 [@media(pointer:coarse)]:h-10 flex items-center justify-center text-xs [@media(pointer:coarse)]:text-sm rounded-full transition-all",
                   isPast ? "text-charcoal-200 cursor-not-allowed" :
                   isBlocked ? "text-charcoal-300 line-through cursor-not-allowed bg-charcoal-50" :
-                  isStart || isEnd ? "bg-primary text-white font-semibold shadow-sm" :
+                  isStart || isEnd ? "bg-action text-white font-semibold shadow-sm" :
                   isHoverEnd ? "bg-primary/25 text-primary font-medium" :
                   "hover:bg-charcoal-50 text-charcoal-800 cursor-pointer"].join(" ")}
               >{day}</button>

@@ -280,7 +280,7 @@ export default function ChaletsMapLayout({ initialListings, initialPins, initial
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
             <button
               onClick={() => setShowMobileMap(true)}
-              className="flex items-center gap-2 bg-primary text-white font-semibold text-sm px-5 py-3 rounded-full"
+              className="flex items-center gap-2 bg-action text-white font-semibold text-sm px-5 py-3 rounded-full"
               style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.20)" }}
             >
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

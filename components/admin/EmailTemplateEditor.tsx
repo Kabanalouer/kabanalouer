@@ -199,7 +199,7 @@ export default function EmailTemplateEditor({
                   key={l}
                   type="button"
                   onClick={() => { setLang(l); setMessage(null); lastField.current = null; }}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${lang === l ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"}`}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${lang === l ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"}`}
                 >
                   {l === "fr" ? "Français" : "English"}
                   {data.saved[l] ? " · modifié" : ""}
@@ -287,7 +287,7 @@ export default function EmailTemplateEditor({
               type="button"
               onClick={save}
               disabled={saving || !dirty || errors.length > 0}
-              className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
+              className="rounded-full bg-action px-6 py-2.5 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-charcoal-200 disabled:text-charcoal-400 transition-colors"
             >
               {saving ? "Enregistrement…" : `Enregistrer (${LANG_NAME[lang]})`}
             </button>

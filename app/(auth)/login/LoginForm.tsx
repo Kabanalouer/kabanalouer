@@ -251,7 +251,7 @@ function LoginForm() {
                 type="button"
                 onClick={() => void sendMagicLink(linkEmail)}
                 disabled={!turnstileToken || magicLoading || cooldown > 0}
-                className="mt-3 block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+                className="mt-3 block rounded-full bg-action px-5 py-2.5 text-sm font-semibold text-white hover:bg-action-hover disabled:opacity-60"
               >
                 {magicLoading
                   ? (isEn ? "Sending…" : "Envoi en cours…")
@@ -407,7 +407,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading || !turnstileToken}
-            className="w-full bg-primary text-white py-3 rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm"
+            className="w-full bg-action text-white py-3 rounded-full font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 text-sm"
           >
             {loading ? t("submitting") : t("submit")}
           </button>

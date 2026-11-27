@@ -127,7 +127,7 @@ export default async function AdminHealthPage({ searchParams }: { searchParams: 
               key={d}
               href={`/admin/sante?p=${d}`}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                d === days ? "bg-primary text-white" : "text-charcoal-600 hover:text-charcoal-800"
+                d === days ? "bg-action text-white" : "text-charcoal-600 hover:text-charcoal-800"
               }`}
             >
               {d} jours

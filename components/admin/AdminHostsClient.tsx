@@ -77,7 +77,7 @@ export default function AdminHostsClient({ hosts }: { hosts: HostRow[] }) {
               onClick={() => setFilter(key)}
               className={`text-sm px-4 py-1.5 rounded-full font-medium border transition-colors ${
                 filter === key
-                  ? "bg-primary text-white border-primary"
+                  ? "bg-action text-white border-action"
                   : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"
               }`}
             >

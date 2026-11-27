@@ -255,7 +255,7 @@ export default function MobileSearchSheet({
         <button
           type="button"
           onClick={submit}
-          className="h-12 px-6 bg-primary text-white rounded-full font-semibold text-base flex items-center gap-2 hover:bg-primary-dark transition-colors"
+          className="h-12 px-6 bg-action text-white rounded-full font-semibold text-base flex items-center gap-2 hover:bg-action-hover transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

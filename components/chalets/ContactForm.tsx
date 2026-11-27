@@ -604,7 +604,7 @@ export default function ContactForm({
             <div className="rounded-xl border border-warning-200 bg-warning-50 p-3 text-sm text-warning-800" role="alert">
               <p>{t("guestTypoQuestion", { email: suggestion })}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <button type="button" onClick={() => { setGuestEmail(suggestion); handleSubmit(suggestion); }} className="rounded-full bg-primary px-3 py-1.5 font-semibold text-white">
+                <button type="button" onClick={() => { setGuestEmail(suggestion); handleSubmit(suggestion); }} className="rounded-full bg-action px-3 py-1.5 font-semibold text-white">
                   {t("guestTypoYes", { email: suggestion })}
                 </button>
                 <button type="button" onClick={() => { setTypoIgnored(true); handleSubmit(); }} className="rounded-full border border-warning-200 bg-white px-3 py-1.5 font-semibold text-warning-800">
@@ -626,7 +626,7 @@ export default function ContactForm({
           disabled={sending}
           aria-disabled={!canSubmit}
           aria-describedby={!canSubmit ? "quote-dates-tip" : undefined}
-          className={`peer w-full bg-primary text-white py-3 rounded-full font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${canSubmit ? "hover:bg-primary/90" : "opacity-40 cursor-not-allowed"}`}
+          className={`peer w-full bg-action text-white py-3 rounded-full font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${canSubmit ? "hover:bg-action-hover" : "opacity-40 cursor-not-allowed"}`}
         >
           {sending ? t("sendingRequest") : t("sendRequestCta")}
         </button>

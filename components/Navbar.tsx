@@ -267,7 +267,7 @@ export default function Navbar() {
   const isHome = strippedPathname === "/";
 
   // Shared nav wrapper classes
-  const navWrap = "bg-white/95 backdrop-blur-md border-b border-[#ebebeb] sticky top-0 z-50";
+  const navWrap = "bg-white/85 backdrop-blur-[12px] border-b border-[#ebebeb] sticky top-0 z-50";
   const navInner = "px-6 xl:px-8";
 
   // ── HOST NAVBAR ──────────────────────────────────────────────────────────────
@@ -513,7 +513,7 @@ export default function Navbar() {
             </Link>
             <Link
               href={lp("/signup")}
-              className="whitespace-nowrap bg-primary text-white text-base px-6 lg:px-[21px] xl:px-6 py-3 rounded-full hover:bg-primary-dark transition-colors font-semibold"
+              className="whitespace-nowrap bg-inverse text-white text-base px-6 lg:px-[21px] xl:px-6 py-3 rounded-[var(--radius-pill)] hover:bg-night-700 transition-colors font-semibold"
             >
               {t("createAccount")}
             </Link>
@@ -551,7 +551,7 @@ export default function Navbar() {
             </Link>
             <Link
               href={lp("/signup")}
-              className="flex items-center justify-center min-h-[44px] bg-primary text-white py-3 rounded-full font-semibold text-sm"
+              className="flex items-center justify-center min-h-[44px] bg-inverse text-white py-3 rounded-[var(--radius-pill)] font-semibold text-sm"
             >
               {t("createAccount")}
             </Link>

@@ -34,7 +34,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
             <button
               type="button"
               onClick={reset}
-              className="bg-primary text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-dark transition-colors"
+              className="bg-action text-white font-semibold px-6 py-3 rounded-full hover:bg-action-hover transition-colors"
             >
               {isEn ? "Try again" : "Réessayer"}
             </button>

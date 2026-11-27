@@ -119,7 +119,7 @@ export default async function DevenirHotePage() {
                   <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))]">
                     <FindCabinLink
                       emplacement="hero"
-                      className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-primary text-white text-base font-bold shadow-[var(--shadow-md)] hover:bg-primary-dark ${BTN_MOTION}`}
+                      className={`flex items-center justify-center gap-2.5 h-[58px] px-5 rounded-full bg-action text-white text-base font-bold shadow-[var(--shadow-md)] hover:bg-action-hover ${BTN_MOTION}`}
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="7" />

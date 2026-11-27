@@ -92,7 +92,7 @@ export default function DashboardSidebar({
         <div className="pt-3 border-t border-[#ebebeb] mt-3">
           <Link
             href={localePath("/dashboard/listings/new", locale)}
-            className="flex items-center justify-center gap-2 w-full bg-primary text-white py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-action text-white py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

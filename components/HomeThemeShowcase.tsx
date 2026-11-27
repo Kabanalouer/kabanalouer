@@ -111,8 +111,8 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
         return (
           <section key={key}>
             <div className="flex items-end justify-between gap-4 mb-8">
-              <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug">{isEn ? text.titleEn : text.titleFr}</h2>
-              <Link href={href} className="text-charcoal-800 font-medium text-sm underline underline-offset-4 hover:text-primary transition-colors hidden md:block whitespace-nowrap">
+              <h2 className="text-[length:var(--fs-display)] font-extrabold tracking-[-0.04em] leading-none text-charcoal-800">{isEn ? text.titleEn : text.titleFr}</h2>
+              <Link href={href} className="text-link font-bold text-sm underline underline-offset-4 hover:text-action-hover transition-colors hidden md:block whitespace-nowrap">
                 {isEn ? text.allEn : text.allFr} →
               </Link>
             </div>
@@ -122,7 +122,7 @@ export default async function HomeThemeShowcase({ userId }: { userId: string | n
               ))}
             </div>
             <div className="mt-8 flex justify-center md:hidden">
-              <Link href={href} className="text-charcoal-800 font-medium text-sm underline underline-offset-4">
+              <Link href={href} className="text-link font-bold text-sm underline underline-offset-4">
                 {isEn ? text.allEn : text.allFr} →
               </Link>
             </div>

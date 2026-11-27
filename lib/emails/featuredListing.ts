@@ -14,7 +14,7 @@ const FROM = "Kabanalouer <info@kabanalouer.ca>";
 
 export type FeaturedType = "home" | "region";
 
-const LINK_STYLE = "color:#636e40;text-decoration:underline;font-weight:600;";
+const LINK_STYLE = "color:#c2461a;text-decoration:underline;font-weight:600;";
 
 function formatMonthLabel(month: string, lang: "fr" | "en"): string {
   const [year, monthNum] = month.split("-").map(Number);

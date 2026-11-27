@@ -152,7 +152,7 @@ function LocationForm({
       {/* Address autocomplete */}
       <div>
         <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-          {t("addressLabel")} <span className="text-[#636e40] font-medium">*</span>
+          {t("addressLabel")} <span className="text-moss-500 font-medium">*</span>
         </label>
         <input
           ref={inputRef}
@@ -194,7 +194,7 @@ function LocationForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-charcoal-700 mb-1.5">
-            {t("regionLabel")} <span className="text-[#636e40] font-medium">*</span>
+            {t("regionLabel")} <span className="text-moss-500 font-medium">*</span>
           </label>
           <input
             type="text"
@@ -242,7 +242,7 @@ function LocationForm({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+          className="bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
         >
           {saving ? tCommon("saving") : justSaved ? tCommon("saved") : tCommon("save")}
         </button>

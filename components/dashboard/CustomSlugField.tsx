@@ -134,7 +134,7 @@ export default function CustomSlugField({
         type="button"
         onClick={() => performSave(value)}
         disabled={saving || !hasChanges}
-        className="mt-3 rounded-full bg-primary text-white text-sm font-semibold px-5 py-2 hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="mt-3 rounded-full bg-action text-white text-sm font-semibold px-5 py-2 hover:bg-action-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         {saving ? tEdit("customSlugSaving") : tEdit("customSlugSave")}
       </button>

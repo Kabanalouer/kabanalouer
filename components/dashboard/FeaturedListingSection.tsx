@@ -72,7 +72,7 @@ function MonthRow({
         "w-full flex items-center justify-between gap-3 rounded-full px-4 py-2.5 text-sm font-medium border transition-colors text-left",
         state === "own" && "bg-charcoal-50 border-[#ebebeb] text-charcoal-400 cursor-not-allowed",
         state === "full" && "bg-white border-[#ebebeb] text-charcoal-300 cursor-not-allowed",
-        state === "available" && (active ? "bg-primary border-primary text-white" : "bg-white border-[#ebebeb] text-charcoal-700 hover:border-primary/40"),
+        state === "available" && (active ? "bg-action border-action text-white" : "bg-white border-[#ebebeb] text-charcoal-700 hover:border-primary/40"),
       ].filter(Boolean).join(" ")}
     >
       <span>{label}</span>
@@ -211,7 +211,7 @@ function FeaturedCard({
             type="button"
             onClick={handleCheckout}
             disabled={checkoutLoading || locked}
-            className="w-full py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2.5 rounded-full text-sm font-semibold bg-action text-white hover:bg-action-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {locked ? t("lockedCta") : checkoutLoading ? t("processing") : t("ctaButton", { price })}
           </button>

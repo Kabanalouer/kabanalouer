@@ -311,14 +311,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <button
                         type="button"
                         onClick={() => { setRabaisUnit("percent"); setNoPromoChecked(false); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "percent" ? "bg-action text-white border-action" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
                         onClick={() => { setRabaisUnit("amount"); setNoPromoChecked(false); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${rabaisUnit === "amount" ? "bg-action text-white border-action" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
                       </button>
@@ -343,7 +343,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
                     {saving && (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -409,7 +409,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
                     {saving && (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -444,14 +444,14 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                       <button
                         type="button"
                         onClick={() => { setLmUnit("percent"); setNoPromoChecked(false); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "percent" ? "bg-action text-white border-action" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         %
                       </button>
                       <button
                         type="button"
                         onClick={() => { setLmUnit("amount"); setNoPromoChecked(false); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-primary text-white border-primary" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${lmUnit === "amount" ? "bg-action text-white border-action" : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"}`}
                       >
                         $
                       </button>
@@ -488,7 +488,7 @@ export default function PromotionsSection({ listingId }: { listingId: string }) 
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="bg-action text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
                     {saving && (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

@@ -170,7 +170,7 @@ export default function NoAvailabilityWidget({
         <button
           onClick={handleSend}
           disabled={sending || !canSend}
-          className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+          className="bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
         >
           {sending ? t("sendingGeneric") : t("sendNoAvailabilityButton")}
         </button>

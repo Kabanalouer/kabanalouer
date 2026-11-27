@@ -65,7 +65,7 @@ export default function AdminInvoicesClient({
             onClick={() => setActiveYear(y)}
             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
               activeYear === y
-                ? "bg-primary text-white"
+                ? "bg-action text-white"
                 : "border border-[#ebebeb] text-charcoal-600 hover:border-charcoal-300"
             }`}
           >

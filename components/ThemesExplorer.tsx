@@ -73,7 +73,7 @@ export default async function ThemesExplorer({ exclude = [] }: { exclude?: strin
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 w-full">
-      <h2 className="text-3xl font-bold text-charcoal-800 tracking-h2 leading-snug mb-8">
+      <h2 className="text-[length:var(--fs-display)] font-extrabold tracking-[-0.04em] leading-none text-charcoal-800 mb-8">
         {isEn ? "Explore by theme" : "Explorer par thème"}
       </h2>
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 auto-rows-[170px] sm:auto-rows-[200px] lg:auto-rows-[230px]">

@@ -313,7 +313,7 @@ function AmenityDetailsModal({
           <button
             type="button"
             onClick={handleSave}
-            className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="bg-action text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-action-hover transition-colors"
           >
             {isEn ? "Save" : "Enregistrer"}
           </button>
@@ -344,7 +344,7 @@ function AddedAmenityRow({
   const hasDetails = !!entry.detailSchema && entry.detailSchema.length > 0;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 bg-white border border-[#ebebeb] border-l-2 border-l-[#636e40] rounded-xl">
+    <div className="flex items-center gap-3 px-3 py-2.5 bg-white border border-[#ebebeb] border-l-2 border-l-moss-500 rounded-xl">
       <span className="shrink-0 text-primary">
         <AmenityIcon name={entry.icon} />
       </span>
@@ -558,7 +558,7 @@ export default function AmenitiesPicker({
                     title={active ? (isEn ? "Remove" : "Retirer") : isEn ? "Add" : "Ajouter"}
                     className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
                       active
-                        ? "bg-primary border-primary text-white"
+                        ? "bg-action border-action text-white"
                         : "border-charcoal-300 text-charcoal-500 hover:border-primary hover:text-primary"
                     }`}
                   >

@@ -18,7 +18,7 @@ function ManualSubmitButton({ label, pendingLabel }: { label: string; pendingLab
     <button
       type="submit"
       disabled={pending}
-      className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-full hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full inline-flex items-center justify-center gap-2 bg-action text-white font-bold px-6 py-3.5 rounded-full hover:bg-action-hover transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {pending ? pendingLabel : label}
     </button>

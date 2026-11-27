@@ -34,7 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   // Couleur de la barre d'état/du navigateur (PWA installée, Android Chrome)
-  themeColor: "#636e40",
+  themeColor: "#1c2112",
 };
 
 export async function generateMetadata(): Promise<Metadata> {

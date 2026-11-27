@@ -43,7 +43,7 @@ export default function ContactButton({
         <button
           type="button"
           onClick={() => setAuthModalOpen(true)}
-          className="block w-full bg-primary text-white py-4 rounded-xl font-bold text-center hover:bg-primary-dark transition-colors"
+          className="block w-full bg-action text-white py-4 rounded-xl font-bold text-center hover:bg-action-hover transition-colors"
         >
           {t("mobileContactCta")}
         </button>
@@ -76,7 +76,7 @@ export default function ContactButton({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary-dark transition-colors"
+        className="w-full bg-action text-white py-4 rounded-xl font-bold hover:bg-action-hover transition-colors"
       >
         {t("mobileContactCta")}
       </button>
@@ -161,7 +161,7 @@ function ContactModal({
               </Link>
               <button
                 onClick={onClose}
-                className="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
+                className="flex-1 bg-action text-white py-3 rounded-xl text-sm font-semibold hover:bg-action-hover transition-colors"
               >
                 {tc("close")}
               </button>
@@ -202,7 +202,7 @@ function ContactModal({
               <button
                 onClick={handleSend}
                 disabled={sending || !message.trim()}
-                className="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+                className="flex-1 bg-action text-white py-3 rounded-xl text-sm font-semibold hover:bg-action-hover transition-colors disabled:opacity-50"
               >
                 {sending ? t("sending") : t("sendCta")}
               </button>

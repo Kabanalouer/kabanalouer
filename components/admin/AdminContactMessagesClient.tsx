@@ -124,7 +124,7 @@ export default function AdminContactMessagesClient({
               onClick={() => setFilter(key)}
               className={`text-sm px-4 py-1.5 rounded-full font-medium border transition-colors ${
                 filter === key
-                  ? "bg-primary text-white border-primary"
+                  ? "bg-action text-white border-action"
                   : "bg-white text-charcoal-600 border-[#ebebeb] hover:border-charcoal-300"
               }`}
             >
@@ -303,7 +303,7 @@ export default function AdminContactMessagesClient({
             <div className="flex flex-col sm:flex-row gap-2">
               <a
                 href={`mailto:${modalMsg.email}?subject=${encodeURIComponent("Re: " + modalMsg.subject)}`}
-                className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-action text-white hover:bg-action-hover transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
