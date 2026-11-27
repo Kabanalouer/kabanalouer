@@ -231,7 +231,7 @@ export default function SearchBar({
   return (
     <>
     {/* ── Téléphones : rangées entièrement cliquables → feuille plein écran ── */}
-    <div className="md:hidden bg-white rounded-2xl shadow-[0_24px_56px_rgba(0,0,0,.3)] p-1.5 w-full">
+    <div className="md:hidden bg-white rounded-[16px] shadow-[0_24px_56px_rgba(0,0,0,.3)] p-1.5 w-full">
       {phoneRow("dest", PIN_ICON, destValue, t("destinationPlaceholder"))}
       {phoneRow("dates", CAL_ICON, datesLabel, t("datesLabel"))}
       {phoneRow("guests", USERS_ICON, guestsValue, t("guestsPlaceholder"), true)}
@@ -252,7 +252,7 @@ export default function SearchBar({
     <div className="hidden md:flex bg-white rounded-2xl shadow-[0_24px_56px_rgba(0,0,0,.3)] p-1.5 sm:p-2 flex-col sm:flex-row gap-1.5 sm:gap-2 w-full max-w-3xl">
 
       {/* ── Field 1: Destination ─────────────────────────────────────────── */}
-      <div ref={destRef} className="relative flex-[1.3] min-w-[150px] flex border-b border-charcoal-100 sm:border-b-0">
+      <div ref={destRef} className="relative flex-[1.3] min-w-[110px] flex border-b border-charcoal-100 sm:border-b-0">
         <div className="flex-1 min-w-0 flex items-center gap-3 px-4 py-1.5 sm:py-2">
           {/* Pin icon */}
           <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,7 +289,7 @@ export default function SearchBar({
             className="flex-1 bg-transparent text-base outline-none text-charcoal-700 placeholder-charcoal-400 min-w-0"
           />
           {destQuery && (
-            <button onClick={clearDest} className="text-charcoal-400 hover:text-charcoal-600 transition-colors shrink-0">
+            <button onClick={clearDest} aria-label="×" className="text-charcoal-400 hover:text-charcoal-600 transition-colors shrink-0 min-w-[44px] min-h-[44px] -mr-3 flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -305,10 +305,10 @@ export default function SearchBar({
         )}
       </div>
 
-      <div className="hidden sm:block w-px bg-charcoal-100 self-stretch" />
+      <div className="hidden sm:block w-px shrink-0 bg-charcoal-100 self-stretch" />
 
       {/* ── Field 2: Dates ───────────────────────────────────────────────── */}
-      <div ref={calendarRef} className="relative flex-1 min-w-[160px] flex border-b border-charcoal-100 sm:border-b-0">
+      <div ref={calendarRef} className="relative flex-1 min-w-[130px] flex border-b border-charcoal-100 sm:border-b-0">
         <button
           onClick={handleCalendarToggle}
           className="flex-1 flex items-center gap-3 px-4 py-1.5 sm:py-2 text-left"
@@ -368,10 +368,10 @@ export default function SearchBar({
         )}
       </div>
 
-      <div className="hidden sm:block w-px bg-charcoal-100 self-stretch" />
+      <div className="hidden sm:block w-px shrink-0 bg-charcoal-100 self-stretch" />
 
       {/* ── Field 3: Voyageurs ───────────────────────────────────────────── */}
-      <div ref={guestsRef} className="relative flex items-center gap-3 px-4 py-1.5 sm:py-2 min-w-[140px]">
+      <div ref={guestsRef} className="relative flex items-center gap-3 px-4 py-1.5 sm:py-2 min-w-[120px]">
         <svg className="w-5 h-5 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />

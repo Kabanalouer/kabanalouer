@@ -798,6 +798,9 @@
   "home": {
     "badge": "La marketplace de la location de chalet au Québec",
     "heroTitle": "Location de chalet",
+    "heroKicker": "Location de chalet au Québec",
+    "heroLine1": "Le chalet.",
+    "heroAccent": "Sans les frais.",
     "heroSubtitle": "Payez moins cher : contactez les propriétaires directement.",
     "featuredTitle": "Chalets en vedette",
     "pickLabel": "Tout juste arrivés",

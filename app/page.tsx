@@ -119,51 +119,49 @@ export default async function HomePage() {
       <Navbar />
       <main className="flex flex-1 flex-col">
 
-      {/* ── Hero ── */}
-      {/* min-h sur mobile : le hero grandit pour contenir le contenu. sm+ : hauteur fixe viewport. */}
-      {/* flex flex-col sur la section : flex-1 (plutôt que h-full) reste centré même quand min-h remplace une hauteur fixe */}
-      <section className="relative min-h-[min(760px,88vh)] sm:h-[min(760px,88vh)] flex flex-col z-40">
-        {/* overflow-hidden uniquement sur le wrapper background pour clipper le scale-[1.02] */}
-        <div className="absolute inset-4 overflow-hidden rounded-[var(--radius-hero)]">
-          {/* next/image (priority) : LCP préchargé + variantes responsive au lieu du webp 2560px en CSS */}
-          <div className="absolute inset-0 scale-[1.02]">
-            <Image
-              src="/hero-chalet.webp"
-              alt=""
-              fill
-              priority
-              fetchPriority="high"
-              quality={60}
-              sizes="100vw"
-              className="object-cover object-center"
-            />
-          </div>
-          {/* Overlay — léger en haut, dense en bas */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(20,24,12,.88)_0%,rgba(20,24,12,.35)_45%,transparent_75%)]" />
+      {/* ── Hero (option 1a) ── */}
+      {/* Marge responsive autour de l'image ; svh : pas de saut de la barre d'adresse sur mobile.
+          z-40 : les listes de la recherche (destination, calendrier) débordent du hero. */}
+      <section className="relative z-40 m-[clamp(8px,1.5vw,16px)] min-h-[min(760px,88svh)] rounded-[16px] sm:rounded-[var(--radius-hero)] flex flex-col">
+        {/* overflow-hidden uniquement sur le wrapper de l'image */}
+        <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+          {/* next/image (priority) : LCP préchargé + variantes responsive */}
+          <Image
+            src="/hero-chalet.webp"
+            alt=""
+            fill
+            priority
+            fetchPriority="high"
+            quality={60}
+            sizes="100vw"
+            className="object-cover object-[60%_center] sm:object-center"
+          />
+          {/* Dégradé de protection : plus dense sur mobile, où le texte prend plus de hauteur */}
+          <div className="absolute inset-0 sm:hidden bg-[linear-gradient(to_top,rgba(20,24,12,.92)_0%,rgba(20,24,12,.5)_50%,rgba(20,24,12,0)_90%)]" />
+          <div className="absolute inset-0 hidden sm:block bg-[linear-gradient(to_top,rgba(20,24,12,.9)_0%,rgba(20,24,12,.35)_50%,rgba(20,24,12,0)_80%)]" />
         </div>
 
-        {/* Content — centré verticalement, mobile et desktop */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center text-white">
-
-          {/* Contenu : badge + titre + sous-titre + recherche */}
-          <div className="flex flex-col items-center text-center px-4 pt-6 pb-6 sm:py-10">
-            <div className="hidden sm:inline-flex items-center text-center bg-highlight text-white text-xs font-bold tracking-[0.08em] uppercase px-3 sm:px-4 py-2 rounded-[var(--radius-pill)] mb-3 sm:mb-6 max-w-[260px] sm:max-w-none leading-tight">
-              {t("badge")}
-            </div>
-            <h1 className="text-[length:var(--fs-display-xl)] font-extrabold tracking-[var(--tracking-display)] leading-[var(--lh-display)] text-balance mb-4 sm:mb-5 max-w-5xl">
-              {t("heroTitle")}
-            </h1>
-            <p className="hidden sm:block text-base md:text-lg text-white/80 mb-10 leading-relaxed sm:whitespace-nowrap font-semibold px-2 sm:px-0">
-              {t("heroSubtitle")}
-            </p>
-            <div className="w-full flex justify-center">
-              <SearchBar />
-            </div>
-
+        {/* Contenu aligné en bas, largeur max 1280 px centrée */}
+        <div className="relative z-10 mt-auto w-full max-w-[1280px] mx-auto p-[clamp(24px,5vw,56px)] flex flex-col gap-[clamp(20px,2.5vw,28px)] text-white">
+          {/* Un seul <h1> : kicker (SEO) + titre d'accroche, tous deux lisibles par Google */}
+          <h1 className="hero-title">
+            <span className="hero-kicker block text-[length:clamp(15px,1.4vw,20px)] font-bold tracking-[-0.01em] text-white">
+              {t("heroKicker")}
+            </span>
+            <span className="hero-display block mt-[clamp(10px,1.5vw,18px)] text-[length:var(--fs-display-xl)] font-extrabold tracking-[var(--tracking-display)] leading-[var(--lh-display)] text-white">
+              {t("heroLine1")}
+              <br />
+              <span className="hero-accent text-highlight">{t("heroAccent")}</span>
+            </span>
+          </h1>
+          <p className="max-w-[46ch] text-[length:clamp(16px,1.6vw,19px)] leading-normal text-white/90">
+            {t("heroSubtitle")}
+          </p>
+          {/* md+ : la pastille se limite à 860 px ; en dessous, carte pleine largeur */}
+          <div className="w-full md:[&>div]:max-w-[860px] md:[&>div]:mx-0">
+            <SearchBar />
           </div>
-
         </div>
-
       </section>
 
       {/* ── 3 meilleurs chalets de 3 thèmes (bord de l'eau, spa, télétravail), puis tous les thèmes en tuiles ── */}
