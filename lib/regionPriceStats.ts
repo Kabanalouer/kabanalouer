@@ -81,5 +81,5 @@ async function computeRegionPriceStats(): Promise<RegionPriceStats> {
   return { rows: rows.slice(0, MAX_ROWS), regionsListed, updatedAt: new Date().toISOString() };
 }
 
-// Recalculé au plus une fois par jour (revalidate: 86400), jamais à chaque visite.
-export const getRegionPriceStats = unstable_cache(computeRegionPriceStats, ["region-price-stats-v2"], { revalidate: 86400 });
+// Recalculé au plus une fois par semaine (revalidate: 604800, décision de Simon), jamais à chaque visite.
+export const getRegionPriceStats = unstable_cache(computeRegionPriceStats, ["region-price-stats-v2"], { revalidate: 604800 });
