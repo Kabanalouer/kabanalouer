@@ -112,9 +112,8 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
         );
       })}
 
-      {/* Pas de filtre de prix ni de promo dans la recherche : ces deux pastilles mènent à la page des bons plans. */}
+      {/* Pas de filtre de prix dans la recherche : cette pastille mène à la page des bons plans. */}
       <Link href={dealsPath} className={`${PILL} ${PILL_IDLE}`}>{t("quickCheap")}</Link>
-      <Link href={dealsPath} className={`${PILL} ${PILL_IDLE}`}>{t("quickPromos")}</Link>
     </div>
   );
 }
