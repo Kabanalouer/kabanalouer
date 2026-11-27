@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import FiltersModal from "./FiltersModal";
 import { localePath } from "@/lib/localePath";
-import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
 
 export interface SearchFiltersState {
   region?: string;
@@ -69,7 +67,6 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   };
 
   const isActive = (id: string) => (id === "dogs" ? !!filters.dogs : amenityIds.includes(id));
-  const dealsPath = locale === "en" ? DEALS_PATH_EN : DEALS_PATH_FR;
 
   return (
     <div
@@ -111,9 +108,6 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
           </button>
         );
       })}
-
-      {/* Pas de filtre de prix dans la recherche : cette pastille mène à la page des bons plans. */}
-      <Link href={dealsPath} className={`${PILL} ${PILL_IDLE}`}>{t("quickCheap")}</Link>
     </div>
   );
 }
