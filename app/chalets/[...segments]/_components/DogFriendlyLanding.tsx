@@ -36,7 +36,7 @@ function plural(n: number, one: string, other: string) {
 
 export function buildDogFriendlyMeta(isEn: boolean) {
   return {
-    title: isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet avec chien au Québec",
+    title: isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet qui accepte les chiens au Québec",
     description: isEn
       ? "Find a dog-friendly cabin for rent in Quebec. Number of dogs, weight limits and fees are listed on every cabin. Direct contact with owners, no service fees."
       : "Trouvez un chalet à louer où les chiens sont acceptés au Québec. Nombre de chiens, poids et frais indiqués sur chaque fiche. Contact direct avec les propriétaires, aucuns frais de service.",
@@ -170,7 +170,7 @@ export default async function DogFriendlyLanding() {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: isEn ? "Home" : "Accueil", item: `${SITE_URL}${isEn ? "/en" : "/"}` },
       { "@type": "ListItem", position: 2, name: isEn ? "Cabins" : "Chalets", item: `${SITE_URL}${localePath("/chalets", locale)}` },
-      { "@type": "ListItem", position: 3, name: isEn ? "Dog-friendly cabins" : "Chalets avec chien", item: `${SITE_URL}${pagePath}` },
+      { "@type": "ListItem", position: 3, name: isEn ? "Dog-friendly cabins" : "Chalets qui acceptent les chiens", item: `${SITE_URL}${pagePath}` },
     ],
   };
 
@@ -238,7 +238,7 @@ export default async function DogFriendlyLanding() {
         themeKey="dogs"
         isEn={isEn}
         crumbs={[{ label: isEn ? "Cabins" : "Chalets", href: localePath("/chalets", locale) }, { label: isEn ? "Dog-friendly" : "Chiens acceptés" }]}
-        title={isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet avec chien au Québec"}
+        title={isEn ? "Dog-friendly cabin rentals in Quebec" : "Location de chalet qui accepte les chiens au Québec"}
         intro={isEn
           ? "Cabins where your dog is welcome, everywhere in Quebec. Every listing shows the maximum number of dogs, weight limits and fees."
           : "Des chalets où votre chien est le bienvenu, partout au Québec. Chaque fiche indique le nombre maximum de chiens, les restrictions de poids et les frais."}
@@ -306,7 +306,7 @@ export default async function DogFriendlyLanding() {
       {regionCounts.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
           <h2 className="text-heading-2 font-bold text-charcoal-900 mb-4">
-            {isEn ? "Dog-friendly cabins by region" : "Chalets avec chien par région"}
+            {isEn ? "Dog-friendly cabins by region" : "Chalets qui acceptent les chiens par région"}
           </h2>
           <div className="flex flex-wrap gap-2">
             {regionCounts.map(({ region, count: n }) => (
@@ -325,7 +325,7 @@ export default async function DogFriendlyLanding() {
       {/* ── Par ville (pages ville × type actives) ── */}
       {cityComboLinks.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
-          <ComboLinkChips title={isEn ? "Dog-friendly cabins by town" : "Chalets avec chien par ville"} links={cityComboLinks} />
+          <ComboLinkChips title={isEn ? "Dog-friendly cabins by town" : "Chalets qui acceptent les chiens par ville"} links={cityComboLinks} />
         </section>
       )}
 

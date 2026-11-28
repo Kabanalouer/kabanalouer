@@ -7,12 +7,11 @@ const content: ThemeContent = {
   label: "qui accepte les chiens",
   labelPlural: "chalets qui acceptent les chiens",
   breadcrumbLabel: "Chiens acceptés",
-  h1Base: "Location de chalet avec chien",
-  h2Label: "avec chien",
+  h1Base: "Location de chalet qui accepte les chiens",
   active: true,
   meta: {
-    titleBaseNational: "Location de chalet avec chien",
-    titleBase: "Chalet à louer avec chien",
+    titleBaseNational: "Location de chalet qui accepte les chiens",
+    titleBase: "Chalet à louer qui accepte les chiens",
     description: "{N} chalets qui acceptent les chiens {lieu}{prix}.{chiensInfos} Écrivez directement au propriétaire.",
   },
   topRegionsWord: "la plupart",
@@ -73,12 +72,12 @@ const content: ThemeContent = {
         needs: ["maxChiens", "nDeuxChiensPlus"],
       },
       {
-        q: "Où louer un chalet avec chien près de Montréal ?",
+        q: "Où louer un chalet qui accepte les chiens près de Montréal ?",
         a: "Lanaudière ({nLanaudiere}) et les Laurentides ({nLaurentides}) sont à environ une heure de Montréal. {villesMontreal} sont parmi les plus représentées.",
         needs: ["villesMontreal"],
       },
       {
-        q: "Où louer un chalet avec chien près de Québec ?",
+        q: "Où louer un chalet qui accepte les chiens près de Québec ?",
         a: "La région de Québec compte {nQuebec} chalets qui acceptent les chiens, surtout à {villesQuebec}, à moins d'une heure de la ville.",
         needs: ["villesQuebec"],
       },
@@ -90,7 +89,7 @@ const content: ThemeContent = {
     // Pages région : 5 questions, toutes calculées sur les chalets de la région
     region: [
       {
-        q: "Combien coûte un chalet avec chien {lieu} ?",
+        q: "Combien coûte un chalet qui accepte les chiens {lieu} ?",
         a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit {lieu}.{fourchette} Le propriétaire confirme le prix final pour vos dates.",
         needs: ["prixMin"],
       },
@@ -110,7 +109,7 @@ const content: ThemeContent = {
         needs: ["grosRegion"],
       },
       {
-        q: "Y a-t-il des chalets avec chien au bord de l'eau ou avec spa {lieu} ?",
+        q: "Y a-t-il des chalets qui acceptent les chiens au bord de l'eau ou avec spa {lieu} ?",
         a: "{croises}",
         needs: ["croises"],
       },
@@ -118,7 +117,7 @@ const content: ThemeContent = {
     // Pages ville : 3 questions, toutes calculées sur les chalets de la ville
     city: [
       {
-        q: "Combien coûte un chalet avec chien {lieu} ?",
+        q: "Combien coûte un chalet qui accepte les chiens {lieu} ?",
         a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit {lieu}.{fourchette} Le propriétaire confirme le prix final pour vos dates.",
         needs: ["prixMin"],
       },

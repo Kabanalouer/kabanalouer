@@ -20,7 +20,7 @@ export async function GET() {
 
   const themeLines: string[] = [];
   if (visibility.dogFriendly) {
-    themeLines.push(`- [Location de chalet avec chien](${url("/chalets/chiens-acceptes")}) : chalets où les chiens sont acceptés, avec le nombre maximum de chiens, les restrictions de poids et les frais de chaque chalet`);
+    themeLines.push(`- [Location de chalet qui accepte les chiens](${url("/chalets/chiens-acceptes")}) : chalets où les chiens sont acceptés, avec le nombre maximum de chiens, les restrictions de poids et les frais de chaque chalet`);
   }
   if (visibility.accessible) {
     themeLines.push(`- [Location de chalet accessible aux personnes à mobilité réduite](${url("/chalets/accessible-mobilite-reduite")}) : chalets adaptés, avec le détail de l'entrée, de la salle de bain, de la chambre et de la circulation (mesures en cm et en pouces)`);
