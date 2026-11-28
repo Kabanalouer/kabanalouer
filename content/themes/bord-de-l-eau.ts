@@ -10,7 +10,7 @@ const content: ThemeContent = {
   h1Base: "Location de chalet au bord de l'eau",
   active: true,
   nationalRegionParagraph:
-    "{topRegionsParagraph} Les Laurentides et Lanaudière sont à environ une heure de Montréal. La région de Québec offre aussi des chalets face au fleuve, à l'île d'Orléans.",
+    "{topRegionsParagraph} Les Laurentides et Lanaudière sont à environ une heure de Montréal. La région de Québec offre aussi des chalets face au fleuve et à l'île d'Orléans.",
   regionIntro: {},
   guide: {
     title: "Bien choisir son chalet au bord de l'eau",

@@ -166,8 +166,10 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
       : level === "region"
         ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom }))
         : [];
-  const shownRows = tableRows.slice(0, 6);
-  const alsoRows = tableRows.slice(6);
+  // Le tableau n'affiche que les lieux avec un prix ; les autres passent dans « Aussi : »
+  const pricedRows = tableRows.filter((r) => r.from !== null);
+  const shownRows = pricedRows.slice(0, 6);
+  const alsoRows = tableRows.filter((r) => !shownRows.includes(r));
 
   // ── Autres thèmes, même niveau géographique (seulement les pages actives) ──
   const comboIndex = await getComboIndex();
