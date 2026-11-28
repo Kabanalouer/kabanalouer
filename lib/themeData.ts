@@ -31,6 +31,10 @@ export function rowFromDb(raw: Raw): ThemeRow {
   const spaYear = spaEntry?.details?.disponibleAnnee;
   const saunaEntry = entries.find((a) => a.id === "sauna");
   const saunaAcces = str(saunaEntry?.details?.acces);
+  const evEntry = entries.find((a) => a.id === "borne-recharge-vr");
+  const evNiveau = str(evEntry?.details?.niveau);
+  const evConn = str(evEntry?.details?.connecteur);
+  const evRecharge = str(evEntry?.details?.recharge);
   const billiardEntry = entries.find((a) => a.id === "table-billard");
   const billiardAcces = str(billiardEntry?.details?.acces);
   const site = str(raw.site_name);
@@ -67,6 +71,11 @@ export function rowFromDb(raw: Raw): ThemeRow {
     spaYear: typeof spaYear === "boolean" ? spaYear : null,
     sauna: !!saunaEntry,
     saunaAccess: saunaAcces === "Privé" ? "prive" : saunaAcces === "Partagé" ? "partage" : null,
+    ev: !!evEntry,
+    evLevel: evNiveau?.startsWith("Niveau 1") ? 1 : evNiveau?.startsWith("Niveau 2") ? 2 : evNiveau?.startsWith("Niveau 3") ? 3 : null,
+    evConnector: evConn === "J1772" ? "j1772" : evConn === "Tesla" ? "tesla" : evConn === "Les deux" ? "both" : null,
+    evFee: evRecharge === "Incluse" ? "included" : evRecharge === "Frais en plus" ? "paid" : null,
+    evExclusive: typeof evEntry?.details?.exclusive === "boolean" ? (evEntry.details.exclusive as boolean) : null,
     billiard: !!billiardEntry,
     billiardAccess: billiardAcces === "Privé" ? "prive" : billiardAcces === "Partagé" ? "partage" : null,
     games: entries.some((a) => a.id === "babyfoot" || a.id === "table-ping-pong" || a.id === "arcades"),
@@ -81,7 +90,7 @@ export function rowFromDb(raw: Raw): ThemeRow {
 export function rowMatchesTheme(r: ThemeRow, slug: string): boolean {
   if (slug === "chiens-acceptes") return r.dogs;
   const ids = THEME_AMENITY_IDS[slug] ?? [];
-  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa) || (ids.includes("sauna") && r.sauna) || (ids.includes("table-billard") && r.billiard);
+  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa) || (ids.includes("sauna") && r.sauna) || (ids.includes("table-billard") && r.billiard) || (ids.includes("borne-recharge-vr") && r.ev);
 }
 
 const COLUMNS =
@@ -106,4 +115,4 @@ async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updated
 }
 
 // Même données pour tous les visiteurs : mises en cache 24 h (l'argument `slug` fait partie de la clé).
-export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v5"], { revalidate: 86400 });
+export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v6"], { revalidate: 86400 });

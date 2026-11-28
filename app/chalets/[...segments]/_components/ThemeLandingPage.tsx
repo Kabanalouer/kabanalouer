@@ -13,7 +13,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { slugify } from "@/lib/slugify";
 import { getRegionByDbValue } from "@/lib/regions";
 import { comboLinkLabel, comboPath, activeThemesInCity, activeThemesInRegion, getComboIndex, COMBO_THEMES, MIN_LISTINGS_FOR_COMBO } from "@/lib/comboLandings";
-import { CONCENTRATION_MIN_LISTINGS, CONCENTRATION_SHARE, MIN_LISTINGS_CHIP, THEME_FILTERS, pickDiverse, themeBadge as badgeOf, yearRoundKnownEnough, type ThemeRow } from "@/lib/themeStats";
+import { CONCENTRATION_MIN_LISTINGS, EV_REMOTE_REGIONS, CONCENTRATION_SHARE, MIN_LISTINGS_CHIP, THEME_FILTERS, pickDiverse, themeBadge as badgeOf, yearRoundKnownEnough, type ThemeRow } from "@/lib/themeStats";
 import { themePath, placeOf, type ThemeScope } from "@/lib/themeRouting";
 import { TO_PROVIDE, type ThemeFaqItem } from "@/content/themes/types";
 import { getRegionContent } from "@/content/regions";
@@ -107,6 +107,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const isDog = theme.slug === "chiens-acceptes";
   const isSauna = theme.slug === "avec-sauna";
   const isBillard = theme.slug === "table-de-billard";
+  const isEv = theme.slug === "borne-de-recharge";
   const filterDef = THEME_FILTERS[theme.slug] ?? { param: "acces" as const, filters: [] };
   const chips = filterDef.filters
     .map((f) => ({ ...f, n: scoped.filter(f.test).length }))
@@ -149,7 +150,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
     `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count}${isConc(r.region) ? `, ${concNote(r.region)}` : ""})`;
 
   // ── Intro « réponse directe » ──
-  const topPlaces = isSpa || isDog || isSauna || isBillard
+  const topPlaces = isSpa || isDog || isSauna || isBillard || isEv
     ? level === "national"
       ? top3Ranked.slice(0, isSauna ? 2 : 3).map(placeWithCount)
       : level === "region"
@@ -333,6 +334,36 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
     .flatMap((r) => national.byCity.filter((c) => c.region === r.region && ownersIn(c.region, c.city) >= 2).slice(0, 2).map((c) => c.city))
     .slice(0, 4);
   const concRegions = stats.byRegion.filter((r) => isConc(r.region));
+  // ── Borne de recharge : phrases calculées ──
+  const ex = stats.ev;
+  const evEnough = (known: number) => known >= 0.3 * stats.count;
+  const evLevelShown = isEv && evEnough(ex.levelKnown) && ex.niveau2 > 0;
+  const evFeeShown = isEv && evEnough(ex.feeKnown) && ex.incluse > 0;
+  const placeCount = (r: { region: string; count: number }) => `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count})`;
+  const evTop3 = stats.byRegion.slice(0, 4).filter((r) => !isConc(r.region)).slice(0, 3);
+  const evConcRegions = stats.byRegion.slice(0, 4).filter((r) => isConc(r.region));
+  const evPlacesText =
+    level === "national"
+      ? `${evTop3.length > 0 ? `, surtout ${joinFr(evTop3.map(placeCount))}` : ""}${evConcRegions.length > 0 ? `, ainsi que ${joinFr(evConcRegions.map((r) => `${regionName(r.region)?.locative ?? ""} (${r.count}, presque tous dans le même domaine)`))}` : ""}`
+      : "";
+  const remoteRegions = stats.byRegion.filter((r) => EV_REMOTE_REGIONS.includes(r.region));
+  const evEloigneesPhrase =
+    ex.eloignees > 0
+      ? `Oui, ${ex.eloignees}, surtout ${joinFr(remoteRegions.slice(0, 2).map(placeCount))}. C'est là qu'une borne au chalet est la plus utile.`
+      : "";
+  const nearSlugs = ["laurentides", "lanaudiere", "cantons-de-lest", "monteregie"];
+  const evNear = stats.byRegion.filter((r) => !isConc(r.region) && r.count >= 3 && nearSlugs.includes(regionName(r.region)?.slug ?? "")).slice(0, 3);
+  const farSlugs = ["gaspesie", "charlevoix", "cote-nord", "abitibi-temiscamingue", "saguenay-lac-saint-jean", "bas-saint-laurent"];
+  const evFar = stats.byRegion.filter((r) => r.count >= 3 && farSlugs.includes(regionName(r.region)?.slug ?? "")).slice(0, 2);
+  const evTypeBits = [
+    evEnough(ex.levelKnown) && ex.niveau2 > 0 ? `${ex.niveau2} ${n1(ex.niveau2, "a", "ont")} une borne de niveau 2` : "",
+    evEnough(ex.feeKnown) && ex.incluse > 0 ? `la recharge est incluse dans ${ex.incluse}` : "",
+  ].filter(Boolean);
+  const evComboBits = [
+    ex.spa > 0 ? `${ex.spa} avec spa` : "",
+    ex.eau > 0 ? `${ex.eau} au bord de l'eau` : "",
+    ex.chiens > 0 ? `${ex.chiens} ${n1(ex.chiens, "qui accepte", "qui acceptent")} les chiens` : "",
+  ].filter(Boolean);
   const concentrationFor = (slug: string) => {
     const reg = getRegionBySlug(slug);
     const cities = reg ? national.byCity.filter((c) => c.region === reg.dbValue).slice(0, 3).map((c) => c.city) : [];
@@ -369,6 +400,24 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       domaineConcentre: concRegions.map((r) => ` ${upperFirst(regionName(r.region)?.locative ?? "dans la région")}, l'offre est concentrée dans un grand domaine${topCityOf(r.region) ? `, à ${topCityOf(r.region)}` : ""}.`).join(""),
     });
   }
+  if (isEv) {
+    Object.assign(vars, {
+      evTopRegions: evTop3.length > 0 ? `, surtout ${joinFr(evTop3.map(placeCount))}` : "",
+      evNiveau2Phrase: ex.levelKnown >= 3 && ex.niveau2 > 0 ? ` ${ex.niveau2} ${n1(ex.niveau2, "chalet a", "chalets ont")} une borne de niveau 2.` : "",
+      evTeslaPhrase: ex.connKnown >= 3 && ex.tesla > 0 ? ` ${ex.tesla} ${n1(ex.tesla, "chalet a", "chalets ont")} aussi un connecteur Tesla.` : "",
+      evEloigneesPhrase,
+      evTypeRegion: evTypeBits.length > 0 ? `${upperFirst(evTypeBits.join(", et "))}.` : "",
+      evCombos: evComboBits.length > 0 ? `Oui : ${joinFr(evComboBits)}.` : "",
+      evChoix:
+        evNear.length > 0
+          ? `${upperFirst(joinFr(evNear.map((r) => withArticle(regionName(r.region)?.genitive ?? r.region))))} offrent le plus de choix, à 1 h à 1 h 30 de Montréal : la plupart des véhicules électriques s'y rendent sans recharge en route.`
+          : "",
+      evLoin:
+        evFar.length > 0
+          ? ` ${upperFirst(joinFr(evFar.map((r) => regionName(r.region)?.locative ?? "")))}, où le trajet est plus long, une borne au chalet permet de repartir avec une batterie pleine.`
+          : "",
+    });
+  }
   const concentration = [
     concLaurentides ? ` Dans les Laurentides, l'offre se concentre autour de ${concLaurentides}.` : "",
     concLanaudiere ? ` Dans Lanaudière, elle se trouve surtout autour de ${concLanaudiere}.` : "",
@@ -396,7 +445,9 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const others = stats.byRegion.slice(3, 5).filter((r) => r.count >= 5).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
   const autresRegions = others.length > 0 ? ` ${upperFirst(joinFr(others))} complète${others.length > 1 ? "nt" : ""} l'offre.` : "";
   const topRegionsParagraph = `${upperFirst(joinFr(regionLabels))} regroupent ${theme.topRegionsWord ?? "la majorité"} des ${theme.labelPlural} sur Kabanalouer${isSauna && top3Ranked.slice(0, 2).every((r) => ["laurentides", "lanaudiere"].includes(regionName(r.region)?.slug ?? "")) ? ", à environ une heure de Montréal" : ""}.`;
-  const accessSentence = isBillard
+  const accessSentence = isEv
+    ? evComboBits.length > 0 ? `${upperFirst(joinFr(evComboBits))}.` : ""
+    : isBillard
     ? groupes1016.length > 0 ? `${upperFirst(groupes1016.join(", et "))}.` : ""
     : isSauna
     ? stats.sauna.prive > 0 ? `Dans ${stats.sauna.prive} d'entre eux, le sauna est privé.${saunaSpaEauBits.length > 0 ? ` ${upperFirst(saunaSpaEauBits.join(" et "))}.` : ""}` : ""
@@ -409,9 +460,9 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   // ── Tableau (régions ou villes) ──
   const tableRows =
     level === "national"
-      ? rankedRegions.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound, dogFree: r.dogFree, saunaSpa: r.saunaSpa, groupes: r.groupes, note: isConc(r.region) ? (ownerInfo(r.region).top === ownerInfo(r.region).count ? "tous dans un même domaine" : `dont ${ownerInfo(r.region).top} dans un même domaine`) : "" }))
+      ? rankedRegions.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound, dogFree: r.dogFree, saunaSpa: r.saunaSpa, groupes: r.groupes, ev2: r.ev2, note: isConc(r.region) ? (ownerInfo(r.region).top === ownerInfo(r.region).count ? "tous dans un même domaine" : `dont ${ownerInfo(r.region).top} dans un même domaine`) : "" }))
       : level === "region"
-        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound, dogFree: c.dogFree, saunaSpa: c.saunaSpa, groupes: c.groupes, note: "" }))
+        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound, dogFree: c.dogFree, saunaSpa: c.saunaSpa, groupes: c.groupes, ev2: c.ev2, note: "" }))
         : [];
   // Sauna (petit thème) : les régions de moins de 3 fiches sont regroupées sur une ligne sans lien
   const elsewhere = national.byRegion.filter((r) => r.count < 3).map((r) => regionName(r.region)?.name ?? r.region);
@@ -475,7 +526,18 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         ? { value: String(stats.citiesCount), label: stats.citiesCount > 1 ? "villes" : "ville" }
         : { value: String(stats.regionsCount), label: stats.regionsCount > 1 ? "régions" : "région" };
   const guestsTile = stats.guestsMin !== null && stats.guestsMax !== null ? { value: `${stats.guestsMin} à ${stats.guestsMax}`, label: "voyageurs" } : null;
-  const tiles = (isBillard
+  const tiles = (isEv
+    ? [
+        { value: String(stats.count), label: "chalets avec borne" },
+        level === "national" ? { value: String(stats.regionsCount), label: "régions" } : placeTile,
+        evLevelShown
+          ? { value: String(ex.niveau2), label: n1(ex.niveau2, "borne de niveau 2", "bornes de niveau 2") }
+          : ex.eloignees > 0
+            ? { value: String(ex.eloignees), label: "en région éloignée" }
+            : guestsTile,
+        stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+      ]
+    : isBillard
     ? [
         { value: String(stats.count), label: "chalets avec billard" },
         bx.groupes > 0 ? { value: String(bx.groupes), label: "pour 10 personnes ou plus" } : null,
@@ -543,7 +605,23 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
               <h1 className="text-[length:clamp(34px,5vw,60px)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[var(--fg-1)]">
                 {fr(`${theme.h1Base} ${place}`)}
               </h1>
-              {isBillard ? (
+              {isEv ? (
+              <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
+                {fr("Kabanalouer compte ")}
+                <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
+                {fr(` pour véhicule électrique ${place}${level === "national" ? evPlacesText : topPlaces.length > 0 ? `, surtout ${joinFr(topPlaces)}` : ""}. `)}
+                {fr("Vous rechargez au chalet pendant votre séjour, sans chercher de borne publique. ")}
+                {evLevelShown && fr(`${ex.niveau2} ${n1(ex.niveau2, "a", "ont")} une borne de niveau 2${evFeeShown ? `, et la recharge est incluse dans ${ex.incluse}` : ""}. `)}
+                {!evLevelShown && evFeeShown && fr(`La recharge est incluse dans ${ex.incluse}. `)}
+                {stats.priceMin !== null && (
+                  <>
+                    {fr("Les prix de départ commencent à ")}
+                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${frInt(stats.priceMin)} $/nuit`)}</strong>
+                    {fr(", sans frais de service.")}
+                  </>
+                )}
+              </p>
+              ) : isBillard ? (
               <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
                 {fr("Kabanalouer compte ")}
                 <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
@@ -697,7 +775,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
           </h2>
           <p className="mt-4 max-w-[70ch] text-base leading-relaxed text-[var(--fg-2)]">
             {level === "national"
-              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph, autresRegions, concentration, choixExploitants: String(vars.choixExploitants ?? ""), domaineConcentre: String(vars.domaineConcentre ?? "") }))
+              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph, autresRegions, concentration, evChoix: String(vars.evChoix ?? ""), evLoin: String(vars.evLoin ?? ""), choixExploitants: String(vars.choixExploitants ?? ""), domaineConcentre: String(vars.domaineConcentre ?? "") }))
               : level === "region"
                 ? fr(`Voici les villes ${place} qui comptent le plus de ${theme.labelPlural}, classées par nombre de chalets.`)
                 : fr(`${city} compte ${stats.count} ${theme.labelPlural}${stats.priceMin !== null ? `, à partir de ${frInt(stats.priceMin)} $/nuit` : ""}${stats.guestsMin !== null ? `, pour ${stats.guestsMin} à ${stats.guestsMax} voyageurs` : ""}. ${accessSentence}`)}
@@ -716,6 +794,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                       {showFreeCol && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Sans frais pour le chien</th>}
                       {isSauna && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Avec spa aussi</th>}
                       {isBillard && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Pour 10 et plus</th>}
+                      {isEv && evLevelShown && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Niveau 2</th>}
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">À partir de</th>
                     </tr>
                   </thead>
@@ -728,6 +807,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                         {showFreeCol && <td className="px-3 py-3 tabular-nums sm:px-4">{row.dogFree > 0 ? row.dogFree : "—"}</td>}
                         {isSauna && <td className="px-3 py-3 tabular-nums sm:px-4">{row.saunaSpa > 0 ? row.saunaSpa : "—"}</td>}
                         {isBillard && <td className="px-3 py-3 tabular-nums sm:px-4">{row.groupes > 0 ? row.groupes : "—"}</td>}
+                        {isEv && evLevelShown && <td className="px-3 py-3 tabular-nums sm:px-4">{row.ev2 > 0 ? row.ev2 : "—"}</td>}
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.from !== null ? fr(`${money(row.from)}/nuit`) : "—"}</td>
                       </tr>
                     ))}

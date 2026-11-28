@@ -107,6 +107,11 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
     bx.spa > 0 ? `${bx.spa} ${bx.spa === 1 ? "a" : "ont"} aussi un spa` : "",
   ].filter(Boolean);
   const billardInfos = theme.slug === "table-de-billard" && billiardPieces.length > 0 ? ` ${billiardPieces.join(", ")}.` : "";
+  const ex = stats.ev;
+  const evInfos =
+    theme.slug === "borne-de-recharge" && ex.levelKnown >= 0.3 * n && ex.niveau2 > 0
+      ? ` ${ex.niveau2} ${ex.niveau2 === 1 ? "borne de niveau 2" : "bornes de niveau 2"}.`
+      : "";
   const saunaPrive = theme.slug === "avec-sauna" && sx.prive === n ? " privé" : "";
   const ouvertAnnee = yearRoundKnownEnough(stats)
     ? ` ${stats.spa.annee} ${stats.spa.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.`
@@ -126,6 +131,7 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
           .replace("{ouvertAnnee}", ouvertAnnee)
           .replace("{chiensInfos}", chiensInfos)
           .replace("{saunaInfos}", saunaInfos)
+          .replace("{evInfos}", evInfos)
           .replace("{billardInfos}", billardInfos)
           .replace("{saunaPrive}", saunaPrive)
       : `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`

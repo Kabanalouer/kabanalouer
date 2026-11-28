@@ -473,7 +473,44 @@ export const AMENITY_CATALOG: AmenityCatalogEntry[] = [
     ],
   },
   { id: "garage", label: "Garage", labelEn: "Garage", categoryId: "stationnement", icon: "Warehouse" },
-  { id: "borne-recharge-vr", label: "Borne de recharge pour véhicule électrique", labelEn: "EV charging station", categoryId: "stationnement", icon: "Zap" },
+  {
+    id: "borne-recharge-vr",
+    label: "Borne de recharge pour véhicule électrique",
+    labelEn: "EV charging station",
+    categoryId: "stationnement",
+    icon: "Zap",
+    detailSchema: [
+      {
+        key: "niveau", type: "single-select", label: "Niveau de la borne", labelEn: "Charger level",
+        options: ["Niveau 1 (120 V)", "Niveau 2 (240 V)", "Niveau 3 (recharge rapide)"],
+        optionsEn: ["Level 1 (120 V)", "Level 2 (240 V)", "Level 3 (fast charging)"],
+        summaryLabels: ["Prise 120 V", "Niveau 2", "Niveau 3"],
+        summaryLabelsEn: ["120 V outlet", "Level 2", "Level 3"],
+      },
+      {
+        key: "connecteur", type: "single-select", label: "Connecteur", labelEn: "Connector",
+        options: ["J1772", "Tesla", "Les deux"], optionsEn: ["J1772", "Tesla", "Both"],
+      },
+      {
+        key: "recharge", type: "single-select", label: "Recharge", labelEn: "Charging",
+        options: ["Incluse", "Frais en plus"], optionsEn: ["Included", "Extra fee"],
+        summaryLabels: ["Recharge incluse", "Recharge payante"], summaryLabelsEn: ["Charging included", "Paid charging"],
+      },
+      {
+        key: "montant", type: "number", label: "Montant des frais", labelEn: "Fee amount", max: 200, unit: "$", unitEn: "$",
+        showIf: { key: "recharge", equals: "Frais en plus" },
+      },
+      {
+        key: "unite", type: "single-select", label: "Frais facturés", labelEn: "Fee charged",
+        options: ["Par nuit", "Par séjour", "Au kWh"], optionsEn: ["Per night", "Per stay", "Per kWh"],
+        showIf: { key: "recharge", equals: "Frais en plus" },
+      },
+      {
+        key: "exclusive", type: "boolean", label: "Réservée au chalet", labelEn: "Reserved for this cabin",
+        summaryLabel: "Réservée au chalet", summaryLabelEn: "Reserved for this cabin",
+      },
+    ],
+  },
 
   // Sécurité
   { id: "detecteur-fumee", label: "Détecteur de fumée", labelEn: "Smoke detector", categoryId: "securite", icon: "Siren" },

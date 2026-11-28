@@ -26,7 +26,17 @@ type Listing = {
   dogs_size_limit?: string | null;
   dogs_fee_type?: string | null;
   dogs_fee_amount?: number | null;
+  amenities?: unknown;
 };
+
+// Borne de recharge cochée sans aucun détail (niveau, connecteur, recharge) : les conducteurs de véhicules électriques filtrent là-dessus
+function evDetailsMissing(l: Listing): boolean {
+  if (!Array.isArray(l.amenities)) return false;
+  const ev = (l.amenities as { id?: string; details?: Record<string, unknown> }[]).find((a) => a?.id === "borne-recharge-vr");
+  if (!ev) return false;
+  const d = ev.details ?? {};
+  return !(d.niveau || d.connecteur || d.recharge);
+}
 
 // « Chiens acceptés » sans nombre maximum, poids ou frais : les voyageurs avec un chien filtrent là-dessus
 function dogConditionsMissing(l: Listing): boolean {
@@ -134,6 +144,14 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                       className="relative z-10 inline-flex items-center gap-1 text-warning-700 font-semibold underline underline-offset-2"
                     >
                       {t("dogConditionsReminder")} {t("dogConditionsAction")}
+                    </Link>
+                  )}
+                  {evDetailsMissing(listing) && (
+                    <Link
+                      href={`${editHref}?section=equipements`}
+                      className="relative z-10 inline-flex items-center gap-1 text-warning-700 font-semibold underline underline-offset-2"
+                    >
+                      {t("evDetailsReminder")} {t("evDetailsAction")}
                     </Link>
                   )}
                   {translationPending[listing.id] && (

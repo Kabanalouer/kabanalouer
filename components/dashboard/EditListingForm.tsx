@@ -266,6 +266,7 @@ export default function EditListingForm({
       : searchParams.get("section") === "publier" ? "publier"
       : searchParams.get("section") === "chambres" ? "chambres"
       : searchParams.get("section") === "infos" ? "infos"
+      : searchParams.get("section") === "equipements" ? "equipements"
       : "titre"
   );
   const [saving, setSaving] = useState(false);
@@ -1440,6 +1441,9 @@ export default function EditListingForm({
               <p className="text-sm font-medium text-charcoal-700 -mt-3 mb-4">
                 {tEdit("amenitiesAtLeast")} <Req />
               </p>
+              {form.amenities.some((a) => a.id === "borne-recharge-vr" && !(a.details && (a.details.niveau || a.details.connecteur || a.details.recharge))) && (
+                <p className="mb-4 rounded-xl bg-warning-50 px-4 py-3 text-sm text-warning-800">{tEdit("evDetailsReminder")}</p>
+              )}
               <AmenitiesPicker
                 selected={form.amenities}
                 onChange={(amenities) => set("amenities", amenities)}

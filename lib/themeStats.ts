@@ -14,7 +14,7 @@ export const MIN_OWNERS_CITY_INDEXED = 2;
 export const MIN_OWNERS_REGION_INDEXED = 2;
 // Part du même exploitant au-delà de laquelle une région est présentée comme « concentrée » (intro et tableau le disent)
 export const CONCENTRATION_SHARE = 0.7;
-export const CONCENTRATION_MIN_LISTINGS = 10;
+export const CONCENTRATION_MIN_LISTINGS = 5;
 // Un chalet « grand groupe » reçoit au moins ce nombre de voyageurs
 export const LARGE_GROUP_GUESTS = 10;
 // Une sous-catégorie sous ce nombre de fiches n'a pas de pastille
@@ -29,6 +29,7 @@ export const THEME_AMENITY_IDS: Record<string, string[]> = {
   "avec-spa": ["spa"],
   "avec-sauna": ["sauna"],
   "table-de-billard": ["table-billard"],
+  "borne-de-recharge": ["borne-recharge-vr"],
   // Chiens acceptés : pas un équipement, une colonne (listings.dogs_allowed) ; voir THEME_FILTER_QUERY["chiens-acceptes"]._base
 };
 
@@ -71,6 +72,12 @@ export interface ThemeRow {
   billiardAccess: "prive" | "partage" | null;
   games: boolean; // baby-foot, ping-pong ou arcade
   pool: boolean; // piscine intérieure ou extérieure
+  // Thème borne de recharge (détails déclarés par le proprio ; null = non renseigné)
+  ev: boolean;
+  evLevel: 1 | 2 | 3 | null;
+  evConnector: "j1772" | "tesla" | "both" | null;
+  evFee: "included" | "paid" | null;
+  evExclusive: boolean | null;
   // Thème chiens (listings.dogs_* ; null = non renseigné)
   dogMax: number | null;
   dogSize: "small" | "medium" | "all" | null;
@@ -143,8 +150,27 @@ export function pickDiverse(rows: ThemeRow[], limit = GRID_SIZE, perOwner = MAX_
   return picked.length >= limit ? picked : [...picked, ...left.slice(0, limit - picked.length)];
 }
 
-export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number }
-export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number }
+export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number; ev2: number }
+export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number; ev2: number }
+
+// Régions où le réseau de recharge public est plus clairsemé (valeurs de listings.region)
+export const EV_REMOTE_REGIONS = ["Gaspésie–Îles-de-la-Madeleine", "Côte-Nord", "Abitibi-Témiscamingue", "Saguenay–Lac-Saint-Jean", "Bas-Saint-Laurent"];
+
+// Chiffres propres au thème borne de recharge (calculés pour tous les thèmes, affichés seulement pour ce thème)
+export interface EvStats {
+  niveau2: number;
+  incluse: number;
+  tesla: number; // connecteur Tesla ou les deux
+  exclusive: number;
+  levelKnown: number;
+  feeKnown: number;
+  connKnown: number;
+  exclKnown: number;
+  eloignees: number;
+  spa: number;
+  chiens: number;
+  eau: number;
+}
 
 // Chiffres propres au thème billard (calculés pour tous les thèmes, affichés seulement pour ce thème)
 export interface BilliardStats {
@@ -231,6 +257,7 @@ export interface ThemeStats {
   dog: DogStats;
   sauna: SaunaStats;
   billiard: BilliardStats;
+  ev: EvStats;
   large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
   pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
@@ -259,6 +286,26 @@ function spaStatsOf(rows: ThemeRow[]): SpaStats {
     bordEau: rows.filter((r) => r.spa && (r.direct || r.lake)).length,
     sauna: rows.filter((r) => r.spa && r.sauna).length,
     chiens: rows.filter((r) => r.spa && r.dogs).length,
+  };
+}
+
+const ev2Of = (rows: ThemeRow[]) => rows.filter((r) => r.evLevel === 2).length;
+
+function evStatsOf(rows: ThemeRow[]): EvStats {
+  const e = rows.filter((r) => r.ev);
+  return {
+    niveau2: e.filter((r) => r.evLevel === 2).length,
+    incluse: e.filter((r) => r.evFee === "included").length,
+    tesla: e.filter((r) => r.evConnector === "tesla" || r.evConnector === "both").length,
+    exclusive: e.filter((r) => r.evExclusive === true).length,
+    levelKnown: e.filter((r) => r.evLevel !== null).length,
+    feeKnown: e.filter((r) => r.evFee !== null).length,
+    connKnown: e.filter((r) => r.evConnector !== null).length,
+    exclKnown: e.filter((r) => r.evExclusive !== null).length,
+    eloignees: e.filter((r) => EV_REMOTE_REGIONS.includes(r.region)).length,
+    spa: e.filter((r) => r.spa).length,
+    chiens: e.filter((r) => r.dogs).length,
+    eau: e.filter((r) => r.direct || r.lake).length,
   };
 }
 
@@ -347,12 +394,12 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
   }
 
   const byRegion: RegionStat[] = [...regionGroups.entries()]
-    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list) }))
+    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list), ev2: ev2Of(list) }))
     .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region, "fr"));
   const byCity: CityStat[] = [...cityGroups.entries()]
     .map(([key, list]) => {
       const [region, cityName] = key.split("|");
-      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list) };
+      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list), ev2: ev2Of(list) };
     })
     .filter((c) => c.count >= MIN_LISTINGS_INDEXED)
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "fr"));
@@ -382,6 +429,7 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
     dog: dogStatsOf(rows),
     sauna: saunaStatsOf(rows),
     billiard: billiardStatsOf(rows),
+    ev: evStatsOf(rows),
     large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
     pricedCount: sortedPrices.length,
     updatedAt,
@@ -435,6 +483,17 @@ export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters:
       { key: "spa", label: "Avec spa", suffix: "avec spa", test: (r) => r.spa },
     ],
   },
+  "borne-de-recharge": {
+    param: "filtre",
+    filters: [
+      { key: "niveau2", label: "Niveau 2", suffix: "avec borne de niveau 2", test: (r) => r.evLevel === 2 },
+      { key: "incluse", label: "Recharge incluse", suffix: "où la recharge est incluse", test: (r) => r.evFee === "included" },
+      { key: "tesla", label: "Compatible Tesla", suffix: "compatibles Tesla", test: (r) => r.evConnector === "tesla" || r.evConnector === "both" },
+      { key: "eloignee", label: "En région éloignée", suffix: "en région éloignée", test: (r) => EV_REMOTE_REGIONS.includes(r.region) },
+      { key: "spa", label: "Avec spa", suffix: "et spa", test: (r) => r.spa },
+      { key: "chiens", label: "Chiens acceptés", suffix: "qui acceptent les chiens", test: (r) => r.dogs },
+    ],
+  },
   "table-de-billard": {
     param: "filtre",
     filters: [
@@ -479,7 +538,7 @@ export function yearRoundKnownEnough(stats: ThemeStats): boolean {
 // Même sous-catégories vues par la recherche (/chalets?theme=…&sub=…) : le bouton « Voir les N chalets » d'une page thème
 // filtrée mène à une liste du même nombre. Chaque filtre ci-dessus doit avoir son équivalent ici (et inversement).
 // or : au moins un de ces motifs d'équipement (JSON de confinement) ; capMin / capMax : voyageurs ; dogs : chiens acceptés.
-export interface FilterQuery { or?: object[][]; orAlso?: object[][]; capMin?: number; capMax?: number; dogs?: boolean; eq?: Record<string, string>; gte?: Record<string, number> }
+export interface FilterQuery { or?: object[][]; orAlso?: object[][]; regionIn?: string[]; capMin?: number; capMax?: number; dogs?: boolean; eq?: Record<string, string>; gte?: Record<string, number> }
 export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
   "bord-de-l-eau": {
     direct: { or: [[{ id: "bord-eau" }]] },
@@ -500,6 +559,14 @@ export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
     deux: { gte: { dogs_max: 2 } },
     eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
     spa: { or: [[{ id: "spa" }]] },
+  },
+  "borne-de-recharge": {
+    niveau2: { or: [[{ id: "borne-recharge-vr", details: { niveau: "Niveau 2 (240 V)" } }]] },
+    incluse: { or: [[{ id: "borne-recharge-vr", details: { recharge: "Incluse" } }]] },
+    tesla: { or: [[{ id: "borne-recharge-vr", details: { connecteur: "Tesla" } }], [{ id: "borne-recharge-vr", details: { connecteur: "Les deux" } }]] },
+    eloignee: { regionIn: EV_REMOTE_REGIONS },
+    spa: { or: [[{ id: "spa" }]] },
+    chiens: { dogs: true },
   },
   "table-de-billard": {
     groupes: { capMin: LARGE_GROUP_GUESTS },
@@ -537,6 +604,15 @@ export function spaBadge(r: ThemeRow): string | null {
   return null;
 }
 
+// Badge borne : les détails quand ils existent (« Niveau 2 · recharge incluse », « Niveau 2 · J1772 », « Prise 120 V »), sinon « Borne VE »
+export function evBadge(r: ThemeRow): string {
+  const level = r.evLevel === 1 ? "Prise 120 V" : r.evLevel === 2 ? "Niveau 2" : r.evLevel === 3 ? "Niveau 3" : null;
+  const conn = r.evConnector === "j1772" ? "J1772" : r.evConnector === "tesla" ? "Tesla" : r.evConnector === "both" ? "J1772 et Tesla" : null;
+  if (r.evFee === "included") return level ? `${level} · recharge incluse` : "Recharge incluse";
+  if (level && conn) return `${level} · ${conn}`;
+  return level ?? conn ?? "Borne VE";
+}
+
 // Badge billard : le plus utile, jamais « Table de billard · Privé » seul (null = aucun)
 export function billiardBadge(r: ThemeRow): string | null {
   if (r.games) return "Salle de jeux";
@@ -560,5 +636,6 @@ export function themeBadge(themeSlug: string, r: ThemeRow): string | null {
   if (themeSlug === "chiens-acceptes") return null; // les conditions s'affichent sous la carte
   if (themeSlug === "avec-sauna") return saunaBadge(r);
   if (themeSlug === "table-de-billard") return billiardBadge(r);
+  if (themeSlug === "borne-de-recharge") return evBadge(r);
   return themeSlug === "avec-spa" ? spaBadge(r) : accessBadge(r);
 }

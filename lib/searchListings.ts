@@ -116,6 +116,7 @@ function listingsQuery(supabase: SupabaseClient, f: SearchFilters, excludedIds: 
   if (sub?.or?.length) // Valeur entre guillemets : le JSON des détails contient des virgules, qui coupent sinon le filtre « or » de PostgREST
     query = query.or(sub.or.map((p) => `amenities.cs."${JSON.stringify(p).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(","));
   if (sub?.orAlso?.length) query = query.or(sub.orAlso.map((p) => `amenities.cs."${JSON.stringify(p).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(","));
+  if (sub?.regionIn?.length) query = query.in("region", sub.regionIn);
   if (sub?.capMin) query = query.gte("capacity", sub.capMin);
   if (sub?.capMax) query = query.lte("capacity", sub.capMax);
   if (sub?.dogs) query = query.eq("dogs_allowed", true);
