@@ -369,7 +369,6 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                     {fr(". ")}
                   </>
                 )}
-                {fr("Vous écrivez directement au propriétaire, sans frais de service.")}
               </p>
               ) : (
               <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
