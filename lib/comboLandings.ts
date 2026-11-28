@@ -119,7 +119,7 @@ export function getComboTheme(key: ComboThemeKey): ComboTheme {
 // Slugs réservés : un lien personnalisé de fiche (3ᵉ segment) ne doit jamais
 // masquer une page ville × type (même position dans l'URL).
 // Thèmes (français) servis par le gabarit ThemeLandingPage : adresse « thème en premier » (/chalets/avec-spa/laurentides)
-export const THEME_FIRST_KEYS: ReadonlySet<string> = new Set(["waterfront", "spa", "dogs", "sauna"]);
+export const THEME_FIRST_KEYS: ReadonlySet<string> = new Set(["waterfront", "spa", "dogs", "sauna", "pool-table"]);
 export const isThemeFirstKey = (key: string): boolean => THEME_FIRST_KEYS.has(key);
 
 export const RESERVED_COMBO_SLUGS = new Set(COMBO_THEMES.flatMap((t) => [t.slugFr, t.slugEn]));
@@ -250,7 +250,7 @@ export function allActiveCombos(index: ComboIndex): ComboLink[] {
 // lib/themeRouting.ts) se calcule sur les mêmes données que la page. Le sitemap et llms.txt la prennent donc de
 // `indexableThemeCities` et non de cet index (les comptes peuvent différer d'une fiche ou deux). L'anglais garde l'ancienne règle.
 export function isThemeLandingCityCombo(l: ComboLink): boolean {
-  return isThemeFirstKey(l.theme.key) && !!l.city;
+  return isThemeFirstKey(l.theme.key);
 }
 
 // « Chalets avec spa dans les Laurentides » (ou sans le lieu)

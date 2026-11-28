@@ -6,7 +6,7 @@ import { DOG_FRIENDLY_PATH_EN } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN } from "@/lib/accessibility";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
 import { allActiveCombos, comboLinkLabel, comboPath, getComboIndex, isThemeLandingCityCombo } from "@/lib/comboLandings";
-import { indexableThemeCities, themePath } from "@/lib/themeRouting";
+import { indexableThemeCities, indexableThemeRegions, themePath } from "@/lib/themeRouting";
 
 // llms.txt (guide des pages pour les agents IA). Généré plutôt que statique :
 // les pages par type, région et région/ville × type n'y figurent que
@@ -39,7 +39,10 @@ export async function GET() {
   const combos = allActiveCombos(comboIndex);
   const comboLine = (l: (typeof combos)[number]) =>
     `- [${comboLinkLabel(l, false)}](${url(comboPath(l.theme, l.region, l.city, false))}) : ${l.count} chalets`;
-  const regionComboLines = combos.filter((l) => !l.city).map(comboLine);
+  const themeRegionLines = (await indexableThemeRegions()).map(
+    (c) => `- [Chalets ${c.target.theme.label.replace(/^qui accepte/, "qui acceptent")} ${c.target.region?.locative}](${url(themePath(c.target))}) : ${c.count} chalets`
+  );
+  const regionComboLines = [...combos.filter((l) => !l.city && !isThemeLandingCityCombo(l)).map(comboLine), ...themeRegionLines];
   const themeCityLines = (await indexableThemeCities()).map(
     (c) => `- [Chalets ${c.target.theme.label.replace(/^qui accepte/, "qui acceptent")} à ${c.target.city}](${url(themePath(c.target))}) : ${c.count} chalets`
   );

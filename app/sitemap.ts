@@ -12,7 +12,7 @@ import { AMENITY_LANDINGS, countAmenityLandingsWith } from "@/lib/amenityLanding
 import { createClient } from "@supabase/supabase-js";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
 import { allActiveCombos, comboPath, getComboIndex, isThemeLandingCityCombo } from "@/lib/comboLandings";
-import { indexableThemeCities, themePath } from "@/lib/themeRouting";
+import { indexableThemeCities, indexableThemeRegions, themePath } from "@/lib/themeRouting";
 
 const BASE = SITE_URL;
 
@@ -204,7 +204,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     // Pages ville du gabarit thème (français) : 5 fiches ou plus seulement
-    for (const c of await indexableThemeCities()) {
+    for (const c of [...(await indexableThemeRegions()), ...(await indexableThemeCities())]) {
       comboPages.push({ url: `${BASE}${themePath(c.target)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 });
     }
 

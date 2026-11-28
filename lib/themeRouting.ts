@@ -6,7 +6,7 @@ import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { fr, frInt } from "@/lib/frTypography";
 import { getThemeData } from "@/lib/themeData";
-import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, MIN_OWNERS_CITY_INDEXED, computeStats, inScope, yearRoundKnownEnough, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
+import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, MIN_OWNERS_CITY_INDEXED, MIN_OWNERS_REGION_INDEXED, computeStats, inScope, yearRoundKnownEnough, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
 
 // Pages thème (gabarit ThemeLandingPage) : /chalets/{thème}, /chalets/{thème}/{région}, /chalets/{thème}/{région}/{ville}.
 // Français seulement : l'anglais garde le gabarit actuel.
@@ -71,7 +71,12 @@ export async function resolveThemeTarget(segments: string[]): Promise<ThemeScope
 export function indexingOf(scope: ThemeScope): { index: boolean; canonicalPath: string } {
   const { target, stats, regionStats, scoped } = scope;
   if (!target.region) return { index: true, canonicalPath: themePath(target) };
-  if (!target.city) return { index: stats.count >= MIN_LISTINGS_INDEXED, canonicalPath: themePath(target) };
+  if (!target.city) {
+    const regionOwners = new Set(scoped.map((r) => r.ownerKey)).size;
+    const ok = stats.count >= MIN_LISTINGS_INDEXED && regionOwners >= MIN_OWNERS_REGION_INDEXED;
+    // Région non indexée : le canonical renvoie à la page nationale du thème
+    return { index: ok, canonicalPath: ok ? themePath(target) : themePath({ theme: target.theme }) };
+  }
   const redundant = regionStats ? stats.count === regionStats.count : false;
   const owners = new Set(scoped.map((r) => r.ownerKey)).size;
   if (stats.count >= MIN_LISTINGS_CITY_INDEXED && owners >= MIN_OWNERS_CITY_INDEXED && !redundant) return { index: true, canonicalPath: themePath(target) };
@@ -96,6 +101,12 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
     sx.eau > 0 ? `${sx.eau} ${sx.eau === 1 ? "est" : "sont"} au bord de l'eau` : "",
   ].filter(Boolean);
   const saunaInfos = theme.slug === "avec-sauna" && saunaPieces.length > 0 ? ` ${saunaPieces.join(", ")}.` : "";
+  const bx = stats.billiard;
+  const billiardPieces = [
+    bx.groupes > 0 ? `${bx.groupes} ${bx.groupes === 1 ? "accueille" : "accueillent"} 10 personnes ou plus` : "",
+    bx.spa > 0 ? `${bx.spa} ${bx.spa === 1 ? "a" : "ont"} aussi un spa` : "",
+  ].filter(Boolean);
+  const billardInfos = theme.slug === "table-de-billard" && billiardPieces.length > 0 ? ` ${billiardPieces.join(", ")}.` : "";
   const saunaPrive = theme.slug === "avec-sauna" && sx.prive === n ? " privé" : "";
   const ouvertAnnee = yearRoundKnownEnough(stats)
     ? ` ${stats.spa.annee} ${stats.spa.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.`
@@ -115,6 +126,7 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
           .replace("{ouvertAnnee}", ouvertAnnee)
           .replace("{chiensInfos}", chiensInfos)
           .replace("{saunaInfos}", saunaInfos)
+          .replace("{billardInfos}", billardInfos)
           .replace("{saunaPrive}", saunaPrive)
       : `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`
   );
@@ -141,6 +153,21 @@ export async function indexableThemeCities(): Promise<{ target: ThemeTarget; cou
       const regionCount = inScope(rows, region.dbValue).length;
       const owners = new Set(inScope(rows, region.dbValue, c.city).map((r) => r.ownerKey)).size;
       if (c.count >= MIN_LISTINGS_CITY_INDEXED && owners >= MIN_OWNERS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
+    }
+  }
+  return out;
+}
+
+// Pages région indexables de tous les thèmes actifs (sitemap, llms.txt) : même règle que `indexingOf`
+export async function indexableThemeRegions(): Promise<{ target: ThemeTarget; count: number }[]> {
+  const out: { target: ThemeTarget; count: number }[] = [];
+  for (const theme of THEMES.filter(isThemeContentReady)) {
+    const { rows, updatedAt } = await getThemeData(theme.slug);
+    for (const r of computeStats(rows, updatedAt).byRegion) {
+      const region = getRegionByDbValue(r.region);
+      if (!region) continue;
+      const owners = new Set(inScope(rows, region.dbValue).map((x) => x.ownerKey)).size;
+      if (r.count >= MIN_LISTINGS_INDEXED && owners >= MIN_OWNERS_REGION_INDEXED) out.push({ target: { theme, region }, count: r.count });
     }
   }
   return out;

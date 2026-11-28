@@ -13,7 +13,7 @@ import { buildListingPath } from "@/lib/listingUrl";
 import { slugify } from "@/lib/slugify";
 import { getRegionByDbValue } from "@/lib/regions";
 import { comboLinkLabel, comboPath, activeThemesInCity, activeThemesInRegion, getComboIndex, COMBO_THEMES, MIN_LISTINGS_FOR_COMBO } from "@/lib/comboLandings";
-import { MIN_LISTINGS_CHIP, THEME_FILTERS, pickDiverse, themeBadge as badgeOf, yearRoundKnownEnough, type ThemeRow } from "@/lib/themeStats";
+import { CONCENTRATION_MIN_LISTINGS, CONCENTRATION_SHARE, MIN_LISTINGS_CHIP, THEME_FILTERS, pickDiverse, themeBadge as badgeOf, yearRoundKnownEnough, type ThemeRow } from "@/lib/themeStats";
 import { themePath, placeOf, type ThemeScope } from "@/lib/themeRouting";
 import { TO_PROVIDE, type ThemeFaqItem } from "@/content/themes/types";
 import { getRegionContent } from "@/content/regions";
@@ -106,6 +106,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const isSpa = theme.slug === "avec-spa";
   const isDog = theme.slug === "chiens-acceptes";
   const isSauna = theme.slug === "avec-sauna";
+  const isBillard = theme.slug === "table-de-billard";
   const filterDef = THEME_FILTERS[theme.slug] ?? { param: "acces" as const, filters: [] };
   const chips = filterDef.filters
     .map((f) => ({ ...f, n: scoped.filter(f.test).length }))
@@ -128,15 +129,34 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const cityHref = (db: string, c: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}/${slugify(c)}`;
   const regionHref = (db: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}`;
 
+  // ── Concentration : une région dont plus de 70 % des fiches viennent du même exploitant n'est jamais présentée comme la 1re ──
+  const ownerInfo = (db: string) => {
+    const m = new Map<string, number>();
+    for (const r of scope.rows) if (r.region === db) m.set(r.ownerKey, (m.get(r.ownerKey) ?? 0) + 1);
+    const count = [...m.values()].reduce((a, b) => a + b, 0);
+    return { count, top: m.size ? Math.max(...m.values()) : 0, owners: m.size };
+  };
+  const isConc = (db: string) => {
+    const o = ownerInfo(db);
+    return o.count >= CONCENTRATION_MIN_LISTINGS && o.top / o.count > CONCENTRATION_SHARE;
+  };
+  const topCityOf = (db: string) => national.byCity.find((c) => c.region === db)?.city ?? null;
+  const concNote = (db: string) => `presque tous dans le même domaine${topCityOf(db) ? `, à ${topCityOf(db)}` : ""}`;
+  const rankedRegions = [...stats.byRegion].sort((a, b) => Number(isConc(a.region)) - Number(isConc(b.region)) || b.count - a.count);
+  // Les 3 premières régions par nombre de fiches, la concentrée (s'il y en a une) passant en dernier
+  const top3Ranked = [...stats.byRegion.slice(0, 3)].sort((a, b) => Number(isConc(a.region)) - Number(isConc(b.region)) || b.count - a.count);
+  const placeWithCount = (r: { region: string; count: number }) =>
+    `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count}${isConc(r.region) ? `, ${concNote(r.region)}` : ""})`;
+
   // ── Intro « réponse directe » ──
-  const topPlaces = isSpa || isDog || isSauna
+  const topPlaces = isSpa || isDog || isSauna || isBillard
     ? level === "national"
-      ? stats.byRegion.slice(0, isSauna ? 2 : 3).map((r) => `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count})`)
+      ? top3Ranked.slice(0, isSauna ? 2 : 3).map(placeWithCount)
       : level === "region"
         ? stats.byCity.slice(0, 3).map((c) => `à ${c.city} (${c.count})`)
         : []
     : level === "national"
-      ? stats.byRegion.slice(0, 3).map((r) => (regionName(r.region)?.locative ?? "").replace(/^en /, ""))
+      ? top3Ranked.map((r) => (regionName(r.region)?.locative ?? "").replace(/^en /, ""))
       : level === "region"
         ? stats.byCity.slice(0, 3).map((c) => `à ${c.city}`)
         : [];
@@ -183,7 +203,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   // Villes les plus représentées, sans exploitant unique (au moins 2 exploitants différents dans la ville)
   const ownersIn = (regionDb: string, c: string) => new Set(scope.rows.filter((r) => r.region === regionDb && r.city === c).map((r) => r.ownerKey)).size;
   const spaCitiesNearMontreal = national.byCity
-    .filter((c) => ["laurentides", "lanaudiere"].includes(regionName(c.region)?.slug ?? "") && c.count >= (isSauna ? 3 : 5) && ownersIn(c.region, c.city) >= 2)
+    .filter((c) => ["laurentides", "lanaudiere"].includes(regionName(c.region)?.slug ?? "") && c.count >= (isSauna || isBillard ? 3 : 5) && ownersIn(c.region, c.city) >= 2)
     .slice(0, 3)
     .map((c) => c.city);
   const sp = stats.spa;
@@ -230,7 +250,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       ? `${dg.gratuit} ${n1(dg.gratuit, "accepte", "acceptent")} les chiens sans frais.${fraisPhrase ? ` Ailleurs, ${fraisPhrase}.` : ""}`
       : fraisPhrase ? `Aucun chalet n'est indiqué sans frais pour le chien ${place}. Les frais sont en général ${fraisPhraseBits.join(" ou ")}.` : "";
   const grosRegion = dg.toutesTailles > 0 ? `${dg.toutesTailles} ${n1(dg.toutesTailles, "accepte", "acceptent")} les chiens de toutes tailles.${limitesPoids}` : "";
-  const topRegionsList = upperFirst(joinFr(stats.byRegion.slice(0, 3).map((r) => `${withArticle(regionName(r.region)?.genitive ?? r.region)} (${r.count})`)));
+  const topRegionsList = upperFirst(joinFr(top3Ranked.map((r) => `${withArticle(regionName(r.region)?.genitive ?? r.region)} (${r.count}${isConc(r.region) ? ", presque tous dans le même domaine" : ""})`)));
   const vars: Record<string, string> = {
     N: String(stats.count),
     nRegions: String(stats.regionsCount),
@@ -251,7 +271,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
     nLaurentides: String(countIn("laurentides")),
     nLanaudiere: String(countIn("lanaudiere")),
     nQuebec: String(countIn("quebec")),
-    villesMontreal: isSpa || isDog || isSauna ? joinFr(spaCitiesNearMontreal) : joinFr(citiesNearMontreal(scope)),
+    villesMontreal: isSpa || isDog || isSauna || isBillard ? joinFr(spaCitiesNearMontreal) : joinFr(citiesNearMontreal(scope)),
     nCharlevoix: String(countIn("charlevoix") || ""),
     nPrive: sp.prive > 0 ? String(sp.prive) : "",
     nAnnee: sp.annee > 0 && sp.anneeConnu >= 3 ? String(sp.annee) : "",
@@ -289,6 +309,30 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       : quebecCount < 3
         ? `L'offre est encore petite près de Québec : ${quebecCount} ${n1(quebecCount, "chalet", "chalets")} pour l'instant. [Voir les chalets avec spa de la région de Québec](/chalets/avec-spa/quebec)`
         : `La région de Québec compte ${quebecCount} chalets avec sauna${quebecCities.length > 0 ? `, surtout à ${joinFr(quebecCities)}` : ""}.`;
+  // ── Billard : phrases calculées ──
+  const bx = stats.billiard;
+  const quebecDb = getRegionBySlug("quebec")?.dbValue ?? "";
+  const charlevoixCount = countIn("charlevoix");
+  const billardQuebecPhrase =
+    quebecCount === 0
+      ? ""
+      : `${isConc(quebecDb)
+          ? `La région de Québec compte ${quebecCount} chalets avec billard, presque tous dans un même domaine${topCityOf(quebecDb) ? ` à ${topCityOf(quebecDb)}` : ""}, à environ une heure de la ville.`
+          : `La région de Québec compte ${quebecCount} ${n1(quebecCount, "chalet", "chalets")} avec billard${quebecCities.length > 0 ? `, surtout à ${joinFr(quebecCities)}` : ""}.`}${charlevoixCount > 0 ? ` Charlevoix en compte aussi ${charlevoixCount}.` : ""}`;
+  const groupes1016 = [
+    bx.groupes > 0 ? `${bx.groupes} ${n1(bx.groupes, "accueille", "accueillent")} 10 personnes ou plus` : "",
+    bx.grands > 0 ? `${bx.grands} au moins 16` : "",
+  ].filter(Boolean);
+  const billardSpaEauBits = [
+    bx.spa > 0 ? `${bx.spa} ${n1(bx.spa, "a", "ont")} aussi un spa` : "",
+    bx.eau > 0 ? `${bx.eau} ${n1(bx.eau, "est", "sont")} au bord de l'eau` : "",
+  ].filter(Boolean);
+  const ownersByRegion = (db: string) => ownerInfo(db).owners;
+  const choiceRegions = stats.byRegion.filter((r) => !isConc(r.region) && r.count >= 3).sort((a, b) => ownersByRegion(b.region) - ownersByRegion(a.region)).slice(0, 2);
+  const choiceCities = choiceRegions
+    .flatMap((r) => national.byCity.filter((c) => c.region === r.region && ownersIn(c.region, c.city) >= 2).slice(0, 2).map((c) => c.city))
+    .slice(0, 4);
+  const concRegions = stats.byRegion.filter((r) => isConc(r.region));
   const concentrationFor = (slug: string) => {
     const reg = getRegionBySlug(slug);
     const cities = reg ? national.byCity.filter((c) => c.region === reg.dbValue).slice(0, 3).map((c) => c.city) : [];
@@ -305,6 +349,24 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       saunaSpaEau: saunaSpaEauBits.length > 0 ? `${upperFirst(saunaSpaEauBits.join(" et "))}.` : "",
       quebecPhrase,
       villesMontrealPhrase: spaCitiesNearMontreal.length > 0 ? ` ${joinFr(spaCitiesNearMontreal)} ${n1(spaCitiesNearMontreal.length, "est", "sont")} parmi les plus représentées.` : "",
+    });
+  }
+  if (isBillard) {
+    Object.assign(vars, {
+      parPersonne: bx.parPersonneConnu >= 10 && bx.parPersonneMediane !== null ? ` Pour un grand groupe, ça revient à environ ${frInt(bx.parPersonneMediane)} $ par personne par nuit.` : "",
+      autourDe: spaCitiesNearMontreal.length > 0 ? `, surtout autour de ${joinFr(spaCitiesNearMontreal)}` : "",
+      quebecPhrase: billardQuebecPhrase,
+      groupesPhrase: bx.groupes > 0 ? `Oui : ${bx.groupes} ${n1(bx.groupes, "accueille", "accueillent")} 10 personnes ou plus${bx.grands > 0 ? `, et ${bx.grands} au moins 16` : ""}.` : "",
+      nBillardSpa: bx.spa > 0 ? String(bx.spa) : "",
+      billardEauPhrase: bx.eau > 0 ? `, et ${bx.eau} ${n1(bx.eau, "est", "sont")} au bord de l'eau` : "",
+      prive: bx.prive === 0 ? "" : bx.prive === stats.count ? `Oui : dans les ${stats.count} chalets, la table est dans le chalet, réservée à votre groupe.` : `Dans ${bx.prive} chalets sur ${stats.count}, oui : elle est dans le chalet, réservée à votre groupe.`,
+      groupes1016: groupes1016.length > 0 ? `${upperFirst(groupes1016.join(", et "))}.` : capacite,
+      billardSpaEau: billardSpaEauBits.length > 0 ? `${upperFirst(billardSpaEauBits.join(" et "))}.` : "",
+      choixExploitants:
+        choiceRegions.length > 0
+          ? `${upperFirst(joinFr(choiceRegions.map((r) => withArticle(regionName(r.region)?.genitive ?? r.region))))} offrent le plus grand choix d'exploitants${choiceCities.length > 0 ? `, autour de ${joinFr(choiceCities)}` : ""}.`
+          : "",
+      domaineConcentre: concRegions.map((r) => ` ${upperFirst(regionName(r.region)?.locative ?? "dans la région")}, l'offre est concentrée dans un grand domaine${topCityOf(r.region) ? `, à ${topCityOf(r.region)}` : ""}.`).join(""),
     });
   }
   const concentration = [
@@ -330,17 +392,13 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       : [];
 
   // ── Paragraphe éditorial du tableau ──
-  const top3 = stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.slug);
-  const expected = ["quebec", "laurentides", "lanaudiere"];
-  const regionLabels = stats.byRegion.slice(0, isSauna ? 2 : 3).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
+  const regionLabels = top3Ranked.slice(0, isSauna ? 2 : 3).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
   const others = stats.byRegion.slice(3, 5).filter((r) => r.count >= 5).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
   const autresRegions = others.length > 0 ? ` ${upperFirst(joinFr(others))} complète${others.length > 1 ? "nt" : ""} l'offre.` : "";
-  const topRegionsParagraph = isSpa || isDog || isSauna
-    ? `${upperFirst(joinFr(regionLabels))} regroupent ${theme.topRegionsWord ?? "la majorité"} des ${theme.labelPlural} sur Kabanalouer${isSauna && stats.byRegion.slice(0, 2).every((r) => ["laurentides", "lanaudiere"].includes(regionName(r.region)?.slug ?? "")) ? ", à environ une heure de Montréal" : ""}.`
-    : top3.length === 3 && expected.every((s) => top3.includes(s))
-      ? "La région de Québec, les Laurentides et Lanaudière regroupent la majorité des chalets au bord de l'eau sur Kabanalouer."
-      : `${joinFr(stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.name ?? r.region))} regroupent le plus de chalets au bord de l'eau sur Kabanalouer.`;
-  const accessSentence = isSauna
+  const topRegionsParagraph = `${upperFirst(joinFr(regionLabels))} regroupent ${theme.topRegionsWord ?? "la majorité"} des ${theme.labelPlural} sur Kabanalouer${isSauna && top3Ranked.slice(0, 2).every((r) => ["laurentides", "lanaudiere"].includes(regionName(r.region)?.slug ?? "")) ? ", à environ une heure de Montréal" : ""}.`;
+  const accessSentence = isBillard
+    ? groupes1016.length > 0 ? `${upperFirst(groupes1016.join(", et "))}.` : ""
+    : isSauna
     ? stats.sauna.prive > 0 ? `Dans ${stats.sauna.prive} d'entre eux, le sauna est privé.${saunaSpaEauBits.length > 0 ? ` ${upperFirst(saunaSpaEauBits.join(" et "))}.` : ""}` : ""
     : isDog
     ? conditionsBits.length > 0 ? `${upperFirst(joinFr(conditionsBits))}.` : ""
@@ -351,9 +409,9 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   // ── Tableau (régions ou villes) ──
   const tableRows =
     level === "national"
-      ? national.byRegion.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound, dogFree: r.dogFree, saunaSpa: r.saunaSpa }))
+      ? rankedRegions.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound, dogFree: r.dogFree, saunaSpa: r.saunaSpa, groupes: r.groupes, note: isConc(r.region) ? (ownerInfo(r.region).top === ownerInfo(r.region).count ? "tous dans un même domaine" : `dont ${ownerInfo(r.region).top} dans un même domaine`) : "" }))
       : level === "region"
-        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound, dogFree: c.dogFree, saunaSpa: c.saunaSpa }))
+        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound, dogFree: c.dogFree, saunaSpa: c.saunaSpa, groupes: c.groupes, note: "" }))
         : [];
   // Sauna (petit thème) : les régions de moins de 3 fiches sont regroupées sur une ligne sans lien
   const elsewhere = national.byRegion.filter((r) => r.count < 3).map((r) => regionName(r.region)?.name ?? r.region);
@@ -417,7 +475,16 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         ? { value: String(stats.citiesCount), label: stats.citiesCount > 1 ? "villes" : "ville" }
         : { value: String(stats.regionsCount), label: stats.regionsCount > 1 ? "régions" : "région" };
   const guestsTile = stats.guestsMin !== null && stats.guestsMax !== null ? { value: `${stats.guestsMin} à ${stats.guestsMax}`, label: "voyageurs" } : null;
-  const tiles = (isSauna
+  const tiles = (isBillard
+    ? [
+        { value: String(stats.count), label: "chalets avec billard" },
+        bx.groupes > 0 ? { value: String(bx.groupes), label: "pour 10 personnes ou plus" } : null,
+        bx.spa > 0 ? { value: String(bx.spa), label: "avec spa aussi" } : null,
+        stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+        placeTile,
+        guestsTile,
+      ]
+    : isSauna
     ? [
         { value: String(stats.count), label: "chalets avec sauna" },
         stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
@@ -476,7 +543,29 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
               <h1 className="text-[length:clamp(34px,5vw,60px)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[var(--fg-1)]">
                 {fr(`${theme.h1Base} ${place}`)}
               </h1>
-              {isSauna ? (
+              {isBillard ? (
+              <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
+                {fr("Kabanalouer compte ")}
+                <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
+                {fr(` à louer ${place}. `)}
+                {bx.groupes > 0 &&
+                  fr(`${bx.groupes >= 0.5 * stats.count ? "La plupart sont de grands chalets" : "Plusieurs sont de grands chalets"} : ${bx.groupes} ${n1(bx.groupes, "accueille", "accueillent")} 10 personnes ou plus, ce qui en fait un bon choix pour une fin de semaine en famille ou entre amis. `)}
+                {topPlaces.length > 0 &&
+                  fr(`On les trouve surtout ${
+                    level === "national" && top3Ranked.length >= 2 && ["laurentides", "lanaudiere"].every((sl) => top3Ranked.slice(0, 2).some((r) => regionName(r.region)?.slug === sl))
+                      ? `${topPlaces[0]} et ${topPlaces[1]}, à environ une heure de Montréal${topPlaces[2] ? `, ainsi que ${topPlaces[2]}` : ""}`
+                      : joinFr(topPlaces)
+                  }. `)}
+                {bx.spa > 0 && fr(`${bx.spa} ${n1(bx.spa, "a", "ont")} aussi un spa. `)}
+                {stats.priceMin !== null && (
+                  <>
+                    {fr("Les prix de départ commencent à ")}
+                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${frInt(stats.priceMin)} $/nuit`)}</strong>
+                    {fr(", sans frais de service.")}
+                  </>
+                )}
+              </p>
+              ) : isSauna ? (
               <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
                 {fr("Kabanalouer compte ")}
                 <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
@@ -566,7 +655,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
           <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {picked.map((r, i) => {
               const card = (
-                <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} themeBadge={(() => { const b = badgeOf(theme.slug, r); return b ? fr(b) : undefined; })()} />
+                <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} boldCapacity={isBillard} themeBadge={(() => { const b = badgeOf(theme.slug, r); return b ? fr(b) : undefined; })()} />
               );
               if (!isDog) return card;
               // Chiens : les conditions (nombre, poids, frais) sous la carte, ou un renvoi au propriétaire
@@ -608,7 +697,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
           </h2>
           <p className="mt-4 max-w-[70ch] text-base leading-relaxed text-[var(--fg-2)]">
             {level === "national"
-              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph, autresRegions, concentration }))
+              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph, autresRegions, concentration, choixExploitants: String(vars.choixExploitants ?? ""), domaineConcentre: String(vars.domaineConcentre ?? "") }))
               : level === "region"
                 ? fr(`Voici les villes ${place} qui comptent le plus de ${theme.labelPlural}, classées par nombre de chalets.`)
                 : fr(`${city} compte ${stats.count} ${theme.labelPlural}${stats.priceMin !== null ? `, à partir de ${frInt(stats.priceMin)} $/nuit` : ""}${stats.guestsMin !== null ? `, pour ${stats.guestsMin} à ${stats.guestsMax} voyageurs` : ""}. ${accessSentence}`)}
@@ -626,17 +715,19 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                       {showYear && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Ouverts à l'année</th>}
                       {showFreeCol && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Sans frais pour le chien</th>}
                       {isSauna && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Avec spa aussi</th>}
+                      {isBillard && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Pour 10 et plus</th>}
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">À partir de</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shownRows.map((row) => (
                       <tr key={row.href} className="border-t border-[var(--border-1)]">
-                        <th scope="row" className="px-3 py-3 font-semibold sm:px-4"><Link href={row.href} className="text-[var(--fg-1)] underline-offset-2 hover:underline">{fr(row.label)}</Link></th>
+                        <th scope="row" className="px-3 py-3 font-semibold sm:px-4"><Link href={row.href} className="text-[var(--fg-1)] underline-offset-2 hover:underline">{fr(row.label)}</Link>{row.note && <span className="block text-[13px] font-normal text-[var(--fg-3)]">{fr(row.note)}</span>}</th>
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.count}</td>
                         {showYear && <td className="px-3 py-3 tabular-nums sm:px-4">{row.yearRound > 0 ? row.yearRound : "—"}</td>}
                         {showFreeCol && <td className="px-3 py-3 tabular-nums sm:px-4">{row.dogFree > 0 ? row.dogFree : "—"}</td>}
                         {isSauna && <td className="px-3 py-3 tabular-nums sm:px-4">{row.saunaSpa > 0 ? row.saunaSpa : "—"}</td>}
+                        {isBillard && <td className="px-3 py-3 tabular-nums sm:px-4">{row.groupes > 0 ? row.groupes : "—"}</td>}
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.from !== null ? fr(`${money(row.from)}/nuit`) : "—"}</td>
                       </tr>
                     ))}
@@ -644,7 +735,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                 </table>
               </div>
               <p className="mt-3 text-sm text-[var(--fg-3)]">{fr(`Prix de départ moyens des fiches actives avec prix affiché. Mis à jour le ${updated}.`)}</p>
-              {isSauna && level === "national" && elsewhere.length > 0 && (
+              {(isSauna || isBillard) && level === "national" && elsewhere.length > 0 && (
                 <p className="mt-2 text-sm text-[var(--fg-2)]">{fr(`Ailleurs au Québec : ${joinFr(elsewhere)}.`)}</p>
               )}
               {alsoRows.length > 0 && (

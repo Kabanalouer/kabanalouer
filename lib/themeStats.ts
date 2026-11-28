@@ -10,6 +10,11 @@ export const MIN_LISTINGS_INDEXED = 3;
 export const MIN_LISTINGS_CITY_INDEXED = 5;
 // Une page ville dont toutes les fiches viennent du même exploitant n'est pas indexée (contenu qui n'apporte pas de choix)
 export const MIN_OWNERS_CITY_INDEXED = 2;
+// Une page région n'est indexée qu'avec au moins 3 fiches ET 2 exploitants différents (un seul exploitant = une seule offre)
+export const MIN_OWNERS_REGION_INDEXED = 2;
+// Part du même exploitant au-delà de laquelle une région est présentée comme « concentrée » (intro et tableau le disent)
+export const CONCENTRATION_SHARE = 0.7;
+export const CONCENTRATION_MIN_LISTINGS = 10;
 // Un chalet « grand groupe » reçoit au moins ce nombre de voyageurs
 export const LARGE_GROUP_GUESTS = 10;
 // Une sous-catégorie sous ce nombre de fiches n'a pas de pastille
@@ -23,6 +28,7 @@ export const THEME_AMENITY_IDS: Record<string, string[]> = {
   "bord-de-l-eau": ["bord-eau", "acces-lac"],
   "avec-spa": ["spa"],
   "avec-sauna": ["sauna"],
+  "table-de-billard": ["table-billard"],
   // Chiens acceptés : pas un équipement, une colonne (listings.dogs_allowed) ; voir THEME_FILTER_QUERY["chiens-acceptes"]._base
 };
 
@@ -60,6 +66,11 @@ export interface ThemeRow {
   spaYear: boolean | null;
   sauna: boolean;
   saunaAccess: "prive" | "partage" | null;
+  // Thème billard
+  billiard: boolean;
+  billiardAccess: "prive" | "partage" | null;
+  games: boolean; // baby-foot, ping-pong ou arcade
+  pool: boolean; // piscine intérieure ou extérieure
   // Thème chiens (listings.dogs_* ; null = non renseigné)
   dogMax: number | null;
   dogSize: "small" | "medium" | "all" | null;
@@ -132,8 +143,25 @@ export function pickDiverse(rows: ThemeRow[], limit = GRID_SIZE, perOwner = MAX_
   return picked.length >= limit ? picked : [...picked, ...left.slice(0, limit - picked.length)];
 }
 
-export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number }
-export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number }
+export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number }
+export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number; groupes: number }
+
+// Chiffres propres au thème billard (calculés pour tous les thèmes, affichés seulement pour ce thème)
+export interface BilliardStats {
+  prive: number;
+  partage: number;
+  groupes: number; // 10 voyageurs ou plus
+  grands: number; // 16 voyageurs ou plus
+  capaciteMediane: number | null;
+  chambresMediane: number | null;
+  spa: number;
+  eau: number;
+  pool: number;
+  games: number; // autres jeux (baby-foot, ping-pong, arcade)
+  chiens: number;
+  parPersonneMediane: number | null; // prix de départ ÷ capacité, sur les fiches avec prix
+  parPersonneConnu: number;
+}
 
 // Chiffres propres au thème sauna (calculés pour tous les thèmes, affichés seulement pour ce thème)
 export interface SaunaStats {
@@ -202,6 +230,7 @@ export interface ThemeStats {
   spa: SpaStats;
   dog: DogStats;
   sauna: SaunaStats;
+  billiard: BilliardStats;
   large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
   pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
@@ -230,6 +259,30 @@ function spaStatsOf(rows: ThemeRow[]): SpaStats {
     bordEau: rows.filter((r) => r.spa && (r.direct || r.lake)).length,
     sauna: rows.filter((r) => r.spa && r.sauna).length,
     chiens: rows.filter((r) => r.spa && r.dogs).length,
+  };
+}
+
+const groupesOf = (rows: ThemeRow[]) => rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length;
+
+function billiardStatsOf(rows: ThemeRow[]): BilliardStats {
+  const b = rows.filter((r) => r.billiard);
+  const caps = b.map((r) => r.capacity).filter((n) => Number.isFinite(n) && n > 0).sort((a, c) => a - c);
+  const beds = b.map((r) => r.bedrooms).filter((n) => Number.isFinite(n) && n > 0).sort((a, c) => a - c);
+  const perPerson = b.filter((r) => hasDisplayedPrice(r) && r.capacity > 0).map((r) => r.price / r.capacity).sort((a, c) => a - c);
+  return {
+    prive: b.filter((r) => r.billiardAccess === "prive").length,
+    partage: b.filter((r) => r.billiardAccess === "partage").length,
+    groupes: b.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
+    grands: b.filter((r) => r.capacity >= 16).length,
+    capaciteMediane: medianOf(caps),
+    chambresMediane: medianOf(beds),
+    spa: b.filter((r) => r.spa).length,
+    eau: b.filter((r) => r.direct || r.lake).length,
+    pool: b.filter((r) => r.pool).length,
+    games: b.filter((r) => r.games).length,
+    chiens: b.filter((r) => r.dogs).length,
+    parPersonneMediane: perPerson.length ? Math.round(medianOf(perPerson) as number) : null,
+    parPersonneConnu: perPerson.length,
   };
 }
 
@@ -294,12 +347,12 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
   }
 
   const byRegion: RegionStat[] = [...regionGroups.entries()]
-    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list) }))
+    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list) }))
     .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region, "fr"));
   const byCity: CityStat[] = [...cityGroups.entries()]
     .map(([key, list]) => {
       const [region, cityName] = key.split("|");
-      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list) };
+      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list), groupes: groupesOf(list) };
     })
     .filter((c) => c.count >= MIN_LISTINGS_INDEXED)
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "fr"));
@@ -328,6 +381,7 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
     spa: spaStatsOf(rows),
     dog: dogStatsOf(rows),
     sauna: saunaStatsOf(rows),
+    billiard: billiardStatsOf(rows),
     large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
     pricedCount: sortedPrices.length,
     updatedAt,
@@ -379,6 +433,17 @@ export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters:
       { key: "deux", label: "2 chiens ou plus", suffix: "qui acceptent 2 chiens ou plus", test: (r) => (r.dogMax ?? 0) >= 2 },
       { key: "eau", label: "Au bord de l'eau", suffix: "au bord de l'eau", test: (r) => r.direct || r.lake },
       { key: "spa", label: "Avec spa", suffix: "avec spa", test: (r) => r.spa },
+    ],
+  },
+  "table-de-billard": {
+    param: "filtre",
+    filters: [
+      { key: "groupes", label: "10 personnes et plus", suffix: "pour 10 personnes ou plus", test: (r) => r.capacity >= LARGE_GROUP_GUESTS },
+      { key: "grands", label: "16 personnes et plus", suffix: "pour 16 personnes ou plus", test: (r) => r.capacity >= 16 },
+      { key: "spa", label: "Billard + spa", suffix: "et spa", test: (r) => r.spa },
+      { key: "eau", label: "Au bord de l'eau", suffix: "au bord de l'eau", test: (r) => r.direct || r.lake },
+      { key: "piscine", label: "Avec piscine", suffix: "avec piscine", test: (r) => r.pool },
+      { key: "chiens", label: "Chiens acceptés", suffix: "qui acceptent les chiens", test: (r) => r.dogs },
     ],
   },
   "avec-sauna": {
@@ -436,6 +501,14 @@ export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
     eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
     spa: { or: [[{ id: "spa" }]] },
   },
+  "table-de-billard": {
+    groupes: { capMin: LARGE_GROUP_GUESTS },
+    grands: { capMin: 16 },
+    spa: { or: [[{ id: "spa" }]] },
+    eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
+    piscine: { or: [[{ id: "piscine-interieure" }], [{ id: "piscine-exterieure" }]] },
+    chiens: { dogs: true },
+  },
   "avec-sauna": {
     spa: { or: [[{ id: "spa" }]] },
     eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
@@ -464,6 +537,15 @@ export function spaBadge(r: ThemeRow): string | null {
   return null;
 }
 
+// Badge billard : le plus utile, jamais « Table de billard · Privé » seul (null = aucun)
+export function billiardBadge(r: ThemeRow): string | null {
+  if (r.games) return "Salle de jeux";
+  if (r.spa) return "Billard + spa";
+  if (r.pool) return "Billard + piscine";
+  if (r.billiardAccess === "partage") return "Billard partagé";
+  return null;
+}
+
 // Badge sauna : le plus informatif, jamais « Sauna · Privé » seul (null = aucun)
 export function saunaBadge(r: ThemeRow): string | null {
   const eau = r.direct || r.lake;
@@ -477,5 +559,6 @@ export function saunaBadge(r: ThemeRow): string | null {
 export function themeBadge(themeSlug: string, r: ThemeRow): string | null {
   if (themeSlug === "chiens-acceptes") return null; // les conditions s'affichent sous la carte
   if (themeSlug === "avec-sauna") return saunaBadge(r);
+  if (themeSlug === "table-de-billard") return billiardBadge(r);
   return themeSlug === "avec-spa" ? spaBadge(r) : accessBadge(r);
 }

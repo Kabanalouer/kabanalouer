@@ -42,6 +42,7 @@ const SUB_PILL: Record<string, Record<string, string>> = {
   "bord-de-l-eau": { direct: "bord-eau" },
   "chiens-acceptes": { eau: "bord-eau", spa: "spa" },
   "avec-sauna": { spa: "spa", eau: "bord-eau", chiens: "dogs" },
+  "table-de-billard": { spa: "spa", eau: "bord-eau", chiens: "dogs" },
 };
 
 const PILL =

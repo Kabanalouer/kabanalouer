@@ -39,6 +39,7 @@ export default function ListingCard({
   currentUserId,
   priority = false,
   themeBadge,
+  boldCapacity = false,
 }: {
   listing: Listing;
   currentUserId?: string | null;
@@ -46,6 +47,8 @@ export default function ListingCard({
   priority?: boolean;
   // Pages thème : pastille blanche en haut à gauche (« Bord de l'eau », « Accès au lac · privé »)
   themeBadge?: string;
+  // Thème billard : la capacité est le critère principal, on la met en gras
+  boldCapacity?: boolean;
 }) {
   const t = useTranslations("listingCard");
   const locale = useLocale();
@@ -272,7 +275,7 @@ export default function ListingCard({
 
         {/* Ligne 3 : voyageurs · chambres */}
         <p className="mt-0.5 text-sm text-[var(--fg-3)]">
-          {t("travelers", { count: listing.capacity })}
+          {boldCapacity ? <strong className="font-bold text-[var(--fg-2)]">{t("travelers", { count: listing.capacity })}</strong> : t("travelers", { count: listing.capacity })}
           {" · "}
           {t("bedrooms", { count: listing.bedrooms })}
         </p>

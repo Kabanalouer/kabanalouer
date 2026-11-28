@@ -31,6 +31,8 @@ export function rowFromDb(raw: Raw): ThemeRow {
   const spaYear = spaEntry?.details?.disponibleAnnee;
   const saunaEntry = entries.find((a) => a.id === "sauna");
   const saunaAcces = str(saunaEntry?.details?.acces);
+  const billiardEntry = entries.find((a) => a.id === "table-billard");
+  const billiardAcces = str(billiardEntry?.details?.acces);
   const site = str(raw.site_name);
   const email = str(raw.claim_email);
   return {
@@ -65,6 +67,10 @@ export function rowFromDb(raw: Raw): ThemeRow {
     spaYear: typeof spaYear === "boolean" ? spaYear : null,
     sauna: !!saunaEntry,
     saunaAccess: saunaAcces === "Privé" ? "prive" : saunaAcces === "Partagé" ? "partage" : null,
+    billiard: !!billiardEntry,
+    billiardAccess: billiardAcces === "Privé" ? "prive" : billiardAcces === "Partagé" ? "partage" : null,
+    games: entries.some((a) => a.id === "babyfoot" || a.id === "table-ping-pong" || a.id === "arcades"),
+    pool: entries.some((a) => a.id === "piscine-interieure" || a.id === "piscine-exterieure"),
     dogMax: typeof raw.dogs_max === "number" ? raw.dogs_max : null,
     dogSize: raw.dogs_size_limit === "small" || raw.dogs_size_limit === "medium" || raw.dogs_size_limit === "all" ? raw.dogs_size_limit : null,
     dogFee: raw.dogs_fee_type === "free" || raw.dogs_fee_type === "per_night" || raw.dogs_fee_type === "per_stay" ? raw.dogs_fee_type : null,
@@ -75,7 +81,7 @@ export function rowFromDb(raw: Raw): ThemeRow {
 export function rowMatchesTheme(r: ThemeRow, slug: string): boolean {
   if (slug === "chiens-acceptes") return r.dogs;
   const ids = THEME_AMENITY_IDS[slug] ?? [];
-  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa) || (ids.includes("sauna") && r.sauna);
+  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa) || (ids.includes("sauna") && r.sauna) || (ids.includes("table-billard") && r.billiard);
 }
 
 const COLUMNS =
@@ -100,4 +106,4 @@ async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updated
 }
 
 // Même données pour tous les visiteurs : mises en cache 24 h (l'argument `slug` fait partie de la clé).
-export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v4"], { revalidate: 86400 });
+export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v5"], { revalidate: 86400 });
