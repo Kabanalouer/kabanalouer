@@ -41,6 +41,7 @@ const SUB_PILL: Record<string, Record<string, string>> = {
   "avec-spa": { sauna: "sauna", chiens: "dogs", eau: "bord-eau" },
   "bord-de-l-eau": { direct: "bord-eau" },
   "chiens-acceptes": { eau: "bord-eau", spa: "spa" },
+  "avec-sauna": { spa: "spa", eau: "bord-eau", chiens: "dogs" },
 };
 
 const PILL =
@@ -72,7 +73,8 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   const isThemePill = (id: string) =>
     (id === "bord-eau" && filters.theme === "bord-de-l-eau") ||
     (id === "spa" && filters.theme === "avec-spa") ||
-    (id === "dogs" && filters.theme === "chiens-acceptes");
+    (id === "dogs" && filters.theme === "chiens-acceptes") ||
+    (id === "sauna" && filters.theme === "avec-sauna");
 
   const toggle = (id: string) => {
     // Pastille du thème lui-même : la retirer enlève le thème et sa sous-catégorie

@@ -8,6 +8,8 @@ import { isKnownMunicipality } from "@/lib/municipalities";
 export const MIN_LISTINGS_INDEXED = 3;
 // Une page ville n'est indexée qu'à partir de ce nombre de fiches (2026-11-28) ; en dessous : noindex + canonical vers la région
 export const MIN_LISTINGS_CITY_INDEXED = 5;
+// Une page ville dont toutes les fiches viennent du même exploitant n'est pas indexée (contenu qui n'apporte pas de choix)
+export const MIN_OWNERS_CITY_INDEXED = 2;
 // Un chalet « grand groupe » reçoit au moins ce nombre de voyageurs
 export const LARGE_GROUP_GUESTS = 10;
 // Une sous-catégorie sous ce nombre de fiches n'a pas de pastille
@@ -20,6 +22,7 @@ const TRIM_SHARE = 0.05;
 export const THEME_AMENITY_IDS: Record<string, string[]> = {
   "bord-de-l-eau": ["bord-eau", "acces-lac"],
   "avec-spa": ["spa"],
+  "avec-sauna": ["sauna"],
   // Chiens acceptés : pas un équipement, une colonne (listings.dogs_allowed) ; voir THEME_FILTER_QUERY["chiens-acceptes"]._base
 };
 
@@ -56,6 +59,7 @@ export interface ThemeRow {
   spaPlaces: number | null;
   spaYear: boolean | null;
   sauna: boolean;
+  saunaAccess: "prive" | "partage" | null;
   // Thème chiens (listings.dogs_* ; null = non renseigné)
   dogMax: number | null;
   dogSize: "small" | "medium" | "all" | null;
@@ -128,8 +132,18 @@ export function pickDiverse(rows: ThemeRow[], limit = GRID_SIZE, perOwner = MAX_
   return picked.length >= limit ? picked : [...picked, ...left.slice(0, limit - picked.length)];
 }
 
-export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number }
-export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number }
+export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number }
+export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number; saunaSpa: number }
+
+// Chiffres propres au thème sauna (calculés pour tous les thèmes, affichés seulement pour ce thème)
+export interface SaunaStats {
+  prive: number;
+  partage: number;
+  spa: number; // sauna + spa
+  eau: number; // sauna + bord de l'eau ou accès au lac
+  circuit: number; // sauna + spa + eau
+  chiens: number;
+}
 
 // Conditions « chiens » d'une fiche : nombre maximum, poids et frais (frais payants = avec montant)
 export function dogConditionsComplete(r: ThemeRow): boolean {
@@ -187,6 +201,7 @@ export interface ThemeStats {
   dogs: number;
   spa: SpaStats;
   dog: DogStats;
+  sauna: SaunaStats;
   large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
   pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
@@ -215,6 +230,20 @@ function spaStatsOf(rows: ThemeRow[]): SpaStats {
     bordEau: rows.filter((r) => r.spa && (r.direct || r.lake)).length,
     sauna: rows.filter((r) => r.spa && r.sauna).length,
     chiens: rows.filter((r) => r.spa && r.dogs).length,
+  };
+}
+
+const saunaSpaOf = (rows: ThemeRow[]) => rows.filter((r) => r.sauna && r.spa).length;
+
+function saunaStatsOf(rows: ThemeRow[]): SaunaStats {
+  const s = rows.filter((r) => r.sauna);
+  return {
+    prive: s.filter((r) => r.saunaAccess === "prive").length,
+    partage: s.filter((r) => r.saunaAccess === "partage").length,
+    spa: s.filter((r) => r.spa).length,
+    eau: s.filter((r) => r.direct || r.lake).length,
+    circuit: s.filter((r) => r.spa && (r.direct || r.lake)).length,
+    chiens: s.filter((r) => r.dogs).length,
   };
 }
 
@@ -265,12 +294,12 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
   }
 
   const byRegion: RegionStat[] = [...regionGroups.entries()]
-    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list) }))
+    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list) }))
     .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region, "fr"));
   const byCity: CityStat[] = [...cityGroups.entries()]
     .map(([key, list]) => {
       const [region, cityName] = key.split("|");
-      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list) };
+      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list), saunaSpa: saunaSpaOf(list) };
     })
     .filter((c) => c.count >= MIN_LISTINGS_INDEXED)
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "fr"));
@@ -298,6 +327,7 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
     dogs: rows.filter((r) => r.dogs).length,
     spa: spaStatsOf(rows),
     dog: dogStatsOf(rows),
+    sauna: saunaStatsOf(rows),
     large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
     pricedCount: sortedPrices.length,
     updatedAt,
@@ -351,6 +381,17 @@ export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters:
       { key: "spa", label: "Avec spa", suffix: "avec spa", test: (r) => r.spa },
     ],
   },
+  "avec-sauna": {
+    param: "filtre",
+    filters: [
+      { key: "spa", label: "Sauna + spa", suffix: "et spa", test: (r) => r.spa },
+      { key: "eau", label: "Sauna au bord de l'eau", suffix: "au bord de l'eau", test: (r) => r.direct || r.lake },
+      { key: "circuit", label: "Circuit complet (sauna, spa et eau)", suffix: "avec spa et au bord de l'eau", test: (r) => r.spa && (r.direct || r.lake) },
+      { key: "deux", label: "Pour 2 à 4 personnes", suffix: "pour 2 à 4 personnes", test: (r) => r.capacity >= 2 && r.capacity <= 4 },
+      { key: "groupes", label: "Grands groupes (10+)", suffix: "pour 10 personnes ou plus", test: (r) => r.capacity >= LARGE_GROUP_GUESTS },
+      { key: "chiens", label: "Chiens acceptés", suffix: "qui acceptent les chiens", test: (r) => r.dogs },
+    ],
+  },
   "avec-spa": {
     param: "filtre",
     filters: [
@@ -373,7 +414,7 @@ export function yearRoundKnownEnough(stats: ThemeStats): boolean {
 // Même sous-catégories vues par la recherche (/chalets?theme=…&sub=…) : le bouton « Voir les N chalets » d'une page thème
 // filtrée mène à une liste du même nombre. Chaque filtre ci-dessus doit avoir son équivalent ici (et inversement).
 // or : au moins un de ces motifs d'équipement (JSON de confinement) ; capMin / capMax : voyageurs ; dogs : chiens acceptés.
-export interface FilterQuery { or?: object[][]; capMin?: number; capMax?: number; dogs?: boolean; eq?: Record<string, string>; gte?: Record<string, number> }
+export interface FilterQuery { or?: object[][]; orAlso?: object[][]; capMin?: number; capMax?: number; dogs?: boolean; eq?: Record<string, string>; gte?: Record<string, number> }
 export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
   "bord-de-l-eau": {
     direct: { or: [[{ id: "bord-eau" }]] },
@@ -395,6 +436,15 @@ export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
     eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
     spa: { or: [[{ id: "spa" }]] },
   },
+  "avec-sauna": {
+    spa: { or: [[{ id: "spa" }]] },
+    eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
+    // Circuit complet : sauna (le thème) + spa + eau
+    circuit: { or: [[{ id: "spa" }]], orAlso: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
+    deux: { capMin: 2, capMax: 4 },
+    groupes: { capMin: LARGE_GROUP_GUESTS },
+    chiens: { dogs: true },
+  },
   "avec-spa": {
     annee: { or: [[{ id: "spa", details: { disponibleAnnee: true } }]] },
     deux: { capMin: 2, capMax: 4 },
@@ -414,7 +464,18 @@ export function spaBadge(r: ThemeRow): string | null {
   return null;
 }
 
+// Badge sauna : le plus informatif, jamais « Sauna · Privé » seul (null = aucun)
+export function saunaBadge(r: ThemeRow): string | null {
+  const eau = r.direct || r.lake;
+  if (r.spa && eau) return "Sauna, spa et lac";
+  if (r.spa) return "Sauna + spa";
+  if (eau) return "Sauna au bord de l'eau";
+  if (r.saunaAccess === "partage") return "Sauna partagé";
+  return null;
+}
+
 export function themeBadge(themeSlug: string, r: ThemeRow): string | null {
   if (themeSlug === "chiens-acceptes") return null; // les conditions s'affichent sous la carte
+  if (themeSlug === "avec-sauna") return saunaBadge(r);
   return themeSlug === "avec-spa" ? spaBadge(r) : accessBadge(r);
 }

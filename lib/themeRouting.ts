@@ -6,7 +6,7 @@ import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { fr, frInt } from "@/lib/frTypography";
 import { getThemeData } from "@/lib/themeData";
-import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, computeStats, inScope, yearRoundKnownEnough, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
+import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, MIN_OWNERS_CITY_INDEXED, computeStats, inScope, yearRoundKnownEnough, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
 
 // Pages thème (gabarit ThemeLandingPage) : /chalets/{thème}, /chalets/{thème}/{région}, /chalets/{thème}/{région}/{ville}.
 // Français seulement : l'anglais garde le gabarit actuel.
@@ -69,11 +69,12 @@ export async function resolveThemeTarget(segments: string[]): Promise<ThemeScope
 // Index et canonical : page nationale toujours indexée ; région indexée à 3 fiches ou plus ; ville indexée à 3 fiches
 // ou plus et seulement si elle ne reprend pas toute la région (même règle que lib/comboLandings.ts).
 export function indexingOf(scope: ThemeScope): { index: boolean; canonicalPath: string } {
-  const { target, stats, regionStats } = scope;
+  const { target, stats, regionStats, scoped } = scope;
   if (!target.region) return { index: true, canonicalPath: themePath(target) };
   if (!target.city) return { index: stats.count >= MIN_LISTINGS_INDEXED, canonicalPath: themePath(target) };
   const redundant = regionStats ? stats.count === regionStats.count : false;
-  if (stats.count >= MIN_LISTINGS_CITY_INDEXED && !redundant) return { index: true, canonicalPath: themePath(target) };
+  const owners = new Set(scoped.map((r) => r.ownerKey)).size;
+  if (stats.count >= MIN_LISTINGS_CITY_INDEXED && owners >= MIN_OWNERS_CITY_INDEXED && !redundant) return { index: true, canonicalPath: themePath(target) };
   return { index: false, canonicalPath: themePath({ theme: target.theme, region: target.region }) };
 }
 
@@ -89,6 +90,13 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
       ? `${target.region ? theme.meta.titleBase : (theme.meta.titleBaseNational ?? theme.meta.titleBase)} ${place} · ${n} chalets`
       : target.region ? `Chalet à louer ${theme.label} ${place} · ${n} chalets` : `${theme.h1Base} au Québec · ${n} chalets`
   );
+  const sx = stats.sauna;
+  const saunaPieces = [
+    sx.spa > 0 ? `${sx.spa} ${sx.spa === 1 ? "a" : "ont"} aussi un spa` : "",
+    sx.eau > 0 ? `${sx.eau} ${sx.eau === 1 ? "est" : "sont"} au bord de l'eau` : "",
+  ].filter(Boolean);
+  const saunaInfos = theme.slug === "avec-sauna" && saunaPieces.length > 0 ? ` ${saunaPieces.join(", ")}.` : "";
+  const saunaPrive = theme.slug === "avec-sauna" && sx.prive === n ? " privé" : "";
   const ouvertAnnee = yearRoundKnownEnough(stats)
     ? ` ${stats.spa.annee} ${stats.spa.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.`
     : "";
@@ -106,6 +114,8 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
           .replace("{prix}", prix)
           .replace("{ouvertAnnee}", ouvertAnnee)
           .replace("{chiensInfos}", chiensInfos)
+          .replace("{saunaInfos}", saunaInfos)
+          .replace("{saunaPrive}", saunaPrive)
       : `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`
   );
   const { index, canonicalPath } = indexingOf(scope);
@@ -129,7 +139,8 @@ export async function indexableThemeCities(): Promise<{ target: ThemeTarget; cou
       const region = getRegionByDbValue(c.region);
       if (!region) continue;
       const regionCount = inScope(rows, region.dbValue).length;
-      if (c.count >= MIN_LISTINGS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
+      const owners = new Set(inScope(rows, region.dbValue, c.city).map((r) => r.ownerKey)).size;
+      if (c.count >= MIN_LISTINGS_CITY_INDEXED && owners >= MIN_OWNERS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
     }
   }
   return out;

@@ -1,6 +1,7 @@
 import bordDeLEau from "./bord-de-l-eau";
 import avecSpa from "./avec-spa";
 import chiensAcceptes from "./chiens-acceptes";
+import avecSauna from "./avec-sauna";
 import { TO_PROVIDE, isThemeContentReady, type ThemeContent } from "./types";
 
 export { TO_PROVIDE, isThemeContentReady };
@@ -24,7 +25,7 @@ export const THEMES: ThemeContent[] = [
   bordDeLEau,
   avecSpa,
   chiensAcceptes,
-  pending("avec-sauna", "avec sauna", "chalets avec sauna", "Avec sauna", "Location de chalet avec sauna", "Votre chalet a un sauna ? Ajoutez-le gratuitement"),
+  avecSauna,
   pending("teletravail", "pour le télétravail", "chalets pour le télétravail", "Télétravail", "Location de chalet pour le télétravail", "Votre chalet convient au télétravail ? Ajoutez-le gratuitement"),
   pending("table-de-billard", "avec table de billard", "chalets avec table de billard", "Table de billard", "Location de chalet avec table de billard", "Votre chalet a une table de billard ? Ajoutez-le gratuitement"),
   pending("borne-de-recharge", "avec borne de recharge", "chalets avec borne de recharge", "Borne de recharge", "Location de chalet avec borne de recharge", "Votre chalet a une borne de recharge ? Ajoutez-le gratuitement"),

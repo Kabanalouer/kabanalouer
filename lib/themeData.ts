@@ -29,6 +29,8 @@ export function rowFromDb(raw: Raw): ThemeRow {
   const spaAcces = str(spaEntry?.details?.acces);
   const spaCap = Number(spaEntry?.details?.capacite);
   const spaYear = spaEntry?.details?.disponibleAnnee;
+  const saunaEntry = entries.find((a) => a.id === "sauna");
+  const saunaAcces = str(saunaEntry?.details?.acces);
   const site = str(raw.site_name);
   const email = str(raw.claim_email);
   return {
@@ -61,7 +63,8 @@ export function rowFromDb(raw: Raw): ThemeRow {
     spaAccess: spaAcces === "Privé" ? "prive" : spaAcces === "Partagé" ? "partage" : null,
     spaPlaces: Number.isFinite(spaCap) && spaCap > 0 ? spaCap : null,
     spaYear: typeof spaYear === "boolean" ? spaYear : null,
-    sauna: entries.some((a) => a.id === "sauna"),
+    sauna: !!saunaEntry,
+    saunaAccess: saunaAcces === "Privé" ? "prive" : saunaAcces === "Partagé" ? "partage" : null,
     dogMax: typeof raw.dogs_max === "number" ? raw.dogs_max : null,
     dogSize: raw.dogs_size_limit === "small" || raw.dogs_size_limit === "medium" || raw.dogs_size_limit === "all" ? raw.dogs_size_limit : null,
     dogFee: raw.dogs_fee_type === "free" || raw.dogs_fee_type === "per_night" || raw.dogs_fee_type === "per_stay" ? raw.dogs_fee_type : null,
@@ -72,7 +75,7 @@ export function rowFromDb(raw: Raw): ThemeRow {
 export function rowMatchesTheme(r: ThemeRow, slug: string): boolean {
   if (slug === "chiens-acceptes") return r.dogs;
   const ids = THEME_AMENITY_IDS[slug] ?? [];
-  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa);
+  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa) || (ids.includes("sauna") && r.sauna);
 }
 
 const COLUMNS =
@@ -97,4 +100,4 @@ async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updated
 }
 
 // Même données pour tous les visiteurs : mises en cache 24 h (l'argument `slug` fait partie de la clé).
-export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v3"], { revalidate: 86400 });
+export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v4"], { revalidate: 86400 });
