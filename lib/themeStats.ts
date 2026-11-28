@@ -302,6 +302,32 @@ export function yearRoundKnownEnough(stats: ThemeStats): boolean {
   return stats.spa.annee > 0 && stats.spa.anneeConnu >= 0.3 * stats.count;
 }
 
+// Même sous-catégories vues par la recherche (/chalets?theme=…&sub=…) : le bouton « Voir les N chalets » d'une page thème
+// filtrée mène à une liste du même nombre. Chaque filtre ci-dessus doit avoir son équivalent ici (et inversement).
+// or : au moins un de ces motifs d'équipement (JSON de confinement) ; capMin / capMax : voyageurs ; dogs : chiens acceptés.
+export interface FilterQuery { or?: object[][]; capMin?: number; capMax?: number; dogs?: boolean }
+export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
+  "bord-de-l-eau": {
+    direct: { or: [[{ id: "bord-eau" }]] },
+    lake: { or: [[{ id: "acces-lac" }]] },
+    beach: { or: [[{ id: "acces-lac", details: { plage: true } }]] },
+    boats: {
+      or: [
+        [{ id: "acces-lac", details: { locationEmbarcations: true, gratuitPayant: "Gratuit" } }],
+        [{ id: "embarcations", details: { gratuitPayant: "Gratuit" } }],
+      ],
+    },
+  },
+  "avec-spa": {
+    annee: { or: [[{ id: "spa", details: { disponibleAnnee: true } }]] },
+    deux: { capMin: 2, capMax: 4 },
+    groupes: { capMin: LARGE_GROUP_GUESTS },
+    eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
+    sauna: { or: [[{ id: "sauna" }]] },
+    chiens: { dogs: true },
+  },
+};
+
 // Badge d'une carte (null = aucun). Spa : l'information utile (places, ouverture à l'année), jamais « Spa · Privé » seul.
 export function spaBadge(r: ThemeRow): string | null {
   if (r.spaAccess === "partage") return "Spa partagé";

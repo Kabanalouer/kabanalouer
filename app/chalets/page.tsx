@@ -95,6 +95,7 @@ interface PageProps {
     minBathrooms?: string;
     amenities?: string;
     theme?: string;
+    sub?: string;
     dogs?: string;
     accessible?: string;
     page?: string;
@@ -104,7 +105,7 @@ interface PageProps {
 export default async function ChaletsPage({ searchParams }: PageProps) {
   const {
     region, city, capacity, checkin, checkout,
-    minBedrooms, minBeds, minBathrooms, amenities, theme, dogs, accessible, page,
+    minBedrooms, minBeds, minBathrooms, amenities, theme, sub, dogs, accessible, page,
   } = await searchParams;
   const accessibleOnly = accessible === "1";
   const dogsCount = parseDogsParam(dogs);
@@ -115,7 +116,7 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
   const { listings, pins, total, page: currentPage, pageCount } = await searchListings(
     supabase,
     user?.id ?? null,
-    { region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, dogsCount, accessibleOnly, locale: locale === "en" ? "en" : "fr" },
+    { region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, sub, dogsCount, accessibleOnly, locale: locale === "en" ? "en" : "fr" },
     parseInt(page ?? "1", 10) || 1
   );
 
@@ -137,14 +138,14 @@ export default async function ChaletsPage({ searchParams }: PageProps) {
           remonter à chaque changement de filtre (pastille « Chiens acceptés »,
           fenêtre Filtres) évite d'afficher l'ancienne liste. */}
       <ChaletsMapLayout
-        key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, dogsCount, accessibleOnly])}
+        key={JSON.stringify([region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, sub, dogsCount, accessibleOnly])}
         initialListings={listings}
         initialPins={pins}
         initialTotal={total}
         initialPage={currentPage}
         initialPageCount={pageCount}
         currentUserId={user?.id ?? null}
-        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
+        filters={{ region, city, capacity, checkin, checkout, minBedrooms, minBeds, minBathrooms, amenities, theme, sub, dogs: dogsCount ? String(dogsCount) : undefined, accessible: accessibleOnly ? "1" : undefined }}
       />
       </main>
 

@@ -16,13 +16,14 @@ export interface SearchFiltersState {
   minBathrooms?: string;
   amenities?: string;
   theme?: string;
+  sub?: string;
   dogs?: string;
   accessible?: string;
 }
 
 const KEYS: (keyof SearchFiltersState)[] = [
   "region", "city", "capacity", "checkin", "checkout",
-  "minBedrooms", "minBeds", "minBathrooms", "amenities", "theme", "dogs", "accessible",
+  "minBedrooms", "minBeds", "minBathrooms", "amenities", "theme", "sub", "dogs", "accessible",
 ];
 
 // Pastilles d'équipement : les identifiants sont ceux du panneau Filtres (paramètre ?amenities=a,b).
@@ -64,7 +65,7 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
       return;
     }
     if ((id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa")) {
-      go((p) => p.delete("theme"));
+      go((p) => { p.delete("theme"); p.delete("sub"); });
       return;
     }
     const next = amenityIds.includes(id) ? amenityIds.filter((a) => a !== id) : [...amenityIds, id];

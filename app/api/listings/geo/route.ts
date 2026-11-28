@@ -31,6 +31,7 @@ export async function GET(req: Request) {
       minBathrooms: searchParams.get("minBathrooms") || undefined,
       amenities: searchParams.get("amenities") || undefined,
       theme: searchParams.get("theme") || undefined,
+      sub: searchParams.get("sub") || undefined,
       dogsCount: parseDogsParam(searchParams.get("dogs")),
       accessibleOnly: searchParams.get("accessible") === "1",
       bounds: hasBounds ? { minLat, maxLat, minLng, maxLng } : undefined,

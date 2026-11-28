@@ -4,7 +4,7 @@ import { normalizePhotos } from "@/lib/photo";
 import { getAmenityLabels, type AmenityValue } from "@/lib/amenities-catalog";
 import { PROMO_DISPLAY_COLUMNS, visiblePromoFilter } from "@/lib/promoLabel";
 import { PAGE_SIZE } from "@/lib/searchPaging";
-import { THEME_AMENITY_IDS } from "@/lib/themeStats";
+import { THEME_AMENITY_IDS, THEME_FILTER_QUERY } from "@/lib/themeStats";
 
 // Recherche de chalets (/chalets et /api/listings/geo) : la liste est paginée côté serveur
 // (une page = PAGE_SIZE fiches complètes), la carte épingle toutes les fiches de la recherche
@@ -38,6 +38,8 @@ export interface SearchFilters {
   amenities?: string;
   // Page thème (/chalets?theme=bord-de-l-eau) : au moins un des équipements du thème
   theme?: string;
+  // Sous-catégorie d'une page thème (?sub=sauna), voir THEME_FILTER_QUERY
+  sub?: string;
   dogsCount?: number | null;
   accessibleOnly?: boolean;
   bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
@@ -106,6 +108,12 @@ function listingsQuery(supabase: SupabaseClient, f: SearchFilters, excludedIds: 
   if (themeIds?.length) {
     query = query.or(themeIds.map((id) => `amenities.cs.${JSON.stringify([{ id }])}`).join(","));
   }
+  const sub = f.theme && f.sub ? THEME_FILTER_QUERY[f.theme]?.[f.sub] : undefined;
+  if (sub?.or?.length) // Valeur entre guillemets : le JSON des détails contient des virgules, qui coupent sinon le filtre « or » de PostgREST
+    query = query.or(sub.or.map((p) => `amenities.cs."${JSON.stringify(p).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(","));
+  if (sub?.capMin) query = query.gte("capacity", sub.capMin);
+  if (sub?.capMax) query = query.lte("capacity", sub.capMax);
+  if (sub?.dogs) query = query.eq("dogs_allowed", true);
   // Le nombre maximum de chiens est facultatif : une fiche qui n'en précise aucun reste dans les résultats
   if (f.dogsCount) query = query.eq("dogs_allowed", true).or(`dogs_max.is.null,dogs_max.gte.${f.dogsCount}`);
   if (f.accessibleOnly) query = query.eq("reduced_mobility", true);
