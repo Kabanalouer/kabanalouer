@@ -25,7 +25,7 @@ const content: ThemeContent = {
     blocks: [
       {
         h3: "Le cycle chaud, froid, repos",
-        p: "10 à 15 minutes dans le sauna, puis un passage au froid (lac, neige, douche ou spa éteint), puis 10 à 15 minutes de repos au chaud. On répète 2 ou 3 fois. Au chalet, vous le faites à votre rythme, sans horaire.",
+        p: "10 à 15 minutes dans le sauna, puis un passage au froid (lac, neige, douche ou bain d'eau froide), puis 10 à 15 minutes de repos dans un spa, hamac ou chaise confortable. On répète 2 ou 3 fois. Au chalet, vous le faites à votre rythme, sans horaire.",
       },
       {
         h3: "Sauna + spa, ou sauna + lac ?",
@@ -33,7 +33,7 @@ const content: ThemeContent = {
       },
       {
         h3: "Le temps de chauffe",
-        p: "Un sauna à bois ou électrique prend en général de 30 à 60 minutes à chauffer. Allumez-le avant de revenir du ski ou de la randonnée, et demandez au propriétaire comment il fonctionne à votre arrivée.",
+        p: "Un sauna à bois ou électrique prend environ 30 minutes à chauffer. Allumez-le en avance, et demandez au propriétaire comment il fonctionne à votre arrivée.",
       },
       {
         h3: "Combien de places",
