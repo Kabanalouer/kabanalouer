@@ -117,7 +117,7 @@ const content: ThemeContent = {
         needs: ["accesPhrase"],
       },
       {
-        q: "Où trouver d'autres chalets au bord de l'eau près de {ville} ?",
+        q: "Où trouver d'autres chalets au bord de l'eau près {deVille} ?",
         a: "{voisines}[l'ensemble {deRegion}]({lienRegion}) ({nRegion}).",
       },
     ],

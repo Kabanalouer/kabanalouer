@@ -19,6 +19,7 @@ const TRIM_SHARE = 0.05;
 // Équipements dont l'un suffit pour appartenir au thème (même règle que lib/amenityLandings.ts)
 export const THEME_AMENITY_IDS: Record<string, string[]> = {
   "bord-de-l-eau": ["bord-eau", "acces-lac"],
+  "avec-spa": ["spa"],
 };
 
 export interface ThemeRow {
@@ -48,6 +49,12 @@ export interface ThemeRow {
   beach: boolean;
   boats: boolean;
   dogs: boolean;
+  // Thème spa (détails de l'équipement « spa » ; null = non renseigné)
+  spa: boolean;
+  spaAccess: "prive" | "partage" | null;
+  spaPlaces: number | null;
+  spaYear: boolean | null;
+  sauna: boolean;
 }
 
 export type AccessKey = "direct" | "lake" | "beach" | "boats";
@@ -114,8 +121,24 @@ export function pickDiverse(rows: ThemeRow[], limit = GRID_SIZE, perOwner = MAX_
   return picked.length >= limit ? picked : [...picked, ...left.slice(0, limit - picked.length)];
 }
 
-export interface RegionStat { region: string; count: number; priceFrom: number | null }
-export interface CityStat { region: string; city: string; count: number; priceFrom: number | null }
+export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number }
+export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number }
+
+// Chiffres propres au thème spa (calculés pour tous les thèmes, affichés seulement pour le spa)
+export interface SpaStats {
+  prive: number;
+  partage: number;
+  annee: number; // spa ouvert à l'année
+  anneeConnu: number; // fiches où l'info est remplie
+  placesConnu: number; // fiches où le nombre de places est rempli
+  placesMediane: number | null;
+  places6plus: number;
+  deux: number; // chalets de 2 à 4 voyageurs
+  groupes: number; // 10 voyageurs ou plus
+  bordEau: number;
+  sauna: number;
+  chiens: number;
+}
 
 export interface ThemeStats {
   count: number;
@@ -131,9 +154,36 @@ export interface ThemeStats {
   byCity: CityStat[]; // villes avec au moins MIN_LISTINGS_INDEXED fiches
   byAccess: { direct: number; lake: number; lakePrivate: number; lakePublic: number; beach: number; boats: number };
   dogs: number;
+  spa: SpaStats;
   large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
   pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
+}
+
+const yearRoundOf = (rows: ThemeRow[]) => rows.filter((r) => r.spaYear === true).length;
+
+function medianOf(sortedAsc: number[]): number | null {
+  if (sortedAsc.length === 0) return null;
+  const mid = Math.floor(sortedAsc.length / 2);
+  return sortedAsc.length % 2 ? sortedAsc[mid] : (sortedAsc[mid - 1] + sortedAsc[mid]) / 2;
+}
+
+function spaStatsOf(rows: ThemeRow[]): SpaStats {
+  const places = rows.map((r) => r.spaPlaces).filter((n): n is number => n !== null).sort((a, b) => a - b);
+  return {
+    prive: rows.filter((r) => r.spaAccess === "prive").length,
+    partage: rows.filter((r) => r.spaAccess === "partage").length,
+    annee: yearRoundOf(rows),
+    anneeConnu: rows.filter((r) => r.spaYear !== null).length,
+    placesConnu: places.length,
+    placesMediane: medianOf(places),
+    places6plus: places.filter((n) => n >= 6).length,
+    deux: rows.filter((r) => r.capacity >= 2 && r.capacity <= 4).length,
+    groupes: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
+    bordEau: rows.filter((r) => r.spa && (r.direct || r.lake)).length,
+    sauna: rows.filter((r) => r.spa && r.sauna).length,
+    chiens: rows.filter((r) => r.spa && r.dogs).length,
+  };
 }
 
 function priceFromOf(rows: ThemeRow[]): number | null {
@@ -159,12 +209,12 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
   }
 
   const byRegion: RegionStat[] = [...regionGroups.entries()]
-    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list) }))
+    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list) }))
     .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region, "fr"));
   const byCity: CityStat[] = [...cityGroups.entries()]
     .map(([key, list]) => {
       const [region, cityName] = key.split("|");
-      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list) };
+      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list) };
     })
     .filter((c) => c.count >= MIN_LISTINGS_INDEXED)
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "fr"));
@@ -190,6 +240,7 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
       boats: rows.filter((r) => r.boats).length,
     },
     dogs: rows.filter((r) => r.dogs).length,
+    spa: spaStatsOf(rows),
     large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
     pricedCount: sortedPrices.length,
     updatedAt,
@@ -217,4 +268,49 @@ export function accessBadge(r: ThemeRow): string {
         ? "Accès au lac · public"
         : "Accès au lac";
   return r.beach ? `${base} · plage` : base;
+}
+
+// ── Sous-catégories (pastilles) et badge des cartes, par thème ──
+export interface ThemeFilter { key: string; label: string; test: (r: ThemeRow) => boolean }
+
+export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters: ThemeFilter[] }> = {
+  "bord-de-l-eau": {
+    param: "acces",
+    filters: [
+      { key: "direct", label: "Directement au bord de l'eau", test: (r) => r.direct },
+      { key: "lake", label: "Accès au lac", test: (r) => r.lake },
+      { key: "beach", label: "Avec plage", test: (r) => r.beach },
+      { key: "boats", label: "Embarcations incluses", test: (r) => r.boats },
+    ],
+  },
+  "avec-spa": {
+    param: "filtre",
+    filters: [
+      { key: "annee", label: "Spa ouvert à l'année", test: (r) => r.spaYear === true },
+      { key: "deux", label: "Pour 2 à 4 personnes", test: (r) => r.capacity >= 2 && r.capacity <= 4 },
+      { key: "groupes", label: "Grands groupes (10+)", test: (r) => r.capacity >= LARGE_GROUP_GUESTS },
+      { key: "eau", label: "Spa + bord de l'eau", test: (r) => r.direct || r.lake },
+      { key: "sauna", label: "Spa + sauna", test: (r) => r.sauna },
+      { key: "chiens", label: "Chiens acceptés", test: (r) => r.dogs },
+    ],
+  },
+};
+
+// « Ouvert à l'année » n'est affiché (intro, chiffre clé, tableau, description) que si l'info est remplie sur au moins
+// 30 % des fiches : sinon un « 15 » laisserait croire que les autres spas ferment.
+export function yearRoundKnownEnough(stats: ThemeStats): boolean {
+  return stats.spa.annee > 0 && stats.spa.anneeConnu >= 0.3 * stats.count;
+}
+
+// Badge d'une carte (null = aucun). Spa : l'information utile (places, ouverture à l'année), jamais « Spa · Privé » seul.
+export function spaBadge(r: ThemeRow): string | null {
+  if (r.spaAccess === "partage") return "Spa partagé";
+  if (r.spaPlaces !== null && r.spaYear) return `Spa ${r.spaPlaces} places · à l'année`;
+  if (r.spaPlaces !== null) return `Spa ${r.spaPlaces} places`;
+  if (r.spaYear) return "Spa à l'année";
+  return null;
+}
+
+export function themeBadge(themeSlug: string, r: ThemeRow): string | null {
+  return themeSlug === "avec-spa" ? spaBadge(r) : accessBadge(r);
 }

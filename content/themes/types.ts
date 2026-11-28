@@ -50,6 +50,9 @@ export interface ThemeContent {
   active: boolean;
   // Paragraphe éditorial du tableau par région (page nationale)
   nationalRegionParagraph?: string;
+  // Balises : si présent, `titleBase` remplace le titre calculé (« Chalet à louer avec spa » + lieu + nombre de chalets)
+  // et `description` est un modèle ({N}, {lieu}, {prix}, {ouvertAnnee}). Sans `meta`, titre et description par défaut.
+  meta?: { titleBase: string; description: string };
   // Bloc éditorial des pages région : titre (« Le bord de l'eau » + lieu) et champ du texte dans content/regions/{région}.ts.
   // Texte vide = bloc non affiché.
   regionBlockTitle?: string;

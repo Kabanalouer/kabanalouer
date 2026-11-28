@@ -3,14 +3,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import OwnersSlimBanner from "@/components/chalets/OwnersSlimBanner";
-import { fr } from "@/lib/frTypography";
+import { fr, frInt } from "@/lib/frTypography";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { buildListingPath } from "@/lib/listingUrl";
 import { slugify } from "@/lib/slugify";
 import { getRegionByDbValue } from "@/lib/regions";
 import { comboLinkLabel, comboPath, activeThemesInCity, activeThemesInRegion, getComboIndex, COMBO_THEMES, MIN_LISTINGS_FOR_COMBO } from "@/lib/comboLandings";
-import { accessBadge, pickDiverse, visibleAccessChips, type AccessKey, type ThemeRow } from "@/lib/themeStats";
+import { MIN_LISTINGS_CHIP, THEME_FILTERS, pickDiverse, themeBadge as badgeOf, yearRoundKnownEnough, type ThemeRow } from "@/lib/themeStats";
 import { themePath, placeOf, type ThemeScope } from "@/lib/themeRouting";
 import { TO_PROVIDE, type ThemeFaqItem } from "@/content/themes/types";
 import { getRegionContent } from "@/content/regions";
@@ -24,14 +24,11 @@ const CHIP = "flex-none whitespace-nowrap rounded-[var(--radius-pill)] px-4 py-[
 const CHIP_IDLE = "border border-[var(--border-2)] bg-white text-[var(--fg-1)] hover:border-charcoal-400";
 const CHIP_ACTIVE = "border border-[var(--fg-1)] bg-[var(--fg-1)] text-white";
 
-const ACCESS_LABEL: Record<AccessKey, string> = {
-  direct: "Directement au bord de l'eau",
-  lake: "Accès au lac",
-  beach: "Avec plage",
-  boats: "Embarcations incluses",
-};
-
-const money = (n: number) => `${n} $`;
+const money = (n: number) => `${frInt(n)} $`;
+// « des Laurentides » → « les Laurentides » ; « de la région de Québec » → « la région de Québec » ; « de Lanaudière » → « Lanaudière »
+const withArticle = (genitive: string) =>
+  genitive.replace(/^des /, "les ").replace(/^de la /, "la ").replace(/^du /, "le ").replace(/^de l'/, "l'").replace(/^d'/, "").replace(/^de /, "");
+const upperFirst = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 const joinFr = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} et ${items[items.length - 1]}`);
 
 function distanceKm(lat: number, lng: number): number {
@@ -94,7 +91,7 @@ function Rich({ text }: { text: string }) {
 }
 const plain = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
-export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeScope; acces?: string }) {
+export default async function ThemeLandingPage({ scope, acces, filtre }: { scope: ThemeScope; acces?: string; filtre?: string }) {
   const { target, stats, national, scoped } = scope;
   const { theme, region, city } = target;
   const level = city ? "city" : region ? "region" : "national";
@@ -103,17 +100,28 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const guide = theme.guide === TO_PROVIDE || level !== "national" ? null : theme.guide;
   const faqSource: ThemeFaqItem[] = theme.faq === TO_PROVIDE ? [] : theme.faq[level];
 
-  const chips = visibleAccessChips(stats);
-  const active = chips.includes(acces as AccessKey) ? (acces as AccessKey) : null;
-  const filtered = active ? scoped.filter((r) => r[active]) : scoped;
+  const isSpa = theme.slug === "avec-spa";
+  const filterDef = THEME_FILTERS[theme.slug] ?? { param: "acces" as const, filters: [] };
+  const chips = filterDef.filters
+    .map((f) => ({ ...f, n: scoped.filter(f.test).length }))
+    .filter((f) => f.n >= MIN_LISTINGS_CHIP);
+  const rawFilter = filterDef.param === "filtre" ? filtre : acces;
+  const active = chips.find((c) => c.key === rawFilter) ?? null;
+  const filtered = active ? scoped.filter(active.test) : scoped;
+  const showYear = isSpa && yearRoundKnownEnough(stats);
   const picked = pickDiverse(filtered);
   const regionName = (db: string) => getRegionByDbValue(db);
   const cityHref = (db: string, c: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}/${slugify(c)}`;
   const regionHref = (db: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}`;
 
   // ── Intro « réponse directe » ──
-  const topPlaces =
-    level === "national"
+  const topPlaces = isSpa
+    ? level === "national"
+      ? stats.byRegion.slice(0, 3).map((r) => `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count})`)
+      : level === "region"
+        ? stats.byCity.slice(0, 3).map((c) => `à ${c.city} (${c.count})`)
+        : []
+    : level === "national"
       ? stats.byRegion.slice(0, 3).map((r) => (regionName(r.region)?.locative ?? "").replace(/^en /, ""))
       : level === "region"
         ? stats.byCity.slice(0, 3).map((c) => `à ${c.city}`)
@@ -125,7 +133,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const quebecCities = national.byCity.filter((c) => regionName(c.region)?.slug === "quebec").slice(0, 3).map((c) => c.city);
   const siblingCities = (level === "city" ? scope.regionStats?.byCity.filter((c) => c.city !== city) : stats.byCity) ?? [];
   const dogsLink = stats.dogs > 0
-    ? `[Voir les chalets au bord de l'eau qui acceptent les chiens](${searchHref}&dogs=1)`
+    ? `[Voir les ${theme.labelPlural} qui acceptent les chiens](${searchHref}&dogs=1)`
     : "[chalets qui acceptent les chiens](/chalets/chiens-acceptes)";
 
   // Phrases calculées pour les niveaux région et ville (un morceau à zéro est retiré)
@@ -138,7 +146,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const accesPhrase = accessBits.length > 0 ? `${joinFr(accessBits)}.` : "";
   const fourchette =
     stats.pricedCount >= 5 && stats.priceP10 !== null && stats.priceP90 !== null
-      ? ` La plupart se situent entre ${stats.priceP10} $ et ${stats.priceP90} $.`
+      ? ` La plupart se situent entre ${frInt(stats.priceP10)} $ et ${frInt(stats.priceP90)} $.`
       : "";
   const capacite =
     stats.guestsMin === null || stats.guestsMax === null
@@ -156,16 +164,39 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
     neighbours.length > 0
       ? `${neighbours.map((c) => `[${c.city}](${cityHref(c.region, c.city)}) (${c.count})`).join(", ")} et `
       : "Consultez ";
+  // Villes les plus représentées, sans exploitant unique (au moins 2 exploitants différents dans la ville)
+  const ownersIn = (regionDb: string, c: string) => new Set(scope.rows.filter((r) => r.region === regionDb && r.city === c).map((r) => r.ownerKey)).size;
+  const spaCitiesNearMontreal = national.byCity
+    .filter((c) => ["laurentides", "lanaudiere"].includes(regionName(c.region)?.slug ?? "") && c.count >= 5 && ownersIn(c.region, c.city) >= 2)
+    .slice(0, 3)
+    .map((c) => c.city);
+  const sp = stats.spa;
+  const deuxGroupes = [
+    sp.deux > 0 ? `${sp.deux} ${sp.deux === 1 ? "accueille" : "accueillent"} de 2 à 4 voyageurs` : "",
+    sp.groupes > 0 ? `${sp.groupes} ${sp.groupes === 1 ? "peut recevoir" : "peuvent recevoir"} 10 personnes ou plus` : "",
+  ].filter(Boolean);
+  const spaDetail = [
+    sp.annee > 0 ? `Au moins ${sp.annee} ${sp.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.` : "",
+    sp.placesConnu > 0 && sp.placesMediane !== null
+      ? `Le nombre de places est indiqué pour ${sp.placesConnu} ${sp.placesConnu === 1 ? "spa" : "spas"}, avec une médiane de ${sp.placesMediane} places.`
+      : "",
+  ].filter(Boolean).join(" ");
   const vars: Record<string, string> = {
     N: String(stats.count),
     lieu: place,
-    prixMin: stats.priceMin !== null ? String(stats.priceMin) : "",
-    prixP10: stats.priceP10 !== null ? String(stats.priceP10) : "—",
-    prixP90: stats.priceP90 !== null ? String(stats.priceP90) : "—",
+    prixMin: stats.priceMin !== null ? frInt(stats.priceMin) : "",
+    prixP10: stats.priceP10 !== null ? frInt(stats.priceP10) : "—",
+    prixP90: stats.priceP90 !== null ? frInt(stats.priceP90) : "—",
     nLaurentides: String(countIn("laurentides")),
     nLanaudiere: String(countIn("lanaudiere")),
     nQuebec: String(countIn("quebec")),
-    villesMontreal: joinFr(citiesNearMontreal(scope)),
+    villesMontreal: isSpa ? joinFr(spaCitiesNearMontreal) : joinFr(citiesNearMontreal(scope)),
+    nCharlevoix: String(countIn("charlevoix") || ""),
+    nPrive: sp.prive > 0 ? String(sp.prive) : "",
+    nAnnee: sp.annee > 0 && sp.anneeConnu >= 3 ? String(sp.annee) : "",
+    nDeux: sp.deux > 0 ? String(sp.deux) : "",
+    deuxGroupes: deuxGroupes.length > 0 ? `${upperFirst(deuxGroupes.join(", et "))}.` : "",
+    spaDetail,
     villesQuebec: joinFr(quebecCities),
     nChiens: String(stats.dogs),
     lienChiens: dogsLink,
@@ -176,10 +207,11 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
     villesTop,
     deRegion: region?.genitive ?? "",
     ville: city ?? "",
+    deVille: city ? (/^[AEIOUYÀÂÉÈÊÎÔÛ]/i.test(city) ? `d'${city}` : `de ${city}`) : "",
     voisines,
     lienRegion: region ? regionHref(region.dbValue) : "",
     nRegion: String(scope.regionStats?.count ?? stats.count),
-    chaletsChiens: `${stats.dogs} ${n1(stats.dogs, "chalet", "chalets")} au bord de l'eau`,
+    chaletsChiens: `${stats.dogs} ${n1(stats.dogs, theme.labelPlural.replace(/^chalets/, "chalet"), theme.labelPlural)}`,
     accepte: n1(stats.dogs, "accepte", "acceptent"),
     ailleursChiens: national.dogs > stats.dogs ? ` Les autres régions en comptent ${national.dogs - stats.dogs}.` : "",
   };
@@ -196,7 +228,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
     level === "region" && regionText
       ? [
           `${stats.count} ${n1(stats.count, "chalet", "chalets")}`,
-          stats.priceMin !== null ? `à partir de ${stats.priceMin} $/nuit` : "",
+          stats.priceMin !== null ? `à partir de ${frInt(stats.priceMin)} $/nuit` : "",
           stats.byAccess.lakePrivate > 0 ? `${stats.byAccess.lakePrivate} avec accès privé` : "",
         ].filter(Boolean)
       : [];
@@ -204,18 +236,24 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   // ── Paragraphe éditorial du tableau ──
   const top3 = stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.slug);
   const expected = ["quebec", "laurentides", "lanaudiere"];
-  const topRegionsParagraph =
-    top3.length === 3 && expected.every((s) => top3.includes(s))
+  const regionLabels = stats.byRegion.slice(0, 3).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
+  const others = stats.byRegion.slice(3, 5).filter((r) => r.count >= 5).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
+  const autresRegions = others.length > 0 ? ` ${upperFirst(joinFr(others))} complète${others.length > 1 ? "nt" : ""} l'offre.` : "";
+  const topRegionsParagraph = isSpa
+    ? `${upperFirst(joinFr(regionLabels))} regroupent la majorité des ${theme.labelPlural} sur Kabanalouer.`
+    : top3.length === 3 && expected.every((s) => top3.includes(s))
       ? "La région de Québec, les Laurentides et Lanaudière regroupent la majorité des chalets au bord de l'eau sur Kabanalouer."
       : `${joinFr(stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.name ?? r.region))} regroupent le plus de chalets au bord de l'eau sur Kabanalouer.`;
-  const accessSentence = `${stats.byAccess.direct} sont directement sur la rive et ${stats.byAccess.lake} ont un accès à un lac.`;
+  const accessSentence = isSpa
+    ? stats.spa.prive > 0 ? `Dans ${stats.spa.prive} d'entre eux, le spa est privé.` : ""
+    : `${stats.byAccess.direct} sont directement sur la rive et ${stats.byAccess.lake} ont un accès à un lac.`;
 
   // ── Tableau (régions ou villes) ──
   const tableRows =
     level === "national"
-      ? national.byRegion.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom }))
+      ? national.byRegion.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound }))
       : level === "region"
-        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom }))
+        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound }))
         : [];
   // Le tableau n'affiche que les lieux avec un prix ; les autres passent dans « Aussi : »
   const pricedRows = tableRows.filter((r) => r.from !== null);
@@ -227,13 +265,13 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const otherThemes: { label: string; href: string }[] = [];
   if (level === "national") {
     for (const ct of COMBO_THEMES) {
-      if (ct.slugFr === theme.slug || ct.key === "waterfront") continue;
+      if (ct.slugFr === theme.slug) continue;
       const total = Object.values(comboIndex.region).reduce((s, r) => s + (r[ct.key] ?? 0), 0);
       if (total >= MIN_LISTINGS_FOR_COMBO) otherThemes.push({ label: ct.linkFr, href: ct.parentPathFr });
     }
   } else if (region) {
     const links = city ? activeThemesInCity(comboIndex, region, city) : activeThemesInRegion(comboIndex, region);
-    for (const l of links) if (l.theme.key !== "waterfront") otherThemes.push({ label: comboLinkLabel(l, false, { withPlace: false }), href: comboPath(l.theme, l.region, l.city, false) });
+    for (const l of links) if (l.theme.slugFr !== theme.slug) otherThemes.push({ label: comboLinkLabel(l, false, { withPlace: false }), href: comboPath(l.theme, l.region, l.city, false) });
   }
 
   // ── JSON-LD ──
@@ -270,16 +308,26 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   ];
 
   const updated = new Date(stats.updatedAt).toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
-  const tiles = [
-    { value: String(stats.count), label: "chalets" },
-    stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+  const placeTile =
     level === "city"
       ? null
       : level === "region"
         ? { value: String(stats.citiesCount), label: stats.citiesCount > 1 ? "villes" : "ville" }
-        : { value: String(stats.regionsCount), label: stats.regionsCount > 1 ? "régions" : "région" },
-    stats.guestsMin !== null && stats.guestsMax !== null ? { value: `${stats.guestsMin} à ${stats.guestsMax}`, label: "voyageurs" } : null,
-  ].filter((t): t is { value: string; label: string } => !!t);
+        : { value: String(stats.regionsCount), label: stats.regionsCount > 1 ? "régions" : "région" };
+  const guestsTile = stats.guestsMin !== null && stats.guestsMax !== null ? { value: `${stats.guestsMin} à ${stats.guestsMax}`, label: "voyageurs" } : null;
+  const tiles = (isSpa
+    ? [
+        { value: String(stats.count), label: "chalets avec spa" },
+        stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+        showYear ? { value: String(stats.spa.annee), label: stats.spa.annee > 1 ? "spas ouverts à l'année" : "spa ouvert à l'année" } : placeTile,
+        stats.spa.deux > 0 ? { value: String(stats.spa.deux), label: stats.spa.deux > 1 ? "chalets pour 2 à 4 personnes" : "chalet pour 2 à 4 personnes" } : guestsTile,
+      ]
+    : [
+        { value: String(stats.count), label: "chalets" },
+        stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+        placeTile,
+        guestsTile,
+      ]).filter((t): t is { value: string; label: string } => !!t);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -307,6 +355,23 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
               <h1 className="text-[length:clamp(34px,5vw,60px)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[var(--fg-1)]">
                 {fr(`${theme.h1Base} ${place}`)}
               </h1>
+              {isSpa ? (
+              <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
+                {fr("Kabanalouer compte ")}
+                <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
+                {fr(` à louer ${place}${topPlaces.length > 0 ? `, surtout ${joinFr(topPlaces)}` : ""}. `)}
+                {stats.spa.prive > 0 &&
+                  fr(`Dans ${stats.spa.prive} d'entre eux, le spa est privé${showYear ? `, et au moins ${stats.spa.annee} sont ouverts à l'année` : ""}. `)}
+                {stats.priceMin !== null && (
+                  <>
+                    {fr("Les prix de départ commencent à ")}
+                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${frInt(stats.priceMin)} $/nuit`)}</strong>
+                    {fr(". ")}
+                  </>
+                )}
+                {fr("Vous écrivez directement au propriétaire, sans frais de service.")}
+              </p>
+              ) : (
               <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
                 {fr("Kabanalouer compte ")}
                 <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
@@ -314,11 +379,12 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
                 {stats.priceMin !== null && (
                   <>
                     {fr("Les prix de départ commencent à ")}
-                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.priceMin} $/nuit`)}</strong>
+                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${frInt(stats.priceMin)} $/nuit`)}</strong>
                     {fr(". ")}
                   </>
                 )}
               </p>
+              )}
             </div>
             <dl className="grid grid-cols-2 gap-3">
               {tiles.map((t) => (
@@ -335,14 +401,11 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
               <Link href={here} scroll={false} className={`${CHIP} ${active ? CHIP_IDLE : CHIP_ACTIVE}`} aria-current={active ? undefined : "true"}>
                 {fr(`Tous · ${stats.count}`)}
               </Link>
-              {chips.map((k) => {
-                const n = k === "direct" ? stats.byAccess.direct : k === "lake" ? stats.byAccess.lake : k === "beach" ? stats.byAccess.beach : stats.byAccess.boats;
-                return (
-                  <Link key={k} href={`${here}?acces=${k}`} scroll={false} className={`${CHIP} ${active === k ? CHIP_ACTIVE : CHIP_IDLE}`} aria-current={active === k ? "true" : undefined}>
-                    {fr(`${ACCESS_LABEL[k]} · ${n}`)}
-                  </Link>
-                );
-              })}
+              {chips.map((c) => (
+                <Link key={c.key} href={`${here}?${filterDef.param}=${c.key}`} scroll={false} className={`${CHIP} ${active?.key === c.key ? CHIP_ACTIVE : CHIP_IDLE}`} aria-current={active?.key === c.key ? "true" : undefined}>
+                  {fr(`${c.label} · ${c.n}`)}
+                </Link>
+              ))}
             </div>
           )}
         </header>
@@ -351,7 +414,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
         <section className={`${WRAP} mt-8`} aria-label="Chalets">
           <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {picked.map((r, i) => (
-              <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} themeBadge={fr(accessBadge(r))} />
+              <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} themeBadge={(() => { const b = badgeOf(theme.slug, r); return b ? fr(b) : undefined; })()} />
             ))}
           </div>
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
@@ -370,10 +433,10 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
           </h2>
           <p className="mt-4 max-w-[70ch] text-base leading-relaxed text-[var(--fg-2)]">
             {level === "national"
-              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph }))
+              ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph, autresRegions }))
               : level === "region"
                 ? fr(`Voici les villes ${place} qui comptent le plus de ${theme.labelPlural}, classées par nombre de chalets.`)
-                : fr(`${city} compte ${stats.count} ${theme.labelPlural}${stats.priceMin !== null ? `, à partir de ${stats.priceMin} $/nuit` : ""}${stats.guestsMin !== null ? `, pour ${stats.guestsMin} à ${stats.guestsMax} voyageurs` : ""}. ${accessSentence}`)}
+                : fr(`${city} compte ${stats.count} ${theme.labelPlural}${stats.priceMin !== null ? `, à partir de ${frInt(stats.priceMin)} $/nuit` : ""}${stats.guestsMin !== null ? `, pour ${stats.guestsMin} à ${stats.guestsMax} voyageurs` : ""}. ${accessSentence}`)}
           </p>
 
           {shownRows.length > 0 && (
@@ -385,6 +448,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
                     <tr>
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">{level === "national" ? "Région" : "Ville"}</th>
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Chalets</th>
+                      {showYear && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Ouverts à l'année</th>}
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">À partir de</th>
                     </tr>
                   </thead>
@@ -393,6 +457,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
                       <tr key={row.href} className="border-t border-[var(--border-1)]">
                         <th scope="row" className="px-3 py-3 font-semibold sm:px-4"><Link href={row.href} className="text-[var(--fg-1)] underline-offset-2 hover:underline">{fr(row.label)}</Link></th>
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.count}</td>
+                        {showYear && <td className="px-3 py-3 tabular-nums sm:px-4">{row.yearRound > 0 ? row.yearRound : "—"}</td>}
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.from !== null ? fr(`${money(row.from)}/nuit`) : "—"}</td>
                       </tr>
                     ))}

@@ -18,3 +18,8 @@ function frPlain(text: string): string {
     .replace(/[   ]*:/g, " :")
     .replace(/(\d)[   ]*\$/g, "$1 $");
 }
+
+// Entier avec espace insécable entre les milliers (« 1 600 »)
+export function frInt(n: number): string {
+  return Math.round(n).toLocaleString("fr-CA").replace(/[\u202f\u00a0 ]/g, "\u00a0");
+}

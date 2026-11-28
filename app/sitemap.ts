@@ -204,7 +204,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     // Pages ville du gabarit thème (français) : 5 fiches ou plus seulement
-    for (const c of await indexableThemeCities("bord-de-l-eau")) {
+    for (const c of await indexableThemeCities()) {
       comboPages.push({ url: `${BASE}${themePath(c.target)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 });
     }
 

@@ -25,6 +25,10 @@ export function rowFromDb(raw: Raw): ThemeRow {
   const acces = str(lakeEntry?.details?.acces);
   const lakeBoatsFree = lakeEntry?.details?.locationEmbarcations === true && lakeEntry?.details?.gratuitPayant === "Gratuit";
   const boatsFree = boatsEntry?.details?.gratuitPayant === "Gratuit";
+  const spaEntry = entries.find((a) => a.id === "spa");
+  const spaAcces = str(spaEntry?.details?.acces);
+  const spaCap = Number(spaEntry?.details?.capacite);
+  const spaYear = spaEntry?.details?.disponibleAnnee;
   const site = str(raw.site_name);
   const email = str(raw.claim_email);
   return {
@@ -53,12 +57,17 @@ export function rowFromDb(raw: Raw): ThemeRow {
     beach: lakeEntry?.details?.plage === true,
     boats: lakeBoatsFree || boatsFree,
     dogs: raw.dogs_allowed === true,
+    spa: !!spaEntry,
+    spaAccess: spaAcces === "Privé" ? "prive" : spaAcces === "Partagé" ? "partage" : null,
+    spaPlaces: Number.isFinite(spaCap) && spaCap > 0 ? spaCap : null,
+    spaYear: typeof spaYear === "boolean" ? spaYear : null,
+    sauna: entries.some((a) => a.id === "sauna"),
   };
 }
 
 export function rowMatchesTheme(r: ThemeRow, slug: string): boolean {
   const ids = THEME_AMENITY_IDS[slug] ?? [];
-  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake);
+  return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa);
 }
 
 const COLUMNS =
@@ -83,4 +92,4 @@ async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updated
 }
 
 // Même données pour tous les visiteurs : mises en cache 24 h (l'argument `slug` fait partie de la clé).
-export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v1"], { revalidate: 86400 });
+export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v2"], { revalidate: 86400 });

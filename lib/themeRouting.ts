@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { getActiveTheme } from "@/content/themes";
+import { THEMES, getActiveTheme, isThemeContentReady } from "@/content/themes";
 import type { ThemeContent } from "@/content/themes/types";
 import { getRegionByDbValue, getRegionBySlug, type RegionConfig } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
-import { fr } from "@/lib/frTypography";
+import { fr, frInt } from "@/lib/frTypography";
 import { getThemeData } from "@/lib/themeData";
-import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, computeStats, inScope, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
+import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, computeStats, inScope, yearRoundKnownEnough, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
 
 // Pages thème (gabarit ThemeLandingPage) : /chalets/{thème}, /chalets/{thème}/{région}, /chalets/{thème}/{région}/{ville}.
 // Français seulement : l'anglais garde le gabarit actuel.
@@ -82,13 +82,24 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
   const { theme } = target;
   const place = placeOf(target);
   const n = stats.count;
-  const prix = stats.priceMin !== null ? `, à partir de ${stats.priceMin} $/nuit` : "";
+  const prix = stats.priceMin !== null ? `, à partir de ${frInt(stats.priceMin)} $/nuit` : "";
   // Le site ajoute déjà « | Kabanalouer » aux titres (gabarit du layout) : on ne le répète pas dans `title`
   const title = fr(
-    target.region ? `Chalet à louer ${theme.label} ${place} · ${n} chalets` : `${theme.h1Base} au Québec · ${n} chalets`
+    theme.meta
+      ? `${theme.meta.titleBase} ${place} · ${n} chalets`
+      : target.region ? `Chalet à louer ${theme.label} ${place} · ${n} chalets` : `${theme.h1Base} au Québec · ${n} chalets`
   );
+  const ouvertAnnee = yearRoundKnownEnough(stats)
+    ? ` ${stats.spa.annee} ${stats.spa.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.`
+    : "";
   const description = fr(
-    `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`
+    theme.meta
+      ? theme.meta.description
+          .replace("{N}", String(n))
+          .replace("{lieu}", place)
+          .replace("{prix}", prix)
+          .replace("{ouvertAnnee}", ouvertAnnee)
+      : `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`
   );
   const { index, canonicalPath } = indexingOf(scope);
   const url = `${SITE_URL}${canonicalPath}`;
@@ -102,17 +113,17 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
   };
 }
 
-// Pages ville indexables d'un thème (sitemap, llms.txt) : même règle que `indexingOf`, calculée sur les mêmes données.
-export async function indexableThemeCities(themeSlug: string): Promise<{ target: ThemeTarget; count: number }[]> {
-  const theme = getActiveTheme(themeSlug);
-  if (!theme) return [];
-  const { rows, updatedAt } = await getThemeData(theme.slug);
+// Pages ville indexables de tous les thèmes actifs (sitemap, llms.txt) : même règle que `indexingOf`, mêmes données.
+export async function indexableThemeCities(): Promise<{ target: ThemeTarget; count: number }[]> {
   const out: { target: ThemeTarget; count: number }[] = [];
-  for (const c of computeStats(rows, updatedAt).byCity) {
-    const region = getRegionByDbValue(c.region);
-    if (!region) continue;
-    const regionCount = inScope(rows, region.dbValue).length;
-    if (c.count >= MIN_LISTINGS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
+  for (const theme of THEMES.filter(isThemeContentReady)) {
+    const { rows, updatedAt } = await getThemeData(theme.slug);
+    for (const c of computeStats(rows, updatedAt).byCity) {
+      const region = getRegionByDbValue(c.region);
+      if (!region) continue;
+      const regionCount = inScope(rows, region.dbValue).length;
+      if (c.count >= MIN_LISTINGS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
+    }
   }
   return out;
 }

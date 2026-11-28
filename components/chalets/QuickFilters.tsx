@@ -63,7 +63,7 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
       go((p) => (filters.dogs ? p.delete("dogs") : p.set("dogs", "1")));
       return;
     }
-    if (id === "bord-eau" && filters.theme === "bord-de-l-eau") {
+    if ((id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa")) {
       go((p) => p.delete("theme"));
       return;
     }
@@ -73,7 +73,9 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
 
   // Arrivée depuis une page thème (?theme=bord-de-l-eau) : la pastille correspondante est allumée.
   const isActive = (id: string) =>
-    id === "dogs" ? !!filters.dogs : amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau");
+    id === "dogs"
+      ? !!filters.dogs
+      : amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa");
 
   return (
     <div

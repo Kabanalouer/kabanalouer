@@ -40,8 +40,8 @@ export async function GET() {
   const comboLine = (l: (typeof combos)[number]) =>
     `- [${comboLinkLabel(l, false)}](${url(comboPath(l.theme, l.region, l.city, false))}) : ${l.count} chalets`;
   const regionComboLines = combos.filter((l) => !l.city).map(comboLine);
-  const themeCityLines = (await indexableThemeCities("bord-de-l-eau")).map(
-    (c) => `- [Chalets au bord de l'eau à ${c.target.city}](${url(themePath(c.target))}) : ${c.count} chalets`
+  const themeCityLines = (await indexableThemeCities()).map(
+    (c) => `- [Chalets ${c.target.theme.label.replace(/^qui accepte/, "qui acceptent")} à ${c.target.city}](${url(themePath(c.target))}) : ${c.count} chalets`
   );
   const cityComboLines = [...combos.filter((l) => l.city && !isThemeLandingCityCombo(l)).map(comboLine), ...themeCityLines];
 

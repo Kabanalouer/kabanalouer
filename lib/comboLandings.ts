@@ -118,6 +118,10 @@ export function getComboTheme(key: ComboThemeKey): ComboTheme {
 
 // Slugs réservés : un lien personnalisé de fiche (3ᵉ segment) ne doit jamais
 // masquer une page ville × type (même position dans l'URL).
+// Thèmes (français) servis par le gabarit ThemeLandingPage : adresse « thème en premier » (/chalets/avec-spa/laurentides)
+export const THEME_FIRST_KEYS: ReadonlySet<string> = new Set(["waterfront", "spa"]);
+export const isThemeFirstKey = (key: string): boolean => THEME_FIRST_KEYS.has(key);
+
 export const RESERVED_COMBO_SLUGS = new Set(COMBO_THEMES.flatMap((t) => [t.slugFr, t.slugEn]));
 
 // « dans les Laurentides » / « in the Laurentians » / « à Mille-Isles »
@@ -129,7 +133,7 @@ export function comboPlace(region: RegionConfig, city: string | null, isEn: bool
 export function comboPath(theme: ComboTheme, region: RegionConfig, city: string | null, isEn: boolean): string {
   // Bord de l'eau (français) : nouveau gabarit, thème en premier (/chalets/bord-de-l-eau/laurentides/mille-isles).
   // L'ancienne forme /chalets/laurentides/bord-de-l-eau redirige en 301 (page.tsx).
-  if (!isEn && theme.key === "waterfront") return `/chalets/${theme.slugFr}/${region.slug}${city ? `/${slugify(city)}` : ""}`;
+  if (!isEn && isThemeFirstKey(theme.key)) return `/chalets/${theme.slugFr}/${region.slug}${city ? `/${slugify(city)}` : ""}`;
   const base = isEn ? `/en/cabins/${region.slugEn}` : `/chalets/${region.slug}`;
   return `${base}${city ? `/${slugify(city)}` : ""}/${isEn ? theme.slugEn : theme.slugFr}`;
 }
@@ -246,7 +250,7 @@ export function allActiveCombos(index: ComboIndex): ComboLink[] {
 // lib/themeRouting.ts) se calcule sur les mêmes données que la page. Le sitemap et llms.txt la prennent donc de
 // `indexableThemeCities` et non de cet index (les comptes peuvent différer d'une fiche ou deux). L'anglais garde l'ancienne règle.
 export function isThemeLandingCityCombo(l: ComboLink): boolean {
-  return l.theme.key === "waterfront" && !!l.city;
+  return isThemeFirstKey(l.theme.key) && !!l.city;
 }
 
 // « Chalets avec spa dans les Laurentides » (ou sans le lieu)
