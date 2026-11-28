@@ -63,11 +63,17 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
       go((p) => (filters.dogs ? p.delete("dogs") : p.set("dogs", "1")));
       return;
     }
+    if (id === "bord-eau" && filters.theme === "bord-de-l-eau") {
+      go((p) => p.delete("theme"));
+      return;
+    }
     const next = amenityIds.includes(id) ? amenityIds.filter((a) => a !== id) : [...amenityIds, id];
     go((p) => (next.length > 0 ? p.set("amenities", next.join(",")) : p.delete("amenities")));
   };
 
-  const isActive = (id: string) => (id === "dogs" ? !!filters.dogs : amenityIds.includes(id));
+  // Arrivée depuis une page thème (?theme=bord-de-l-eau) : la pastille correspondante est allumée.
+  const isActive = (id: string) =>
+    id === "dogs" ? !!filters.dogs : amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau");
 
   return (
     <div
