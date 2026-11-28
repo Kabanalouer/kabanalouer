@@ -12,7 +12,8 @@ import { getRegionByDbValue } from "@/lib/regions";
 import { comboLinkLabel, comboPath, activeThemesInCity, activeThemesInRegion, getComboIndex, COMBO_THEMES, MIN_LISTINGS_FOR_COMBO } from "@/lib/comboLandings";
 import { accessBadge, pickDiverse, visibleAccessChips, type AccessKey, type ThemeRow } from "@/lib/themeStats";
 import { themePath, placeOf, type ThemeScope } from "@/lib/themeRouting";
-import { TO_PROVIDE } from "@/content/themes/types";
+import { TO_PROVIDE, type ThemeFaqItem } from "@/content/themes/types";
+import { getRegionContent } from "@/content/regions";
 
 // Gabarit unique des pages thème (national, thème × région, thème × ville) : /chalets/bord-de-l-eau…
 // Tout le contenu est rendu côté serveur. Seules les 24 fiches affichées sont chargées dans la page.
@@ -99,8 +100,8 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const level = city ? "city" : region ? "region" : "national";
   const place = placeOf(target);
   const here = themePath(target);
-  const guide = theme.guide === TO_PROVIDE ? null : theme.guide;
-  const faqSource = theme.faq === TO_PROVIDE ? [] : theme.faq;
+  const guide = theme.guide === TO_PROVIDE || level !== "national" ? null : theme.guide;
+  const faqSource: ThemeFaqItem[] = theme.faq === TO_PROVIDE ? [] : theme.faq[level];
 
   const chips = visibleAccessChips(stats);
   const active = chips.includes(acces as AccessKey) ? (acces as AccessKey) : null;
@@ -123,14 +124,42 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   const countIn = (slug: string) => national.byRegion.find((r) => regionName(r.region)?.slug === slug)?.count ?? 0;
   const quebecCities = national.byCity.filter((c) => regionName(c.region)?.slug === "quebec").slice(0, 3).map((c) => c.city);
   const siblingCities = (level === "city" ? scope.regionStats?.byCity.filter((c) => c.city !== city) : stats.byCity) ?? [];
-  const topVilles = siblingCities.slice(0, 5).map((c, i) => `${c.city} (${c.count}${i === 0 ? " chalets" : ""})`).join(", ");
   const dogsLink = stats.dogs > 0
     ? `[Voir les chalets au bord de l'eau qui acceptent les chiens](${searchHref}&dogs=1)`
     : "[chalets qui acceptent les chiens](/chalets/chiens-acceptes)";
+
+  // Phrases calculées pour les niveaux région et ville (un morceau à zéro est retiré)
+  const n1 = (n: number, one: string, many: string) => (n === 1 ? one : many);
+  const accessBits = [
+    stats.byAccess.direct > 0 && `${stats.byAccess.direct} ${n1(stats.byAccess.direct, "est directement au bord de l'eau", "sont directement au bord de l'eau")}`,
+    stats.byAccess.lakePrivate > 0 && `${stats.byAccess.lakePrivate} ${n1(stats.byAccess.lakePrivate, "a un accès privé au lac", "ont un accès privé au lac")}`,
+    stats.byAccess.beach > 0 && `${stats.byAccess.beach} ${n1(stats.byAccess.beach, "a une plage", "ont une plage")}`,
+  ].filter((x): x is string => !!x);
+  const accesPhrase = accessBits.length > 0 ? `${joinFr(accessBits)}.` : "";
+  const fourchette =
+    stats.pricedCount >= 5 && stats.priceP10 !== null && stats.priceP90 !== null
+      ? ` La plupart se situent entre ${stats.priceP10} $ et ${stats.priceP90} $.`
+      : "";
+  const capacite =
+    stats.guestsMin === null || stats.guestsMax === null
+      ? ""
+      : stats.guestsMin === stats.guestsMax
+        ? `Ils accueillent ${stats.guestsMax} voyageurs.`
+        : `Ils accueillent de ${stats.guestsMin} à ${stats.guestsMax} voyageurs.`;
+  const grands = stats.large > 0 ? ` ${stats.large} ${n1(stats.large, "peut recevoir", "peuvent recevoir")} 10 personnes ou plus.` : "";
+  const villesTop =
+    level === "region" && stats.byCity.length >= 2
+      ? joinFr(stats.byCity.slice(0, 3).map((c) => `${c.city} (${c.count})`))
+      : "";
+  const neighbours = level === "city" ? siblingCities.slice(0, 2) : [];
+  const voisines =
+    neighbours.length > 0
+      ? `${neighbours.map((c) => `[${c.city}](${cityHref(c.region, c.city)}) (${c.count})`).join(", ")} et `
+      : "Consultez ";
   const vars: Record<string, string> = {
     N: String(stats.count),
     lieu: place,
-    prixMin: stats.priceMin !== null ? String(stats.priceMin) : "—",
+    prixMin: stats.priceMin !== null ? String(stats.priceMin) : "",
     prixP10: stats.priceP10 !== null ? String(stats.priceP10) : "—",
     prixP90: stats.priceP90 !== null ? String(stats.priceP90) : "—",
     nLaurentides: String(countIn("laurentides")),
@@ -138,16 +167,39 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
     nQuebec: String(countIn("quebec")),
     villesMontreal: joinFr(citiesNearMontreal(scope)),
     villesQuebec: joinFr(quebecCities),
-    topVilles,
     nChiens: String(stats.dogs),
     lienChiens: dogsLink,
+    fourchette,
+    accesPhrase,
+    capacite,
+    grands,
+    villesTop,
+    deRegion: region?.genitive ?? "",
+    ville: city ?? "",
+    voisines,
+    lienRegion: region ? regionHref(region.dbValue) : "",
+    nRegion: String(scope.regionStats?.count ?? stats.count),
+    chaletsChiens: `${stats.dogs} ${n1(stats.dogs, "chalet", "chalets")} au bord de l'eau`,
+    accepte: n1(stats.dogs, "accepte", "acceptent"),
+    ailleursChiens: national.dogs > stats.dogs ? ` Les autres régions en comptent ${national.dogs - stats.dogs}.` : "",
   };
   const faq = faqSource
-    .filter((f) => (f.scope === "national" ? level === "national" : f.scope === "local" ? level !== "national" && siblingCities.length > 0 : true))
+    .filter((f) => (f.needs ?? []).every((k) => vars[k] && vars[k] !== "—"))
     .map((f) => ({
       q: fr(fill(f.q, vars)),
       a: fr(fill(stats.dogs === 0 && f.aNone ? f.aNone : f.a, vars)),
     }));
+
+  // ── Bloc éditorial des pages région (texte propre à la région, vide = pas de bloc) ──
+  const regionText = region && theme.regionIntroKey ? getRegionContent(region.slug)?.[theme.regionIntroKey]?.trim() ?? "" : "";
+  const regionFigures =
+    level === "region" && regionText
+      ? [
+          `${stats.count} ${n1(stats.count, "chalet", "chalets")}`,
+          stats.priceMin !== null ? `à partir de ${stats.priceMin} $/nuit` : "",
+          stats.byAccess.lakePrivate > 0 ? `${stats.byAccess.lakePrivate} avec accès privé` : "",
+        ].filter(Boolean)
+      : [];
 
   // ── Paragraphe éditorial du tableau ──
   const top3 = stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.slug);
@@ -156,7 +208,6 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
     top3.length === 3 && expected.every((s) => top3.includes(s))
       ? "La région de Québec, les Laurentides et Lanaudière regroupent la majorité des chalets au bord de l'eau sur Kabanalouer."
       : `${joinFr(stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.name ?? r.region))} regroupent le plus de chalets au bord de l'eau sur Kabanalouer.`;
-  const regionIntro = region ? theme.regionIntro?.[region.slug] : undefined;
   const accessSentence = `${stats.byAccess.direct} sont directement sur la rive et ${stats.byAccess.lake} ont un accès à un lac.`;
 
   // ── Tableau (régions ou villes) ──
@@ -321,7 +372,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
             {level === "national"
               ? fr(fill(theme.nationalRegionParagraph ?? "", { topRegionsParagraph }))
               : level === "region"
-                ? fr(regionIntro ?? `Voici les villes ${place} qui comptent le plus de ${theme.labelPlural}, classées par nombre de chalets.`)
+                ? fr(`Voici les villes ${place} qui comptent le plus de ${theme.labelPlural}, classées par nombre de chalets.`)
                 : fr(`${city} compte ${stats.count} ${theme.labelPlural}${stats.priceMin !== null ? `, à partir de ${stats.priceMin} $/nuit` : ""}${stats.guestsMin !== null ? `, pour ${stats.guestsMin} à ${stats.guestsMax} voyageurs` : ""}. ${accessSentence}`)}
           </p>
 
@@ -375,7 +426,18 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
           )}
         </section>
 
-        {/* ── 4. Guide éditorial ── */}
+        {/* ── 4a. Bloc éditorial de la région (pages région seulement) ── */}
+        {level === "region" && regionText && (
+          <section className={`${WRAP} mt-16`}>
+            <h2 className="text-[length:clamp(26px,3.2vw,40px)] font-extrabold leading-tight tracking-[-0.04em] text-[var(--fg-1)]">
+              {fr(`${theme.regionBlockTitle ?? theme.label} ${place}`)}
+            </h2>
+            <p className="mt-4 max-w-[70ch] text-base leading-relaxed text-[var(--fg-2)]">{fr(regionText)}</p>
+            <p className="mt-4 text-[15px] text-[var(--fg-2)]">{fr(regionFigures.join(" · "))}</p>
+          </section>
+        )}
+
+        {/* ── 4b. Guide éditorial (page nationale seulement) ── */}
         {guide && (
           <section className={`${WRAP} mt-16`}>
             <div className="grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">

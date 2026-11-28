@@ -11,7 +11,8 @@ import { countDealListings } from "@/app/chalets/[...segments]/_components/Deals
 import { AMENITY_LANDINGS, countAmenityLandingsWith } from "@/lib/amenityLandings";
 import { createClient } from "@supabase/supabase-js";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
-import { allActiveCombos, comboPath, getComboIndex } from "@/lib/comboLandings";
+import { allActiveCombos, comboPath, getComboIndex, isThemeLandingCityCombo } from "@/lib/comboLandings";
+import { indexableThemeCities, themePath } from "@/lib/themeRouting";
 
 const BASE = SITE_URL;
 
@@ -197,10 +198,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     comboPages = allActiveCombos(await getComboIndex()).flatMap((l) => {
       const priority = l.city ? 0.7 : 0.75;
       return [
-        { url: `${BASE}${comboPath(l.theme, l.region, l.city, false)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority },
+        ...(!isThemeLandingCityCombo(l) ? [{ url: `${BASE}${comboPath(l.theme, l.region, l.city, false)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority }] : []),
         { url: `${BASE}${comboPath(l.theme, l.region, l.city, true)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority },
       ];
     });
+
+    // Pages ville du gabarit thème (français) : 5 fiches ou plus seulement
+    for (const c of await indexableThemeCities("bord-de-l-eau")) {
+      comboPages.push({ url: `${BASE}${themePath(c.target)}`, lastModified: latestListingChange, changeFrequency: "daily" as const, priority: 0.7 });
+    }
 
     // Régions sous le seuil : mêmes pages exclues du sitemap qu'en noindex
     // (voir MIN_CHALETS_FOR_INDEX ci-dessus et dans app/chalets/[slug]/page.tsx).

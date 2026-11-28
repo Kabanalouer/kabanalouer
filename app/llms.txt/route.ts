@@ -5,7 +5,8 @@ import { DEALS_PATH_EN, DEALS_PATH_FR } from "@/lib/promoLabel";
 import { DOG_FRIENDLY_PATH_EN } from "@/lib/dogPolicy";
 import { ACCESSIBLE_PATH_EN } from "@/lib/accessibility";
 import { getThemeLinkVisibility } from "@/lib/themeLinks";
-import { allActiveCombos, comboLinkLabel, comboPath, getComboIndex } from "@/lib/comboLandings";
+import { allActiveCombos, comboLinkLabel, comboPath, getComboIndex, isThemeLandingCityCombo } from "@/lib/comboLandings";
+import { indexableThemeCities, themePath } from "@/lib/themeRouting";
 
 // llms.txt (guide des pages pour les agents IA). Généré plutôt que statique :
 // les pages par type, région et région/ville × type n'y figurent que
@@ -39,7 +40,10 @@ export async function GET() {
   const comboLine = (l: (typeof combos)[number]) =>
     `- [${comboLinkLabel(l, false)}](${url(comboPath(l.theme, l.region, l.city, false))}) : ${l.count} chalets`;
   const regionComboLines = combos.filter((l) => !l.city).map(comboLine);
-  const cityComboLines = combos.filter((l) => l.city).map(comboLine);
+  const themeCityLines = (await indexableThemeCities("bord-de-l-eau")).map(
+    (c) => `- [Chalets au bord de l'eau à ${c.target.city}](${url(themePath(c.target))}) : ${c.count} chalets`
+  );
+  const cityComboLines = [...combos.filter((l) => l.city && !isThemeLandingCityCombo(l)).map(comboLine), ...themeCityLines];
 
   // Mêmes pages en anglais (agents IA qui répondent en anglais)
   const themeLinesEn: string[] = [];

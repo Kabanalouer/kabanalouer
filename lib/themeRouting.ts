@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { getActiveTheme } from "@/content/themes";
 import type { ThemeContent } from "@/content/themes/types";
-import { getRegionBySlug, type RegionConfig } from "@/lib/regions";
+import { getRegionByDbValue, getRegionBySlug, type RegionConfig } from "@/lib/regions";
 import { slugify } from "@/lib/slugify";
 import { SITE_URL } from "@/lib/siteUrl";
 import { fr } from "@/lib/frTypography";
 import { getThemeData } from "@/lib/themeData";
-import { MIN_LISTINGS_INDEXED, computeStats, inScope, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
+import { MIN_LISTINGS_CITY_INDEXED, MIN_LISTINGS_INDEXED, computeStats, inScope, type ThemeRow, type ThemeStats } from "@/lib/themeStats";
 
 // Pages thème (gabarit ThemeLandingPage) : /chalets/{thème}, /chalets/{thème}/{région}, /chalets/{thème}/{région}/{ville}.
 // Français seulement : l'anglais garde le gabarit actuel.
@@ -73,7 +73,7 @@ export function indexingOf(scope: ThemeScope): { index: boolean; canonicalPath: 
   if (!target.region) return { index: true, canonicalPath: themePath(target) };
   if (!target.city) return { index: stats.count >= MIN_LISTINGS_INDEXED, canonicalPath: themePath(target) };
   const redundant = regionStats ? stats.count === regionStats.count : false;
-  if (stats.count >= MIN_LISTINGS_INDEXED && !redundant) return { index: true, canonicalPath: themePath(target) };
+  if (stats.count >= MIN_LISTINGS_CITY_INDEXED && !redundant) return { index: true, canonicalPath: themePath(target) };
   return { index: false, canonicalPath: themePath({ theme: target.theme, region: target.region }) };
 }
 
@@ -100,4 +100,19 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
     openGraph: { title: `${title} | Kabanalouer`, description, url, siteName: "Kabanalouer", locale: "fr_CA", type: "website" },
     twitter: { card: "summary_large_image", title: `${title} | Kabanalouer`, description },
   };
+}
+
+// Pages ville indexables d'un thème (sitemap, llms.txt) : même règle que `indexingOf`, calculée sur les mêmes données.
+export async function indexableThemeCities(themeSlug: string): Promise<{ target: ThemeTarget; count: number }[]> {
+  const theme = getActiveTheme(themeSlug);
+  if (!theme) return [];
+  const { rows, updatedAt } = await getThemeData(theme.slug);
+  const out: { target: ThemeTarget; count: number }[] = [];
+  for (const c of computeStats(rows, updatedAt).byCity) {
+    const region = getRegionByDbValue(c.region);
+    if (!region) continue;
+    const regionCount = inScope(rows, region.dbValue).length;
+    if (c.count >= MIN_LISTINGS_CITY_INDEXED && c.count !== regionCount) out.push({ target: { theme, region, city: c.city }, count: c.count });
+  }
+  return out;
 }

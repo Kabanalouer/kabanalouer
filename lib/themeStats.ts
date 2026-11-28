@@ -6,6 +6,10 @@ import { isKnownMunicipality } from "@/lib/municipalities";
 
 // Seuil d'une page région ou ville indexée (même règle que lib/comboLandings.ts)
 export const MIN_LISTINGS_INDEXED = 3;
+// Une page ville n'est indexée qu'à partir de ce nombre de fiches (2026-11-28) ; en dessous : noindex + canonical vers la région
+export const MIN_LISTINGS_CITY_INDEXED = 5;
+// Un chalet « grand groupe » reçoit au moins ce nombre de voyageurs
+export const LARGE_GROUP_GUESTS = 10;
 // Une sous-catégorie sous ce nombre de fiches n'a pas de pastille
 export const MIN_LISTINGS_CHIP = 5;
 export const GRID_SIZE = 24;
@@ -127,6 +131,8 @@ export interface ThemeStats {
   byCity: CityStat[]; // villes avec au moins MIN_LISTINGS_INDEXED fiches
   byAccess: { direct: number; lake: number; lakePrivate: number; lakePublic: number; beach: number; boats: number };
   dogs: number;
+  large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
+  pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
 }
 
@@ -184,6 +190,8 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
       boats: rows.filter((r) => r.boats).length,
     },
     dogs: rows.filter((r) => r.dogs).length,
+    large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
+    pricedCount: sortedPrices.length,
     updatedAt,
   };
 }

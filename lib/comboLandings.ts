@@ -242,6 +242,13 @@ export function allActiveCombos(index: ComboIndex): ComboLink[] {
   return [...regionLinks, ...cityLinks];
 }
 
+// Page française « bord de l'eau × ville » : gérée par le gabarit ThemeLandingPage, dont l'indexation (5 fiches ou plus,
+// lib/themeRouting.ts) se calcule sur les mêmes données que la page. Le sitemap et llms.txt la prennent donc de
+// `indexableThemeCities` et non de cet index (les comptes peuvent différer d'une fiche ou deux). L'anglais garde l'ancienne règle.
+export function isThemeLandingCityCombo(l: ComboLink): boolean {
+  return l.theme.key === "waterfront" && !!l.city;
+}
+
 // « Chalets avec spa dans les Laurentides » (ou sans le lieu)
 export function comboLinkLabel(link: ComboLink, isEn: boolean, { withPlace = true }: { withPlace?: boolean } = {}): string {
   const base = isEn ? link.theme.linkEn : link.theme.linkFr;

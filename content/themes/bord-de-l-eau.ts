@@ -11,7 +11,8 @@ const content: ThemeContent = {
   active: true,
   nationalRegionParagraph:
     "{topRegionsParagraph} Les Laurentides et Lanaudière sont à environ une heure de Montréal. La région de Québec offre aussi des chalets face au fleuve et à l'île d'Orléans.",
-  regionIntro: {},
+  regionBlockTitle: "Le bord de l'eau",
+  regionIntroKey: "waterIntro",
   guide: {
     title: "Bien choisir son chalet au bord de l'eau",
     intro: "",
@@ -42,44 +43,85 @@ const content: ThemeContent = {
       },
     ],
   },
-  faq: [
-    {
-      q: "Combien coûte un chalet au bord de l'eau {lieu} ?",
-      a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit. La plupart se situent entre {prixP10} $ et {prixP90} $, selon la taille du chalet et la saison. Le propriétaire confirme le prix final pour vos dates.",
-    },
-    {
-      q: "Où trouver un chalet au bord de l'eau près de Montréal ?",
-      scope: "national",
-      a: "Les Laurentides ({nLaurentides} chalets) et Lanaudière ({nLanaudiere}) sont à environ une heure de Montréal et regroupent la majorité des chalets au bord d'un lac. {villesMontreal} sont parmi les plus accessibles.",
-    },
-    {
-      q: "Où trouver un chalet au bord de l'eau près de Québec ?",
-      scope: "national",
-      a: "La région de Québec compte {nQuebec} chalets au bord de l'eau, dont plusieurs à {villesQuebec}. Charlevoix offre aussi des vues sur le fleuve.",
-    },
-    {
-      q: "Dans quelles villes {lieu} trouver un chalet au bord de l'eau ?",
-      scope: "local",
-      a: "{topVilles}.",
-    },
-    {
-      q: "Quelle est la différence entre bord de l'eau et accès au lac ?",
-      a: "Bord de l'eau : le chalet est sur la rive. Accès au lac : l'eau est accessible à pied, parfois par un sentier ou une plage partagée. Chaque fiche l'indique.",
-    },
-    {
-      q: "Y a-t-il des chalets au bord de l'eau qui acceptent les chiens {lieu} ?",
-      a: "Oui, {nChiens} chalets au bord de l'eau {lieu} acceptent les chiens. {lienChiens}",
-      aNone: "Pas pour l'instant. Consultez les {lienChiens}.",
-    },
-    {
-      q: "Peut-on se baigner devant tous les chalets ?",
-      a: "Pas toujours. Certaines rives sont rocheuses ou marécageuses, et la baignade est déconseillée dans le fleuve et les rivières à fort courant. Demandez au propriétaire s'il y a une plage ou un quai.",
-    },
-    {
-      q: "Y a-t-il des frais de service ?",
-      a: "Non. Vous contactez directement le propriétaire, sans frais de service ni commission.",
-    },
-  ],
+  faq: {
+    // Page nationale : questions générales
+    national: [
+      {
+        q: "Combien coûte un chalet au bord de l'eau {lieu} ?",
+        a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit. La plupart se situent entre {prixP10} $ et {prixP90} $, selon la taille du chalet et la saison. Le propriétaire confirme le prix final pour vos dates.",
+      },
+      {
+        q: "Où trouver un chalet au bord de l'eau près de Montréal ?",
+        a: "Les Laurentides ({nLaurentides} chalets) et Lanaudière ({nLanaudiere}) sont à environ une heure de Montréal et regroupent la majorité des chalets au bord d'un lac. {villesMontreal} sont parmi les plus accessibles.",
+      },
+      {
+        q: "Où trouver un chalet au bord de l'eau près de Québec ?",
+        a: "La région de Québec compte {nQuebec} chalets au bord de l'eau, dont plusieurs à {villesQuebec}. Charlevoix offre aussi des vues sur le fleuve.",
+      },
+      {
+        q: "Quelle est la différence entre bord de l'eau et accès au lac ?",
+        a: "Bord de l'eau : le chalet est sur la rive. Accès au lac : l'eau est accessible à pied, parfois par un sentier ou une plage partagée. Chaque fiche l'indique.",
+      },
+      {
+        q: "Y a-t-il des chalets au bord de l'eau qui acceptent les chiens {lieu} ?",
+        a: "Oui, {nChiens} chalets au bord de l'eau {lieu} acceptent les chiens. {lienChiens}",
+        aNone: "Pas pour l'instant. Consultez les {lienChiens}.",
+      },
+      {
+        q: "Peut-on se baigner devant tous les chalets ?",
+        a: "Pas toujours. Certaines rives sont rocheuses ou marécageuses, et la baignade est déconseillée dans le fleuve et les rivières à fort courant. Demandez au propriétaire s'il y a une plage ou un quai.",
+      },
+      {
+        q: "Y a-t-il des frais de service ?",
+        a: "Non. Vous contactez directement le propriétaire, sans frais de service ni commission.",
+      },
+    ],
+    // Pages région : 5 questions, toutes calculées sur les chalets de la région
+    region: [
+      {
+        q: "Combien coûte un chalet au bord de l'eau {lieu} ?",
+        a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit {lieu}.{fourchette} Le propriétaire confirme le prix final pour vos dates.",
+        needs: ["prixMin"],
+      },
+      {
+        q: "Dans quelles villes {deRegion} trouver un chalet au bord de l'eau ?",
+        a: "{villesTop} regroupent le plus de chalets au bord de l'eau de la région sur Kabanalouer.",
+        needs: ["villesTop"],
+      },
+      {
+        q: "Combien de chalets au bord de l'eau {lieu} ont un accès privé ou une plage ?",
+        a: "{accesPhrase}",
+        needs: ["accesPhrase"],
+      },
+      {
+        q: "Y a-t-il des chalets au bord de l'eau {lieu} qui acceptent les chiens ?",
+        a: "Oui, {chaletsChiens} {lieu} {accepte} les chiens. {lienChiens}",
+        aNone: "Pas pour l'instant {lieu}.{ailleursChiens}",
+      },
+      {
+        q: "Quelle est la capacité des chalets au bord de l'eau {lieu} ?",
+        a: "{capacite}{grands}",
+        needs: ["capacite"],
+      },
+    ],
+    // Pages ville : 3 questions, toutes calculées sur les chalets de la ville
+    city: [
+      {
+        q: "Combien coûte un chalet au bord de l'eau {lieu} ?",
+        a: "Sur Kabanalouer, les prix de départ commencent à {prixMin} $ la nuit {lieu}.{fourchette} Le propriétaire confirme le prix final pour vos dates.",
+        needs: ["prixMin"],
+      },
+      {
+        q: "Combien de chalets au bord de l'eau {lieu} ont un accès privé ou une plage ?",
+        a: "{accesPhrase}",
+        needs: ["accesPhrase"],
+      },
+      {
+        q: "Où trouver d'autres chalets au bord de l'eau près de {ville} ?",
+        a: "{voisines}[l'ensemble {deRegion}]({lienRegion}) ({nRegion}).",
+      },
+    ],
+  },
   titleOwner: "Votre chalet est au bord de l'eau ? Ajoutez-le gratuitement",
 };
 

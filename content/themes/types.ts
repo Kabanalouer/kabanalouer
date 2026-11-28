@@ -1,7 +1,10 @@
 // Contenu éditorial d'une page thème (gabarit ThemeLandingPage). Un fichier par thème dans content/themes/.
-// Variables remplacées au rendu (voir lib/themeStats.ts et ThemeLandingPage.tsx) : {N}, {lieu}, {prixMin}, {prixP10},
-// {prixP90}, {topRegions}, {topVilles}, {nLaurentides}, {nLanaudiere}, {nQuebec}, {villesMontreal}, {villesQuebec},
-// {nChiens}, {lienChiens}.
+// Variables remplacées au rendu (voir lib/themeStats.ts et ThemeLandingPage.tsx). Partout : {lieu}, {prixMin}.
+// National : {prixP10}, {prixP90}, {nLaurentides}, {nLanaudiere}, {nQuebec}, {villesMontreal}, {villesQuebec}, {nChiens},
+// {lienChiens}. Région et ville : {fourchette}, {accesPhrase}, {lienChiens}, {chaletsChiens}, {accepte}, {ailleursChiens},
+// {capacite}, {grands}. Région : {deRegion}, {villesTop}. Ville : {ville}, {voisines}, {lienRegion}, {deRegion}, {nRegion}.
+
+import type { RegionContent } from "../regions/types";
 
 // Texte à fournir par Simon : tant que `guide` ou `faq` en contient, la nouvelle version du thème reste désactivée.
 export const TO_PROVIDE = "[À FOURNIR]" as const;
@@ -21,10 +24,17 @@ export interface ThemeGuide {
 export interface ThemeFaqItem {
   q: string;
   a: string;
-  // national : question posée seulement sur la page nationale ; local : seulement région ou ville ; sinon partout
-  scope?: "national" | "local";
   // Réponse quand le nombre de chalets concernés est nul (question « chiens »)
   aNone?: string;
+  // Variables qui doivent avoir une valeur pour que la question soit posée (jamais de « — » dans une réponse)
+  needs?: string[];
+}
+
+// Une FAQ différente par niveau : le même texte sur toutes les pages région et ville serait du contenu dupliqué.
+export interface ThemeFaq {
+  national: ThemeFaqItem[];
+  region: ThemeFaqItem[];
+  city: ThemeFaqItem[];
 }
 
 export interface ThemeContent {
@@ -40,10 +50,13 @@ export interface ThemeContent {
   active: boolean;
   // Paragraphe éditorial du tableau par région (page nationale)
   nationalRegionParagraph?: string;
-  // Paragraphe éditorial par région (facultatif), clé = slug de région
-  regionIntro?: Record<string, string>;
+  // Bloc éditorial des pages région : titre (« Le bord de l'eau » + lieu) et champ du texte dans content/regions/{région}.ts.
+  // Texte vide = bloc non affiché.
+  regionBlockTitle?: string;
+  regionIntroKey?: keyof Omit<RegionContent, "slug" | "name" | "preposition">;
+  // Guide : page nationale seulement
   guide: ThemeGuide | ToProvide;
-  faq: ThemeFaqItem[] | ToProvide;
+  faq: ThemeFaq | ToProvide;
   // « Votre chalet est au bord de l'eau ? Ajoutez-le gratuitement »
   titleOwner: string;
 }
