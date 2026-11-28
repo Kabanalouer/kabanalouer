@@ -271,27 +271,28 @@ export function accessBadge(r: ThemeRow): string {
 }
 
 // ── Sous-catégories (pastilles) et badge des cartes, par thème ──
-export interface ThemeFilter { key: string; label: string; test: (r: ThemeRow) => boolean }
+// suffix : fin de phrase du bouton « Voir les N chalets avec spa … » quand la pastille est choisie
+export interface ThemeFilter { key: string; label: string; suffix: string; test: (r: ThemeRow) => boolean }
 
 export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters: ThemeFilter[] }> = {
   "bord-de-l-eau": {
     param: "acces",
     filters: [
-      { key: "direct", label: "Directement au bord de l'eau", test: (r) => r.direct },
-      { key: "lake", label: "Accès au lac", test: (r) => r.lake },
-      { key: "beach", label: "Avec plage", test: (r) => r.beach },
-      { key: "boats", label: "Embarcations incluses", test: (r) => r.boats },
+      { key: "direct", label: "Directement au bord de l'eau", suffix: "directement sur la rive", test: (r) => r.direct },
+      { key: "lake", label: "Accès au lac", suffix: "avec accès à un lac", test: (r) => r.lake },
+      { key: "beach", label: "Avec plage", suffix: "avec plage", test: (r) => r.beach },
+      { key: "boats", label: "Embarcations incluses", suffix: "avec embarcations incluses", test: (r) => r.boats },
     ],
   },
   "avec-spa": {
     param: "filtre",
     filters: [
-      { key: "annee", label: "Spa ouvert à l'année", test: (r) => r.spaYear === true },
-      { key: "deux", label: "Pour 2 à 4 personnes", test: (r) => r.capacity >= 2 && r.capacity <= 4 },
-      { key: "groupes", label: "Grands groupes (10+)", test: (r) => r.capacity >= LARGE_GROUP_GUESTS },
-      { key: "eau", label: "Spa + bord de l'eau", test: (r) => r.direct || r.lake },
-      { key: "sauna", label: "Spa + sauna", test: (r) => r.sauna },
-      { key: "chiens", label: "Chiens acceptés", test: (r) => r.dogs },
+      { key: "annee", label: "Spa ouvert à l'année", suffix: "dont le spa est ouvert à l'année", test: (r) => r.spaYear === true },
+      { key: "deux", label: "Pour 2 à 4 personnes", suffix: "pour 2 à 4 personnes", test: (r) => r.capacity >= 2 && r.capacity <= 4 },
+      { key: "groupes", label: "Grands groupes (10+)", suffix: "pour 10 personnes ou plus", test: (r) => r.capacity >= LARGE_GROUP_GUESTS },
+      { key: "eau", label: "Spa + bord de l'eau", suffix: "au bord de l'eau", test: (r) => r.direct || r.lake },
+      { key: "sauna", label: "Spa + sauna", suffix: "et sauna", test: (r) => r.sauna },
+      { key: "chiens", label: "Chiens acceptés", suffix: "qui acceptent les chiens", test: (r) => r.dogs },
     ],
   },
 };

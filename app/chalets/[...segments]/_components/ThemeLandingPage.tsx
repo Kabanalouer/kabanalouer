@@ -421,7 +421,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
             <p className="text-sm text-[var(--fg-3)]">{fr(`${picked.length} sur ${filtered.length} chalets`)}</p>
             <Link href={buttonHref} className="rounded-[var(--radius-sm)] bg-[var(--fg-1)] px-7 py-[15px] text-[15px] font-bold text-white hover:opacity-90">
-              {fr(`Voir les ${filtered.length} ${theme.labelPlural}`)}
+              {fr(`Voir les ${filtered.length} ${theme.labelPlural}${active ? ` ${active.suffix}` : ""}`)}
             </Link>
           </div>
         </section>
