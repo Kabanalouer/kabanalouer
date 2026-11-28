@@ -7,7 +7,7 @@ const content: ThemeContent = {
   label: "qui accepte les chiens",
   labelPlural: "chalets qui acceptent les chiens",
   breadcrumbLabel: "Chiens acceptés",
-  h1Base: "Location de chalet qui accepte les chiens",
+  h1Base: "Chalets qui acceptent les chiens",
   active: true,
   meta: {
     titleBaseNational: "Location de chalet qui accepte les chiens",
