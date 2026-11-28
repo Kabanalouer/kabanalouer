@@ -21,7 +21,19 @@ type Listing = {
   is_published: boolean | null;
   price_low: number | null;
   photos: unknown;
+  dogs_allowed?: boolean | null;
+  dogs_max?: number | null;
+  dogs_size_limit?: string | null;
+  dogs_fee_type?: string | null;
+  dogs_fee_amount?: number | null;
 };
+
+// « Chiens acceptés » sans nombre maximum, poids ou frais : les voyageurs avec un chien filtrent là-dessus
+function dogConditionsMissing(l: Listing): boolean {
+  if (!l.dogs_allowed) return false;
+  const feeOk = l.dogs_fee_type === "free" || ((l.dogs_fee_type === "per_night" || l.dogs_fee_type === "per_stay") && !!l.dogs_fee_amount);
+  return !(l.dogs_max && l.dogs_size_limit && feeOk);
+}
 
 type ReviewInfo = { count: number; avg: number };
 
@@ -115,6 +127,14 @@ export default function ListingsClient({ listings, reviews, scores, translationP
                       </svg>
                       {formatDecimal(rev.avg, locale)} ({rev.count})
                     </span>
+                  )}
+                  {dogConditionsMissing(listing) && (
+                    <Link
+                      href={`${editHref}?section=infos#chiens`}
+                      className="relative z-10 inline-flex items-center gap-1 text-warning-700 font-semibold underline underline-offset-2"
+                    >
+                      {t("dogConditionsReminder")} {t("dogConditionsAction")}
+                    </Link>
                   )}
                   {translationPending[listing.id] && (
                     <span className="text-warning-700">{t("translationPending")}</span>

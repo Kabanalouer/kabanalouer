@@ -4,6 +4,8 @@ import Footer from "@/components/Footer";
 import ListingCard, { type Listing } from "@/components/ListingCard";
 import OwnersSlimBanner from "@/components/chalets/OwnersSlimBanner";
 import { fr, frInt } from "@/lib/frTypography";
+import PawIcon from "@/components/PawIcon";
+import { dogPolicyShortSummary } from "@/lib/dogPolicy";
 import { safeJsonLd } from "@/lib/jsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 import { buildListingPath } from "@/lib/listingUrl";
@@ -101,6 +103,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const faqSource: ThemeFaqItem[] = theme.faq === TO_PROVIDE ? [] : theme.faq[level];
 
   const isSpa = theme.slug === "avec-spa";
+  const isDog = theme.slug === "chiens-acceptes";
   const filterDef = THEME_FILTERS[theme.slug] ?? { param: "acces" as const, filters: [] };
   const chips = filterDef.filters
     .map((f) => ({ ...f, n: scoped.filter(f.test).length }))
@@ -109,13 +112,22 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const active = chips.find((c) => c.key === rawFilter) ?? null;
   const filtered = active ? scoped.filter(active.test) : scoped;
   const showYear = isSpa && yearRoundKnownEnough(stats);
+  // Chiens : une donnée n'est mise de l'avant que si elle est remplie sur au moins 30 % des fiches
+  const dg = stats.dog;
+  const enough = (known: number) => known >= 0.3 * stats.count;
+  const feeCovered = enough(dg.feeKnown);
+  const sizeCovered = enough(dg.sizeKnown);
+  const showFree = isDog && feeCovered && dg.gratuit > 0;
+  const showBig = isDog && sizeCovered && dg.toutesTailles > 0;
+  const showFreeCol = showFree
+  const showTwo = isDog && enough(dg.maxKnown) && dg.deuxPlus > 0;
   const picked = pickDiverse(filtered);
   const regionName = (db: string) => getRegionByDbValue(db);
   const cityHref = (db: string, c: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}/${slugify(c)}`;
   const regionHref = (db: string) => `/chalets/${theme.slug}/${regionName(db)?.slug}`;
 
   // ── Intro « réponse directe » ──
-  const topPlaces = isSpa
+  const topPlaces = isSpa || isDog
     ? level === "national"
       ? stats.byRegion.slice(0, 3).map((r) => `${(regionName(r.region)?.locative ?? "").replace(/^en Lanaudière/, "dans Lanaudière")} (${r.count})`)
       : level === "region"
@@ -183,8 +195,53 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
       ? `Le nombre de places est indiqué pour ${sp.placesConnu} ${sp.placesConnu === 1 ? "spa" : "spas"}, avec une médiane de ${sp.placesMediane} places.`
       : "",
   ].filter(Boolean).join(" ");
+  // ── Chiens : phrases calculées ──
+  const fraisPhraseBits = [
+    dg.fraisNuitMedian !== null ? `de ${frInt(dg.fraisNuitMedian)} $ par nuit` : "",
+    dg.fraisSejourMedian !== null ? `de ${frInt(dg.fraisSejourMedian)} $ par séjour` : "",
+  ].filter(Boolean);
+  const comptezBits = [
+    dg.fraisNuitMedian !== null ? `${frInt(dg.fraisNuitMedian)} $ par nuit` : "",
+    dg.fraisSejourMedian !== null ? `${frInt(dg.fraisSejourMedian)} $ par séjour` : "",
+  ].filter(Boolean);
+  const fraisPhrase = fraisPhraseBits.length > 0 ? `les frais sont en général ${fraisPhraseBits.join(" ou ")}` : "";
+  const gratuitSentence = dg.gratuit > 0 ? `${dg.gratuit} ${n1(dg.gratuit, "chalet n'exige", "chalets n'exigent")} aucuns frais.` : "";
+  const fraisInfoText = [gratuitSentence, fraisPhrase ? `${dg.gratuit > 0 ? "Ailleurs, " : ""}${dg.gratuit > 0 ? fraisPhrase : upperFirst(fraisPhrase)}.` : ""].filter(Boolean).join(" ");
+  const fraisInfo = fraisInfoText ? ` ${fraisInfoText}` : "";
+  const limitesBits = [
+    dg.max50 > 0 ? `à 50 lb (${dg.max50})` : "",
+    dg.max25 > 0 ? `à 25 lb (${dg.max25})` : "",
+  ].filter(Boolean);
+  const limitesPoids = limitesBits.length > 0 ? ` Les autres limitent le poids ${joinFr(limitesBits).replace(" et à", " ou à")}.` : "";
+  const croisHref = (sub: string) => `/chalets?${new URLSearchParams({ theme: theme.slug, ...(region ? { region: region.dbValue } : {}), ...(city ? { city } : {}), sub }).toString()}`;
+  const croisBits = [
+    dg.bordEau > 0 ? `[${dg.bordEau} ${n1(dg.bordEau, "chalet", "chalets")} au bord de l'eau](${croisHref("eau")})` : "",
+    dg.spa > 0 ? `[${dg.spa} ${n1(dg.spa, "chalet", "chalets")} avec spa](${croisHref("spa")})` : "",
+  ].filter(Boolean);
+  const conditionsBits = [
+    dg.gratuit > 0 ? `${dg.gratuit} ${n1(dg.gratuit, "n'exige", "n'exigent")} aucuns frais` : "",
+    dg.toutesTailles > 0 ? `${dg.toutesTailles} ${n1(dg.toutesTailles, "accepte", "acceptent")} les chiens de toutes tailles` : "",
+    dg.deuxPlus > 0 ? `${dg.deuxPlus} ${n1(dg.deuxPlus, "accepte", "acceptent")} au moins 2 chiens` : "",
+  ].filter(Boolean);
+  const gratuitRegion =
+    dg.gratuit > 0
+      ? `${dg.gratuit} ${n1(dg.gratuit, "accepte", "acceptent")} les chiens sans frais.${fraisPhrase ? ` Ailleurs, ${fraisPhrase}.` : ""}`
+      : fraisPhrase ? `Aucun chalet n'est indiqué sans frais pour le chien ${place}. Les frais sont en général ${fraisPhraseBits.join(" ou ")}.` : "";
+  const grosRegion = dg.toutesTailles > 0 ? `${dg.toutesTailles} ${n1(dg.toutesTailles, "accepte", "acceptent")} les chiens de toutes tailles.${limitesPoids}` : "";
+  const topRegionsList = upperFirst(joinFr(stats.byRegion.slice(0, 3).map((r) => `${withArticle(regionName(r.region)?.genitive ?? r.region)} (${r.count})`)));
   const vars: Record<string, string> = {
     N: String(stats.count),
+    nRegions: String(stats.regionsCount),
+    topRegions: topRegionsList,
+    fraisInfo,
+    limitesPoids,
+    nToutesTailles: dg.toutesTailles > 0 ? String(dg.toutesTailles) : "",
+    nDeuxChiensPlus: dg.deuxPlus > 0 ? String(dg.deuxPlus) : "",
+    maxChiens: dg.maxChiens > 0 ? String(dg.maxChiens) : "",
+    gratuitRegion,
+    grosRegion,
+    croises: croisBits.length > 0 ? `${upperFirst(joinFr(croisBits))}.` : "",
+    conditionsVille: conditionsBits.length > 0 ? `${upperFirst(joinFr(conditionsBits))}.` : "",
     lieu: place,
     prixMin: stats.priceMin !== null ? frInt(stats.priceMin) : "",
     prixP10: stats.priceP10 !== null ? frInt(stats.priceP10) : "—",
@@ -192,7 +249,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
     nLaurentides: String(countIn("laurentides")),
     nLanaudiere: String(countIn("lanaudiere")),
     nQuebec: String(countIn("quebec")),
-    villesMontreal: isSpa ? joinFr(spaCitiesNearMontreal) : joinFr(citiesNearMontreal(scope)),
+    villesMontreal: isSpa || isDog ? joinFr(spaCitiesNearMontreal) : joinFr(citiesNearMontreal(scope)),
     nCharlevoix: String(countIn("charlevoix") || ""),
     nPrive: sp.prive > 0 ? String(sp.prive) : "",
     nAnnee: sp.annee > 0 && sp.anneeConnu >= 3 ? String(sp.annee) : "",
@@ -241,21 +298,23 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
   const regionLabels = stats.byRegion.slice(0, 3).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
   const others = stats.byRegion.slice(3, 5).filter((r) => r.count >= 5).map((r) => withArticle(regionName(r.region)?.genitive ?? r.region));
   const autresRegions = others.length > 0 ? ` ${upperFirst(joinFr(others))} complète${others.length > 1 ? "nt" : ""} l'offre.` : "";
-  const topRegionsParagraph = isSpa
-    ? `${upperFirst(joinFr(regionLabels))} regroupent la majorité des ${theme.labelPlural} sur Kabanalouer.`
+  const topRegionsParagraph = isSpa || isDog
+    ? `${upperFirst(joinFr(regionLabels))} regroupent ${theme.topRegionsWord ?? "la majorité"} des ${theme.labelPlural} sur Kabanalouer.`
     : top3.length === 3 && expected.every((s) => top3.includes(s))
       ? "La région de Québec, les Laurentides et Lanaudière regroupent la majorité des chalets au bord de l'eau sur Kabanalouer."
       : `${joinFr(stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.name ?? r.region))} regroupent le plus de chalets au bord de l'eau sur Kabanalouer.`;
-  const accessSentence = isSpa
+  const accessSentence = isDog
+    ? conditionsBits.length > 0 ? `${upperFirst(joinFr(conditionsBits))}.` : ""
+    : isSpa
     ? stats.spa.prive > 0 ? `Dans ${stats.spa.prive} d'entre eux, le spa est privé.` : ""
     : `${stats.byAccess.direct} sont directement sur la rive et ${stats.byAccess.lake} ont un accès à un lac.`;
 
   // ── Tableau (régions ou villes) ──
   const tableRows =
     level === "national"
-      ? national.byRegion.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound }))
+      ? national.byRegion.filter((r) => r.count >= 3).map((r) => ({ label: regionName(r.region)?.name ?? r.region, href: regionHref(r.region), count: r.count, from: r.priceFrom, yearRound: r.yearRound, dogFree: r.dogFree }))
       : level === "region"
-        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound }))
+        ? stats.byCity.map((c) => ({ label: c.city, href: cityHref(c.region, c.city), count: c.count, from: c.priceFrom, yearRound: c.yearRound, dogFree: c.dogFree }))
         : [];
   // Le tableau n'affiche que les lieux avec un prix ; les autres passent dans « Aussi : »
   const pricedRows = tableRows.filter((r) => r.from !== null);
@@ -317,7 +376,17 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         ? { value: String(stats.citiesCount), label: stats.citiesCount > 1 ? "villes" : "ville" }
         : { value: String(stats.regionsCount), label: stats.regionsCount > 1 ? "régions" : "région" };
   const guestsTile = stats.guestsMin !== null && stats.guestsMax !== null ? { value: `${stats.guestsMin} à ${stats.guestsMax}`, label: "voyageurs" } : null;
-  const tiles = (isSpa
+  const tiles = (isDog
+    ? [
+        { value: String(stats.count), label: "chalets" },
+        showFree ? { value: String(dg.gratuit), label: "sans frais pour le chien" } : null,
+        showBig ? { value: String(dg.toutesTailles), label: `${n1(dg.toutesTailles, "accepte", "acceptent")} les gros chiens` } : null,
+        showTwo ? { value: String(dg.deuxPlus), label: `${n1(dg.deuxPlus, "accepte", "acceptent")} 2 chiens ou plus` } : null,
+        stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
+        placeTile,
+        guestsTile,
+      ]
+    : isSpa
     ? [
         { value: String(stats.count), label: "chalets avec spa" },
         stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
@@ -329,7 +398,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         stats.priceMin !== null ? { value: money(stats.priceMin), label: "prix de départ le plus bas" } : null,
         placeTile,
         guestsTile,
-      ]).filter((t): t is { value: string; label: string } => !!t);
+      ]).filter((t): t is { value: string; label: string } => !!t).slice(0, 4);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -357,7 +426,23 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
               <h1 className="text-[length:clamp(34px,5vw,60px)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[var(--fg-1)]">
                 {fr(`${theme.h1Base} ${place}`)}
               </h1>
-              {isSpa ? (
+              {isDog ? (
+              <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
+                {fr("Kabanalouer compte ")}
+                <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
+                {fr(` ${place}${topPlaces.length > 0 ? `, surtout ${joinFr(topPlaces)}` : ""}. `)}
+                {showFree && fr(`${dg.gratuit} ${n1(dg.gratuit, "n'exige", "n'exigent")} aucuns frais pour le chien. `)}
+                {feeCovered && comptezBits.length > 0 && fr(`${showFree ? "Ailleurs, comptez" : "Comptez"} en général ${comptezBits.join(" ou ")}. `)}
+                {showBig && fr(`${dg.toutesTailles} ${n1(dg.toutesTailles, "accepte", "acceptent")} les chiens de toutes tailles. `)}
+                {stats.priceMin !== null && (
+                  <>
+                    {fr("Les prix de départ commencent à ")}
+                    <strong className="font-bold text-[var(--fg-1)]">{fr(`${frInt(stats.priceMin)} $/nuit`)}</strong>
+                    {fr(", sans frais de service.")}
+                  </>
+                )}
+              </p>
+              ) : isSpa ? (
               <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-[var(--fg-2)]">
                 {fr("Kabanalouer compte ")}
                 <strong className="font-bold text-[var(--fg-1)]">{fr(`${stats.count} ${theme.labelPlural}`)}</strong>
@@ -414,9 +499,33 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         {/* ── 2. Grille de fiches ── */}
         <section className={`${WRAP} mt-8`} aria-label="Chalets">
           <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {picked.map((r, i) => (
-              <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} themeBadge={(() => { const b = badgeOf(theme.slug, r); return b ? fr(b) : undefined; })()} />
-            ))}
+            {picked.map((r, i) => {
+              const card = (
+                <ListingCard key={r.id} listing={toCardListing(r)} priority={i < 4} themeBadge={(() => { const b = badgeOf(theme.slug, r); return b ? fr(b) : undefined; })()} />
+              );
+              if (!isDog) return card;
+              // Chiens : les conditions (nombre, poids, frais) sous la carte, ou un renvoi au propriétaire
+              const summary = dogPolicyShortSummary(
+                { allowed: true, max: r.dogMax, sizeLimit: r.dogSize, feeType: r.dogFee, feeAmount: r.dogFeeAmount },
+                "fr"
+              );
+              return (
+                <div key={r.id}>
+                  {card}
+                  {summary ? (
+                    <p className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-[var(--fg-2)]">
+                      <PawIcon className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{fr(summary)}</span>
+                    </p>
+                  ) : (
+                    <p className="mt-2 flex items-center gap-1.5 text-[13px] text-[var(--fg-3)]">
+                      <PawIcon className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">Conditions à confirmer avec le propriétaire</span>
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
             <p className="text-sm text-[var(--fg-3)]">{fr(`${picked.length} sur ${filtered.length} chalets`)}</p>
@@ -430,7 +539,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
         <section className={`${WRAP} mt-16`}>
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--fg-3)]">Données Kabanalouer</p>
           <h2 className="mt-2 text-[length:clamp(26px,3.2vw,40px)] font-extrabold leading-tight tracking-[-0.04em] text-[var(--fg-1)]">
-            {fr(`Où louer un chalet ${theme.label} ${place} ?`)}
+            {fr(`Où louer un chalet ${theme.h2Label ?? theme.label} ${place} ?`)}
           </h2>
           <p className="mt-4 max-w-[70ch] text-base leading-relaxed text-[var(--fg-2)]">
             {level === "national"
@@ -450,6 +559,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">{level === "national" ? "Région" : "Ville"}</th>
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Chalets</th>
                       {showYear && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Ouverts à l'année</th>}
+                      {showFreeCol && <th scope="col" className="px-3 py-3 font-semibold sm:px-4">Sans frais pour le chien</th>}
                       <th scope="col" className="px-3 py-3 font-semibold sm:px-4">À partir de</th>
                     </tr>
                   </thead>
@@ -459,6 +569,7 @@ export default async function ThemeLandingPage({ scope, acces, filtre }: { scope
                         <th scope="row" className="px-3 py-3 font-semibold sm:px-4"><Link href={row.href} className="text-[var(--fg-1)] underline-offset-2 hover:underline">{fr(row.label)}</Link></th>
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.count}</td>
                         {showYear && <td className="px-3 py-3 tabular-nums sm:px-4">{row.yearRound > 0 ? row.yearRound : "—"}</td>}
+                        {showFreeCol && <td className="px-3 py-3 tabular-nums sm:px-4">{row.dogFree > 0 ? row.dogFree : "—"}</td>}
                         <td className="px-3 py-3 tabular-nums sm:px-4">{row.from !== null ? fr(`${money(row.from)}/nuit`) : "—"}</td>
                       </tr>
                     ))}

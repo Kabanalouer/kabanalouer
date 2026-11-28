@@ -40,6 +40,7 @@ const AMENITY_PILLS = [
 const SUB_PILL: Record<string, Record<string, string>> = {
   "avec-spa": { sauna: "sauna", chiens: "dogs", eau: "bord-eau" },
   "bord-de-l-eau": { direct: "bord-eau" },
+  "chiens-acceptes": { eau: "bord-eau", spa: "spa" },
 };
 
 const PILL =
@@ -67,9 +68,15 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
     router.push(localePath(`/chalets${qs ? `?${qs}` : ""}`, locale));
   };
 
+  // Pastille qui est le thème lui-même (arrivée depuis une page thème)
+  const isThemePill = (id: string) =>
+    (id === "bord-eau" && filters.theme === "bord-de-l-eau") ||
+    (id === "spa" && filters.theme === "avec-spa") ||
+    (id === "dogs" && filters.theme === "chiens-acceptes");
+
   const toggle = (id: string) => {
     // Pastille du thème lui-même : la retirer enlève le thème et sa sous-catégorie
-    if ((id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa")) {
+    if (isThemePill(id)) {
       go((p) => { p.delete("theme"); p.delete("sub"); });
       return;
     }
@@ -89,8 +96,8 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   // Arrivée depuis une page thème (?theme=bord-de-l-eau) : la pastille correspondante est allumée.
   const isActive = (id: string) =>
     id === "dogs"
-      ? !!filters.dogs || subPill === "dogs"
-      : id === subPill || amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa");
+      ? !!filters.dogs || subPill === "dogs" || isThemePill(id)
+      : id === subPill || amenityIds.includes(id) || isThemePill(id);
 
   return (
     <div

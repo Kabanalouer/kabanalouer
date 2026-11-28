@@ -253,11 +253,19 @@ export default function EditListingForm({
   });
 
   const searchParams = useSearchParams();
+  // Lien direct vers un champ (ex. ?section=infos#chiens depuis « Mes chalets ») : on y défile après l'affichage de la section
+  useEffect(() => {
+    const id = window.location.hash.replace("#", "");
+    if (!id) return;
+    const timer = setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: "start" }), 250);
+    return () => clearTimeout(timer);
+  }, []);
   const [activeSection, setActiveSection] = useState<SectionId>(
     BOOSTS_ENABLED && searchParams.get("section") === "vedette" ? "vedette"
       : searchParams.get("section") === "calendrier" ? "calendrier"
       : searchParams.get("section") === "publier" ? "publier"
       : searchParams.get("section") === "chambres" ? "chambres"
+      : searchParams.get("section") === "infos" ? "infos"
       : "titre"
   );
   const [saving, setSaving] = useState(false);
@@ -1779,7 +1787,16 @@ export default function EditListingForm({
                   </SettingRow>
                 </InfoBlock>
 
-                <InfoBlock title={tEdit("infoBlockDogs")}>
+                <InfoBlock id="chiens" title={tEdit("infoBlockDogs")}>
+                  {/* Rappel : les voyageurs avec un chien filtrent sur le nombre, le poids et les frais */}
+                  {form.dogs_allowed &&
+                    !(
+                      form.dogs_max &&
+                      form.dogs_size_limit &&
+                      (form.dogs_fee_type === "free" || ((form.dogs_fee_type === "per_night" || form.dogs_fee_type === "per_stay") && form.dogs_fee_amount))
+                    ) && (
+                      <p className="rounded-xl bg-warning-50 px-4 py-3 text-sm text-warning-800">{tEdit("dogConditionsReminder")}</p>
+                    )}
                   <SettingRow label={tEdit("dogsLabel")}>
                     <ToggleField
                       value={form.dogs_allowed}
@@ -2215,9 +2232,9 @@ function PublishErrorBox({
 
 // Bloc thématique d'une section longue (ex. Infos générales) — cadre léger
 // + titre H3, pour découper visuellement sans ajouter d'entrée au menu.
-function InfoBlock({ title, children }: { title: string; children: React.ReactNode }) {
+function InfoBlock({ title, children, id }: { title: string; children: React.ReactNode; id?: string }) {
   return (
-    <section className="rounded-2xl border border-[#ebebeb] p-5 sm:p-6">
+    <section id={id} className="rounded-2xl border border-[#ebebeb] p-5 sm:p-6 scroll-mt-24">
       <h3 className="text-heading-3 font-semibold text-charcoal-800 mb-4">{title}</h3>
       <div className="space-y-4">{children}</div>
     </section>

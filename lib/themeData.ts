@@ -62,16 +62,21 @@ export function rowFromDb(raw: Raw): ThemeRow {
     spaPlaces: Number.isFinite(spaCap) && spaCap > 0 ? spaCap : null,
     spaYear: typeof spaYear === "boolean" ? spaYear : null,
     sauna: entries.some((a) => a.id === "sauna"),
+    dogMax: typeof raw.dogs_max === "number" ? raw.dogs_max : null,
+    dogSize: raw.dogs_size_limit === "small" || raw.dogs_size_limit === "medium" || raw.dogs_size_limit === "all" ? raw.dogs_size_limit : null,
+    dogFee: raw.dogs_fee_type === "free" || raw.dogs_fee_type === "per_night" || raw.dogs_fee_type === "per_stay" ? raw.dogs_fee_type : null,
+    dogFeeAmount: typeof raw.dogs_fee_amount === "number" ? raw.dogs_fee_amount : null,
   };
 }
 
 export function rowMatchesTheme(r: ThemeRow, slug: string): boolean {
+  if (slug === "chiens-acceptes") return r.dogs;
   const ids = THEME_AMENITY_IDS[slug] ?? [];
   return (ids.includes("bord-eau") && r.direct) || (ids.includes("acces-lac") && r.lake) || (ids.includes("spa") && r.spa);
 }
 
 const COLUMNS =
-  "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug, unclaimed_rank, score, created_at, site_name, claim_email, host_id, dogs_allowed, latitude, longitude";
+  "id, title, title_en, region, city, price_low, price_on_request, capacity, bedrooms, photos, amenities, listing_number, custom_slug, unclaimed_rank, score, created_at, site_name, claim_email, host_id, dogs_allowed, dogs_max, dogs_size_limit, dogs_fee_type, dogs_fee_amount, latitude, longitude";
 
 async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updatedAt: string }> {
   const supabase = createClient(
@@ -92,4 +97,4 @@ async function fetchThemeRows(slug: string): Promise<{ rows: ThemeRow[]; updated
 }
 
 // Même données pour tous les visiteurs : mises en cache 24 h (l'argument `slug` fait partie de la clé).
-export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v2"], { revalidate: 86400 });
+export const getThemeData = unstable_cache(fetchThemeRows, ["theme-data-v3"], { revalidate: 86400 });

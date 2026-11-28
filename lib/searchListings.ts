@@ -108,7 +108,11 @@ function listingsQuery(supabase: SupabaseClient, f: SearchFilters, excludedIds: 
   if (themeIds?.length) {
     query = query.or(themeIds.map((id) => `amenities.cs.${JSON.stringify([{ id }])}`).join(","));
   }
-  const sub = f.theme && f.sub ? THEME_FILTER_QUERY[f.theme]?.[f.sub] : undefined;
+  // Base du thème (chiens acceptés : colonne dogs_allowed, pas un équipement)
+  if (f.theme && THEME_FILTER_QUERY[f.theme]?._base?.dogs) query = query.eq("dogs_allowed", true);
+  const sub = f.theme && f.sub && f.sub !== "_base" ? THEME_FILTER_QUERY[f.theme]?.[f.sub] : undefined;
+  for (const [col, v] of Object.entries(sub?.eq ?? {})) query = query.eq(col, v);
+  for (const [col, v] of Object.entries(sub?.gte ?? {})) query = query.gte(col, v);
   if (sub?.or?.length) // Valeur entre guillemets : le JSON des détails contient des virgules, qui coupent sinon le filtre « or » de PostgREST
     query = query.or(sub.or.map((p) => `amenities.cs."${JSON.stringify(p).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(","));
   if (sub?.capMin) query = query.gte("capacity", sub.capMin);

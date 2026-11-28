@@ -51,8 +51,12 @@ export interface ThemeContent {
   // Paragraphe éditorial du tableau par région (page nationale)
   nationalRegionParagraph?: string;
   // Balises : si présent, `titleBase` remplace le titre calculé (« Chalet à louer avec spa » + lieu + nombre de chalets)
-  // et `description` est un modèle ({N}, {lieu}, {prix}, {ouvertAnnee}). Sans `meta`, titre et description par défaut.
-  meta?: { titleBase: string; description: string };
+  // et `description` est un modèle ({N}, {lieu}, {prix}, {ouvertAnnee}, {chiensInfos}). Sans `meta`, titre et description par défaut.
+  meta?: { titleBase: string; titleBaseNational?: string; description: string };
+  // « avec chien » : fin du titre « Où louer un chalet … au Québec ? » quand elle diffère de `label`
+  h2Label?: string;
+  // « la majorité » (défaut) ou « la plupart » : « Les Laurentides… regroupent {…} des chalets… »
+  topRegionsWord?: string;
   // Bloc éditorial des pages région : titre (« Le bord de l'eau » + lieu) et champ du texte dans content/regions/{région}.ts.
   // Texte vide = bloc non affiché.
   regionBlockTitle?: string;

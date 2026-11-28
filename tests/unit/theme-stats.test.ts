@@ -13,6 +13,7 @@ function row(i: number, over: Partial<Row> = {}): Row {
     listingNumber: i, customSlug: null, lat: null, lng: null, rank: 0, score: 100 - i, createdAt: `2026-01-${String(i % 28 + 1).padStart(2, "0")}`,
     ownerKey: `owner-${i}`, direct: true, lake: false, lakeAccess: null, beach: false, boats: false, dogs: false,
     spa: false, spaAccess: null, spaPlaces: null, spaYear: null, sauna: false,
+    dogMax: null, dogSize: null, dogFee: null, dogFeeAmount: null,
     ...over,
   };
 }

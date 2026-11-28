@@ -20,6 +20,7 @@ const TRIM_SHARE = 0.05;
 export const THEME_AMENITY_IDS: Record<string, string[]> = {
   "bord-de-l-eau": ["bord-eau", "acces-lac"],
   "avec-spa": ["spa"],
+  // Chiens acceptés : pas un équipement, une colonne (listings.dogs_allowed) ; voir THEME_FILTER_QUERY["chiens-acceptes"]._base
 };
 
 export interface ThemeRow {
@@ -55,6 +56,11 @@ export interface ThemeRow {
   spaPlaces: number | null;
   spaYear: boolean | null;
   sauna: boolean;
+  // Thème chiens (listings.dogs_* ; null = non renseigné)
+  dogMax: number | null;
+  dogSize: "small" | "medium" | "all" | null;
+  dogFee: "free" | "per_night" | "per_stay" | null;
+  dogFeeAmount: number | null;
 }
 
 export type AccessKey = "direct" | "lake" | "beach" | "boats";
@@ -100,6 +106,7 @@ export function sortRows(rows: ThemeRow[]): ThemeRow[] {
       a.rank - b.rank ||
       complete(b) - complete(a) ||
       b.score - a.score ||
+      Number(dogConditionsComplete(b) && b.dogs) - Number(dogConditionsComplete(a) && a.dogs) ||
       b.createdAt.localeCompare(a.createdAt) ||
       a.id.localeCompare(b.id)
   );
@@ -121,8 +128,32 @@ export function pickDiverse(rows: ThemeRow[], limit = GRID_SIZE, perOwner = MAX_
   return picked.length >= limit ? picked : [...picked, ...left.slice(0, limit - picked.length)];
 }
 
-export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number }
-export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number }
+export interface RegionStat { region: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number }
+export interface CityStat { region: string; city: string; count: number; priceFrom: number | null; yearRound: number; dogFree: number }
+
+// Conditions « chiens » d'une fiche : nombre maximum, poids et frais (frais payants = avec montant)
+export function dogConditionsComplete(r: ThemeRow): boolean {
+  const feeOk = r.dogFee === "free" || ((r.dogFee === "per_night" || r.dogFee === "per_stay") && !!r.dogFeeAmount);
+  return r.dogMax !== null && r.dogSize !== null && feeOk;
+}
+
+// Chiffres propres au thème chiens (calculés pour tous les thèmes, affichés seulement pour ce thème)
+export interface DogStats {
+  complete: number; // les 3 conditions remplies
+  gratuit: number;
+  feeKnown: number; // type de frais renseigné
+  fraisNuitMedian: number | null;
+  fraisSejourMedian: number | null;
+  toutesTailles: number;
+  max50: number;
+  max25: number;
+  sizeKnown: number;
+  deuxPlus: number; // 2 chiens ou plus
+  maxKnown: number;
+  maxChiens: number;
+  bordEau: number;
+  spa: number;
+}
 
 // Chiffres propres au thème spa (calculés pour tous les thèmes, affichés seulement pour le spa)
 export interface SpaStats {
@@ -155,6 +186,7 @@ export interface ThemeStats {
   byAccess: { direct: number; lake: number; lakePrivate: number; lakePublic: number; beach: number; boats: number };
   dogs: number;
   spa: SpaStats;
+  dog: DogStats;
   large: number; // chalets de LARGE_GROUP_GUESTS voyageurs ou plus
   pricedCount: number; // fiches avec un prix affiché
   updatedAt: string;
@@ -186,6 +218,30 @@ function spaStatsOf(rows: ThemeRow[]): SpaStats {
   };
 }
 
+const dogFreeOf = (rows: ThemeRow[]) => rows.filter((r) => r.dogFee === "free").length;
+
+function dogStatsOf(rows: ThemeRow[]): DogStats {
+  const nuit = rows.filter((r) => r.dogFee === "per_night" && r.dogFeeAmount).map((r) => r.dogFeeAmount as number).sort((a, b) => a - b);
+  const sejour = rows.filter((r) => r.dogFee === "per_stay" && r.dogFeeAmount).map((r) => r.dogFeeAmount as number).sort((a, b) => a - b);
+  const maxes = rows.map((r) => r.dogMax).filter((n): n is number => n !== null);
+  return {
+    complete: rows.filter(dogConditionsComplete).length,
+    gratuit: dogFreeOf(rows),
+    feeKnown: rows.filter((r) => r.dogFee !== null).length,
+    fraisNuitMedian: medianOf(nuit),
+    fraisSejourMedian: medianOf(sejour),
+    toutesTailles: rows.filter((r) => r.dogSize === "all").length,
+    max50: rows.filter((r) => r.dogSize === "medium").length,
+    max25: rows.filter((r) => r.dogSize === "small").length,
+    sizeKnown: rows.filter((r) => r.dogSize !== null).length,
+    deuxPlus: rows.filter((r) => (r.dogMax ?? 0) >= 2).length,
+    maxKnown: maxes.length,
+    maxChiens: maxes.length ? Math.max(...maxes) : 0,
+    bordEau: rows.filter((r) => r.direct || r.lake).length,
+    spa: rows.filter((r) => r.spa).length,
+  };
+}
+
 function priceFromOf(rows: ThemeRow[]): number | null {
   const prices = rows.filter(hasDisplayedPrice).map((r) => r.price);
   return prices.length >= MIN_LISTINGS_INDEXED ? averageRoundedTo5(prices) : null;
@@ -209,12 +265,12 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
   }
 
   const byRegion: RegionStat[] = [...regionGroups.entries()]
-    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list) }))
+    .map(([region, list]) => ({ region, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list) }))
     .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region, "fr"));
   const byCity: CityStat[] = [...cityGroups.entries()]
     .map(([key, list]) => {
       const [region, cityName] = key.split("|");
-      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list) };
+      return { region, city: cityName, count: list.length, priceFrom: priceFromOf(list), yearRound: yearRoundOf(list), dogFree: dogFreeOf(list) };
     })
     .filter((c) => c.count >= MIN_LISTINGS_INDEXED)
     .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "fr"));
@@ -241,6 +297,7 @@ export function computeStats(allRows: ThemeRow[], updatedAt: string, regionDb?: 
     },
     dogs: rows.filter((r) => r.dogs).length,
     spa: spaStatsOf(rows),
+    dog: dogStatsOf(rows),
     large: rows.filter((r) => r.capacity >= LARGE_GROUP_GUESTS).length,
     pricedCount: sortedPrices.length,
     updatedAt,
@@ -284,6 +341,16 @@ export const THEME_FILTERS: Record<string, { param: "acces" | "filtre"; filters:
       { key: "boats", label: "Embarcations incluses", suffix: "avec embarcations incluses", test: (r) => r.boats },
     ],
   },
+  "chiens-acceptes": {
+    param: "filtre",
+    filters: [
+      { key: "gratuit", label: "Sans frais pour le chien", suffix: "sans frais pour le chien", test: (r) => r.dogFee === "free" },
+      { key: "gros", label: "Gros chiens acceptés", suffix: "qui acceptent les gros chiens", test: (r) => r.dogSize === "all" },
+      { key: "deux", label: "2 chiens ou plus", suffix: "qui acceptent 2 chiens ou plus", test: (r) => (r.dogMax ?? 0) >= 2 },
+      { key: "eau", label: "Au bord de l'eau", suffix: "au bord de l'eau", test: (r) => r.direct || r.lake },
+      { key: "spa", label: "Avec spa", suffix: "avec spa", test: (r) => r.spa },
+    ],
+  },
   "avec-spa": {
     param: "filtre",
     filters: [
@@ -306,7 +373,7 @@ export function yearRoundKnownEnough(stats: ThemeStats): boolean {
 // Même sous-catégories vues par la recherche (/chalets?theme=…&sub=…) : le bouton « Voir les N chalets » d'une page thème
 // filtrée mène à une liste du même nombre. Chaque filtre ci-dessus doit avoir son équivalent ici (et inversement).
 // or : au moins un de ces motifs d'équipement (JSON de confinement) ; capMin / capMax : voyageurs ; dogs : chiens acceptés.
-export interface FilterQuery { or?: object[][]; capMin?: number; capMax?: number; dogs?: boolean }
+export interface FilterQuery { or?: object[][]; capMin?: number; capMax?: number; dogs?: boolean; eq?: Record<string, string>; gte?: Record<string, number> }
 export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
   "bord-de-l-eau": {
     direct: { or: [[{ id: "bord-eau" }]] },
@@ -318,6 +385,15 @@ export const THEME_FILTER_QUERY: Record<string, Record<string, FilterQuery>> = {
         [{ id: "embarcations", details: { gratuitPayant: "Gratuit" } }],
       ],
     },
+  },
+  "chiens-acceptes": {
+    // Base du thème : toujours appliquée à la recherche ?theme=chiens-acceptes
+    _base: { dogs: true },
+    gratuit: { eq: { dogs_fee_type: "free" } },
+    gros: { eq: { dogs_size_limit: "all" } },
+    deux: { gte: { dogs_max: 2 } },
+    eau: { or: [[{ id: "bord-eau" }], [{ id: "acces-lac" }]] },
+    spa: { or: [[{ id: "spa" }]] },
   },
   "avec-spa": {
     annee: { or: [[{ id: "spa", details: { disponibleAnnee: true } }]] },
@@ -339,5 +415,6 @@ export function spaBadge(r: ThemeRow): string | null {
 }
 
 export function themeBadge(themeSlug: string, r: ThemeRow): string | null {
+  if (themeSlug === "chiens-acceptes") return null; // les conditions s'affichent sous la carte
   return themeSlug === "avec-spa" ? spaBadge(r) : accessBadge(r);
 }

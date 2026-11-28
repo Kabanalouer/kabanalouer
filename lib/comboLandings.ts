@@ -119,7 +119,7 @@ export function getComboTheme(key: ComboThemeKey): ComboTheme {
 // Slugs réservés : un lien personnalisé de fiche (3ᵉ segment) ne doit jamais
 // masquer une page ville × type (même position dans l'URL).
 // Thèmes (français) servis par le gabarit ThemeLandingPage : adresse « thème en premier » (/chalets/avec-spa/laurentides)
-export const THEME_FIRST_KEYS: ReadonlySet<string> = new Set(["waterfront", "spa"]);
+export const THEME_FIRST_KEYS: ReadonlySet<string> = new Set(["waterfront", "spa", "dogs"]);
 export const isThemeFirstKey = (key: string): boolean => THEME_FIRST_KEYS.has(key);
 
 export const RESERVED_COMBO_SLUGS = new Set(COMBO_THEMES.flatMap((t) => [t.slugFr, t.slugEn]));

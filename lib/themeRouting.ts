@@ -86,12 +86,18 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
   // Le site ajoute déjà « | Kabanalouer » aux titres (gabarit du layout) : on ne le répète pas dans `title`
   const title = fr(
     theme.meta
-      ? `${theme.meta.titleBase} ${place} · ${n} chalets`
+      ? `${target.region ? theme.meta.titleBase : (theme.meta.titleBaseNational ?? theme.meta.titleBase)} ${place} · ${n} chalets`
       : target.region ? `Chalet à louer ${theme.label} ${place} · ${n} chalets` : `${theme.h1Base} au Québec · ${n} chalets`
   );
   const ouvertAnnee = yearRoundKnownEnough(stats)
     ? ` ${stats.spa.annee} ${stats.spa.annee === 1 ? "a un spa ouvert" : "ont un spa ouvert"} à l'année.`
     : "";
+  const d = stats.dog;
+  const dogPieces = [
+    d.feeKnown >= 0.3 * stats.count && d.gratuit > 0 ? `${d.gratuit} sans frais pour le chien` : "",
+    d.sizeKnown >= 0.3 * stats.count && d.toutesTailles > 0 ? `${d.toutesTailles} ${d.toutesTailles === 1 ? "accepte" : "acceptent"} les gros chiens` : "",
+  ].filter(Boolean);
+  const chiensInfos = theme.slug === "chiens-acceptes" && dogPieces.length > 0 ? ` ${dogPieces.join(", ")}.` : "";
   const description = fr(
     theme.meta
       ? theme.meta.description
@@ -99,6 +105,7 @@ export function buildThemeMetadata(scope: ThemeScope): Metadata {
           .replace("{lieu}", place)
           .replace("{prix}", prix)
           .replace("{ouvertAnnee}", ouvertAnnee)
+          .replace("{chiensInfos}", chiensInfos)
       : `${n} ${theme.labelPlural} à louer ${place}${prix}. Lac, rivière ou fleuve : écrivez directement au propriétaire, sans frais de service.`
   );
   const { index, canonicalPath } = indexingOf(scope);
