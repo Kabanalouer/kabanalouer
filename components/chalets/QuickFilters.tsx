@@ -35,6 +35,13 @@ const AMENITY_PILLS = [
   { id: "espace-travail", key: "quickRemote" },
 ] as const;
 
+// Sous-catégorie d'une page thème (?theme=…&sub=…) qui correspond à une pastille de la rangée : la pastille s'allume aussi
+// (ex. page spa + chiens acceptés → Avec spa et Chiens acceptés). Les sous-catégories sans pastille (2 à 4 personnes…) n'en ont pas.
+const SUB_PILL: Record<string, Record<string, string>> = {
+  "avec-spa": { sauna: "sauna", chiens: "dogs", eau: "bord-eau" },
+  "bord-de-l-eau": { direct: "bord-eau" },
+};
+
 const PILL =
   "flex-none whitespace-nowrap rounded-[var(--radius-pill)] px-4 py-[9px] min-h-11 sm:min-h-10 inline-flex items-center text-sm font-semibold transition-colors";
 const PILL_IDLE = "border border-[var(--border-2)] bg-white text-[var(--fg-1)] hover:border-charcoal-400";
@@ -46,6 +53,7 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   const router = useRouter();
 
   const amenityIds = (filters.amenities ?? "").split(",").filter(Boolean);
+  const subPill = filters.theme && filters.sub ? SUB_PILL[filters.theme]?.[filters.sub] : undefined;
 
   // Garde tous les filtres actuels (dates, région, chambres…), applique le changement, repart de la page 1.
   const go = (change: (p: URLSearchParams) => void) => {
@@ -60,12 +68,18 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   };
 
   const toggle = (id: string) => {
-    if (id === "dogs") {
-      go((p) => (filters.dogs ? p.delete("dogs") : p.set("dogs", "1")));
-      return;
-    }
+    // Pastille du thème lui-même : la retirer enlève le thème et sa sous-catégorie
     if ((id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa")) {
       go((p) => { p.delete("theme"); p.delete("sub"); });
+      return;
+    }
+    // Pastille allumée par la sous-catégorie : la retirer enlève seulement la sous-catégorie
+    if (id === subPill) {
+      go((p) => p.delete("sub"));
+      return;
+    }
+    if (id === "dogs") {
+      go((p) => (filters.dogs ? p.delete("dogs") : p.set("dogs", "1")));
       return;
     }
     const next = amenityIds.includes(id) ? amenityIds.filter((a) => a !== id) : [...amenityIds, id];
@@ -75,8 +89,8 @@ export default function QuickFilters({ filters }: { filters: SearchFiltersState 
   // Arrivée depuis une page thème (?theme=bord-de-l-eau) : la pastille correspondante est allumée.
   const isActive = (id: string) =>
     id === "dogs"
-      ? !!filters.dogs
-      : amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa");
+      ? !!filters.dogs || subPill === "dogs"
+      : id === subPill || amenityIds.includes(id) || (id === "bord-eau" && filters.theme === "bord-de-l-eau") || (id === "spa" && filters.theme === "avec-spa");
 
   return (
     <div
