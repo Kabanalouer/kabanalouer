@@ -113,7 +113,7 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
   // ── Intro « réponse directe » ──
   const topPlaces =
     level === "national"
-      ? stats.byRegion.slice(0, 3).map((r) => regionName(r.region)?.locative ?? "")
+      ? stats.byRegion.slice(0, 3).map((r) => (regionName(r.region)?.locative ?? "").replace(/^en /, ""))
       : level === "region"
         ? stats.byCity.slice(0, 3).map((c) => `à ${c.city}`)
         : [];
@@ -265,7 +265,6 @@ export default async function ThemeLandingPage({ scope, acces }: { scope: ThemeS
                     {fr(". ")}
                   </>
                 )}
-                {fr("Vous écrivez directement au propriétaire, sans frais de service.")}
               </p>
             </div>
             <dl className="grid grid-cols-2 gap-3">
